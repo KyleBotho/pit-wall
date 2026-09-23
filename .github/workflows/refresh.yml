@@ -32,7 +32,6 @@ jobs:
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
       - run: python refresh.py
-      - run: cp build/pit-wall.html build/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build

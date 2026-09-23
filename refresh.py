@@ -153,7 +153,11 @@ def main():
     out = html.replace('<script src="engine.js"></script>', "<script>\n" + engine + "\n</script>")
     out = out.replace("/*__DATA__*/null", js.replace("</", "<\\/"))
     with open(os.path.join(BUILD, "pit-wall.html"), "w", encoding="utf-8") as f:
-        f.write(out)
+        f.write(out)  # Claude artifact: the publisher adds doctype/head/viewport
+    with open(os.path.join(BUILD, "index.html"), "w", encoding="utf-8") as f:
+        f.write('<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
+                '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+                '<meta name="theme-color" content="#050505">\n' + out + "\n</html>\n")  # GitHub Pages
     with open(os.path.join(CACHE, "data.json"), "w", encoding="utf-8") as f:
         f.write(js)
     print(f"Built build/pit-wall.html ({len(out)//1024} KB) — next race: gameday {nxt}")
