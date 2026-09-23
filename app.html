@@ -330,7 +330,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 
   <!-- CALENDAR -->
   <main id="view-cal" data-v hidden>
-    <p class="note" style="margin-bottom:12px"><b>Overtaking</b> scales overtake points, <b>Grid weight</b> is how much the start decides the finish, and <b>Chaos</b> scales retirements. Starting estimates; adjust if you know better.</p>
+    <p class="note" style="margin-bottom:12px">Each circuit is typed by <b>Power</b>, <b>Street</b> and <b>Fast corners</b>. From this season's results, the model learns how those change <b>Overtaking</b> (overtake points), <b>Chaos</b> (retirements) and each team's pace; <b>Grid weight</b> follows overtaking. Move a slider to override a race; Reset in Model restores the fitted values.</p>
     <div class="grid-cards" id="cal"></div>
   </main>
 
@@ -431,13 +431,17 @@ function recentForm(a) {
   h.forEach((x, i) => { const k = Math.pow(0.8, h.length - 1 - i); s += k * x.pts; w += k; });
   return s / w;
 }
-const circ = (g) => Object.assign(E.circuitFor(g.name), S.circuits[g.gd] || {});
+const TM = E.trackModel(DATA);
+// circuit settings: fitted track-type values, overridden by anything set on the Calendar
+const circ = (g) => Object.assign(TM.forCircuit(g.name), S.circuits[g.gd] || {});
 function compute() {
   // practice pace only informs the coming weekend; later races use season form alone
-  const model = E.buildModel(DATA, { halfLife: S.halfLife, adj: S.adj, practice: DATA.practice || [], practiceWeight: S.pw });
-  const later = E.buildModel(DATA, { halfLife: S.halfLife, adj: S.adj });
   const races = upcoming.slice(0, 3);
-  const sims = races.map((g, k) => E.simulate(k === 0 ? model : later, circ(g), g.sprint, S.sims, g.gd * 7919 + 13));
+  // each race gets its own model: its track's team-pace shift, and practice pace only for the coming weekend
+  const models = races.map((g, k) => E.buildModel(DATA, { halfLife: S.halfLife, adj: S.adj, teamShift: circ(g).teamShift || {},
+    practice: k === 0 ? DATA.practice || [] : [], practiceWeight: S.pw }));
+  const model = models[0];
+  const sims = races.map((g, k) => E.simulate(models[k], circ(g), g.sprint, S.sims, g.gd * 7919 + 13));
   const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   const proj = sims.map((sim) => {
@@ -931,9 +935,15 @@ function renderCal() {
     const c = circ(g);
     const when = new Date(g.raceStart).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const sl = (key, label, min, max, step) => `<label class="slider"><span>${label}</span><input type="range" id="c-${g.gd}-${key}" data-circ="${g.gd}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${c[key]}"><output>${(+c[key]).toFixed(2)}</output></label>`;
+    const shifts = Object.entries(c.teamShift || {}).filter(([, v]) => Math.abs(v) >= 0.15).sort((a, b) => a[1] - b[1]);
+    const shiftTxt = shifts.length ? shifts.map(([t, v]) => `<span class="${v < 0 ? "good" : "bad"}">${esc(CON_CODE[t] || t)} ${v < 0 ? "▲" : "▼"}${Math.abs(v).toFixed(1)}</span>`).join(" ") : '<span class="dim">none worth noting</span>';
+    const fit = TM.fitted && !S.circuits[g.gd];
     return `<section class="panel"><h3>${esc(g.name.replace(" Grand Prix", " GP"))} <small>R${g.gd}</small></h3>
       <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>
       <p class="note">${esc(c.note || "")}</p>
+      <div class="chipbar">${(c.feat || []).map((v, i) => `<span class="chiptok" title="0 = none, 1 = maximum">${E.FEAT_NAMES[i]} ${v.toFixed(2)}</span>`).join("")}</div>
+      <div class="note" style="font-size:12px">Track-type pace (grid places): ${shiftTxt}</div>
+      <div class="note" style="font-size:12px">${fit ? `Overtaking, grid weight and chaos are fitted from ${TM.rounds} completed rounds of this season's track types.` : "Custom values set here."}</div>
       ${sl("ov", "Overtaking", 0.2, 1.6, 0.05)}${sl("grid", "Grid weight", 0.2, 0.9, 0.05)}${sl("chaos", "Chaos", 0.6, 1.6, 0.05)}</section>`;
   }).join("");
 }

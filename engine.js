@@ -5,25 +5,91 @@
   const RPTS = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
   const SPTS = [8, 7, 6, 5, 4, 3, 2, 1];
 
-  // Circuit character: ov = overtake multiplier, grid = how much the start position decides the finish (0-1),
-  // chaos = retirement / safety-car multiplier. Claude's estimates; editable in the Calendar tab.
+  // Track type per circuit: [power (straight-line emphasis), street (walls, low grip), fast corners (aero)], 0-1.
+  // Claude's classification. The overtaking, retirement and team-pace effects of these features are FITTED from
+  // 2026 results in trackModel(); the manual ov/grid/chaos values below are only a fallback.
   const CIRCUITS = [
-    ["azerbaijan", { ov: 1.25, grid: 0.45, chaos: 1.3, note: "Street circuit, 2 km flat-out run; walls punish mistakes" }],
-    ["bahrain", { ov: 1.3, grid: 0.4, chaos: 1.0, note: "Heavy braking zones, high tyre wear, easy passing" }],
-    ["singapore", { ov: 0.6, grid: 0.65, chaos: 1.3, note: "Tight street circuit; qualifying is everything, safety cars likely" }],
-    ["united states", { ov: 1.1, grid: 0.45, chaos: 1.0, note: "Long back straight into turn 12; plenty of passing" }],
-    ["mexico", { ov: 0.95, grid: 0.5, chaos: 1.0, note: "Thin air, long run to turn 1; cooling-limited" }],
-    ["paulo", { ov: 1.3, grid: 0.4, chaos: 1.2, note: "Short lap, weather risk, races often turned upside down" }],
-    ["vegas", { ov: 1.3, grid: 0.42, chaos: 1.1, note: "Cold, low-grip street circuit with huge straights" }],
-    ["qatar", { ov: 0.9, grid: 0.5, chaos: 1.0, note: "Fast, flowing; tyre limits and stint caps shape strategy" }],
-    ["abu dhabi", { ov: 0.8, grid: 0.55, chaos: 0.9, note: "Season finale; processional unless strategy splits" }],
-    ["monaco", { ov: 0.2, grid: 0.85, chaos: 1.1, note: "Near-impossible to pass" }],
+    ["australia", [0.5, 0.5, 0.5], "Albert Park: fast semi-street lap, early-season chaos"],
+    ["chin", [0.55, 0, 0.5], "Shanghai: long back straight, front-limited corners"],
+    ["japan", [0.45, 0, 1], "Suzuka: high-speed esses reward aero efficiency"],
+    ["miami", [0.55, 0.5, 0.3], "Street-style layout with long straights"],
+    ["canad", [0.7, 0.5, 0.2], "Stop-start semi-street circuit, heavy braking"],
+    ["monaco", [0, 1, 0], "Near-impossible to pass"],
+    ["barcelona", [0.35, 0, 0.8], "Aero benchmark track; overtaking is hard"],
+    ["austria", [0.6, 0, 0.5], "Short lap, three big braking zones"],
+    ["brit", [0.5, 0, 1], "Silverstone: very fast corners"],
+    ["belg", [0.8, 0, 0.7], "Spa: power plus fast sweepers, weather risk"],
+    ["hungar", [0.15, 0, 0.3], "Tight and twisty; track position is king"],
+    ["dutch", [0.25, 0, 0.8], "Banked, narrow, hard to pass"],
+    ["ital", [1, 0, 0.2], "Monza: low downforce, slipstream battles"],
+    ["spanish", [0.4, 0.7, 0.3], "Madrid street-style layout"],
+    ["azerbaijan", [0.85, 1, 0.1], "Street circuit, 2 km flat-out run; walls punish mistakes"],
+    ["bahrain", [0.55, 0, 0.4], "Heavy braking zones, high tyre wear, easy passing"],
+    ["singapore", [0.2, 1, 0.1], "Tight street circuit; qualifying is everything, safety cars likely"],
+    ["united states", [0.45, 0, 0.6], "Long back straight into turn 12; plenty of passing"],
+    ["mexico", [0.6, 0, 0.3], "Thin air, long run to turn 1; cooling-limited"],
+    ["paulo", [0.5, 0, 0.5], "Short lap, weather risk, races often turned upside down"],
+    ["vegas", [0.9, 0.9, 0.1], "Cold, low-grip street circuit with huge straights"],
+    ["qatar", [0.4, 0, 1], "Fast, flowing; tyre limits and stint caps shape strategy"],
+    ["abu dhabi", [0.45, 0, 0.4], "Season finale; processional unless strategy splits"],
   ];
-  const DEFAULT_CIRCUIT = { ov: 1, grid: 0.5, chaos: 1, note: "Average circuit" };
+  const FEAT_NAMES = ["Power", "Street", "Fast corners"];
+  const DEFAULT_CIRCUIT = { ov: 1, grid: 0.5, chaos: 1, note: "Average circuit", feat: [0.5, 0.2, 0.5] };
   function circuitFor(name) {
     const n = (name || "").toLowerCase();
     const hit = CIRCUITS.find(([k]) => n.includes(k));
-    return Object.assign({}, hit ? hit[1] : DEFAULT_CIRCUIT);
+    return hit ? { ov: 1, grid: 0.5, chaos: 1, feat: hit[1].slice(), note: hit[2] } : Object.assign({}, DEFAULT_CIRCUIT);
+  }
+  const gridFromOv = (ov) => Math.max(0.3, Math.min(0.85, 0.5 - 0.3 * (ov - 1)));
+
+  // small ridge regression on centred features (3 predictors), solved directly
+  function ridge(X, y, lam) {
+    const A = [[lam, 0, 0], [0, lam, 0], [0, 0, lam]], b = [0, 0, 0];
+    X.forEach((x, k) => { for (let i = 0; i < 3; i++) { b[i] += x[i] * y[k]; for (let j = 0; j < 3; j++) A[i][j] += x[i] * x[j]; } });
+    const M = A.map((row, i) => [...row, b[i]]);
+    for (let i = 0; i < 3; i++) {
+      let pv = i; for (let k = i + 1; k < 3; k++) if (Math.abs(M[k][i]) > Math.abs(M[pv][i])) pv = k;
+      [M[i], M[pv]] = [M[pv], M[i]];
+      for (let k = 0; k < 3; k++) if (k !== i) { const f = M[k][i] / M[i][i]; for (let j = i; j < 4; j++) M[k][j] -= f * M[i][j]; }
+    }
+    return [0, 1, 2].map((i) => M[i][3] / M[i][i]);
+  }
+
+  /* Track-type model, fitted on completed 2026 rounds. Leave-one-round-out checks on R1-R14:
+     overtaking  ~13% better than a flat average (lambda 0.5) -> used fully
+     retirements ~4% better (lambda 2)                         -> mild
+     team pace   ~0% better even at lambda 8                   -> kept tiny; practice pace does this job better */
+  function trackModel(data) {
+    const byName = Object.fromEntries(data.schedule.map((g) => [g.gd, g.name]));
+    const rounds = (data.done || []).filter((gd) => data.trackStats && data.trackStats[gd] != null);
+    if (rounds.length < 6) return { forCircuit: (name) => { const c = circuitFor(name); c.grid = gridFromOv(c.ov); c.teamShift = {}; return c; }, fitted: false };
+    const feat = (gd) => circuitFor(byName[gd]).feat;
+    const mean = [0, 1, 2].map((j) => rounds.reduce((a, r) => a + feat(r)[j], 0) / rounds.length);
+    const xc = (f) => f.map((v, j) => v - mean[j]);
+    const X = rounds.map((r) => xc(feat(r)));
+    const ovt = rounds.map((r) => data.trackStats[r].ovt), ovMean = ovt.reduce((a, b) => a + b, 0) / ovt.length;
+    const dnf = rounds.map((r) => (data.results.race[r] || []).filter((x) => !x.cls).length), dnfMean = dnf.reduce((a, b) => a + b, 0) / dnf.length;
+    const bOv = ridge(X, ovt.map((v) => v - ovMean), 0.5), bDnf = ridge(X, dnf.map((v) => v - dnfMean), 2);
+    const teams = [...new Set(Object.values(data.results.quali).flat().map((x) => x.team))], bTeam = {};
+    for (const t of teams) {
+      const rs = [], ys = [];
+      for (const r of rounds) { const rows = (data.results.quali[r] || []).filter((x) => x.team === t); if (rows.length) { rs.push(r); ys.push(rows.reduce((a, b) => a + b.pos, 0) / rows.length); } }
+      if (rs.length < 6) continue;
+      const m = ys.reduce((a, b) => a + b, 0) / ys.length;
+      bTeam[t] = ridge(rs.map((r) => xc(feat(r))), ys.map((v) => v - m), 8);
+    }
+    const dot = (b, x) => b[0] * x[0] + b[1] * x[1] + b[2] * x[2];
+    return {
+      fitted: true, rounds: rounds.length, ovMean, dnfMean,
+      forCircuit(name) {
+        const c = circuitFor(name), x = xc(c.feat);
+        c.ov = Math.max(0.3, Math.min(2, (ovMean + dot(bOv, x)) / ovMean));
+        c.chaos = Math.max(0.6, Math.min(1.6, (dnfMean + dot(bDnf, x)) / dnfMean));
+        c.grid = gridFromOv(c.ov);
+        c.teamShift = Object.fromEntries(Object.entries(bTeam).map(([t, b]) => [t, Math.max(-1.5, Math.min(1.5, dot(b, x)))]));
+        return c;
+      },
+    };
   }
 
   function mulberry32(a) {
@@ -53,7 +119,7 @@
 
   /* ---------- model: pace, reliability, overtaking, pit stops from 2026 results ---------- */
   function buildModel(data, opt) {
-    opt = Object.assign({ halfLife: 4, adj: {}, practice: [], practiceWeight: 1 }, opt);
+    opt = Object.assign({ halfLife: 4, adj: {}, practice: [], practiceWeight: 1, teamShift: {} }, opt);
     const decay = Math.pow(0.5, 1 / opt.halfLife);
     const drivers = data.assets.filter((a) => a.kind === "D" && a.active);
     const cons = data.assets.filter((a) => a.kind === "C");
@@ -96,7 +162,7 @@
     const dModels = raw.map((d) => {
       const t = team[d.a.team];
       const tq = t.qw ? t.qs / t.qw : 16, tr = t.rw ? t.rs / t.rw : 15;
-      const adj = opt.adj[d.a.id] || 0; // + = faster, in grid positions
+      const adj = (opt.adj[d.a.id] || 0) - (opt.teamShift[d.a.team] || 0); // + = faster, in grid positions; track shift is + = slower
       return {
         id: d.a.id, tla: d.a.tla, team: d.a.team,
         qMu: (d.qs + PRIOR * tq) / (d.qw + PRIOR) - adj,
@@ -173,6 +239,10 @@
     const w = circuit.grid;
     const qCount = new Uint32Array(nd * 22), rCount = new Uint32Array(nd * 23); // col 22 = DNF
     const flC = new Uint32Array(nd), dotdC = new Uint32Array(nd), ovSum = new Float64Array(nd);
+    // per-driver points by scoring category (race weekend main events), for calibration and breakdowns
+    const CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"], NC = CATS.length;
+    const cat = new Float64Array(nd * NC);
+    const addCat = (i, c, v) => { cat[i * NC + CATS.indexOf(c)] += v; };
 
     const qualiOrder = (out, withPoints) => {
       const arr = [];
@@ -185,8 +255,8 @@
         out[x.i] = k + 1;
         if (!withPoints) return;
         qCount[x.i * 22 + Math.min(k, 21)]++;
-        if (x.nc) { pts[x.i] -= 5; neg[x.i] -= 5; }
-        else if (k < 10) pts[x.i] += QPTS[k];
+        if (x.nc) { pts[x.i] -= 5; neg[x.i] -= 5; addCat(x.i, "q", -5); }
+        else if (k < 10) { pts[x.i] += QPTS[k]; addCat(x.i, "q", QPTS[k]); }
       });
       return arr;
     };
@@ -195,27 +265,29 @@
       const fin = [];
       for (let i = 0; i < nd; i++) {
         const pDnf = D[i].dnf * circuit.chaos * (isSprint ? 0.4 : 1);
-        if (r() < pDnf) { const pen = isSprint ? 10 : 20; pts[i] -= pen; neg[i] -= pen; if (!isSprint) rCount[i * 23 + 22]++; continue; }
+        if (r() < pDnf) { const pen = isSprint ? 10 : 20; pts[i] -= pen; neg[i] -= pen; addCat(i, isSprint ? "sprint" : "dnf", -pen); if (!isSprint) rCount[i * 23 + 22]++; continue; }
         fin.push({ i, s: w * grid[i] + (1 - w) * D[i].rMu + gauss(r) * (1.6 + 0.12 * D[i].rMu) * (isSprint ? 0.85 : 1) });
       }
       fin.sort((a, b) => a.s - b.s);
       const flW = [], dW = [];
       fin.forEach((x, k) => {
         const pos = k + 1, i = x.i;
-        pts[i] += isSprint ? SPTS[k] || 0 : RPTS[k] || 0;
+        const pp = isSprint ? SPTS[k] || 0 : RPTS[k] || 0;
+        pts[i] += pp;
         let g = grid[i] - pos;
         if (isSprint && g < -10) g = -10;
         pts[i] += g; if (g < 0) neg[i] += g;
+        if (isSprint) addCat(i, "sprint", pp + g); else { addCat(i, "rpos", pp); addCat(i, g >= 0 ? "gain" : "lost", g); }
         const ov = poisson(D[i].ov * circuit.ov * (isSprint ? 0.4 : 1), r);
-        pts[i] += ov; ovSum[i] += ov;
+        pts[i] += ov; ovSum[i] += ov; addCat(i, isSprint ? "sprint" : "ovt", ov);
         if (!isSprint) rCount[i * 23 + Math.min(k, 21)]++;
-        flW.push(Math.exp(-(pos - 1) / 3));
-        dW.push((pos === 1 ? 12 : pos === 2 ? 4 : pos === 3 ? 3 : 0.3) + 0.5 * Math.max(0, g - 3));
+        flW.push(Math.exp(-(pos - 1) / 1.6));
+        dW.push((pos === 1 ? 12 : pos === 2 ? 4 : pos === 3 ? 3 : pos <= 6 ? 0.4 : 0.03) + (pos <= 8 ? 0.4 * Math.max(0, g - 4) : 0));
       });
       if (fin.length) {
         const f = fin[pick(flW, r)].i;
-        pts[f] += isSprint ? 5 : 10;
-        if (!isSprint) { flC[f]++; const d = fin[pick(dW, r)].i; pts[d] += 10; dotdOut.i = d; dotdC[d]++; }
+        pts[f] += isSprint ? 5 : 10; addCat(f, isSprint ? "sprint" : "fl", isSprint ? 5 : 10);
+        if (!isSprint) { flC[f]++; const d = fin[pick(dW, r)].i; pts[d] += 10; dotdOut.i = d; dotdC[d]++; addCat(d, "dotd", 10); }
       }
     };
 
@@ -252,6 +324,7 @@
         st.dnf = rCount[a * 23 + 22] / N; st.fl = flC[a] / N; st.dotd = dotdC[a] / N; st.xov = ovSum[a] / N;
         st.q = Array.from(qCount.subarray(a * 22, a * 22 + 22), (v) => v / N);
         st.r = Array.from(rCount.subarray(a * 23, a * 23 + 23), (v) => v / N);
+        st.cat = Object.fromEntries(CATS.map((c, j) => [c, cat[a * NC + j] / N]));
       }
       return st;
     });
@@ -323,7 +396,7 @@
     }));
   }
 
-  const api = { QPTS, RPTS, SPTS, CIRCUITS, PRICE_BANDS, circuitFor, buildModel, practiceRanks, simulate, priceStep, optimise, mulberry32 };
+  const api = { QPTS, RPTS, SPTS, CIRCUITS, FEAT_NAMES, PRICE_BANDS, circuitFor, trackModel, gridFromOv, buildModel, practiceRanks, simulate, priceStep, optimise, mulberry32 };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Engine = api;
 })(typeof window !== "undefined" ? window : globalThis);

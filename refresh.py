@@ -106,6 +106,26 @@ def main():
             "overtakePts": a.get("overtaking_pts", 0), "hist": hist,
         })
 
+    print("Player stats (per-round scoring events)…")
+    track_stats = {}
+    ovt = {}
+    for a in assets:
+        if a["kind"] != "D":
+            continue
+        ps = get(f"https://fantasy.formula1.com/feeds/popup/playerstats_{a['id']}.json",
+                 os.path.join(CACHE, f"ps_{a['id']}_{len(done)}.json"), reuse=True)
+        for m in (ps.get("Value") or {}).get("MatchWiseStats") or []:
+            g = m.get("GamedayId")
+            if g not in done:
+                continue
+            for rd in m.get("RaceDayWise") or []:
+                if rd.get("SessionType") == "Race":
+                    for e in rd.get("StatsWise") or []:
+                        if e.get("Event", "").strip().lower() == "race overtake bonus":
+                            ovt[g] = ovt.get(g, 0) + (e.get("Value") or 0)
+    for g, v in ovt.items():
+        track_stats[g] = {"ovt": round(v / 22, 2)}  # race overtake points per car
+
     print("Jolpica results…")
     results = {"race": {}, "quali": {}, "sprint": {}}
     for kind, key, path in (("race", "Results", "results"), ("quali", "QualifyingResults", "qualifying"),
@@ -142,7 +162,7 @@ def main():
     data = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "season": SEASON, "next": nxt, "done": done, "schedule": schedule,
-        "assets": assets, "practice": prac,
+        "assets": assets, "practice": prac, "trackStats": track_stats,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
     }
     js = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
