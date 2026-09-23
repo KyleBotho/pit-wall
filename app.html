@@ -1,0 +1,750 @@
+<title>Pit Wall Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Titillium+Web:wght@400;600;700;900&display=swap">
+<style>
+:root{
+  --bg:#ECEEF1; --surface:#FFFFFF; --surface-2:#F5F6F8; --ink:#14161B; --muted:#5B6270; --line:#D8DCE2;
+  --accent:#6B2FE0; --accent-ink:#FFFFFF; --accent-soft:#EEE7FD; --good:#0F8C55; --bad:#CF3239; --warn:#9A6200;
+  --good-soft:#DDF3E8; --bad-soft:#FBE3E4;
+  --ui:"Titillium Web", "Segoe UI", system-ui, sans-serif;
+  --num:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0D0F13; --surface:#151820; --surface-2:#1B1F28; --ink:#E7E9EE; --muted:#9098A6; --line:#2A2F3A;
+    --accent:#A480FF; --accent-ink:#0D0F13; --accent-soft:#251C3F; --good:#3DD68C; --bad:#FF6B6B; --warn:#F0B43C;
+    --good-soft:#12301F; --bad-soft:#3A1A1C;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0D0F13; --surface:#151820; --surface-2:#1B1F28; --ink:#E7E9EE; --muted:#9098A6; --line:#2A2F3A;
+  --accent:#A480FF; --accent-ink:#0D0F13; --accent-soft:#251C3F; --good:#3DD68C; --bad:#FF6B6B; --warn:#F0B43C;
+  --good-soft:#12301F; --bad-soft:#3A1A1C;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.45;margin:0}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num,td.n,.mono{font-family:var(--num);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:10px 0;display:flex;flex-direction:column;gap:8px}
+.race{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+.brand{font-weight:900;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--accent)}
+.race h1{margin:0;font-size:20px;font-weight:700;text-wrap:balance}
+.race .lock{font-family:var(--num);font-size:13px}
+.race .lock b{color:var(--accent);font-weight:600}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-inline:-4px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:8px 12px 10px;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+main{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:18px 60px}
+section[hidden]{display:none}
+h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;margin:0 0 10px;color:var(--muted);font-weight:700}
+h3{margin:0;font-size:17px}
+p{margin:0}
+.stack{display:flex;flex-direction:column;gap:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.note{font-size:13px;color:var(--muted);max-width:70ch}
+.banner{background:var(--accent-soft);border-radius:6px;padding:10px 14px;font-size:14px}
+.banner b{color:var(--accent)}
+
+/* summary numbers */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.kpi{background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi .l{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.kpi .v{font-family:var(--num);font-size:24px;font-weight:600;line-height:1.1}
+.kpi .s{font-family:var(--num);font-size:12px;color:var(--muted)}
+.kpi.hero .v{color:var(--accent);font-size:30px}
+
+/* team slots: timing-tower rows */
+.tower{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.slot{display:grid;grid-template-columns:6px 1fr auto;align-items:center;border-top:1px solid var(--line)}
+.slot:first-child{border-top:0}
+.slot .stripe{align-self:stretch}
+.slot .body{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px;min-width:0}
+.slot select{flex:1 1 200px;min-width:0;max-width:340px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);font-weight:600}
+.slot .stats{display:flex;gap:14px;font-family:var(--num);font-size:13px;align-items:baseline}
+.slot .stats .x{font-size:17px;font-weight:600}
+.slot .side{padding-right:12px}
+.boost{border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:3px 8px;font-family:var(--num);font-weight:600;font-size:12px;cursor:pointer;color:var(--muted)}
+.boost[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.divider{padding:4px 12px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted);background:var(--surface-2);border-top:1px solid var(--line)}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;background:var(--bad-soft);color:var(--bad)}
+.tag.sprint{background:var(--accent-soft);color:var(--accent)}
+
+/* forms */
+.row{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select{font-family:var(--num);font-size:15px;text-transform:none;letter-spacing:0;color:var(--ink);padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--surface-2);width:130px;font-weight:500}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{border:0;background:var(--surface-2);padding:6px 12px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted);text-transform:none;letter-spacing:0}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chipbox{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:4px;padding:4px 10px;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface-2);text-transform:none;letter-spacing:0;color:var(--ink)}
+.field .chipbox input{accent-color:var(--accent);margin:0;width:auto;padding:0}
+.chipbox.used{color:var(--muted);text-decoration:line-through}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);border-radius:4px;padding:8px 14px;font-weight:700;cursor:pointer;letter-spacing:.02em}
+.btn.ghost{background:transparent;color:var(--accent)}
+input[type=range]{accent-color:var(--accent);width:160px}
+
+/* optimiser results */
+.results{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:6px 16px;align-items:center}
+.opt.best{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.opt .rank{font-family:var(--num);font-weight:600;color:var(--muted);font-size:13px;align-self:start;padding-top:3px}
+.opt .main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.opt .moves{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:3px;padding:1px 7px 1px 0;font-weight:700;font-size:13px;background:var(--surface-2);overflow:hidden}
+.pill i{display:block;width:4px;align-self:stretch}
+.pill.out{background:var(--bad-soft);color:var(--bad)} .pill.in{background:var(--good-soft);color:var(--good)}
+.pill .b{font-family:var(--num);font-size:11px;color:var(--accent)}
+.opt .meta{font-family:var(--num);font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.opt .score{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.opt .score .v{font-family:var(--num);font-size:22px;font-weight:600;line-height:1}
+.opt .score .d{font-family:var(--num);font-size:13px;font-weight:600}
+.opt .apply{font-size:12px;padding:4px 10px}
+
+/* tables */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--surface-2);position:sticky;top:0}
+th.sort{cursor:pointer;user-select:none}
+th.sort[aria-sort]{color:var(--accent)}
+td.n{font-size:13px}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1}
+th:first-child{background:var(--surface-2);z-index:2}
+tr:last-child td{border-bottom:0}
+.who{display:flex;align-items:center;gap:8px}
+.who i{width:4px;height:22px;border-radius:1px;flex:none}
+.who b{font-family:var(--num);font-weight:600;font-size:13px;min-width:30px}
+.who span{color:var(--muted);font-size:12px}
+.mini{display:inline-flex;align-items:center;gap:2px}
+.mini button{width:24px;height:24px;border:1px solid var(--line);background:var(--surface-2);border-radius:3px;cursor:pointer;font-family:var(--num);font-weight:600;line-height:1;padding:0}
+.mini output{min-width:34px;text-align:center;font-family:var(--num)}
+.lb{border:1px solid var(--line);background:var(--surface-2);border-radius:3px;padding:2px 8px;font-size:12px;font-weight:700;cursor:pointer;min-width:56px;color:var(--muted)}
+.lb.lock{background:var(--good-soft);color:var(--good);border-color:transparent}
+.lb.ban{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+.heat td{padding:4px 5px;min-width:30px;font-size:12px;text-align:center}
+.heat th{text-align:center;padding:4px 5px}
+.dist{display:inline-flex;gap:1px;align-items:flex-end;height:22px}
+.dist span{width:7px;background:var(--line);border-radius:1px 1px 0 0}
+.dist span.dn{background:var(--bad)} .dist span.up{background:var(--good)} .dist span.z{background:var(--muted)}
+.tier{background:var(--surface-2);font-weight:700;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left!important}
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.cal .panel{display:flex;flex-direction:column;gap:10px}
+.cal .hd{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.cal .rn{font-family:var(--num);color:var(--accent);font-weight:600;font-size:13px}
+.slider{display:grid;grid-template-columns:110px 1fr 40px;gap:8px;align-items:center;font-size:13px}
+.slider input{width:100%}
+.slider output{font-family:var(--num);text-align:right}
+.prose{max-width:72ch;display:flex;flex-direction:column;gap:10px;font-size:15px}
+.prose ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:6px;display:flex;gap:14px;align-items:center;font-weight:600;z-index:30;max-width:calc(100% - 32px)}
+.toast button{background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer;filter:brightness(1.3)}
+.split{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:820px){ .split{grid-template-columns:1fr} }
+@media (max-width:520px){
+  .opt{grid-template-columns:1fr auto}
+  .opt .rank{display:none}
+  .kpi .v{font-size:20px} .kpi.hero .v{font-size:26px}
+  .slot .side{padding-right:8px}
+}
+@media (prefers-reduced-motion:no-preference){ .opt{transition:border-color .15s} }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="race">
+      <span class="brand">Pit Wall</span>
+      <h1 id="raceName">—</h1>
+      <span class="lock" id="lock"></span>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="team">My team</button>
+      <button class="tab" role="tab" data-tab="opt">Transfers</button>
+      <button class="tab" role="tab" data-tab="assets">Projections</button>
+      <button class="tab" role="tab" data-tab="practice">Practice</button>
+      <button class="tab" role="tab" data-tab="grid">Positions</button>
+      <button class="tab" role="tab" data-tab="prices">Prices</button>
+      <button class="tab" role="tab" data-tab="cal">Calendar</button>
+      <button class="tab" role="tab" data-tab="model">Model</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- MY TEAM -->
+  <section id="tab-team" class="stack">
+    <div class="banner" id="exampleBanner" hidden><b>Example team.</b> Pick your own 5 drivers and 2 constructors below, then set your bank and free transfers. Everything stays in this browser.</div>
+    <div class="kpis" id="teamKpis"></div>
+    <div class="split">
+      <div class="stack">
+        <div class="tower" id="slots"></div>
+        <p class="note">The <b>2×</b> button marks your Boost driver. On auto it picks your highest projected driver.</p>
+      </div>
+      <div class="panel stack">
+        <h2>Team settings</h2>
+        <div class="row">
+          <label class="field">Bank ($m)<input id="bank" type="number" step="0.1" min="0" inputmode="decimal"></label>
+          <label class="field">Free transfers<select id="free"><option value="1">1</option><option value="2">2</option><option value="3">3 (carried over)</option></select></label>
+        </div>
+        <div class="field">Chips already used
+          <div class="chips" id="chipsUsed"></div>
+        </div>
+        <button class="btn" data-go="opt">Find the best transfers →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPTIMISER -->
+  <section id="tab-opt" class="stack" hidden>
+    <div class="panel stack">
+      <div class="row">
+        <div class="field">Plan for
+          <div class="seg" id="horizon"><button data-h="1">Next race</button><button data-h="2">2 races</button><button data-h="3">3 races</button></div>
+        </div>
+        <label class="field">Chip<select id="chip" style="width:170px"></select></label>
+        <label class="field">Max transfers<select id="maxT"></select></label>
+        <label class="field" title="Count expected price changes as points: pts per $1m of team value, per remaining race">Value $1m =<select id="valW" style="width:150px"><option value="0">Ignore value</option><option value="0.5">0.5 pts/race</option><option value="1">1 pt/race</option><option value="2">2 pts/race</option><option value="3">3 pts/race</option></select></label>
+        <div class="field">Budget cap<span class="mono" id="capView" style="font-size:15px;color:var(--ink);text-transform:none;letter-spacing:0;padding:6px 0"></span></div>
+      </div>
+      <p class="note" id="optNote"></p>
+    </div>
+    <div class="results" id="results"></div>
+  </section>
+
+  <!-- PROJECTIONS -->
+  <section id="tab-assets" class="stack" hidden>
+    <div class="row">
+      <div class="seg" id="assetKind"><button data-k="D">Drivers</button><button data-k="C">Constructors</button></div>
+      <div class="seg" id="assetRace"></div>
+    </div>
+    <p class="note">Expected fantasy points (<b>xPts</b>) from the simulated weekends, blended with recent form. <b>25–75</b> is the middle half of outcomes. Use <b>Pace</b> to nudge a driver you think is faster or slower than the data says (in grid places). <b>Lock</b> forces an asset into the Transfers suggestions; <b>Ban</b> keeps it out.</p>
+    <div class="tablewrap"><table id="assetTable"></table></div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section id="tab-practice" class="stack" hidden>
+    <div class="kpis" id="pracSessions"></div>
+    <p class="note">Practice lap times come from OpenF1 and appear shortly after each session. <b>Short run</b> is each driver's best lap (or the sum of their best sectors, if lower) as a gap to the fastest; it feeds qualifying pace at 30%. <b>Long run</b> is the median of 5+ lap stints, adjusted for tyre compound, fuel and wear; it feeds race pace at 10%. These weights did best when tested on rounds 6–14. Change them with Practice weight on the Model tab.</p>
+    <div class="tablewrap"><table id="pracTable"></table></div>
+  </section>
+
+  <!-- POSITIONS -->
+  <section id="tab-grid" class="stack" hidden>
+    <div class="row">
+      <div class="seg" id="gridKind"><button data-g="q">Qualifying</button><button data-g="r">Race</button></div>
+    </div>
+    <p class="note" id="gridNote"></p>
+    <div class="tablewrap"><table class="heat" id="heat"></table></div>
+  </section>
+
+  <!-- PRICES -->
+  <section id="tab-prices" class="stack" hidden>
+    <p class="note">Prices move after each race based on the average points per $1m over the last three races: rounded to 3 decimals, below 0.605 is a big drop, 0.605–0.9 a small drop, 0.9–1.195 a small rise, and 1.195 or more a big rise. Assets priced $18.5m and up move ±0.1/0.3m; cheaper ones move ±0.2/0.6m. The <b>Needs</b> columns show the points required this weekend to reach each band.</p>
+    <div class="tablewrap"><table id="priceTable"></table></div>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="tab-cal" class="stack" hidden>
+    <p class="note">Each circuit's character feeds the simulation. <b>Overtaking</b> scales overtake points, <b>Grid weight</b> is how much the starting position decides the result, and <b>Chaos</b> scales retirements. These are starting estimates, so adjust them if you know better.</p>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <!-- MODEL -->
+  <section id="tab-model" class="stack" hidden>
+    <div class="panel stack">
+      <h2>Model settings</h2>
+      <div class="slider"><span>Form half-life</span><input id="halfLife" type="range" min="2" max="10" step="1"><output id="halfLifeV"></output></div>
+      <div class="slider"><span>Practice weight</span><input id="pw" type="range" min="0" max="2" step="0.25"><output id="pwV"></output></div>
+      <div class="slider"><span>Form blend</span><input id="blend" type="range" min="0" max="0.6" step="0.05"><output id="blendV"></output></div>
+      <div class="field">Simulations per race
+        <div class="seg" id="sims"><button data-n="2000">2,000</button><button data-n="5000">5,000</button><button data-n="10000">10,000</button></div>
+      </div>
+      <div class="row"><button class="btn ghost" id="resetAll">Reset pace nudges, locks and circuits</button></div>
+    </div>
+    <div class="prose">
+      <h2>How it works</h2>
+      <p>Each race weekend is simulated thousands of times. Qualifying order comes from each driver's recent qualifying positions plus random variation, with more spread in the midfield. The race blends the starting grid with the driver's recent race pace, weighted by the circuit's grid weight. It then adds retirements (the team's recent retirement rate), overtakes (each driver's 2026 overtake rate), the fastest lap, Driver of the Day and pit-stop points (each team's recent average).</p>
+      <p>Every simulated weekend is scored with the official 2026 rules. Those rules include qualifying 10–1, race 25–1, sprint 8–1, ±1 per place gained or lost (sprint losses capped at −10), −20 race and −10 sprint for not classifying, the constructor Q2/Q3 bonus and pit-stop bands. <b>Form half-life</b> sets how quickly older races stop counting. <b>Form blend</b> mixes in each asset's actual recent fantasy average, which picks up things the simulation can't see.</p>
+      <ul>
+        <li>Transfers: 2 free per race, and 1 unused transfer carries over. Each extra transfer costs −10.</li>
+        <li>Chips: Wildcard and Limitless remove the transfer limit (Limitless also removes the budget cap for one race). x3 Boost triples your top driver and doubles your second. No Negative clips negative scoring categories to zero. Autopilot gives the Boost to whichever of your drivers scores the most.</li>
+        <li>Price rises are shown but don't affect the Transfers ranking, which is based on points.</li>
+      </ul>
+      <p class="muted" id="dataStamp"></p>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
+
+<script src="engine.js"></script>
+<script>
+const DATA = /*__DATA__*/null;
+const E = window.Engine;
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const f1 = (x) => (x == null || isNaN(x) ? "—" : (Math.round(x * 10) / 10).toFixed(1));
+const f0 = (x) => (x == null || isNaN(x) ? "—" : Math.round(x).toString());
+const sgn = (x, d = 1) => (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x).toFixed(d);
+const money = (x) => "$" + x.toFixed(1) + "m";
+const pct = (x) => (x == null ? "—" : Math.round(x * 100) + "%");
+
+const TEAM_COL = { "Mercedes": "#00C9A7", "McLaren": "#FF8000", "Red Bull Racing": "#3671C6", "Ferrari": "#E8002D", "Alpine": "#FF87BC",
+  "Racing Bulls": "#6692FF", "Williams": "#1868DB", "Haas F1 Team": "#9EA3A8", "Audi": "#9E1B32", "Aston Martin": "#229971", "Cadillac": "#8C8C8C" };
+const CON_CODE = { "Mercedes": "MER", "McLaren": "MCL", "Red Bull Racing": "RED", "Ferrari": "FER", "Alpine": "ALP", "Racing Bulls": "VRB",
+  "Williams": "WIL", "Haas F1 Team": "HAA", "Audi": "AUD", "Aston Martin": "AST", "Cadillac": "CAD" };
+const CHIPS = [["wildcard", "Wildcard"], ["limitless", "Limitless"], ["x3", "x3 Boost"], ["noneg", "No Negative"], ["autopilot", "Autopilot"], ["finalfix", "Final Fix"]];
+
+const byId = Object.fromEntries(DATA.assets.map((a) => [a.id, a]));
+const code = (a) => (a.kind === "D" ? a.tla : CON_CODE[a.team] || a.tla);
+const col = (a) => TEAM_COL[a.team] || "#888";
+const upcoming = DATA.schedule.filter((g) => !DATA.done.includes(g.gd));
+const NEXT = upcoming[0];
+
+/* ---------- state ---------- */
+const KEY = "pitwall.v1";
+function defaultTeam() {
+  const d = ["ANT", "HAD", "LIN", "BOR", "BEA"].map((t) => DATA.assets.find((a) => a.kind === "D" && a.active && a.tla === t)).filter(Boolean);
+  const c = ["Ferrari", "Racing Bulls"].map((n) => DATA.assets.find((a) => a.kind === "C" && a.team === n)).filter(Boolean);
+  const ids = d.concat(c).map((a) => a.id);
+  const cost = ids.reduce((s, i) => s + byId[i].price, 0);
+  return { team: ids, bank: Math.max(0, Math.round((110 - cost) * 10) / 10) };
+}
+const DEF = Object.assign({ free: 2, chipsUsed: {}, boost: "auto", halfLife: 4, blend: 0.3, sims: 5000, adj: {}, marks: {}, circuits: {},
+  horizon: 1, chip: "", maxT: 3, valW: 0, pw: 1, tab: "team", kind: "D", raceIdx: 0, grid: "r", sort: { k: "x", d: -1 }, example: true }, defaultTeam());
+let S = Object.assign({}, DEF);
+try { const s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.v === DATA.season) S = Object.assign(S, s); } catch (e) {}
+S.team = S.team.filter((id) => byId[id]);
+if (S.team.length !== 7) Object.assign(S, defaultTeam(), { example: true });
+function save() { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, S, { v: DATA.season }))); } catch (e) {} }
+
+/* ---------- computation ---------- */
+let R = null;
+function recentForm(a) {
+  let h = a.hist.filter((x) => x && x.active && x.team === a.team);
+  if (h.length < 2) h = a.hist.filter((x) => x && x.active);
+  h = h.slice(-6);
+  if (!h.length) return null;
+  let s = 0, w = 0;
+  h.forEach((x, i) => { const k = Math.pow(0.8, h.length - 1 - i); s += k * x.pts; w += k; });
+  return s / w;
+}
+const circ = (g) => Object.assign(E.circuitFor(g.name), S.circuits[g.gd] || {});
+function compute() {
+  // practice pace only informs the coming weekend; later races use season form alone
+  const model = E.buildModel(DATA, { halfLife: S.halfLife, adj: S.adj, practice: DATA.practice || [], practiceWeight: S.pw });
+  const later = E.buildModel(DATA, { halfLife: S.halfLife, adj: S.adj });
+  const races = upcoming.slice(0, 3);
+  const sims = races.map((g, k) => E.simulate(k === 0 ? model : later, circ(g), g.sprint, S.sims, g.gd * 7919 + 13));
+  const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
+  const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
+  const proj = sims.map((sim) => {
+    const o = {};
+    for (const a of DATA.assets) {
+      const i = idx[a.id];
+      if (i == null) { o[a.id] = { mean: -25, nn: 0, shift: 0, out: true }; continue; }
+      const st = sim.stats[i], fm = form[a.id];
+      const mean = fm == null ? st.mean : (1 - S.blend) * st.mean + S.blend * fm;
+      o[a.id] = { mean, nn: st.nnMean + (mean - st.mean), shift: mean - st.mean, st };
+    }
+    return o;
+  });
+  R = { model, races, sims, idx, form, proj };
+  R.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
+}
+const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
+function priceInfo(a) {
+  const h = a.hist.filter(Boolean);
+  const p1 = h.length ? h[h.length - 1].pts : 0, p2 = h.length > 1 ? h[h.length - 2].pts : 0;
+  const sum2 = p1 + p2;
+  const need = E.PRICE_BANDS.map((t) => t * 3 * a.price - sum2);
+  const i = R.idx[a.id];
+  if (i == null || !a.active) return { sum2, p1, p2, need, dist: null, ev: 0, up: 0, down: 0 };
+  const sim = R.sims[0], N = sim.N, sh = R.proj[0][a.id].shift, dist = BINS.map(() => 0);
+  let ev = 0, up = 0, down = 0;
+  for (let s = 0; s < N; s++) {
+    const d = Math.round(E.priceStep(a.price, (sum2 + sim.tot[i * N + s] + sh) / 3) * 10) / 10;
+    ev += d; if (d > 0) up++; if (d < 0) down++;
+    let k = BINS.indexOf(d); if (k < 0) k = BINS.reduce((b, v, j) => (Math.abs(v - d) < Math.abs(BINS[b] - d) ? j : b), 0);
+    dist[k]++;
+  }
+  return { sum2, p1, p2, need, dist: dist.map((v) => v / N), ev: ev / N, up: up / N, down: down / N };
+}
+const teamValue = () => S.team.reduce((s, id) => s + byId[id].price, 0);
+const cap = () => teamValue() + (+S.bank || 0);
+function boostFor(ids, raceIdx = 0) {
+  const ds = ids.filter((id) => byId[id].kind === "D");
+  if (S.boost !== "auto" && ds.includes(S.boost)) return S.boost;
+  return ds.reduce((b, id) => (R.proj[raceIdx][id].mean > R.proj[raceIdx][b].mean ? id : b), ds[0]);
+}
+// joint distribution of a team's next-race score from the simulated weekends
+function teamDist(ids, boost, chip, boost2) {
+  const sim = R.sims[0], N = sim.N, arr = new Float64Array(N);
+  const ds = ids.filter((id) => byId[id].kind === "D");
+  for (const id of ids) {
+    const i = R.idx[id], p = R.proj[0][id];
+    if (i == null) { for (let s = 0; s < N; s++) arr[s] += -25; continue; }
+    const src = chip === "noneg" ? sim.nn : sim.tot;
+    const mult = chip === "autopilot" ? 1 : id === boost ? (chip === "x3" ? 3 : 2) : id === boost2 ? 2 : 1;
+    for (let s = 0; s < N; s++) arr[s] += (src[i * N + s] + p.shift) * mult;
+  }
+  if (chip === "autopilot") for (let s = 0; s < N; s++) {
+    let m = -1e9;
+    for (const id of ds) { const i = R.idx[id]; const v = i == null ? -25 : sim.tot[i * N + s] + R.proj[0][id].shift; if (v > m) m = v; }
+    arr[s] += m;
+  }
+  const sorted = Array.from(arr).sort((a, b) => a - b);
+  return { mean: arr.reduce((a, b) => a + b, 0) / N, p25: sorted[Math.floor(N * 0.25)], p75: sorted[Math.floor(N * 0.75)] };
+}
+
+/* ---------- header ---------- */
+function renderHeader() {
+  $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : "Season complete";
+  if (!NEXT) return;
+  const lock = new Date(NEXT.lock), ms = lock - Date.now();
+  const when = lock.toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const age = Math.round((Date.now() - new Date(DATA.generated)) / 6e4);
+  const fresh = ` · <span class="muted">data ${age < 60 ? age + " min" : age < 2880 ? Math.round(age / 60) + " h" : Math.round(age / 1440) + " days"} old</span>`;
+  if (ms <= 0) { $("#lock").innerHTML = `Team locked · ${esc(when)}${fresh}`; return; }
+  const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4);
+  $("#lock").innerHTML = `Team lock in <b>${d ? d + "d " : ""}${h}h ${String(m).padStart(2, "0")}m</b> · ${esc(when)}${NEXT.sprint ? ' · <span class="tag sprint">Sprint</span>' : ""}${fresh}`;
+}
+
+/* ---------- my team ---------- */
+function optionList(kind, sel) {
+  const list = DATA.assets.filter((a) => a.kind === kind && (a.active || a.id === sel)).sort((a, b) => b.price - a.price);
+  return list.map((a) => `<option value="${a.id}" ${a.id === sel ? "selected" : ""}>${esc(code(a))} · ${esc(kind === "D" ? a.name : a.team)} — ${money(a.price)}${a.active ? "" : " (not racing)"}</option>`).join("");
+}
+function renderTeam() {
+  $("#exampleBanner").hidden = !S.example;
+  const boost = boostFor(S.team);
+  const dist = teamDist(S.team, boost, "");
+  const valueDelta = S.team.reduce((s, id) => s + (R.price[id].ev || 0), 0);
+  $("#teamKpis").innerHTML = `
+    <div class="kpi hero"><span class="l">Projected · R${NEXT.gd}</span><span class="v">${f1(dist.mean)}</span><span class="s">middle half ${f0(dist.p25)}–${f0(dist.p75)} pts</span></div>
+    <div class="kpi"><span class="l">Team value</span><span class="v">${money(teamValue())}</span><span class="s">cap ${money(cap())}</span></div>
+    <div class="kpi"><span class="l">Bank</span><span class="v">${money(+S.bank || 0)}</span><span class="s">${S.free} free transfer${S.free > 1 ? "s" : ""}</span></div>
+    <div class="kpi"><span class="l">Expected price move</span><span class="v ${valueDelta >= 0 ? "good" : "bad"}">${sgn(valueDelta, 2)}m</span><span class="s">after R${NEXT.gd}</span></div>`;
+  const rows = S.team.map((id, k) => {
+    const a = byId[id], p = R.proj[0][id], kind = k < 5 ? "D" : "C";
+    const isB = id === boost;
+    const b = kind === "D" ? `<button class="boost" data-boost="${id}" aria-pressed="${isB}" title="Boost this driver">${isB ? "2×" + (S.boost === "auto" ? " auto" : "") : "2×"}</button>` : "";
+    return (k === 5 ? `<div class="divider">Constructors</div>` : k === 0 ? `<div class="divider">Drivers</div>` : "") + `
+      <div class="slot"><i class="stripe" style="background:${col(a)}"></i>
+        <div class="body">
+          <select id="slot-${k}" data-slot="${k}" aria-label="${kind === "D" ? "Driver" : "Constructor"} ${k < 5 ? k + 1 : k - 4}">${optionList(kind, id)}</select>
+          <span class="stats"><span class="x">${f1(p.mean * (isB ? 2 : 1))}</span><span class="muted">${p.out ? '<span class="tag">Not racing</span>' : isB ? "incl. boost" : "xPts"}</span></span>
+        </div>
+        <div class="side">${b}</div>
+      </div>`;
+  });
+  $("#slots").innerHTML = rows.join("");
+  $("#bank").value = S.bank;
+  $("#free").value = String(S.free);
+  $("#chipsUsed").innerHTML = CHIPS.map(([k, n]) => `<label class="chipbox ${S.chipsUsed[k] ? "used" : ""}"><input type="checkbox" data-used="${k}" ${S.chipsUsed[k] ? "checked" : ""}>${n}</label>`).join("");
+}
+
+/* ---------- optimiser ---------- */
+let lastResults = [];
+function runOptimiser() {
+  const chip = S.chip;
+  const H = chip === "limitless" ? 1 : Math.min(S.horizon, R.races.length);
+  const marks = S.marks;
+  const valPts = (id) => (chip === "limitless" ? 0 : (R.price[id].ev || 0) * S.valW * Math.max(0, upcoming.length - 1));
+  const cand = DATA.assets.map((a) => {
+    let e = 0;
+    for (let k = 0; k < H; k++) { const p = R.proj[k][a.id]; e += k === 0 && chip === "noneg" ? p.nn : p.mean; }
+    return { id: a.id, kind: a.kind, price: a.price, active: a.kind === "C" || a.active, e: e + valPts(a.id), boostE: e };
+  }).filter((c) => R.idx[c.id] != null);
+  const locks = new Set(Object.keys(marks).filter((k) => marks[k] === "lock"));
+  const bans = new Set(Object.keys(marks).filter((k) => marks[k] === "ban"));
+  let res = E.optimise(cand, S.team, { cap: cap(), free: S.free, maxT: S.maxT, chip, locks, bans, top: 60 });
+  const scoreTeam = (ids, pen) => {
+    const d = ids.filter((id) => byId[id].kind === "D");
+    const e = (id) => { let s = 0; for (let k = 0; k < H; k++) { const p = R.proj[k][id]; s += k === 0 && chip === "noneg" ? p.nn : p.mean; } return s; };
+    const sorted = d.slice().sort((x, y) => e(y) - e(x));
+    let total = ids.reduce((s, id) => s + e(id) + valPts(id), 0) + e(sorted[0]) + (chip === "x3" ? e(sorted[0]) + e(sorted[1]) : 0) - pen;
+    return { total, boost: sorted[0], boost2: chip === "x3" ? sorted[1] : null };
+  };
+  if (chip === "autopilot") {
+    for (const r of res) {
+      const nextAuto = teamDist(r.drivers.concat(r.cons), null, "autopilot").mean;
+      const nextFixed = teamDist(r.drivers.concat(r.cons), r.boost, "").mean;
+      r.score += nextAuto - nextFixed;
+    }
+    res.sort((a, b) => b.score - a.score);
+  }
+  const hold = scoreTeam(S.team, 0);
+  if (chip === "autopilot") hold.total += teamDist(S.team, null, "autopilot").mean - teamDist(S.team, hold.boost, "").mean;
+  lastResults = res.slice(0, 10);
+  const noteBits = [];
+  noteBits.push(H > 1 ? `Points are summed over the next ${H} races (${R.races.slice(0, H).map((g) => g.name.replace(" Grand Prix", "")).join(", ")}), assuming you keep the team.` : `Points are for ${NEXT.name} only.`);
+  if (chip === "limitless") noteBits.push("Limitless: no budget cap or transfer limit, and your team reverts after the race.");
+  else if (chip === "wildcard") noteBits.push("Wildcard: unlimited transfers within your budget cap.");
+  else noteBits.push(`Transfers beyond your ${S.free} free cost −10 each; the score shown is after penalties.`);
+  if (S.valW) noteBits.push(`Scores include expected price moves at ${S.valW} pt per $1m per race for the ${Math.max(0, upcoming.length - 1)} races after this one.`);
+  if (locks.size || bans.size) noteBits.push(`${locks.size} locked, ${bans.size} banned (set in Projections).`);
+  $("#optNote").textContent = noteBits.join(" ");
+  $("#capView").textContent = chip === "limitless" ? "No cap" : money(cap());
+
+  const card = (r, i, isHold) => {
+    const ids = r.drivers.concat(r.cons);
+    const outs = S.team.filter((id) => !ids.includes(id)), ins = ids.filter((id) => !S.team.includes(id));
+    const d = teamDist(ids, r.boost, chip, r.boost2);
+    const dv = ids.reduce((s, id) => s + (R.price[id].ev || 0), 0);
+    const diff = r.score - hold.total;
+    const pill = (id, cls) => { const a = byId[id]; return `<span class="pill ${cls}"><i style="background:${col(a)}"></i>${esc(code(a))}${id === r.boost ? `<span class="b">${chip === "x3" ? "3×" : "2×"}</span>` : id === r.boost2 ? '<span class="b">2×</span>' : ""}</span>`; };
+    const keep = ids.filter((id) => S.team.includes(id));
+    const moves = isHold ? keep.map((id) => pill(id, "")).join("")
+      : outs.map((id) => pill(id, "out")).join("") + ` <span class="muted">→</span> ` + ins.map((id) => pill(id, "in")).join("") +
+        `<span class="muted" style="margin-left:6px">keeps</span> ` + keep.map((id) => pill(id, "")).join("");
+    return `<div class="opt ${i === 0 && !isHold ? "best" : ""}">
+      <span class="rank">${isHold ? "—" : "#" + (i + 1)}</span>
+      <div class="main">
+        <h3>${isHold ? "Keep current team" : r.transfers === 0 ? "No changes" : `${r.transfers} transfer${r.transfers > 1 ? "s" : ""}${r.penalty ? ` <span class="bad mono" style="font-size:13px">−${r.penalty} penalty</span>` : ""}`}</h3>
+        <div class="moves">${moves}</div>
+        <div class="meta"><span>R${NEXT.gd}: ${f1(d.mean)} (${f0(d.p25)}–${f0(d.p75)})</span><span>cost ${money(r.cost)}</span>${chip === "limitless" ? "" : `<span>bank after ${money(Math.max(0, cap() - r.cost))}</span>`}<span class="${dv >= 0 ? "good" : "bad"}">value ${sgn(dv, 2)}m</span></div>
+      </div>
+      <div class="score"><span class="v">${f1(r.score)}</span>${isHold ? '<span class="d muted">baseline</span>' : `<span class="d ${diff >= 0 ? "good" : "bad"}">${sgn(diff)} vs keep</span>`}
+        ${isHold || chip === "limitless" ? "" : `<button class="btn ghost apply" data-apply="${i}">Use this team</button>`}</div>
+    </div>`;
+  };
+  const holdR = { score: hold.total, drivers: S.team.filter((id) => byId[id].kind === "D"), cons: S.team.filter((id) => byId[id].kind === "C"), boost: hold.boost, boost2: hold.boost2, cost: teamValue(), transfers: 0, penalty: 0 };
+  $("#results").innerHTML = lastResults.length
+    ? card(holdR, 0, true) + lastResults.map((r, i) => card(r, i, false)).join("")
+    : `<div class="panel">No team fits these limits. Raise the max transfers, check your bank, or remove some locks.</div>`;
+}
+function renderOptControls() {
+  document.querySelectorAll("#horizon button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.h === S.horizon)));
+  const avail = CHIPS.filter(([k]) => k !== "finalfix" && !S.chipsUsed[k]);
+  if (S.chip && !avail.find(([k]) => k === S.chip)) S.chip = "";
+  $("#chip").innerHTML = `<option value="">No chip</option>` + avail.map(([k, n]) => `<option value="${k}" ${S.chip === k ? "selected" : ""}>${n}</option>`).join("");
+  $("#maxT").innerHTML = [0, 1, 2, 3, 4, 5, 6, 7].map((n) => `<option value="${n}" ${S.maxT === n ? "selected" : ""}>${n}</option>`).join("");
+  $("#maxT").disabled = S.chip === "wildcard" || S.chip === "limitless";
+  $("#valW").value = String(S.valW);
+}
+
+/* ---------- projections ---------- */
+function spark(a) {
+  const h = a.hist.slice(-6);
+  const vals = h.map((x) => (x ? x.pts : 0));
+  const max = Math.max(10, ...vals.map(Math.abs));
+  const W = 7, G = 2, H = 22, mid = H / 2;
+  const bars = vals.map((v, i) => {
+    const hh = Math.max(1, (Math.abs(v) / max) * mid);
+    return `<rect x="${i * (W + G)}" y="${v >= 0 ? mid - hh : mid}" width="${W}" height="${hh}" fill="${v >= 0 ? "var(--good)" : "var(--bad)"}" opacity="${h[i] && !h[i].active ? 0.3 : 1}"/>`;
+  }).join("");
+  return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="var(--line)"/>${bars}</svg>`;
+}
+function renderAssets() {
+  document.querySelectorAll("#assetKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === S.kind)));
+  $("#assetRace").innerHTML = R.races.map((g, i) => `<button data-r="${i}" aria-pressed="${i === S.raceIdx}">R${g.gd} ${esc(g.name.replace(" Grand Prix", ""))}${g.sprint ? " (S)" : ""}</button>`).join("");
+  const k = Math.min(S.raceIdx, R.races.length - 1);
+  const isD = S.kind === "D";
+  const rows = DATA.assets.filter((a) => a.kind === S.kind && (a.active || !isD)).map((a) => {
+    const p = R.proj[k][a.id], st = p.st || {};
+    return { a, x: p.mean, p25: (st.p25 ?? 0) + p.shift, p75: (st.p75 ?? 0) + p.shift, ppm: p.mean / a.price, price: a.price, own: a.own,
+      dnf: st.dnf, fl: st.fl, ov: st.xov, dotd: st.dotd, form: R.form[a.id] };
+  });
+  const { k: sk, d: sd } = S.sort;
+  rows.sort((x, y) => ((x[sk] ?? -1e9) - (y[sk] ?? -1e9)) * sd);
+  const th = (key, label, title) => `<th class="sort" data-sort="${key}" ${sk === key ? `aria-sort="${sd < 0 ? "descending" : "ascending"}"` : ""} title="${title || ""}">${label}${sk === key ? (sd < 0 ? " ▾" : " ▴") : ""}</th>`;
+  $("#assetTable").innerHTML = `<thead><tr><th>${isD ? "Driver" : "Constructor"}</th>${th("price", "Price")}${th("own", "Own", "Picked by % of teams")}${th("x", "xPts")}<th>25–75</th>${th("ppm", "xPts/$m")}${th("form", "Form", "Weighted average of the last 6 races")}<th>Last 6</th>${isD ? th("dnf", "DNF") + th("fl", "FL", "Fastest lap") + th("ov", "xOvt", "Expected overtakes") + th("dotd", "DotD", "Driver of the Day") + "<th>Pace</th>" : ""}<th>Plan</th></tr></thead><tbody>` +
+    rows.map((r) => {
+      const a = r.a, m = S.marks[a.id] || "", adj = S.adj[a.id] || 0;
+      return `<tr><td><span class="who"><i style="background:${col(a)}"></i><b>${esc(code(a))}</b><span>${esc(isD ? a.short : a.team)}</span></span></td>
+        <td class="n">${f1(a.price)}</td><td class="n">${f0(a.own)}%</td><td class="n"><b>${f1(r.x)}</b></td><td class="n muted">${f0(r.p25)}–${f0(r.p75)}</td>
+        <td class="n">${r.ppm.toFixed(2)}</td><td class="n">${f1(r.form)}</td><td>${spark(a)}</td>
+        ${isD ? `<td class="n">${pct(r.dnf)}</td><td class="n">${pct(r.fl)}</td><td class="n">${f1(r.ov)}</td><td class="n">${pct(r.dotd)}</td>
+        <td><span class="mini"><button data-adj="${a.id}" data-v="-0.5" aria-label="Slower">−</button><output>${adj ? sgn(adj) : "0"}</output><button data-adj="${a.id}" data-v="0.5" aria-label="Faster">+</button></span></td>` : ""}
+        <td><button class="lb ${m}" data-mark="${a.id}">${m === "lock" ? "Lock" : m === "ban" ? "Ban" : "—"}</button></td></tr>`;
+    }).join("") + "</tbody>";
+}
+
+/* ---------- practice ---------- */
+function renderPractice() {
+  const ps = DATA.practice || [];
+  const fmtT = (iso) => new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  $("#pracSessions").innerHTML = ps.length ? ps.map((p) => `<div class="kpi"><span class="l">${esc(p.name)}</span><span class="v" style="font-size:18px">${p.done ? Object.keys(p.drivers).length + " drivers" : "Pending"}</span><span class="s">${esc(fmtT(p.start))}</span></div>`).join("")
+    : `<div class="kpi"><span class="l">Practice</span><span class="v" style="font-size:18px">No sessions found</span><span class="s">for R${NEXT.gd}</span></div>`;
+  const ms = R.model.drivers;
+  const done = ps.filter((p) => p.done);
+  const pr = E.practiceRanks(ps, ms.map((d) => d.tla));
+  const rows = ms.slice().sort((a, b) => a.qMu - b.qMu);
+  const g = (v) => (v == null ? "—" : "+" + v.toFixed(2) + "%");
+  const perSess = (t) => done.map((p) => { const v = p.drivers[t]; return `<td class="n muted">${v && v.q != null ? g(v.q) : "—"}</td>`; }).join("");
+  $("#pracTable").innerHTML = (done.length ? "" : `<caption style="caption-side:top;text-align:left;padding:10px 12px;color:var(--muted)">No practice laps yet, so the model uses season form only. Once practice runs, green in Practice Q means a driver looks faster this weekend than their form suggests.</caption>`) +
+    `<thead><tr><th>Driver</th>${done.map((p) => `<th>${esc(p.name.replace("Practice ", "FP"))} short</th>`).join("")}<th title="Weighted short-run gap">Short run</th><th>Long run</th><th title="Grid position implied by practice alone">Practice Q</th><th title="Qualifying position from season form">Form Q</th><th title="What the simulation uses">Model Q</th><th title="Race position from season form">Form R</th><th>Model R</th></tr></thead><tbody>` +
+    rows.map((d) => {
+      const a = byId[d.id];
+      const diff = d.practiceQ == null ? 0 : d.formQ - d.practiceQ;
+      return `<tr><td><span class="who"><i style="background:${col(a)}"></i><b>${esc(d.tla)}</b><span>${esc(a.short)}</span></span></td>
+        ${perSess(d.tla)}<td class="n">${g(pr.gapQ[d.tla])}</td><td class="n">${g(pr.gapR[d.tla])}</td>
+        <td class="n ${diff > 1.5 ? "good" : diff < -1.5 ? "bad" : ""}">${d.practiceQ == null ? "—" : f1(d.practiceQ)}</td>
+        <td class="n muted">${f1(d.formQ)}</td><td class="n"><b>${f1(d.qMu)}</b></td><td class="n muted">${f1(d.formR)}</td><td class="n"><b>${f1(d.rMu)}</b></td></tr>`;
+    }).join("") + "</tbody>";
+}
+
+/* ---------- positions heatmap ---------- */
+function renderGrid() {
+  document.querySelectorAll("#gridKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.g === S.grid)));
+  const q = S.grid === "q";
+  $("#gridNote").textContent = `${q ? "Qualifying" : "Race"} finishing-position probabilities for ${NEXT.name}, from ${S.sims.toLocaleString()} simulated weekends${q ? "" : ". The last column is the chance of not being classified"}.`;
+  const ds = DATA.assets.filter((a) => a.kind === "D" && R.idx[a.id] != null);
+  const sim = R.sims[0];
+  const rows = ds.map((a) => ({ a, v: sim.stats[R.idx[a.id]][q ? "q" : "r"] }));
+  const exp = (v) => v.slice(0, 22).reduce((s, p, i) => s + p * (i + 1), 0) / Math.max(1e-9, v.slice(0, 22).reduce((s, p) => s + p, 0));
+  rows.sort((x, y) => exp(x.v) - exp(y.v));
+  const cols = q ? 22 : 23;
+  $("#heat").innerHTML = `<thead><tr><th>Driver</th>${Array.from({ length: cols }, (_, i) => `<th>${i === 22 ? "DNF" : "P" + (i + 1)}</th>`).join("")}</tr></thead><tbody>` +
+    rows.map(({ a, v }) => `<tr><td><span class="who"><i style="background:${col(a)}"></i><b>${esc(a.tla)}</b></span></td>` +
+      v.slice(0, cols).map((p, i) => {
+        const pc = Math.round(p * 100);
+        const bg = i === 22 ? "var(--bad)" : "var(--accent)";
+        return `<td class="n" style="background:color-mix(in oklab, ${bg} ${Math.min(85, p * 260)}%, transparent);${p > 0.25 ? "color:var(--accent-ink);font-weight:600" : ""}">${pc ? pc : ""}</td>`;
+      }).join("") + "</tr>").join("") + "</tbody>";
+}
+
+/* ---------- prices ---------- */
+function renderPrices() {
+  const binLbl = ["−0.6", "−0.3", "−0.2", "−0.1", "0", "+0.1", "+0.2", "+0.3", "+0.6"];
+  const group = (title, list) => {
+    if (!list.length) return "";
+    return `<tr><td class="tier" colspan="11">${title}</td></tr>` + list.map((a) => {
+      const pi = R.price[a.id], p = R.proj[0][a.id];
+      const needCell = (v) => `<td class="n ${p.mean >= v ? "good" : "muted"}">${f0(v)}</td>`;
+      const dist = pi.dist ? `<span class="dist" title="${pi.dist.map((v, i) => binLbl[i] + ": " + Math.round(v * 100) + "%").join(" · ")}">${pi.dist.map((v, i) => `<span class="${i < 4 ? "dn" : i > 4 ? "up" : "z"}" style="height:${Math.max(1, v * 22)}px"></span>`).join("")}</span>` : "—";
+      return `<tr><td><span class="who"><i style="background:${col(a)}"></i><b>${esc(code(a))}</b><span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
+        <td class="n">${f1(a.price)}</td><td class="n">${f0(pi.p2)} · ${f0(pi.p1)}</td><td class="n"><b>${f1(p.mean)}</b></td>
+        ${needCell(pi.need[0])}${needCell(pi.need[1])}${needCell(pi.need[2])}
+        <td class="n good">${pct(pi.up)}</td><td class="n bad">${pct(pi.down)}</td><td>${dist}</td>
+        <td class="n ${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td></tr>`;
+    }).join("");
+  };
+  const act = DATA.assets.filter((a) => a.active || a.kind === "C").sort((x, y) => R.price[y.id].ev - R.price[x.id].ev);
+  const A = (k) => act.filter((a) => a.kind === k && a.price >= 18.5), B = (k) => act.filter((a) => a.kind === k && a.price < 18.5);
+  $("#priceTable").innerHTML = `<thead><tr><th>Asset</th><th>Price</th><th title="Points in the last two races">Last 2</th><th>xPts</th><th title="Points needed to avoid the big drop">Needs ≥0.605</th><th title="Points needed for a rise">Needs ≥0.9</th><th title="Points needed for the big rise">Needs ≥1.195</th><th>P(rise)</th><th>P(drop)</th><th title="Distribution from −0.6 to +0.6">Spread</th><th>Exp. Δ</th></tr></thead><tbody>` +
+    group("Drivers · $18.5m and up (±0.1 / 0.3)", A("D")) + group("Drivers · under $18.5m (±0.2 / 0.6)", B("D")) +
+    group("Constructors · $18.5m and up", A("C")) + group("Constructors · under $18.5m", B("C")) + "</tbody>";
+}
+
+/* ---------- calendar ---------- */
+function renderCal() {
+  $("#cal").innerHTML = upcoming.map((g) => {
+    const c = circ(g);
+    const when = new Date(g.raceStart).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const sl = (key, label, min, max, step) => `<label class="slider"><span>${label}</span><input type="range" id="c-${g.gd}-${key}" data-circ="${g.gd}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${c[key]}"><output>${(+c[key]).toFixed(2)}</output></label>`;
+    return `<div class="panel"><div class="hd"><h3>${esc(g.name.replace(" Grand Prix", " GP"))}</h3><span class="rn">R${g.gd}</span></div>
+      <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>
+      <p class="note">${esc(c.note || "")}</p>
+      ${sl("ov", "Overtaking", 0.2, 1.6, 0.05)}${sl("grid", "Grid weight", 0.2, 0.9, 0.05)}${sl("chaos", "Chaos", 0.6, 1.6, 0.05)}</div>`;
+  }).join("");
+}
+
+/* ---------- model ---------- */
+function renderModel() {
+  $("#halfLife").value = S.halfLife; $("#halfLifeV").textContent = S.halfLife + " races";
+  $("#pw").value = S.pw; $("#pwV").textContent = Math.round(S.pw * 100) + "%";
+  $("#blend").value = S.blend; $("#blendV").textContent = Math.round(S.blend * 100) + "%";
+  document.querySelectorAll("#sims button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.n === S.sims)));
+  const gen = new Date(DATA.generated);
+  $("#dataStamp").textContent = `Data: F1 Fantasy prices and points after round ${DATA.done[DATA.done.length - 1]}, and 2026 results from Jolpica. Pulled ${gen.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`;
+}
+
+/* ---------- orchestration ---------- */
+function showTab(t) {
+  S.tab = t;
+  document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t)));
+  document.querySelectorAll("main > section").forEach((s) => (s.hidden = s.id !== "tab-" + t));
+  save();
+}
+function renderAll() {
+  renderHeader(); renderTeam(); renderOptControls(); runOptimiser(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
+}
+let timer = null;
+function recompute(delay = 120) {
+  clearTimeout(timer);
+  timer = setTimeout(() => { compute(); renderAll(); save(); }, delay);
+}
+function rerender() { renderAll(); save(); }
+
+let undoTeam = null, toastTimer = null;
+function toast(msg, undo) {
+  $("#toastMsg").textContent = msg; $("#toastUndo").hidden = !undo; $("#toast").hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => ($("#toast").hidden = true), 6000);
+}
+
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("button, [data-go]"); if (!t) return;
+  if (t.dataset.tab) return showTab(t.dataset.tab);
+  if (t.dataset.go) return showTab(t.dataset.go);
+  if (t.dataset.boost) { S.boost = S.boost === t.dataset.boost ? "auto" : t.dataset.boost; return rerender(); }
+  if (t.dataset.h) { S.horizon = +t.dataset.h; return rerender(); }
+  if (t.dataset.k) { S.kind = t.dataset.k; return rerender(); }
+  if (t.dataset.r) { S.raceIdx = +t.dataset.r; return rerender(); }
+  if (t.dataset.g) { S.grid = t.dataset.g; return rerender(); }
+  if (t.dataset.n) { S.sims = +t.dataset.n; return recompute(0); }
+  if (t.dataset.adj) {
+    const v = Math.max(-3, Math.min(3, (S.adj[t.dataset.adj] || 0) + +t.dataset.v));
+    if (v) S.adj[t.dataset.adj] = v; else delete S.adj[t.dataset.adj];
+    return recompute();
+  }
+  if (t.dataset.mark) {
+    const id = t.dataset.mark, cur = S.marks[id];
+    if (!cur) S.marks[id] = "lock"; else if (cur === "lock") S.marks[id] = "ban"; else delete S.marks[id];
+    return rerender();
+  }
+  if (t.dataset.apply != null) {
+    const r = lastResults[+t.dataset.apply]; if (!r) return;
+    undoTeam = { team: S.team.slice(), bank: S.bank, boost: S.boost };
+    const oldCap = cap();
+    S.team = r.drivers.concat(r.cons); S.bank = Math.round(Math.max(0, oldCap - r.cost) * 10) / 10; S.boost = "auto"; S.example = false;
+    rerender(); showTab("team"); toast("Team updated. Make the same changes in the official game.", true); return;
+  }
+  if (t.id === "toastUndo" && undoTeam) { Object.assign(S, undoTeam); undoTeam = null; $("#toast").hidden = true; return rerender(); }
+  if (t.id === "resetAll") { S.adj = {}; S.marks = {}; S.circuits = {}; return recompute(0); }
+});
+document.addEventListener("click", (e) => {
+  const th = e.target.closest("th.sort"); if (!th) return;
+  const k = th.dataset.sort; S.sort = { k, d: S.sort.k === k ? -S.sort.d : -1 }; rerender();
+});
+document.addEventListener("change", (e) => {
+  const t = e.target;
+  if (t.dataset.slot != null) {
+    const k = +t.dataset.slot, id = t.value, prev = S.team[k], j = S.team.indexOf(id);
+    if (j >= 0 && j !== k) S.team[j] = prev; // picking someone already in the team swaps them
+    S.team[k] = id; S.example = false; if (S.boost === prev) S.boost = "auto";
+    return rerender();
+  }
+  if (t.dataset.used) { S.chipsUsed[t.dataset.used] = t.checked; return rerender(); }
+  if (t.id === "free") { S.free = +t.value; return rerender(); }
+  if (t.id === "chip") { S.chip = t.value; return rerender(); }
+  if (t.id === "maxT") { S.maxT = +t.value; return rerender(); }
+  if (t.id === "valW") { S.valW = +t.value; return rerender(); }
+});
+document.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.id === "bank") { const v = parseFloat(t.value); if (!isNaN(v) && v >= 0) { S.bank = v; S.example = false; clearTimeout(timer); timer = setTimeout(() => { renderTeam(); renderOptControls(); runOptimiser(); save(); }, 250); } }
+  if (t.id === "halfLife") { S.halfLife = +t.value; $("#halfLifeV").textContent = S.halfLife + " races"; recompute(250); }
+  if (t.id === "pw") { S.pw = +t.value; $("#pwV").textContent = Math.round(S.pw * 100) + "%"; recompute(250); }
+  if (t.id === "blend") { S.blend = +t.value; $("#blendV").textContent = Math.round(S.blend * 100) + "%"; recompute(250); }
+  if (t.dataset.circ) {
+    const g = t.dataset.circ; S.circuits[g] = Object.assign({}, S.circuits[g] || {}, { [t.dataset.key]: +t.value });
+    t.nextElementSibling.textContent = (+t.value).toFixed(2); recompute(300);
+  }
+});
+
+compute(); renderAll(); showTab(S.tab || "team");
+setInterval(renderHeader, 30000);
+</script>
