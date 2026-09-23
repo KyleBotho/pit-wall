@@ -157,7 +157,12 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 .toast button{background:none;border:0;color:#7E22CE;font-weight:700;cursor:pointer}
 
 /* ---------- phone / tablet ---------- */
+.lgtip{position:absolute;pointer-events:none;background:var(--raise);outline:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;min-width:150px;z-index:5}
+.lgtip div{display:flex;justify-content:space-between;gap:12px}
+.chiptok{display:inline-block;font-size:10px;font-weight:600;padding:1px 4px;border-radius:4px;margin-right:2px;background:var(--tile);color:var(--fg)}
+.chiptok.used{background:transparent;color:var(--dim);text-decoration:line-through}
 @media (max-width:900px){
+  #leagueDash{grid-template-columns:1fr!important}
   :root{--rail:0px}
   .rail{top:auto;left:0;right:0;width:auto;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(10,10,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
   .rail .logo{display:none}
@@ -184,6 +189,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
   <div class="logo" aria-hidden="true">P<b>W</b></div>
   <nav class="nav" id="nav">
     <button data-view="calc"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3M8 18h.01M12 18h.01"/></svg><span class="lbl">Calculator</span></button>
+    <button data-view="league"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="lbl">League</span></button>
     <button data-view="compare"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="7" height="18" rx="1.5"/></svg><span class="lbl">Compare</span></button>
     <button data-view="assets"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18M9 5v14"/></svg><span class="lbl">Projections</span></button>
     <button data-view="prices"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="lbl">Budget</span></button>
@@ -197,7 +203,10 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 <div class="shell">
   <header class="bar">
     <div class="race"><h1 id="raceName">—</h1><span class="lock" id="lock"></span></div>
-    <div class="seg teamswitch" role="group" aria-label="Choose team"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <div class="seg teamswitch" role="group" aria-label="Choose team"></div>
+      <label class="btn ghost sm" style="display:inline-flex;align-items:center;cursor:pointer" title="Load your teams, chips and league from an F1 Fantasy data export">Import<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+    </div>
   </header>
 
   <!-- TEAM CALCULATOR -->
@@ -239,6 +248,33 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <section class="panel" data-pane="drivers"><h3>Drivers <small id="drvNote"></small></h3><div class="tw"><table id="drvTable"></table></div></section>
         <section class="panel" data-pane="cons"><h3>Constructors</h3><div class="tw"><table id="conTable"></table></div></section>
       </div>
+    </div>
+  </main>
+
+  <!-- LEAGUE -->
+  <main id="view-league" data-v hidden>
+    <div id="leagueEmpty" class="panel" hidden>
+      <h3>League</h3>
+      <p class="note">No league loaded yet. In a Claude for Chrome session, ask Claude to collect your F1 Fantasy data (teams and private league) into a JSON file, then press <b>Import</b> at the top and pick that file. Your league stays in this browser only; it is never published.</p>
+    </div>
+    <div class="dash" id="leagueDash" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+      <section class="panel" style="grid-column:1/-1">
+        <h3><span id="lgTitle">League</span> <small id="lgStamp"></small></h3>
+        <div class="tw"><table id="lgTable"></table></div>
+      </section>
+      <section class="panel">
+        <h3>Points race <small>cumulative, by round</small></h3>
+        <div id="lgChart" style="position:relative"></div>
+      </section>
+      <section class="panel">
+        <h3>Next race head-to-head <small id="lgH2hNote"></small></h3>
+        <div id="lgH2h" class="bts"></div>
+      </section>
+      <section class="panel" style="grid-column:1/-1">
+        <h3>Differentials <small>who owns what in this league</small></h3>
+        <p class="note">Assets owned by your rivals but not your selected team are threats: if they score big, you fall behind. Assets only you own are your chances to gain.</p>
+        <div class="tw"><table id="lgOwn"></table></div>
+      </section>
     </div>
   </main>
 
@@ -379,7 +415,7 @@ while (S.teams.length < 3) S.teams.push(newTeam("Team " + (S.teams.length + 1)))
 for (const t of S.teams) { t.team = (t.team || []).filter((id) => byId[id]); if (t.team.length !== 7) Object.assign(t, defaultTeam(), { example: true }); }
 S.drafts = (S.drafts || []).filter((d) => d.team && d.team.filter((id) => byId[id]).length === 7);
 S.active = Math.min(2, Math.max(0, S.active | 0));
-const VIEWS = ["calc", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
+const VIEWS = ["calc", "league", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
 if (!VIEWS.includes(S.view)) S.view = "calc";
 const A = () => S.teams[S.active];
 function save() { try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, S, { v: DATA.season }))); } catch (e) {} }
@@ -487,6 +523,139 @@ function heat(v, lo, hi) {
 function optionList(kind, sel) {
   const list = DATA.assets.filter((a) => a.kind === kind && (a.active || a.id === sel)).sort((a, b) => b.price - a.price);
   return list.map((a) => `<option value="${a.id}" ${a.id === sel ? "selected" : ""}>${esc(code(a))} · ${esc(kind === "D" ? a.name : a.team)} — ${money(a.price)}${a.active ? "" : " (not racing)"}</option>`).join("");
+}
+
+/* ---------- import from an F1 Fantasy data export (runs only in this browser) ---------- */
+const dec = (x) => { try { return decodeURIComponent(x || ""); } catch (e) { return x || ""; } };
+const on = (v) => v != null && +v > 0;
+function chipsFrom(u) {
+  return { wildcard: on(u.is_wildcard_taken_gd_id) || on(u.wildcardtakengd), limitless: on(u.limitlesstakengd), x3: on(u.extradrstakengd),
+    finalfix: on(u.finalfixtakengd), autopilot: on(u.autopilottakengd), noneg: on(u.nonigativetakengd) };
+}
+function lineup(u) {
+  const ids = (u.playerid || []).map((p) => String(p.id)).filter((id) => byId[id]);
+  const drs = ids.filter((id) => byId[id].kind === "D"), cons = ids.filter((id) => byId[id].kind === "C");
+  return drs.length === 5 && cons.length === 2 ? drs.concat(cons) : null;
+}
+function importOfficial(d) {
+  if (!d || d.source !== "fantasy.formula1.com" || !d.my_team) throw new Error("That file isn't an F1 Fantasy data export.");
+  const res = { teams: 0, league: 0 };
+  const tk = Object.keys(d.my_team.teams || {}), gdOf = (k) => +k.split("_gd")[1];
+  const latest = Math.max(...tk.map(gdOf));
+  const pick = (gd) => { const k = tk.find((x) => gdOf(x) === gd); return (k && d.my_team.teams[k]?.Data?.Value?.userTeam) || []; };
+  const cur = pick(latest), prev = pick(latest - 1);
+  for (const u of cur) {
+    const i = (u.teamno | 0) - 1, ids = lineup(u);
+    if (i < 0 || i > 2 || !ids) continue;
+    const p = prev.find((x) => x.teamno === u.teamno);
+    // 2 free per race; one unused transfer carries over (not out of a Limitless week)
+    const carried = p && (p.usersubs | 0) < 2 && !(+p.limitlesstakengd === latest - 1) ? 1 : 0;
+    const cap = String(u.capplayerid || "");
+    Object.assign(S.teams[i], { name: dec(u.teamname) || S.teams[i].name, team: ids, bank: +u.teambal || 0, free: 2 + carried,
+      boost: ids.slice(0, 5).includes(cap) ? cap : "auto", chipsUsed: chipsFrom(u), example: false });
+    res.teams++;
+  }
+  const lg = d.league;
+  if (lg && lg.members) {
+    const info = lg.info?.Data?.Value || {};
+    const mine = new Set(S.teams.map((t) => t.name));
+    const members = Object.values(lg.members).map((m) => {
+      const meta = m.meta || {}, name = dec(meta.team_name);
+      const keys = Object.keys(m.teams || {}).map(Number).sort((a, b) => a - b);
+      const u = m.teams[keys[keys.length - 1]]?.Data?.Value?.userTeam?.[0] || {};
+      const md = m.gamedays?.Data?.Value?.mdDetails || {};
+      const hist = Object.keys(md).map(Number).sort((a, b) => a - b).map((k) => ({ gd: k, pts: +md[k].pts || 0 }));
+      // only what the planner needs: no account ids or user names are kept
+      return { name, pts: +meta.cur_points || 0, ids: lineup(u), boost: String(u.capplayerid || ""), bank: +u.teambal || 0, chips: chipsFrom(u), hist, mine: mine.has(name) };
+    }).sort((a, b) => b.pts - a.pts);
+    S.league = { name: dec(info.leagueName) || "League", max: info.maxMem, collected: d.collected_at, round: latest, members };
+    res.league = members.length;
+  }
+  return res;
+}
+
+/* ---------- league ---------- */
+function renderLeague() {
+  const L = S.league;
+  $("#leagueEmpty").hidden = !!L; $("#leagueDash").hidden = !L;
+  if (!L) return;
+  const myIds = A().team, myName = A().name;
+  $("#lgTitle").textContent = L.name;
+  $("#lgStamp").textContent = `${L.members.length} teams · data from ${new Date(L.collected).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`;
+  const lead = L.members[0].pts;
+  const tok = (c) => CHIPS.map(([k, sh, n]) => `<span class="chiptok ${c[k] ? "used" : ""}" title="${n}${c[k] ? " (used)" : ""}">${sh}</span>`).join("");
+  $("#lgTable").innerHTML = `<thead><tr><th>#</th><th style="text-align:left">Team</th><th>Pts</th><th>Gap</th><th title="Points in the latest round">Last</th><th style="text-align:left">Chips left</th><th>Bank</th></tr></thead><tbody>` +
+    L.members.map((m, i) => { const last = m.hist.length ? m.hist[m.hist.length - 1].pts : null;
+      return `<tr${m.name === myName ? ' style="background:var(--accent-soft)"' : ""}><td>${i + 1}</td><td style="text-align:left;position:static"><b>${esc(m.name)}</b>${m.mine ? ' <span class="tag sprint">you</span>' : ""}</td>
+        <td><b>${m.pts.toLocaleString()}</b></td><td class="${i ? "bad" : "muted"}">${i ? "−" + (lead - m.pts).toLocaleString() : "—"}</td><td>${f0(last)}</td><td style="text-align:left">${tok(m.chips)}</td><td class="muted">${money(m.bank)}</td></tr>`; }).join("") + "</tbody>";
+  renderLeagueChart(L);
+
+  // head-to-head: same simulated weekends for everyone, so the comparison is paired
+  const mySmp = teamSamples(myIds, boostFor(myIds), ""), N = mySmp.length;
+  const myMean = mySmp.reduce((a, b) => a + b, 0) / N;
+  $("#lgH2hNote").textContent = `${myName} vs current rival line-ups`;
+  const rivals = L.members.filter((m) => m.name !== myName && m.ids);
+  $("#lgH2h").innerHTML = rivals.map((m) => {
+    const ds = m.ids.slice(0, 5), boost = ds.includes(m.boost) ? m.boost : ds.reduce((b, id) => (R.proj[0][id].mean > R.proj[0][b].mean ? id : b), ds[0]);
+    const smp = teamSamples(m.ids, boost, "");
+    let win = 0, gap = 0; for (let s = 0; s < N; s++) { if (mySmp[s] > smp[s]) win++; gap += mySmp[s] - smp[s]; }
+    const drs = ds.slice().sort((x, y) => (x === boost ? -1 : y === boost ? 1 : xpts(y, 1) - xpts(x, 1)));
+    const chipsHtml = m.ids.slice(5).map((id) => chip(id, { pts: xpts(id, 1), cls: myIds.includes(id) ? "" : "in" })).join("") + '<span class="sep"></span>' +
+      drs.map((id) => chip(id, { pts: xpts(id, 1) * (id === boost ? 2 : 1), x: id === boost ? "2×" : "", cls: myIds.includes(id) ? "" : "in" })).join("");
+    const p = win / N;
+    return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}</b><div class="chips">${chipsHtml}</div></div>
+      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}">${pct(p)}</b><span class="muted">you win</span><span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span></div></div>`;
+  }).join("") + `<p class="note">Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock. Your team: ${f1(myMean)} xPts.</p>`;
+
+  // league ownership
+  const own = {};
+  for (const m of rivals) for (const id of m.ids) own[id] = (own[id] || 0) + 1;
+  const ids = Array.from(new Set(Object.keys(own).concat(myIds)));
+  const rows = ids.map((id) => ({ id, n: own[id] || 0, mine: myIds.includes(id), x: xpts(id, 1) }))
+    .filter((r) => (r.mine && r.n < rivals.length) || (!r.mine && r.n > 0))
+    .sort((a, b) => (a.mine - b.mine) || (b.n * b.x - a.n * a.x));
+  $("#lgOwn").innerHTML = `<thead><tr><th>Asset</th><th style="text-align:left">Type</th><th title="How many rivals own it">Rivals</th><th>xPts R${NEXT.gd}</th><th title="Expected swing against the field: positive helps you">Swing</th></tr></thead><tbody>` +
+    (rows.length ? rows.map((r) => { const a = byId[r.id];
+      const sw = r.mine ? r.x * (1 - r.n / rivals.length) : -r.x * (r.n / rivals.length);
+      return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
+        <td style="text-align:left">${r.mine ? '<span class="good">Only you</span>' : '<span class="bad">Threat</span>'}</td><td>${r.n}/${rivals.length}</td><td>${f1(r.x)}</td><td${heat(sw, -30, 30)} class="${sw >= 0 ? "good" : "bad"}">${sgn(sw)}</td></tr>`; }).join("")
+      : `<tr><td colspan="5" class="muted">Your line-up matches the whole league.</td></tr>`) + "</tbody>";
+}
+function renderLeagueChart(L) {
+  const box = $("#lgChart");
+  const series = L.members.filter((m) => m.hist.length).map((m) => { let c = 0; return { name: m.name, me: m.name === A().name, pts: m.hist.map((h) => ({ gd: h.gd, v: (c += h.pts) })) }; });
+  if (!series.length) { box.innerHTML = '<p class="note">No round history in this export.</p>'; return; }
+  const W = 640, H = 260, ml = 44, mr = 120, mt = 10, mb = 26;
+  const gds = series[0].pts.map((p) => p.gd), maxV = Math.max(...series.flatMap((s) => s.pts.map((p) => p.v)));
+  const step = maxV > 3000 ? 1000 : 500, top = Math.ceil(maxV / step) * step;
+  const x = (i) => ml + (i / Math.max(1, gds.length - 1)) * (W - ml - mr), y = (v) => mt + (1 - v / top) * (H - mt - mb);
+  let g = "";
+  for (let v = 0; v <= top; v += step) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="#27272A" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${v.toLocaleString()}</text>`;
+  gds.forEach((gd, i) => { if (i % 2 === 0 || i === gds.length - 1) g += `<text x="${x(i)}" y="${H - 6}" fill="#A1A1AA" font-size="11" text-anchor="middle">R${gd}</text>`; });
+  const order = series.slice().sort((a, b) => a.me - b.me); // draw yours last, on top
+  const labels = series.map((s) => ({ s, y: y(s.pts[s.pts.length - 1].v) })).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13; // keep end labels apart
+  for (const s of order) {
+    const d = s.pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+    g += `<path d="${d}" fill="none" stroke="${s.me ? "#A855F7" : "#71717A"}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const last = s.pts[s.pts.length - 1];
+    g += `<circle cx="${x(s.pts.length - 1)}" cy="${y(last.v)}" r="4" fill="${s.me ? "#A855F7" : "#71717A"}" stroke="#0A0A0A" stroke-width="2"/>`;
+  }
+  for (const l of labels) g += `<text x="${W - mr + 10}" y="${l.y + 4}" fill="${l.s.me ? "#FAFAFA" : "#A1A1AA"}" font-size="11" font-weight="${l.s.me ? 600 : 400}">${esc(l.s.name.length > 16 ? l.s.name.slice(0, 15) + "…" : l.s.name)}</text>`;
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative league points by round">${g}<line id="lgX" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent" id="lgHit"/></svg><div class="lgtip" id="lgTip" hidden></div>`;
+  const svg = box.querySelector("svg"), tip = $("#lgTip"), cross = $("#lgX");
+  const move = (ev) => {
+    const r = svg.getBoundingClientRect(), px = ((ev.clientX - r.left) / r.width) * W;
+    const i = Math.max(0, Math.min(gds.length - 1, Math.round(((px - ml) / (W - ml - mr)) * (gds.length - 1))));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
+    const rows = series.map((s) => ({ n: s.name, v: s.pts[i]?.v ?? 0, r: L.members.find((m) => m.name === s.name)?.hist[i]?.pts ?? 0, me: s.me })).sort((a, b) => b.v - a.v);
+    tip.innerHTML = `<b>Round ${gds[i]}</b>` + rows.map((q) => `<div style="${q.me ? "color:#FAFAFA;font-weight:600" : "color:#A1A1AA"}"><span>${esc(q.n)}</span><span>${q.v.toLocaleString()} <span class="dim">(+${q.r})</span></span></div>`).join("");
+    tip.hidden = false;
+    const left = (x(i) / W) * r.width;
+    tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, left + 12)) + "px"; tip.style.top = "8px";
+  };
+  svg.addEventListener("pointermove", move);
+  svg.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
 }
 
 /* ---------- header ---------- */
@@ -795,7 +964,7 @@ function showPane(p) {
 }
 function renderAll() {
   renderHeader(); renderSwitch(); renderSettings(); renderTeam(); runOptimiser(); renderAssetPanels();
-  renderCompare(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
+  renderCompare(); renderLeague(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
 }
 let timer = null;
 function recompute(delay = 120) { clearTimeout(timer); timer = setTimeout(() => { compute(); renderAll(); save(); }, delay); }
@@ -856,6 +1025,21 @@ document.addEventListener("click", (e) => {
 });
 document.addEventListener("change", (e) => {
   const t = e.target;
+  if (t.id === "importFile") {
+    const f = t.files && t.files[0]; t.value = "";
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const r = importOfficial(JSON.parse(fr.result));
+        rerender(); if (r.league) showView("league");
+        toast(`Imported ${r.teams} team${r.teams === 1 ? "" : "s"}${r.league ? ` and ${r.league} league teams` : ""}. Check free transfers and bank.`);
+      } catch (err) { toast(err.message || "Couldn't read that file."); }
+    };
+    fr.onerror = () => toast("Couldn't read that file.");
+    fr.readAsText(f);
+    return;
+  }
   if (t.dataset.slot != null) {
     const k = +t.dataset.slot, id = t.value, prev = A().team[k], j = A().team.indexOf(id);
     if (j >= 0 && j !== k) A().team[j] = prev; // picking someone already in the team swaps them
