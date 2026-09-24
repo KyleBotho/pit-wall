@@ -803,6 +803,27 @@ tbody tr:hover td {
   gap: 16px;
   align-items: start;
 }
+/* a heading between groups of cards on one view (Settings -> Circuits) */
+.sethead {
+  margin: 32px 0 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.sethead h2 {
+  margin: 0 0 6px;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.sethead h2 small {
+  font-family: var(--ui);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
 .slider {
   display: grid;
   grid-template-columns: 120px 1fr 48px;

@@ -314,5 +314,10 @@ User-approved order: 1–5, then the rest.
       in RLS. Their teams/settings work at once (they Import their own export once). Their LEAGUES need new work:
       store league IDs per user and have the private workflow fetch + seal per user with each user's key
       (F1 feeds have no CORS, so fetching stays server-side).
+- [x] 2026-09-24 UI/UX review (user asked for a score + tab merges): the Calendar and Model views moved into
+    Settings (Account & data | Model settings | How it works, then a "Circuits" section; hidden once the season is
+    over). Saved `view` "cal"/"model" maps to "settings" in `normalise`. Proposed next merges (not done, ask first):
+    Projections + Budget + Positions + Practice -> one Projections view with sub-tabs; Compare into the Calculator;
+    League + Elite -> Leagues; Hindsight + Statistics -> Season.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

@@ -2,7 +2,7 @@
 let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 const trackFit = Engine.trackModel(DATA);
-// circuit settings: fitted track-type values, overridden by anything set on the Calendar
+// circuit settings: fitted track-type values, overridden by anything set in Settings
 const circ = (g) => Object.assign(trackFit.forCircuit(g.name), state.circuits[g.gd] || {});
 function compute() {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));

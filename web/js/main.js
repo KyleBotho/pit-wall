@@ -17,9 +17,11 @@ const RENDER = {
   prices: () => renderPrices(),
   practice: () => renderPractice(),
   grid: () => renderGrid(),
-  cal: () => renderCal(),
-  model: () => renderModel(),
-  settings: () => renderSync(),
+  settings: () => {
+    renderSync();
+    renderModel();
+    if (!SEASON_OVER) renderCal();
+  },
 };
 const stale = new Set(VIEWS);
 function renderView(v) {
@@ -764,7 +766,10 @@ document.addEventListener("keydown", (e) => {
 }
 
 /* ---------- start-up ---------- */
-if (SEASON_OVER) $$("#nav button").forEach((b) => (b.hidden = FORECAST_VIEWS.includes(b.dataset.view)));
+if (SEASON_OVER) {
+  $$("#nav button").forEach((b) => (b.hidden = FORECAST_VIEWS.includes(b.dataset.view)));
+  $("#calHead").hidden = $("#cal").hidden = true; // no races left to tune
+}
 // phone menu: the same tools as the rail, as a full-screen list
 $("#menuList").innerHTML = $$("#nav button")
   .filter((b) => !b.hidden)

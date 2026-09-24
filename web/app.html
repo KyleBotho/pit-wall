@@ -75,15 +75,6 @@
         <rect x="14" y="14" width="7" height="7" rx="1" /></svg
       ><span class="lbl">Positions</span>
     </button>
-    <button data-view="cal">
-      <svg viewBox="0 0 24 24">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <path d="M16 2v4M8 2v4M3 10h18" /></svg
-      ><span class="lbl">Calendar</span>
-    </button>
-    <button data-view="model">
-      <svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg><span class="lbl">Model</span>
-    </button>
     <button data-view="settings" class="navend">
       <svg viewBox="0 0 24 24">
         <path
@@ -263,7 +254,7 @@
           <h3>Simulation</h3>
           <p class="note" id="simNote"></p>
           <div class="chipbar">
-            <button class="btn ghost sm" data-view="model">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button
+            <button class="btn ghost sm" data-view="settings">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button
             ><button class="btn ghost sm" id="xoReset" hidden>Clear xPts edits</button>
           </div>
         </section>
@@ -546,8 +537,8 @@
       <div class="kv" id="pracSessions"></div>
       <p class="note">
         From OpenF1 lap times, shortly after each session. <b>Short run</b> = best lap or best-sector sum as a gap to the fastest; it feeds qualifying pace at
-        30%. <b>Long run</b> = median of 5+ lap stints adjusted for tyre, fuel and wear; it feeds race pace at 10%. Weights backtested on rounds 6–14; change
-        them with Practice weight in Model.
+        50%. <b>Long run</b> = median of 5+ lap stints adjusted for tyre, fuel and wear; it feeds race pace at 10%. Weights backtested on rounds 4–14; change
+        them with Practice weight in Settings.
       </p>
       <div class="tw"><table id="pracTable"></table></div>
     </section>
@@ -564,29 +555,13 @@
     </section>
   </main>
 
-  <!-- CALENDAR -->
-  <main id="view-cal" data-v hidden>
-    <p class="note" style="margin-bottom: 12px">
-      Each circuit is typed by <b>Power</b>, <b>Street</b> and <b>Fast corners</b>. From this season's results, the model learns how those change
-      <b>Overtaking</b> (overtake points), <b>Chaos</b> (retirements) and each team's pace; <b>Grid weight</b> follows overtaking. Move a slider to override a
-      race; Reset in Model restores the fitted values.
-    </p>
-    <div class="grid-cards" id="cal"></div>
-  </main>
-
-  <!-- SETTINGS -->
+  <!-- SETTINGS: account, model and the circuit calendar -->
   <main id="view-settings" data-v hidden>
     <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
       <section class="panel" data-acct hidden>
         <h3>Account &amp; data</h3>
         <div class="acct"></div>
       </section>
-    </div>
-  </main>
-
-  <!-- MODEL -->
-  <main id="view-model" data-v hidden>
-    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
       <section class="panel">
         <h3>Model settings</h3>
         <div class="slider"><span>Form half-life</span><input id="halfLife" type="range" min="2" max="10" step="1" /><output id="halfLifeV"></output></div>
@@ -618,13 +593,22 @@
         <ul>
           <li>Transfers: 2 free per race; 1 unused carries over. Extras cost −10.</li>
           <li>
-            Chips: WC and LL remove the transfer limit (LL also the budget). X3 triples your top driver and doubles the second. NN clips negative categories. AP
-            gives the Boost to your highest scorer.
+            Chips: WC and LL remove the transfer limit (LL also the budget). X3 triples your top driver and doubles the second. NN counts every negative scoring
+            event as 0. AP gives the Boost to your highest scorer.
           </li>
         </ul>
         <p class="dim" id="dataStamp"></p>
       </section>
     </div>
+    <div class="sethead" id="calHead">
+      <h2>Circuits <small>remaining races</small></h2>
+      <p class="note">
+        Each circuit is typed by <b>Power</b>, <b>Street</b> and <b>Fast corners</b>. From this season's results, the model learns how those change
+        <b>Overtaking</b> (overtake points) and <b>Chaos</b> (retirements); <b>Grid weight</b> follows overtaking. Move a slider to override a race; the reset
+        button in Model settings restores the fitted values.
+      </p>
+    </div>
+    <div class="grid-cards" id="cal"></div>
   </main>
 </div>
 <div class="modal" id="modal" hidden>

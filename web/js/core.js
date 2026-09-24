@@ -39,5 +39,5 @@ const upcoming = DATA.schedule.filter((g) => !DATA.done.includes(g.gd));
 const NEXT = upcoming[0] || null;
 // After the last race there is nothing to forecast: the forecast views are hidden and the rest work from history.
 const SEASON_OVER = !NEXT;
-const FORECAST_VIEWS = ["calc", "compare", "assets", "prices", "practice", "grid", "cal"];
+const FORECAST_VIEWS = ["calc", "compare", "assets", "prices", "practice", "grid"];
 const Hind = Hindsight.create(DATA, Engine);
