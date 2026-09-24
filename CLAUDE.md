@@ -178,5 +178,28 @@ User-approved order: 1–5, then the rest.
     under it). The header's team switch is hidden there (Settings has the picker).
 11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
     your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
+12. [ ] PLAN (agreed 2026-09-24, not started): sign in with Google so a new browser shows your teams and leagues.
+    Goal: open the site anywhere, sign in once, see teams, settings and leagues with no Import.
+    - Supabase only (free tier): Supabase Auth with the Google provider + one table `configs(user_id uuid pk ->
+      auth.users, data jsonb, updated_at timestamptz)` with RLS `auth.uid() = user_id` for select/insert/update.
+      `data` = teams, drafts, pins, filters, xo, adj, marks, calculator settings, and the user's `LEAGUE_KEY`.
+      No Cloudflare, no passkeys, no client-side vault: RLS is enough for this data (decided with the user).
+      E2E encryption can be layered on later without changing the UX.
+    - Site stays on GitHub Pages; league data stays sealed in the build. After sign-in the page reads the row,
+      restores settings and calls tryUnseal(LEAGUE_KEY). Saves are debounced (~2 s) upserts; latest write wins.
+      First sign-in on a browser offers to upload its current local settings. Missing teams fall back to the
+      sealed export line-ups (`lineups`).
+    - Keep-alive: free projects pause after ~1 week idle; have refresh.yml make a tiny anon request each run
+      (verify that counts as activity).
+    - Page: supabase-js from jsdelivr; "Sign in with Google" in the ☰ menu and Settings; "Synced n min ago";
+      sign out (clears the local session and the stored key).
+    - User setup (once): Supabase project (send URL + anon key; both public); Google Cloud consent screen in
+      TESTING mode with his email as test user + web OAuth client; paste client id/secret into Supabase's Google
+      provider; Site URL / redirect = https://kylebotho.github.io/pit-wall/; run the SQL Claude provides.
+    - Multi-user later (designed for it now): rows are per user already. Add users as Google test users (≤100)
+      or publish the consent screen (basic scopes need no verification); optional `allowed_emails` table checked
+      in RLS. Their teams/settings work at once (they Import their own export once). Their LEAGUES need new work:
+      store league IDs per user and have the private workflow fetch + seal per user with each user's key
+      (F1 feeds have no CORS, so fetching stays server-side).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.
