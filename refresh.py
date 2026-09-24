@@ -72,6 +72,29 @@ def get(url, path, reuse=False):
     return json.loads(body)
 
 
+def get_soft(url, path, reuse=False):
+    """For sources that may refuse us for a while (OpenF1 locks everything to paying users while a session is live):
+    one attempt, no retries; on failure fall back to the last cached copy, else raise so the caller can skip it."""
+    if reuse and os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            body = r.read().decode("utf-8")
+    except Exception as e:
+        if os.path.exists(path):
+            print(f"  ! {url} -> {e}; using the cached copy")
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        raise RuntimeError(f"{url} -> {e}")
+    finally:
+        time.sleep(PAUSE)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(body)
+    return json.loads(body)
+
+
 def get_optional(url):
     """Fetch a feed that may not exist yet: a new league's standings file returns 403 until the next rebuild."""
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
@@ -310,10 +333,8 @@ def main():
     print("OpenF1 practice…")
     nxt_g = next(g for g in schedule if g["gd"] == nxt)
     try:
-        prac = practice.practice_for(get, lambda n: os.path.join(CACHE, n), nxt_g["lock"], datetime.now(timezone.utc))
-    except SystemExit:
-        raise
-    except Exception as e:  # practice data is a bonus; never block a price refresh on it
+        prac = practice.practice_for(get_soft, lambda n: os.path.join(CACHE, n), nxt_g["lock"], datetime.now(timezone.utc))
+    except Exception as e:  # practice data is a bonus; never block a price refresh on it (OpenF1 is closed during live sessions)
         print(f"  ! practice skipped: {e}")
         prac = []
     print("  " + ", ".join(f'{p["name"]}: {len(p["drivers"])} drivers' if p["done"] else f'{p["name"]}: pending' for p in prac))

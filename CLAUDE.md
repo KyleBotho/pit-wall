@@ -14,8 +14,11 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
   fuel/tyre/compound-corrected) gaps.
 - `app.html` — the page (inlines engine.js and data at build). Dark zinc UI modelled on f1fantasytools
-  (the user's explicit ask): icon rail, Team Calculator dashboard (Best Teams | My Team + Settings |
-  Drivers + Constructors), 44px asset chips. Inspiration only — never their name/logo.
+  (the user's explicit ask): icon rail, Team Calculator dashboard (Best Teams table | Settings + Simulation |
+  Drivers + Constructors), 44px asset chips. Inspiration only — never their name/logo. Calculator state: the
+  starting team is `ST()` (your team `A()`, a manual team, a rival's line-up or none, via `S.calcStart`); pins in
+  `S.pins`; xPts edits in `S.xo` (applied to the next race's projection in `compute()`, distribution shifted);
+  xΔ$Pts = `S.xdp` + `S.valW` pts per $1m per remaining race; max penalty `S.maxPen` (null = any).
 - `.github/workflows/refresh.yml` — rebuild + deploy every 30 min Thu–Sun, every 6 h Mon–Wed, on push, and manually.
   Commits `history/` after each build (GITHUB_TOKEN pushes don't retrigger it), so it has `contents: write`.
 - `history/2026/` — the season archive, saved as it happens: `players/gdNN.json` raw player feed per finished round
@@ -54,6 +57,8 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
   `popup/playerstats_{PlayerId}.json` (per-race scoring events). No CORS — only server-side fetches work.
 - Jolpica `api.jolpi.ca/ergast/f1/2026/{results,qualifying,sprint}.json`.
 - OpenF1 `api.openf1.org/v1/{sessions,laps,stints,drivers}` (practice; free data lands shortly after sessions).
+  While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
+  for it: one attempt, cached copy on failure, never aborts the build (seen 2026-09-24 during Baku FP1).
 - The old `fantasy-api.formula1.com` API (Postman doc, dlthub, skelmis package) is dead since 2023 — don't use.
 - Private-league standings come from the private repo (above), sealed. Chips, bank and round history are
   logged-in data and are NOT fetched by code. The user collects an
@@ -130,8 +135,8 @@ User-approved order: 1–5, then the rest.
 6. [ ] Elite ownership ± per round: log top-500 line-ups through the Baku weekend first to learn when the public
    leaderboard's line-ups update (their site snapshots after the qualifying lock).
 7. [ ] League chart: "relative to you" and race-points modes, chip markers.
-8. [ ] Direct xPts override per asset (alongside pace nudges).
-9. [ ] Calculator rework to match f1fantasytools' Team Calculator (user's screenshots, 2026-09-24; he likes its
+8. [x] Direct xPts override per asset (alongside pace nudges).
+9. [x] Calculator rework to match f1fantasytools' Team Calculator (user's screenshots, 2026-09-24; he likes its
    layout and settings pane). Layout: Best Teams (wide, left) | Settings (middle) | Drivers + Constructors (right).
    - Best Teams is one table: sections **Current Team** (always on top, for quick comparison), **Pinned Teams** (↺
      clears them) and **Best Teams**. Columns: # | CR ×2 | x2 | DR ×4 | $ | xPts | xΔ$ (or xΔ$Pts) | xSPts | ⋯.
