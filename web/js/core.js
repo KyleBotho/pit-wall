@@ -30,6 +30,37 @@ const chipName = (k) => (CHIPS.find(([c]) => c === k) || [])[2] || "";
 const chipShort = (k) => (CHIPS.find(([c]) => c === k) || [])[1] || "";
 
 const byId = Object.fromEntries(DATA.assets.map((a) => [a.id, a]));
+/* ---------- table alignment, the same in every table ----------
+   Text left, numbers right, controls (buttons, toggles, mini charts) centred, number boxes right; each header follows its column. Decided
+   per column from its cells (main.js re-runs it whenever a table's content changes), so no table needs its own
+   alignment rules. A cell with a control and a name (Compare's team + ✎) counts as text. */
+const AL_NUM = /^[#−+\-–]?\$?\d[\d.,]*[%mM×]?(?:[−+\-–/·][−+-]?\$?\d[\d.,]*[%mM×]?)*[✓?▲▼]?$/;
+function alignTable(t) {
+  const head = t.tHead && t.tHead.rows[t.tHead.rows.length - 1];
+  if (!head) return;
+  const at = (r) => {
+    let k = 0;
+    return [...r.cells].map((c) => [(k += c.colSpan) - c.colSpan, c]);
+  };
+  const kind = {}; // column -> "l" | "c" | "r"
+  for (const r of t.tBodies.length ? [...t.tBodies].flatMap((b) => [...b.rows]) : [])
+    for (const [k, c] of at(r)) {
+      if (c.colSpan > 1 || kind[k] === "l") continue;
+      const ctl = c.querySelector("button, input:not([type=number]), select, svg, .dist"); // a number box is a number
+      let txt = c.textContent;
+      if (ctl) for (const b of c.querySelectorAll("button, output")) txt = txt.replace(b.textContent, "");
+      txt = txt.replace(/\s+/g, "");
+      if (txt && !/^[—–-]$/.test(txt) && !AL_NUM.test(txt)) kind[k] = "l";
+      else if (ctl) kind[k] = "c";
+      else if (txt && !kind[k]) kind[k] = "r";
+    }
+  for (const r of t.rows)
+    for (const [k, c] of at(r)) {
+      if (c.colSpan > 1) continue;
+      c.classList.remove("al-l", "al-c", "al-r");
+      c.classList.add("al-" + (kind[k] || "r"));
+    }
+}
 const teamCode = (team) => (TEAMS[team] && TEAMS[team].code) || team;
 const code = (a) => (a.kind === "D" ? a.tla : (TEAMS[a.team] && TEAMS[a.team].code) || a.tla);
 const col = (a) => (TEAMS[a.team] && TEAMS[a.team].color) || "#888";

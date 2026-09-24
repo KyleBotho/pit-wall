@@ -51,6 +51,7 @@ const defaults = () => ({
   simSprint: null, // {gd, v}: the next race simulated as a sprint weekend (v) or not; null = the calendar
   view: SEASON_OVER ? "hind" : "calc",
   pane: "best",
+  calcGrp: {}, // the Calculator's Settings sections: key -> open (true unless closed by the user)
   bmode: "best", // the Calculator's left pane: "best" (Best Teams) or "cmp" (Compare)
   sub: {}, // the view last open in each tool group (main.js GROUPS)
   kind: "D",
@@ -132,6 +133,7 @@ const CARRY = [
   "simDecay",
   "simWin",
   "simOff",
+  "calcGrp",
 ];
 function carryOver(old) {
   const s = defaults();

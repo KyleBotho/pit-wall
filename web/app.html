@@ -149,97 +149,113 @@
       <div class="col">
         <section class="panel" data-pane="settings">
           <h3>Settings <button class="tbtn" data-calcreset="1" title="Full reset of the calculator settings" aria-label="Full reset">↺</button></h3>
-          <div class="field">
-            Select a starting team
-            <div class="picker">
-              <button class="pick" id="startBtn" data-pop="start"></button>
-              <div class="pop start" id="pop-start" hidden></div>
-            </div>
-          </div>
-          <div class="banner" id="exampleBanner" hidden>
-            This is an <b>example team</b>. Load your own teams, or press Edit to enter one by hand.
-            <div class="chipbar" style="margin-top: 8px">
-              <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button
-              ><button class="btn ghost sm" data-import="1">Import a data export</button>
-            </div>
-          </div>
-          <div class="field" id="budgetField">
-            Remaining budget &amp; Free transfers
-            <div class="inrow">
-              <span class="dim">$</span><input id="bank" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Remaining budget" /><span class="dim"
-                >M</span
+          <details class="grp" data-grp="team" open>
+            <summary><span>Starting team</span><small id="grpTeam"></small></summary>
+            <div class="grpbody">
+              <div class="field">
+                Select a starting team
+                <div class="picker">
+                  <button class="pick" id="startBtn" data-pop="start"></button>
+                  <div class="pop start" id="pop-start" hidden></div>
+                </div>
+              </div>
+              <div class="banner" id="exampleBanner" hidden>
+                This is an <b>example team</b>. Load your own teams, or press Edit to enter one by hand.
+                <div class="chipbar" style="margin-top: 8px">
+                  <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button
+                  ><button class="btn ghost sm" data-import="1">Import a data export</button>
+                </div>
+              </div>
+              <div class="field" id="budgetField">
+                Remaining budget &amp; Free transfers
+                <div class="inrow">
+                  <span class="dim">$</span><input id="bank" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Remaining budget" /><span
+                    class="dim"
+                    >M</span
+                  >
+                </div>
+                <div class="row3">
+                  <select id="free" class="inp" aria-label="Free transfers">
+                    <option value="0">0 free</option>
+                    <option value="1">1 free</option>
+                    <option value="2">2 free</option>
+                    <option value="3">3 free</option>
+                    <option value="7">∞ free</option>
+                  </select>
+                  <button class="tbtn lbl" data-keep="1" title="Keep the whole team: include all its assets">
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z" /></svg
+                    >Keep all
+                  </button>
+                  <button class="tbtn lbl" data-editteam="1" title="Edit the team">✎ Edit</button>
+                  <button class="tbtn lbl ban" data-clearstart="1" title="Clear the starting team (plan from a maximum budget)">✕ Clear</button>
+                </div>
+              </div>
+              <label class="field"
+                >Max transfer penalty<select id="maxPen" class="inp">
+                  <option value="0">0 (no penalties)</option>
+                  <option value="1">−10</option>
+                  <option value="2">−20</option>
+                  <option value="3">−30</option>
+                  <option value="4">−40</option>
+                  <option value="5">−50</option>
+                  <option value="6">−60</option>
+                  <option value="any">−∞ (allow any penalty)</option>
+                </select></label
+              >
+              <div class="or" id="maxOr">OR</div>
+              <label class="field" id="maxField"
+                >Maximum budget
+                <div class="inrow">
+                  <span class="dim">$</span><input id="maxBudget" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Maximum budget" /><span
+                    class="dim"
+                    >M</span
+                  >
+                </div></label
               >
             </div>
-            <div class="row3">
-              <select id="free" class="inp" aria-label="Free transfers">
-                <option value="0">0 free</option>
-                <option value="1">1 free</option>
-                <option value="2">2 free</option>
-                <option value="3">3 free</option>
-                <option value="7">∞ free</option>
-              </select>
-              <button class="tbtn lbl" data-keep="1" title="Keep the whole team: include all its assets">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="16"
-                  height="16"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z" /></svg
-                >Keep all
-              </button>
-              <button class="tbtn lbl" data-editteam="1" title="Edit the team">✎ Edit</button>
-              <button class="tbtn lbl ban" data-clearstart="1" title="Clear the starting team (plan from a maximum budget)">✕ Clear</button>
+          </details>
+          <details class="grp" data-grp="plan" open>
+            <summary><span>Plan &amp; chip</span><small id="grpPlan"></small></summary>
+            <div class="grpbody">
+              <div class="field">
+                Plan for
+                <div class="seg" id="horizon">
+                  <button data-horizon="1">Next race</button><button data-horizon="2">2 races</button><button data-horizon="3">3 races</button>
+                </div>
+              </div>
+              <div class="field">
+                Select a chip
+                <div class="chipbar" id="chipBar"></div>
+              </div>
+              <details class="edit sub">
+                <summary>Chips this team has used</summary>
+                <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
+              </details>
             </div>
-          </div>
-          <label class="field"
-            >Max transfer penalty<select id="maxPen" class="inp">
-              <option value="0">0 (no penalties)</option>
-              <option value="1">−10</option>
-              <option value="2">−20</option>
-              <option value="3">−30</option>
-              <option value="4">−40</option>
-              <option value="5">−50</option>
-              <option value="6">−60</option>
-              <option value="any">−∞ (allow any penalty)</option>
-            </select></label
-          >
-          <div class="or" id="maxOr">OR</div>
-          <label class="field" id="maxField"
-            >Maximum budget
-            <div class="inrow">
-              <span class="dim">$</span><input id="maxBudget" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Maximum budget" /><span
-                class="dim"
-                >M</span
+          </details>
+          <details class="grp" data-grp="price" open>
+            <summary><span>Price changes</span><small id="grpPrice"></small></summary>
+            <div class="grpbody">
+              <label class="switch"
+                ><input type="checkbox" id="xdp" /><span>Convert expected price changes (xΔ$) into expected price change points (xΔ$Pts)</span></label
               >
-            </div></label
-          >
-          <div class="field">
-            Plan for
-            <div class="seg" id="horizon">
-              <button data-horizon="1">Next race</button><button data-horizon="2">2 races</button><button data-horizon="3">3 races</button>
+              <div class="field" id="xdpBox" hidden>
+                <span id="xdpLabel"></span>
+                <div class="slider" style="grid-template-columns: 1fr 64px">
+                  <input id="valW" type="range" min="0" max="5" step="0.1" aria-label="Points per $1m per race" /><output id="valWv" class="good"></output>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="field">
-            Select a chip
-            <div class="chipbar" id="chipBar"></div>
-          </div>
-          <label class="switch"
-            ><input type="checkbox" id="xdp" /><span>Convert expected price changes (xΔ$) into expected price change points (xΔ$Pts)</span></label
-          >
-          <div class="field" id="xdpBox" hidden>
-            <span id="xdpLabel"></span>
-            <div class="slider" style="grid-template-columns: 1fr 64px">
-              <input id="valW" type="range" min="0" max="5" step="0.1" aria-label="Points per $1m per race" /><output id="valWv" class="good"></output>
-            </div>
-          </div>
-          <details class="edit">
-            <summary>Chips this team has used</summary>
-            <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
           </details>
         </section>
         <div

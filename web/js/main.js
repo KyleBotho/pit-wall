@@ -904,6 +904,38 @@ document.addEventListener("keydown", (e) => {
   });
 }
 
+// Settings sections remember whether they're open (the toggle event doesn't bubble: listen in the capture phase)
+document.addEventListener(
+  "toggle",
+  (e) => {
+    const d = /** @type {HTMLElement} */ (e.target);
+    if (!d.matches || !d.matches("details.grp")) return;
+    state.calcGrp[d.dataset.grp] = /** @type {HTMLDetailsElement} */ (d).open;
+    save();
+  },
+  true,
+);
+// every table's alignment follows its content (core.js alignTable), re-applied whenever a table is rebuilt
+{
+  const due = new Set();
+  let queued = false;
+  new MutationObserver((ms) => {
+    for (const m of ms) {
+      const el = /** @type {Element} */ (m.target);
+      const t = el.closest && el.closest("table");
+      if (t) due.add(t);
+      else if (el.querySelectorAll) el.querySelectorAll("table").forEach((x) => due.add(x));
+    }
+    if (queued || !due.size) return;
+    queued = true;
+    queueMicrotask(() => {
+      queued = false;
+      due.forEach(alignTable);
+      due.clear();
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
 /* ---------- start-up ---------- */
 if (SEASON_OVER) {
   $$("#nav button").forEach(
@@ -924,6 +956,7 @@ $("#menuList").innerHTML = $$("#nav button")
 compute();
 renderHeader();
 showView(state.view);
+$$("table").forEach(alignTable);
 if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
 if (DATA.leagueSealed) {
   let k = null;

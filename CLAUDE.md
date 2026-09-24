@@ -351,5 +351,12 @@ User-approved order: 1–5, then the rest.
     at content width (`.lvgrid`), roomier heat tables, Settings stacks Account + Model left. Type: tables/notes 14px
     (13px in the Calculator), `--dim` #8b8b94. Drivers with two assets show the team (`DUP_TLA`, all name cells use
     `who()`).
+- [x] 2026-09-24 Calculator Settings in collapsible sections (`details.grp`: Starting team / Plan & chip / Price changes),
+    each summarised in its header while closed; open state in `state.calcGrp` (per device, not synced). Table
+    alignment: `alignTable` (core.js) classes every column from its cells (text left, numbers right, controls and mini
+    charts centred, number boxes right; the header follows), re-run by a MutationObserver in main.js whenever a table
+    changes, so new tables need no alignment CSS. Found with it: tables with class "stat" also matched the tile rule
+    `.stat` (display:flex), so Live/Statistics/league headers didn't line up with their columns; that rule is now
+    `.stat:not(table)`. Checked in the browser: 16 tables, every header over its column, one alignment per column.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

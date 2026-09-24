@@ -465,6 +465,66 @@ details.info .infobox {
 .vsplit {
   display: none;
 }
+/* the Calculator's Settings sections: a header row (title, then a summary of the values while it's closed) */
+.panel:has(> details.grp) {
+  gap: 0;
+}
+.panel:has(> details.grp) > h3 {
+  margin-bottom: 8px;
+}
+details.grp {
+  border-top: 1px solid var(--line);
+}
+details.grp > summary {
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 12px 0;
+  cursor: pointer;
+  font: 600 14px var(--ui);
+}
+details.grp > summary::-webkit-details-marker {
+  display: none;
+}
+details.grp > summary::before {
+  /* a chevron drawn with borders: points right when closed, down when open */
+  content: "";
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin: 0 4px 2px 2px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 0.12s;
+  align-self: center;
+}
+details.grp[open] > summary::before {
+  transform: rotate(45deg);
+}
+details.grp > summary small {
+  margin-left: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 12px;
+}
+details.grp[open] > summary small {
+  visibility: hidden; /* the fields show the values */
+}
+details.grp > summary:hover {
+  color: var(--fg);
+}
+.grpbody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 14px;
+}
 /* Simulation presets (Calculator): point types, decay / window, per-round weights */
 .simpast {
   display: flex;
@@ -748,7 +808,8 @@ details.info .infobox {
   overflow: hidden;
   outline: 1px solid var(--line);
 }
-.stat {
+/* a number tile; tables also use the class "stat" (row styling below), so keep tables out of this one */
+.stat:not(table) {
   background: var(--card);
   padding: 8px 10px;
   display: flex;
@@ -1069,6 +1130,20 @@ tbody tr:hover td {
 }
 .heat.stat th {
   padding: 6px 9px;
+}
+/* one alignment rule for every table (core.js alignTable sets these per column): text left, numbers right,
+   controls and mini charts centred; a header follows its column */
+:is(th, td).al-l {
+  text-align: left;
+}
+:is(th, td).al-r {
+  text-align: right;
+}
+:is(th, td).al-c {
+  text-align: center;
+}
+td.al-r input[type="number"] {
+  text-align: right;
 }
 /* Live: league standings and the points table side by side, each as wide as its content */
 .lvgrid {

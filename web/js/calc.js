@@ -112,6 +112,18 @@ function renderSettings() {
   $("#maxPen").value = state.maxPen == null ? "any" : String(state.maxPen);
   $("#maxPen").disabled = !!T.none || chipK === "wildcard" || chipK === "limitless";
   $("#maxBudget").disabled = !T.none;
+  // the sections: open as the user left them, each summarised in its header
+  for (const d of $$("#view-calc details.grp")) {
+    const open = state.calcGrp[d.dataset.grp] !== false;
+    if (d.open !== open) d.open = open;
+  }
+  const free = +T.free || 0;
+  $("#grpTeam").textContent = T.none
+    ? `none · max ${money(+state.maxBudget || 100)}`
+    : `${T.name} · ${money(+T.bank || 0)} · ${free >= 4 ? "∞" : free} free`;
+  $("#grpPlan").textContent =
+    `${horizon() === 1 ? "next race" : horizon() + " races"} · ${chipK ? (CHIPS.find(([k]) => k === chipK) || [])[2] : "no chip"}`;
+  $("#grpPrice").textContent = state.xdp ? `xΔ$Pts on · ${(+state.valW).toFixed(1)} pts per $1m` : "xΔ$Pts off";
   // a starting team plans from its budget and transfers; no team plans from a maximum budget
   $("#budgetField").hidden = $("#maxPen").closest(".field").hidden = !!T.none;
   $("#maxOr").hidden = $("#maxField").hidden = !T.none;
