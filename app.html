@@ -397,7 +397,7 @@ function defaultTeam() {
 }
 const newTeam = (name) => Object.assign({ name, free: 2, chipsUsed: {}, boost: "auto", example: true }, defaultTeam());
 const DEF = { teams: [newTeam("Team 1"), newTeam("Team 2"), newTeam("Team 3")], active: 0, drafts: [],
-  halfLife: 4, blend: 0.3, sims: 5000, adj: {}, marks: {}, circuits: {}, heat: true,
+  halfLife: 4, blend: 0.3, sims: 10000, adj: {}, marks: {}, circuits: {}, heat: true,
   horizon: 1, chip: "", maxT: 3, valW: 0, pw: 1, view: "calc", pane: "team", kind: "D", raceIdx: 0, grid: "r", sort: { k: "x", d: -1 } };
 let S = Object.assign({}, DEF);
 try {
@@ -415,6 +415,7 @@ while (S.teams.length < 3) S.teams.push(newTeam("Team " + (S.teams.length + 1)))
 for (const t of S.teams) { t.team = (t.team || []).filter((id) => byId[id]); if (t.team.length !== 7) Object.assign(t, defaultTeam(), { example: true }); }
 S.drafts = (S.drafts || []).filter((d) => d.team && d.team.filter((id) => byId[id]).length === 7);
 S.active = Math.min(2, Math.max(0, S.active | 0));
+if (!S.sims10k) { S.sims = 10000; S.sims10k = true; } // one-time move of saved settings to the new 10,000 default
 const VIEWS = ["calc", "league", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
 if (!VIEWS.includes(S.view)) S.view = "calc";
 const A = () => S.teams[S.active];
