@@ -342,7 +342,7 @@
   }
 
   /* ---------- optimiser ---------- */
-  // cand: [{id, kind, price, e, eNext, active, f?}], team: ids, opts: {cap, free, maxT, chip, locks:Set, bans:Set, top, filters?}
+  // cand: [{id, kind, price, e, eNext, active, f?}], team: ids, opts: {cap, free, maxT, chip, locks:Set, bans:Set, top, filters?, penW?}
   // filters: [{k, min, max}] on the whole team. k is "cost", "score" (after Boost and penalties) or a key of each
   // candidate's f (additive per asset, e.g. price change or points in a scoring category; not multiplied by Boost).
   function optimise(cand, team, o) {
@@ -392,7 +392,7 @@
       if (!noCap && c.cost + p.cost > o.cap + 1e-6) continue;
       const t = 7 - c.keep - p.keep;
       if (!unlimited && t > o.maxT) continue;
-      const pen = unlimited ? 0 : 10 * Math.max(0, t - o.free);
+      const pen = unlimited ? 0 : (o.penW ?? 10) * Math.max(0, t - o.free); // penW 0: rank by a non-points goal
       const score = c.val + p.val - pen;
       if (score <= floor && top.length >= K) continue;
       if (F.length && !passes(c, p, score)) continue;

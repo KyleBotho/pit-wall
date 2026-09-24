@@ -132,9 +132,12 @@ User-approved order: 1–5, then the rest.
    line-up changes there. With NN modelled, best reachable >= official holds for every team-round except Final Fix.
 5. [x] Statistics view: asset × round table (points, price, Δ$, pts/$m, ownership), scoring-category filter,
    AVG column/row, heatmap, own-team highlight, cell click -> that round's scoring lines.
-6. [ ] Elite ownership ± per round: log top-500 line-ups through the Baku weekend first to learn when the public
-   leaderboard's line-ups update (their site snapshots after the qualifying lock).
-7. [ ] League chart: "relative to you" and race-points modes, chip markers.
+6. [x] Elite ownership ± per round: every build saves `history/2026/elite/<feedTime>_<hash>.json` when the top-500
+   line-ups change (`firstSeen` = when we first saw it); the page shows ± vs the previous round's snapshot (from R15).
+   [ ] After Baku: read the `firstSeen` times to learn whether the feed's line-ups change at lock or only after the
+   race (their site snapshots after the qualifying lock). If only after, the ± compares post-race line-ups.
+7. [x] League chart (Total / Relative to a chosen team / Race points / Rank, chip badges; rivals' chips need an
+   import, which now keeps each chip's round as `chipGd`): "relative to you" and race-points modes, chip markers.
 8. [x] Direct xPts override per asset (alongside pace nudges).
 9. [x] Calculator rework to match f1fantasytools' Team Calculator (user's screenshots, 2026-09-24; he likes its
    layout and settings pane). Layout: Best Teams (wide, left) | Settings (middle) | Drivers + Constructors (right).
@@ -155,5 +158,8 @@ User-approved order: 1–5, then the rest.
      gets xΔ$Pts and xSPts (= xPts + xΔ$Pts) columns and ranks by xSPts; Drivers/Constructors tables get xΔ$Pts and
      xSPts columns. Our existing "Value of $1m" setting is this rate; make it this toggle + slider.
    - Drivers/Constructors tables: search box, Columns picker, editable xPts (ties in with item 8).
+   - Later asks, done: Best Teams column headers sort AND set the optimiser's goal (`S.bsort`; $ / xPts / xΔ$ /
+     xΔ$Pts / xSPts / odds; value goals use `penW: 0`). On screens ≥1281px the Calculator fits the window and each
+     pane scrolls on its own (the page doesn't).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

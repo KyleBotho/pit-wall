@@ -175,6 +175,8 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:grid;place-items:center;z-index:70;padding:16px}
 .mbox{max-width:440px;width:100%;max-height:85vh;overflow:auto}
 .mline{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0;border-bottom:1px solid #18181B}
+.bestt th.bsort{cursor:pointer;user-select:none}
+.bestt th.bsort:hover,.bestt th[aria-sort]{color:var(--fg)}
 .bestt td{padding:8px 5px;vertical-align:middle;border-bottom:1px solid var(--line)}
 .bestt th{padding:6px 5px;height:auto}
 .bestt td.tl{text-align:left}
@@ -239,6 +241,20 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
   .calc [data-pane]:not(.on){display:none}
   .calc .col:not(:has(.on)){display:none}
   .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+/* Calculator on wide screens: fits the window; each pane scrolls on its own, the page doesn't */
+@media (min-width:1281px){
+  body:has(#view-calc:not([hidden])){overflow:hidden}
+  body:has(#view-calc:not([hidden])) .shell{padding-bottom:12px}
+  #view-calc .calc{height:calc(100dvh - 92px);align-items:stretch}
+  #view-calc .calc > .col{min-height:0;height:100%;display:flex;flex-direction:column}
+  #view-calc .calc .panel{min-height:0}
+  #view-calc [data-pane="best"],#view-calc [data-pane="drivers"],#view-calc [data-pane="cons"]{flex:1 1 0;overflow:hidden}
+  #view-calc [data-pane="best"] .tw,#view-calc [data-pane="drivers"] .tw,#view-calc [data-pane="cons"] .tw{flex:1 1 auto;min-height:0;overflow:auto}
+  #view-calc [data-pane="settings"]:first-child{flex:1 1 auto;overflow-y:auto}
+  #view-calc [data-pane="settings"]:last-child{flex:0 0 auto}
+  #view-calc thead th{position:sticky;top:0;z-index:3;background:var(--card)}
+  #view-calc thead th:first-child{z-index:4}
 }
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
@@ -339,7 +355,9 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <div class="tw"><table id="lgTable"></table></div>
       </section>
       <section class="panel">
-        <h3>Points race <small>cumulative, by round</small></h3>
+        <h3>Points race <span class="seg" id="lgMode"><button data-lgm="total">Total</button><button data-lgm="rel">Relative</button><button data-lgm="race">Race points</button><button data-lgm="rank">Rank</button></span></h3>
+        <div class="chipbar" style="align-items:center;gap:12px"><label class="field" id="lgRefBox" style="flex-direction:row;align-items:center;gap:8px">Compare with<select id="lgRef" class="inp" style="width:auto"></select></label>
+          <label class="switch"><input type="checkbox" id="lgChips"><span>Show chips</span></label></div>
         <div id="lgChart" style="position:relative"></div>
       </section>
       <section class="panel">
@@ -383,6 +401,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <h3>Elite ownership <small>vs your teams</small></h3>
         <p class="note">Share of the global top 10 / 100 / 500 teams owning each asset, against everyone's ownership. <b>Differential</b> marks assets your active team owns that the top 100 mostly doesn't (a chance to gain), and top-100 staples your active team is missing (a risk).</p>
         <div class="tw"><table id="elOwn"></table></div>
+        <p class="note" id="elOwnNote"></p>
       </section>
     </div>
   </main>
@@ -749,6 +768,9 @@ function optionList(kind, sel) {
 /* ---------- import from an F1 Fantasy data export (runs only in this browser) ---------- */
 const dec = (x) => { try { return decodeURIComponent(x || ""); } catch (e) { return x || ""; } };
 const on = (v) => v != null && +v > 0;
+// the gameday each chip was played, from an export's team record
+const CHIP_GD = { wildcard: ["is_wildcard_taken_gd_id", "wildcardtakengd"], limitless: ["limitlesstakengd"], x3: ["extradrstakengd"], finalfix: ["finalfixtakengd"], autopilot: ["autopilottakengd"], noneg: ["nonigativetakengd"] };
+const chipRounds = (u) => Object.fromEntries(Object.entries(CHIP_GD).map(([k, fs]) => [k, fs.map((f) => +u[f] || 0).find((v) => v > 0) || null]).filter(([, v]) => v));
 function chipsFrom(u) {
   return { wildcard: on(u.is_wildcard_taken_gd_id) || on(u.wildcardtakengd), limitless: on(u.limitlesstakengd), x3: on(u.extradrstakengd),
     finalfix: on(u.finalfixtakengd), autopilot: on(u.autopilottakengd), noneg: on(u.nonigativetakengd) };
@@ -788,7 +810,7 @@ function importOfficial(d) {
       const md = m.gamedays?.Data?.Value?.mdDetails || {};
       const hist = Object.keys(md).map(Number).sort((a, b) => a - b).map((k) => ({ gd: k, pts: +md[k].pts || 0 }));
       // only what the planner needs: no account ids or user names are kept
-      return { name, pts: +meta.cur_points || 0, ids: lineup(u), boost: String(u.capplayerid || ""), bank: +u.teambal || 0, chips: chipsFrom(u), hist, mine: mine.has(name) };
+      return { name, pts: +meta.cur_points || 0, ids: lineup(u), boost: String(u.capplayerid || ""), bank: +u.teambal || 0, chips: chipsFrom(u), chipGd: chipRounds(u), hist, mine: mine.has(name) };
     }).sort((a, b) => b.pts - a.pts);
     S.league = { name: dec(info.leagueName) || "League", max: info.maxMem, collected: d.collected_at, round: latest, members };
     res.league = members.length;
@@ -877,25 +899,52 @@ function teamHist(name) {
   return im ? im.hist : [];
 }
 const cumPts = (hist, gds) => { let c = 0; const by = Object.fromEntries(hist.map((h) => [h.gd, h.pts])); return gds.map((gd) => ({ v: (c += by[gd] || 0), r: by[gd] ?? null })); };
+// chip badges for a team's line: your teams from the saved line-ups, rivals from an import
+function chipMarks(name, gds) {
+  const L = lineups(name), im = S.league && S.league.members.find((m) => m.name === name), short = (k) => (CHIPS.find(([c]) => c === k) || [])[1];
+  const at = {};
+  if (L) for (const [g, r] of Object.entries(L)) if (r.chip) at[+g] = short(r.chip);
+  if (im && im.chipGd) for (const [k, g] of Object.entries(im.chipGd)) if (!at[g]) at[g] = short(k);
+  return gds.map((g) => at[g] || null);
+}
 function renderLeagueChart(L) {
-  const withH = L.members.filter((m) => m.hist.length);
+  const mode = S.lgMode || "total", withH = L.members.filter((m) => m.hist.length);
   const gds = [...new Set(withH.flatMap((m) => m.hist.map((h) => h.gd)))].sort((a, b) => a - b);
-  lineChart($("#lgChart"), gds, withH.map((m) => ({ name: m.name, me: m.name === A().name, pts: cumPts(m.hist, gds) })), "Cumulative league points by round");
+  const cum = new Map(withH.map((m) => [m.name, cumPts(m.hist, gds)]));
+  const ref = cum.has(S.lgRef) ? S.lgRef : cum.has(A().name) ? A().name : withH[0] && withH[0].name;
+  $$("#lgMode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lgm === mode)));
+  $("#lgRefBox").hidden = mode !== "rel";
+  $("#lgRef").innerHTML = withH.map((m) => `<option ${m.name === ref ? "selected" : ""}>${esc(m.name)}</option>`).join("");
+  $("#lgChips").checked = !!S.lgChips;
+  // league rank after each round, from the running totals
+  const rankAt = (i, name) => 1 + withH.filter((m) => m.name !== name && cum.get(m.name)[i].v > cum.get(name)[i].v).length;
+  const series = withH.map((m) => {
+    const c = cum.get(m.name);
+    const pts = mode === "rel" ? c.map((p, i) => ({ v: p.v - cum.get(ref)[i].v, r: p.r }))
+      : mode === "race" ? c.map((p) => ({ v: p.r, r: null }))
+      : mode === "rank" ? c.map((p, i) => ({ v: rankAt(i, m.name), r: p.r }))
+      : c;
+    return { name: m.name, me: m.name === A().name, pts, marks: S.lgChips ? chipMarks(m.name, gds) : null };
+  });
+  const opts = mode === "rank" ? { invert: true, fmt: (v) => "#" + v } : mode === "rel" ? { fmt: (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString() } : {};
+  lineChart($("#lgChart"), gds, series, { total: "Cumulative league points by round", rel: `Points relative to ${ref}`, race: "Points scored each round", rank: "League position after each round" }[mode], opts);
 }
 // Cumulative line chart on a gameday axis. series: [{name, me, color, dash, pts: [{v, r}] aligned with gds}]; v null = no data.
-function lineChart(box, gds, series, label) {
+function lineChart(box, gds, series, label, opt = {}) {
   series = series.filter((s) => s.pts.some((p) => p.v != null));
   if (!series.length || !gds.length) { box.innerHTML = '<p class="note">No round history yet.</p>'; return; }
   const W = 640, H = 260, ml = 44, mr = 120, mt = 10, mb = 26;
   const vs = series.flatMap((s) => s.pts.map((p) => p.v).filter((v) => v != null));
-  const maxV = Math.max(0, ...vs), minV = Math.min(0, ...vs), span = maxV - minV;
-  const step = span > 3000 ? 1000 : span > 1000 ? 500 : span > 400 ? 100 : 50;
-  const top = Math.max(step, Math.ceil(maxV / step) * step), lo = Math.floor(minV / step) * step;
-  const x = (i) => ml + (i / Math.max(1, gds.length - 1)) * (W - ml - mr), y = (v) => mt + (1 - (v - lo) / (top - lo)) * (H - mt - mb);
+  const inv = !!opt.invert, fmt = opt.fmt || ((v) => (v < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString());
+  const maxV = inv ? Math.max(...vs) : Math.max(0, ...vs), minV = inv ? Math.min(1, ...vs) : Math.min(0, ...vs), span = Math.max(1, maxV - minV);
+  const step = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000].find((st) => span / st <= 7) || 5000;
+  const top = Math.max(step, Math.ceil(maxV / step) * step), lo = inv ? Math.max(1, Math.floor(minV / step) * step) : Math.floor(minV / step) * step;
+  const x = (i) => ml + (i / Math.max(1, gds.length - 1)) * (W - ml - mr);
+  const y = (v) => { const t = (v - lo) / Math.max(1e-9, top - lo); return mt + (inv ? t : 1 - t) * (H - mt - mb); }; // rank: 1 at the top
   const col = (s) => (s.me ? "#A855F7" : s.color || "#71717A");
   const lastI = (s) => s.pts.reduce((k, p, i) => (p.v != null ? i : k), -1);
   let g = "";
-  for (let v = lo; v <= top; v += step) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 && lo < 0 ? "#52525B" : "#27272A"}" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${v.toLocaleString()}</text>`;
+  for (let v = lo; v <= top; v += step) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 && lo < 0 ? "#52525B" : "#27272A"}" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${esc(fmt(v))}</text>`;
   const every = Math.ceil(gds.length / 12);
   gds.forEach((gd, i) => { if (i % every === 0 || i === gds.length - 1) g += `<text x="${x(i)}" y="${H - 6}" fill="#A1A1AA" font-size="11" text-anchor="middle">R${gd}</text>`; });
   const labels = series.map((s) => ({ s, y: y(s.pts[lastI(s)].v) })).sort((a, b) => a.y - b.y);
@@ -907,6 +956,12 @@ function lineChart(box, gds, series, label) {
     const li = lastI(s);
     g += `<circle cx="${x(li)}" cy="${y(s.pts[li].v)}" r="4" fill="${col(s)}" stroke="#0A0A0A" stroke-width="2"/>`;
   }
+  // chip badges where a chip was played
+  for (const s of series) (s.marks || []).forEach((m, i) => {
+    if (!m || s.pts[i].v == null) return;
+    const cx = x(i), cy = y(s.pts[i].v) - 13, w = m.length * 6.5 + 8;
+    g += `<g><rect x="${cx - w / 2}" y="${cy - 8}" width="${w}" height="15" rx="4" fill="${col(s)}"/><text x="${cx}" y="${cy + 3}" fill="#0A0A0A" font-size="10" font-weight="700" text-anchor="middle">${esc(m)}</text><title>${esc(s.name)}: ${esc(m)} in R${gds[i]}</title></g>`;
+  });
   for (const l of labels) g += `<text x="${W - mr + 10}" y="${l.y + 4}" fill="${l.s.me ? "#FAFAFA" : "#A1A1AA"}" font-size="11" font-weight="${l.s.me ? 600 : 400}">${esc(l.s.name.length > 16 ? l.s.name.slice(0, 15) + "…" : l.s.name)}</text>`;
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">${g}<line class="cx" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
   const svg = box.querySelector("svg"), tip = box.querySelector(".lgtip"), cross = box.querySelector(".cx");
@@ -914,8 +969,8 @@ function lineChart(box, gds, series, label) {
     const r = svg.getBoundingClientRect(), px = ((ev.clientX - r.left) / r.width) * W;
     const i = Math.max(0, Math.min(gds.length - 1, Math.round(((px - ml) / (W - ml - mr)) * (gds.length - 1))));
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
-    const rows = series.filter((s) => s.pts[i].v != null).map((s) => ({ n: s.name, v: s.pts[i].v, r: s.pts[i].r, me: s.me })).sort((a, b) => b.v - a.v);
-    tip.innerHTML = `<b>Round ${gds[i]}</b>` + rows.map((q) => `<div style="${q.me ? "color:#FAFAFA;font-weight:600" : "color:#A1A1AA"}"><span>${esc(q.n)}</span><span>${(q.v < 0 ? "−" : "") + Math.abs(Math.round(q.v)).toLocaleString()}${q.r != null ? ` <span class="dim">(+${q.r})</span>` : ""}</span></div>`).join("");
+    const rows = series.filter((s) => s.pts[i].v != null).map((s) => ({ n: s.name, v: s.pts[i].v, r: s.pts[i].r, me: s.me, m: s.marks && s.marks[i] })).sort((a, b) => (inv ? a.v - b.v : b.v - a.v));
+    tip.innerHTML = `<b>Round ${gds[i]}</b>` + rows.map((q) => `<div style="${q.me ? "color:#FAFAFA;font-weight:600" : "color:#A1A1AA"}"><span>${esc(q.n)}${q.m ? ` <b style="color:var(--accent)">${esc(q.m)}</b>` : ""}</span><span>${esc(fmt(q.v))}${q.r != null ? ` <span class="dim">(+${q.r})</span>` : ""}</span></div>`).join("");
     tip.hidden = false;
     tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, (x(i) / W) * r.width + 12)) + "px"; tip.style.top = "8px";
   };
@@ -971,16 +1026,23 @@ function renderElite() {
     $("#elChips").innerHTML = `<tbody><tr><td class="muted" style="position:static">Chip timing and Boost share come from a top-100 line-ups export. Run <code>elite_import.py</code> on one to add them.</td></tr></tbody>`;
   }
 
+  const sn = El.snaps || [], lastSn = sn[sn.length - 1], fmtT = (x) => new Date(x).toLocaleString(undefined, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  $("#elOwnNote").textContent = (El.ownPrev ? `± = change in ownership since R${El.prevGd}, in percentage points. ` : "The ± columns appear once a second round's line-ups are recorded. ") +
+    (lastSn ? `Line-ups recorded ${sn.length} time${sn.length > 1 ? "s" : ""}; last change first seen ${fmtT(lastSn.firstSeen)}.` : "");
+
   // ownership vs your teams
   const act = A().team;
+  // change since the previous round's snapshot (the ± columns); needs two rounds of snapshots
+  const pv = El.ownPrev, dOwn = (id, t) => (pv ? o(id, t) - (pv[id] ? pv[id][t] : 0) : null);
+  const dCell = (v) => (v == null ? "" : `<td class="${v > 0.005 ? "good" : v < -0.005 ? "bad" : "muted"}" style="font-size:12px">${Math.abs(v) < 0.005 ? "0" : (v > 0 ? "+" : "−") + Math.round(Math.abs(v) * 100)}</td>`);
   const rows = DATA.assets.filter((a) => (a.active || a.kind === "C") && (own[a.id] || S.teams.some((t) => t.team.includes(a.id))))
     .sort((x, y) => o(y.id, 1) - o(x.id, 1) || o(y.id, 2) - o(x.id, 2));
-  $("#elOwn").innerHTML = `<thead><tr><th>Asset</th><th>Top 10</th><th>Top 100</th><th>Top 500</th><th title="All players">All</th>${top ? `<th title="Share of the top 100 boosting this driver in R${top.round}">Boost</th>` : ""}<th style="text-align:left">Your teams</th><th style="text-align:left">For ${esc(A().name)}</th></tr></thead><tbody>` +
+  $("#elOwn").innerHTML = `<thead><tr><th>Asset</th><th>Top 10</th><th>Top 100</th>${pv ? `<th title="Change in top-100 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th>Top 500</th>${pv ? `<th title="Change in top-500 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th title="All players">All</th>${top ? `<th title="Share of the top 100 boosting this driver in R${top.round}">Boost</th>` : ""}<th style="text-align:left">Your teams</th><th style="text-align:left">For ${esc(A().name)}</th></tr></thead><tbody>` +
     rows.map((a) => {
       const p100 = o(a.id, 1), has = act.includes(a.id);
       const tag = has && p100 < 0.3 ? '<span class="good">Differential</span>' : !has && p100 >= 0.7 ? '<span class="bad">Missing staple</span>' : has ? '<span class="muted">Owned</span>' : "";
       return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
-        <td>${pct(o(a.id, 0))}</td><td${heat(p100, 0, 1)}><b>${pct(p100)}</b></td><td>${pct(o(a.id, 2))}</td><td class="muted">${f0(a.own)}%</td>
+        <td>${pct(o(a.id, 0))}</td><td${heat(p100, 0, 1)}><b>${pct(p100)}</b></td>${pv ? dCell(dOwn(a.id, 1)) : ""}<td>${pct(o(a.id, 2))}</td>${pv ? dCell(dOwn(a.id, 2)) : ""}<td class="muted">${f0(a.own)}%</td>
         ${top ? `<td>${top.boost && top.boost[a.id] ? pct(top.boost[a.id]) : "—"}</td>` : ""}
         <td style="text-align:left">${S.teams.map((t, i) => t.team.includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "").join("")}</td><td style="text-align:left">${tag}</td></tr>`;
     }).join("") + "</tbody>";
@@ -996,7 +1058,7 @@ function renderEliteSeason(El) {
   $$("#elMode button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.em === "gap") === gap)));
   const cuts = ["1", "10", "100", "500"].filter((k) => Hs.some((h) => h.cut && h.cut[k] != null))
     .map((k) => ({ name: "#" + k, dash: true, pts: rel(gds.map((gd) => ({ v: byGd[gd]?.cut?.[k] ?? null, r: null }))) }));
-  lineChart($("#elSeasonChart"), gds, cuts.concat(mine.map(({ t, h }) => ({ name: t.name, me: t === A(), color: "#D4D4D8", pts: rel(cumPts(h, gds)) }))),
+  lineChart($("#elSeasonChart"), gds, cuts.concat(mine.map(({ t, h }) => ({ name: t.name, me: t === A(), color: "#D4D4D8", pts: rel(cumPts(h, gds)), marks: chipMarks(t.name, gds) }))),
     gap ? "Points above or below the global top-100 cut-off, by round" : "Cumulative points: your teams against global cut-offs");
   $("#elSeasonNote").textContent = (gap ? "Points above or below the global top-100 cut-off after each round. " : "Cumulative points after each round. ") +
     (mine.length ? "" : "Unlock your leagues on the League tab to add your teams.");
@@ -1363,6 +1425,14 @@ function renderSettings() {
 let lastResults = [], rows = { cur: null, pin: [], best: [] };
 const BCOLS = [["xd", "xΔ$", "Expected price change of the team ($m)"], ["xdp", "xΔ$Pts", "Expected price change points"], ["xsp", "xSPts", "xPts + xΔ$Pts"], ["tr", "Transfers", "Transfers from the starting team"],
   ["dnf", "DNF", "Expected retirements in the team"], ["fl", "FL", "Fastest-lap odds, summed"], ["dotd", "DotD", "Driver of the Day odds, summed"], ["ov", "xOV", "Expected overtakes"], ["neg", "xNeg", "Expected negative points"]];
+// sortable Best Teams columns: [key, header, tooltip]; the sort is also the optimiser's goal
+const BSORT = [["cost", "$", "Total cost"], ["x", "xPts", "Expected points"], ["xd", "xΔ$", "Expected price change"], ["xdp", "xΔ$Pts", "Expected price change points"], ["xsp", "xSPts", "Expected points + price change points"],
+  ["dnf", "DNF", "Expected retirements"], ["fl", "FL", "Fastest-lap odds"], ["dotd", "DotD", "Driver of the Day odds"], ["ov", "xOV", "Expected overtakes"], ["neg", "xNeg", "Expected negative points"]];
+function bestSort() {
+  const b = S.bsort, def = { k: S.xdp ? "xsp" : "x", d: -1 };
+  if (!b || ((b.k === "xsp" || b.k === "xdp") && !S.xdp)) return def;
+  return b;
+}
 const visCols = () => BCOLS.filter(([k]) => (S.bcols || {})[k] ?? (k === "xd" ? !S.xdp : k === "xdp" || k === "xsp" ? !!S.xdp : false));
 const sameTeam = (a, b) => a.length === b.length && a.every((id) => b.includes(id));
 function calcCtx() {
@@ -1388,20 +1458,23 @@ function calcCtx() {
 function runOptimiser() {
   const C = calcCtx(), { chipK, H, T, vp, e, stats, boosts } = C;
   const fprop = (id) => { const p = R.proj[0][id], st = p.st || {}; return { d: R.price[id].ev || 0, dnf: st.dnf || 0, fl: st.fl || 0, dotd: st.dotd || 0, ov: st.xov || 0, neg: p.mean - p.nn }; };
-  const cand = DATA.assets.map((a) => ({ id: a.id, kind: a.kind, price: a.price, active: a.kind === "C" || a.active, e: e(a.id) + vp(a.id), boostE: e(a.id), f: fprop(a.id) }))
+  // the ranked list follows the sorted column: the optimiser maximises that column (or minimises it, ascending)
+  const bs = bestSort(), sg = -bs.d, pts = bs.k === "x" || bs.k === "xsp";
+  const goal = (id) => { const f = fprop(id); return bs.k === "x" ? e(id) : bs.k === "xsp" ? e(id) + vp(id) : bs.k === "xdp" ? vp(id) : bs.k === "cost" ? byId[id].price : f[bs.k] ?? 0; };
+  const cand = DATA.assets.map((a) => ({ id: a.id, kind: a.kind, price: a.price, active: a.kind === "C" || a.active, e: sg * goal(a.id), boostE: pts ? sg * e(a.id) : 0, f: fprop(a.id) }))
     .filter((c) => R.idx[c.id] != null);
   const locks = new Set(Object.keys(S.marks).filter((k) => S.marks[k] === "lock"));
   const bans = new Set(Object.keys(S.marks).filter((k) => S.marks[k] === "ban"));
   const flt = filters("calc");
-  const res = E.optimise(cand, T.team, { cap: cap(), free: T.none ? 7 : +T.free || 0, maxT: maxTransfers(T), chip: chipK, locks, bans, top: 60, filters: flt });
+  const res = E.optimise(cand, T.team, { cap: cap(), free: T.none ? 7 : +T.free || 0, maxT: maxTransfers(T), chip: chipK, locks, bans, top: 60, filters: flt, penW: pts ? 10 : 0 });
   lastResults = res;
 
   const mk = (ids, boost, boost2) => ({ ids, boost, boost2, st: stats(ids, boost, boost2) });
   rows.cur = T.none ? null : (() => { const bs = boosts(T.team), b = boostFor(T.team, 0, T); return mk(T.team.slice(), chipK === "x3" ? bs[0] : b, chipK === "x3" ? bs[1] : null); })();
   S.pins = (S.pins || []).filter((p) => p.ids.every((id) => byId[id]));
   rows.pin = S.pins.map((p) => { const [b1, b2] = boosts(p.ids); return mk(p.ids, b1, b2); });
-  rows.best = res.map((r) => mk(r.drivers.concat(r.cons), r.boost, r.boost2));
-  if (chipK === "autopilot") rows.best.sort((a, b) => b.st.xsp - a.st.xsp);
+  rows.best = res.map((r) => { const ids = r.drivers.concat(r.cons), [b1, b2] = pts ? [r.boost, r.boost2] : boosts(ids); return mk(ids, b1, b2); });
+  rows.best.sort((a, b) => (a.st[bs.k] - b.st[bs.k]) * bs.d);
 
   const bits = [H > 1 ? `Summed over the next ${H} races, keeping the team.` : `For ${NEXT.name}.`];
   if (chipK === "limitless") bits.push("Limitless: no budget cap or transfer limit; the team reverts after the race.");
@@ -1410,13 +1483,14 @@ function runOptimiser() {
   if (S.xdp) bits.push(`xΔ$Pts: ${(+S.valW).toFixed(1)} pts per $1m per race over ${C.rem} races; ranked by xSPts = xPts + xΔ$Pts.`);
   if (locks.size || bans.size) bits.push(`${locks.size} included, ${bans.size} excluded.`);
   if (flt.length) bits.push(`${flt.length} team filter${flt.length > 1 ? "s" : ""}.`);
+  if (!pts || bs.d > 0) bits.push(`Ranked by ${(BSORT.find(([k]) => k === bs.k) || [])[1]} (${bs.d < 0 ? "highest" : "lowest"} first); click a column header to change.`);
   $("#optNote").textContent = bits.join(" ");
   $("#bestNote").textContent = `${T.name} · ${chipK === "limitless" ? "no budget cap" : (T.none ? "max budget " : "budget ") + money(cap())}`;
   $("#colList").innerHTML = BCOLS.map(([k, n, t]) => `<label class="switch" title="${esc(t)}"><input type="checkbox" data-bcol="${k}" ${visCols().some(([c]) => c === k) ? "checked" : ""}><span>${esc(n)} <span class="dim">${esc(t)}</span></span></label>`).join("");
   renderBestTable(C);
 }
 function renderBestTable(C) {
-  const { chipK, T, vp, e } = C, cols = visCols(), sortK = S.xdp ? "xsp" : "x";
+  const { chipK, T, vp, e } = C, cols = visCols(), bs = bestSort(), sortK = bs.k;
   const ncol = 7 + cols.length;
   const mult = (r, id) => (id === r.boost ? (chipK === "x3" ? 3 : 2) : id === r.boost2 ? 2 : 1);
   const tile = (r, id, kind) => chip(id, { pts: e(id) * mult(r, id), b: S.xdp ? f1(vp(id)) : sgn(R.price[id].ev || 0, 2).replace("−0.00", "0.00"),
@@ -1441,12 +1515,14 @@ function renderBestTable(C) {
     const st = r.st, over = !C.unlimited && kind === "pin" && st.cost > cap() + 1e-6;
     return `<tr><td class="rk">${rk}</td><td class="tl"><div class="chips">${cons.map((id) => tile(r, id, kind)).join("")}</div></td><td class="tl"><div class="chips">${boostsIn.map((id) => tile(r, id, kind)).join("")}</div></td>
       <td class="tl"><div class="chips">${drs.map((id) => tile(r, id, kind)).join("")}</div></td>
-      <td><span class="pill ${over ? "bad" : ""}" title="${over ? "Over budget" : "Total cost"}">${st.cost.toFixed(1)}</span></td>
+      <td><span class="pill ${over ? "bad" : ""}" title="${over ? "Over budget" : "Total cost"}" style="${sortK === "cost" ? "background:var(--fg);color:#18181B" : ""}">${st.cost.toFixed(1)}</span></td>
       <td><span class="pill" style="${sortK === "x" ? "background:var(--fg);color:#18181B" : ""}">${f1(st.x)}</span>${st.pen ? `<span class="pen">−${st.pen}</span>` : ""}</td>${cols.map(([k]) => cell(k, st)).join("")}
       <td><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
   };
   const shown = rows.best.slice(0, S.showN || 20);
-  const hd = `<thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th><th title="Total cost">$</th><th title="Expected points (after Boost, chip and penalties)">xPts${sortK === "x" ? " ↓" : ""}</th>${cols.map(([k, n, t]) => `<th title="${esc(t)}">${n}${k === sortK ? " ↓" : ""}</th>`).join("")}<th></th></tr></thead>`;
+  const arrow = (k) => (k === sortK ? (bs.d < 0 ? " ↓" : " ↑") : "");
+  const sth = (k, n, t) => BSORT.some(([b]) => b === k) ? `<th class="bsort" data-bsort="${k}" title="${esc(t)}. Click to rank by it" ${k === sortK ? `aria-sort="${bs.d < 0 ? "descending" : "ascending"}"` : ""}>${n}${arrow(k)}</th>` : `<th title="${esc(t)}">${n}</th>`;
+  const hd = `<thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th>${sth("cost", "$", "Total cost")}${sth("x", "xPts", "Expected points (after Boost, chip and penalties)")}${cols.map(([k, n, t]) => sth(k, n, t)).join("")}<th></th></tr></thead>`;
   const sec = (label, extra = "") => `<tr class="sec"><td colspan="${ncol}">${label}${extra}</td></tr>`;
   $("#bestTable").innerHTML = hd + "<tbody>" +
     (rows.cur ? sec("Current Team") + row("cur", 0, rows.cur) : "") +
@@ -1719,6 +1795,8 @@ document.addEventListener("click", (e) => {
   const cell = e.target.closest("[data-stcell]");
   if (cell) { const [id, g] = cell.dataset.stcell.split(":"); editorOpen = false; return stCell(id, +g); }
   if (e.target.id === "modal") { $("#modal").hidden = true; editorOpen = false; return; }
+  const bth = e.target.closest("th[data-bsort]");
+  if (bth) { const k = bth.dataset.bsort, cur = bestSort(); S.bsort = { k, d: cur.k === k ? -cur.d : k === "cost" || k === "dnf" || k === "neg" ? (k === "neg" ? -1 : 1) : -1 }; S.showN = 20; return rerender(); }
   const sth = e.target.closest("th[data-stsort]");
   if (sth) { const k = sth.dataset.stsort, cur = S.stSort || { k: "avg", d: -1 }; S.stSort = { k, d: String(cur.k) === k ? -cur.d : ["qpos", "rpos"].includes(S.stMetric) ? 1 : -1 }; save(); return renderStats(); }
   const th = e.target.closest("th.sort");
@@ -1753,7 +1831,7 @@ document.addEventListener("click", (e) => {
   if (d.editteam) return openTeamEditor();
   if (d.clearstart) { S.calcStart = { type: "none" }; S.chip = ""; return rerender(); }
   if (d.keep) { const T = ST(), all = T.team.every((id) => S.marks[id] === "lock"); T.team.forEach((id) => (all ? delete S.marks[id] : (S.marks[id] = "lock"))); toast(all ? "Team released." : "Whole team kept: every asset is included."); return rerender(); }
-  if (d.calcreset) { Object.assign(S, { chip: "", marks: {}, pins: [], xdp: false, valW: 1, maxPen: null, xo: {}, horizon: 1, showN: 20, bcols: null }); S.filters = Object.assign({}, S.filters, { calc: [] }); toast("Calculator settings reset."); return recompute(0); }
+  if (d.calcreset) { Object.assign(S, { chip: "", marks: {}, pins: [], xdp: false, valW: 1, maxPen: null, xo: {}, horizon: 1, showN: 20, bcols: null, bsort: null }); S.filters = Object.assign({}, S.filters, { calc: [] }); toast("Calculator settings reset."); return recompute(0); }
   if (d.xoclear) { delete S.xo[d.xoclear]; return recompute(0); }
   if (t.id === "xoReset") { S.xo = {}; return recompute(0); }
   if (d.chip) { S.chip = S.chip === d.chip ? "" : d.chip; return rerender(); }
@@ -1782,6 +1860,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "toastUndo" && undoTeam) { const { idx, ref, ...rest } = undoTeam; Object.assign(ref || S.teams[idx], rest); undoTeam = null; $("#toast").hidden = true; return rerender(); }
   if (t.id === "resetAll") { S.adj = {}; S.marks = {}; S.circuits = {}; return recompute(0); }
   if (d.lg != null) { S.lgIdx = +d.lg; save(); return renderLeague(); }
+  if (d.lgm) { S.lgMode = d.lgm; save(); return renderLeague(); }
   if (d.em) { S.elMode = d.em; save(); return renderEliteSeason(DATA.elite); }
   if (d.hg) { S.hdGd = +d.hg; save(); return renderHind(); }
   if (d.hc) { S.hdCap = d.hc; save(); return renderHind(); }
@@ -1840,6 +1919,8 @@ document.addEventListener("change", (e) => {
     if (t.value === "" || isNaN(v) || Math.abs(v - model) < 0.05) delete S.xo[t.dataset.xo]; else S.xo[t.dataset.xo] = v;
     return recompute(0);
   }
+  if (t.id === "lgRef") { S.lgRef = t.value; save(); return renderLeague(); }
+  if (t.id === "lgChips") { S.lgChips = t.checked; save(); return renderLeague(); }
   if (t.id === "stMetric") { S.stMetric = t.value; S.stSort = null; save(); return renderStats(); }
   if (t.dataset.flt) {
     const [sc, i, k] = t.dataset.flt.split(":"), f = S.filters[sc][+i];

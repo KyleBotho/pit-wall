@@ -12,8 +12,10 @@ Season archive (committed by the workflow, so history survives F1 changing or dr
   history/<season>/players/gdNN.json      raw player feed per finished gameday (prices, ownership, points)
   history/<season>/playerstats/<id>.json  latest per-asset scoring events (every round so far)
   history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock
+  history/<season>/elite/<feedTime>_<hash>.json  top-10/100/500 ownership each time the global line-ups change,
+                                         with the time we first saw it (when does the feed update: at lock?)
 """
-import json, os, shutil, subprocess, sys, time, urllib.error, urllib.request
+import glob, hashlib, json, os, shutil, subprocess, sys, time, urllib.error, urllib.request
 import practice
 from datetime import datetime, timezone
 
@@ -118,7 +120,7 @@ def feed_time(d):
         return None
 
 
-def build_elite(assets):
+def build_elite(assets, schedule):
     """Top-10/100/500 ownership and points cut-offs from the public global leaderboard. Numbers only, no names."""
     d = get_optional("https://fantasy.formula1.com/feeds/leaderboard/public/global/list_1_0_1.json")
     rows = sorted(((d or {}).get("Value") or {}).get("leaderboard") or [], key=lambda r: r.get("cur_rank") or 1e9)
@@ -137,12 +139,42 @@ def build_elite(assets):
         "own": {k: [round(v, 3) for v in vs] for k, vs in own.items()},
         "cut": {str(k): rows[min(k, len(rows)) - 1].get("cur_points") for k in (1, 10, 100, 500)},
     }
+    elite.update(elite_snapshots(elite, rows, schedule))
     extra = os.path.join(HERE, "data", "elite_top100.json")  # Boost % and chip timing from a top-100 export
     if os.path.exists(extra):
         with open(extra, encoding="utf-8") as f:
             elite["top100"] = json.load(f)
     elite["history"] = elite_history((elite.get("top100") or {}).pop("history", []))
     return elite
+
+
+def elite_snapshots(elite, rows, schedule):
+    """Save ownership whenever the top-500 line-ups change (anonymous numbers only), then return the previous
+    round's ownership for the Elite ± column and the snapshot log."""
+    fp = hashlib.sha1(json.dumps([sorted(str(x) for x in r.get("user_team") or []) for r in rows]).encode()).hexdigest()[:10]
+    ft = elite["feedTime"] or "unknown"
+    starts = {g["gd"]: datetime.fromisoformat(g["raceStart"]) for g in schedule if g.get("raceStart")}
+    def gd_at(iso):
+        try:
+            t = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        except (AttributeError, ValueError):
+            return None
+        return max([g for g, st in starts.items() if st <= t], default=None)
+    path = archived("elite", f"{ft.replace(':', '')}_{fp}.json")
+    if not os.path.exists(path):
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"feedTime": ft, "firstSeen": datetime.now(timezone.utc).isoformat(timespec="minutes"), "hash": fp,
+                       "gd": gd_at(ft), "n": elite["n"], "own": elite["own"], "cut": elite["cut"]}, f, indent=1, sort_keys=True)
+        print(f"  elite line-ups changed: snapshot {ft} {fp}")
+    snaps = []
+    for fn in glob.glob(os.path.join(ARCHIVE, "elite", "*.json")):
+        with open(fn, encoding="utf-8") as f:
+            snaps.append(json.load(f))
+    snaps.sort(key=lambda x: x["firstSeen"])
+    cur = next((x for x in snaps if x["hash"] == fp and x["feedTime"] == ft), snaps[-1])
+    prev = [x for x in snaps if x["gd"] is not None and cur["gd"] is not None and x["gd"] < cur["gd"]]
+    return {"gd": cur["gd"], "prevGd": prev[-1]["gd"] if prev else None, "ownPrev": prev[-1]["own"] if prev else None,
+            "snaps": [{"feedTime": x["feedTime"], "firstSeen": x["firstSeen"], "gd": x["gd"]} for x in snaps]}
 
 
 def elite_history(est):
@@ -340,7 +372,7 @@ def main():
     print("  " + ", ".join(f'{p["name"]}: {len(p["drivers"])} drivers' if p["done"] else f'{p["name"]}: pending' for p in prac))
 
     print("Leaderboards…")
-    elite = build_elite(assets)
+    elite = build_elite(assets, schedule)
     print("  global top 500: " + (f"{elite['n']} teams" if elite else "unavailable"))
     sealed = sealed_leagues()
     print("  private leagues: " + ("sealed snapshot embedded" if sealed else "none"))
