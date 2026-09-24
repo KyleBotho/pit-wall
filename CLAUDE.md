@@ -323,5 +323,8 @@ User-approved order: 1–5, then the rest.
     manual teams are edited in the team-editor pop-up (`openTeamEditor(i)`, `editTarget`/`editing()` in calc.js;
     `openTeamEditor(null)` = the starting team). Best Teams and Compare each sit in a `div[data-bm]`; on screens
     >=1281px Best Teams passes the height to its table (own scroll bar) and Compare scrolls whole.
+    Desktop rail (>=901px) opens on hover into a labelled menu over the page, like f1fantasytools' (user's screenshot):
+    logo + name on top, account row `#railAcct` (filled by `renderSync`) at the bottom. Keyboard focus keeps it open via
+    `.rail:has(:focus-visible)`, not `:focus-within` (a clicked item would hold it open).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

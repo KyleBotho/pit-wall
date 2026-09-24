@@ -14,8 +14,12 @@
 </svg>
 
 <aside class="rail" aria-label="Tools">
-  <div class="logo" aria-hidden="true">
-    <svg><use href="#pwMark" /></svg>
+  <!-- desktop: an icon rail that opens into a labelled menu on hover (app.css "navigation rail") -->
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg><use href="#pwMark" /></svg>
+    </div>
+    <b class="rtxt">Fantasy Pit Wall</b>
   </div>
   <nav class="nav" id="nav">
     <button data-view="calc">
@@ -52,6 +56,7 @@
       ><span class="lbl">Settings</span>
     </button>
   </nav>
+  <div class="racct" id="railAcct" hidden></div>
 </aside>
 
 <div class="shell">

@@ -190,6 +190,120 @@ p {
 .nav button:focus-visible .lbl {
   opacity: 1;
 }
+.rail .brand .logo {
+  flex: none;
+}
+.rail .brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rail .rtxt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  white-space: nowrap;
+  text-align: left;
+  line-height: 1.2;
+}
+.rail .brand .rtxt {
+  font: 700 18px var(--display);
+  margin-bottom: 8px;
+}
+.rtxt small {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.racct {
+  padding: 12px 4px 0;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.racct button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  cursor: pointer;
+}
+.racct .av {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 700 16px var(--display);
+  background: linear-gradient(135deg, #ab47ff, #22d3ee);
+}
+/* Desktop: hovering the rail (or tabbing into it; a mouse click leaves no :focus-visible) opens it into a labelled menu over the page */
+@media (min-width: 901px) {
+  .rail {
+    overflow: hidden;
+    transition:
+      width 0.16s ease,
+      background 0.16s ease,
+      box-shadow 0.16s ease;
+  }
+  .rail .rtxt {
+    opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .nav .lbl {
+    display: none; /* the open menu shows the names instead of tooltips */
+  }
+  .rail:hover,
+  .rail:has(:focus-visible) {
+    width: 264px;
+    padding-right: 16px;
+    background: var(--card);
+    box-shadow:
+      1px 0 0 var(--line),
+      16px 0 40px rgba(0, 0, 0, 0.55);
+    transition-delay: 0.12s; /* passing over it on the way to the page doesn't open it */
+  }
+  .rail:hover .rtxt,
+  .rail:has(:focus-visible) .rtxt {
+    opacity: 1;
+    transition-delay: 0.16s;
+  }
+  .rail:hover .nav button,
+  .rail:has(:focus-visible) .nav button {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 10px;
+    background: transparent;
+  }
+  .rail:hover .nav button:hover,
+  .rail:has(:focus-visible) .nav button:hover {
+    background: var(--raise);
+  }
+  .rail:hover .nav button[aria-current="page"],
+  .rail:has(:focus-visible) .nav button[aria-current="page"] {
+    background: var(--fg);
+  }
+  .rail:hover .nav .lbl,
+  .rail:has(:focus-visible) .nav .lbl {
+    display: block;
+    position: static;
+    transform: none;
+    opacity: 1;
+    background: none;
+    outline: 0;
+    padding: 0;
+    color: inherit;
+    font-size: 15px;
+    font-weight: 500;
+  }
+}
 
 /* ---------- shell ---------- */
 .shell {

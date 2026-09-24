@@ -334,4 +334,12 @@ function renderSync() {
     el.closest("[data-acct]").hidden = false;
   });
   $("#lgSignin").hidden = !(ss.sb && !U);
+  // the rail's account row (bottom of the desktop menu): who is signed in, or a way to sign in
+  const ra = $("#railAcct");
+  ra.hidden = !(ss.ok && (ss.sb || ss.err));
+  if (ra.hidden) return;
+  const meta = (U && U.user_metadata) || {},
+    name = U ? meta.full_name || meta.name || (U.email || "").split("@")[0] || "Signed in" : "Sign in",
+    sub = U ? U.email || "" : "with Google";
+  ra.innerHTML = `<button ${U ? 'data-view="settings" title="Account &amp; data"' : 'data-signin="1"'}><span class="av">${U ? esc(name.charAt(0).toUpperCase()) : "G"}</span><span class="rtxt"><b>${esc(name)}</b><small>${esc(sub)}</small></span></button>`;
 }
