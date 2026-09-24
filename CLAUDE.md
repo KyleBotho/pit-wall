@@ -135,8 +135,8 @@ R. Code review (2026-09-24, user asked for a critique then "implement all"): spl
    Autopilot were applied to every race of a 2-3 race horizon (X3 3-race total was ~108 pts too high); a new season
    wiped saved settings (now carried over, teams fresh); Projections' pace-nudge buttons were hidden after any view
    switch (`data-v` clash); an open practice stint was dropped.
-   - [ ] Redeploy the Supabase `smooth-action` function (paste `supabase/functions/live/index.ts`): the lost-update
-         fix and the generated event tables only take effect after that.
+   - [x] Supabase `smooth-action` redeployed by the user 2026-09-24 (lost-update fix, generated event tables);
+         checked: answers for gd 15 with all 35 assets. Scoring lines appear from Baku FP/quali on.
    - [x] 2026-09-24, user approved: practice short-run weight 0.3 -> 0.5, track team-pace shift off, DNF no
          recency with shrink k=16 (was half-life 6 / k=4). See Model decisions. Worth re-running `npm run backtest`
          after a few more rounds (practice needs `python backtest/practice_rounds.py` first).
