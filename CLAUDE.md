@@ -108,4 +108,28 @@ manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the
 - [ ] After Baku: compare projections with results and rhter; re-check the practice weights with R15 added. R15 is
       the first round with a frozen projection (`history/2026/projections/gd15.json`); a projected-vs-actual view
       across rounds could go in Hindsight once a few exist.
-- [ ] Final Fix and No Negative chips aren't modelled in the optimiser or Hindsight (need per-session points).
+- [ ] Final Fix isn't modelled in the optimiser or Hindsight (a driver swap after qualifying).
+
+### Feature plan from the f1fantasytools spec review (2026-09-24)
+Spec: `Downloads/f1-fantasy-tools-feature-spec.md` (an agent's walk-through of their site). Its R14 Hindsight fixture
+(254 pts at $126m) matches our optimiser exactly. Its No Negative rule is WRONG: NN floors every negative scoring
+EVENT at 0 (drivers and constructors; the transfer penalty still applies). That reproduces official scores exactly.
+User-approved order: 1–5, then the rest.
+1. [x] No Negative in Hindsight: all assets' scoring events archived; `hist[].nn` = event-floored points, `hist[].ev` =
+   [event index, points, frequency] rows (names/codes in `DATA.evNames`), `hist[].own` = ownership that round.
+2. [x] Projections columns: DNF/FL/xOV/DotD were already there; added xNeg (all) and Pit xPts (constructors).
+3. [x] Fuller Hindsight: top 10 teams, chip picker for the best team (x3/NN/LL), Incl/Excl, Δ$ column, copy as text.
+   Plus the **team-level filter builder** (user asked for it): rules of property + min/max, applied inside the
+   optimiser (additive per-asset attributes), for Hindsight and the Calculator's Best Teams.
+4. [x] Decision impact per round (their Team Analyzer): transfer impact (IN − OUT − penalty, and Δ$), x2 change
+   impact, chip impact (x3 = base(x3) + base(x2); NN = floored − raw; WC = penalties avoided; LL = vs the start
+   team), and a season transfer summary (good/bad transfers). F1 records 0 transfers on Wildcard rounds: count
+   line-up changes there. With NN modelled, best reachable >= official holds for every team-round except Final Fix.
+5. [ ] Statistics view: asset × round table (points, price, Δ$, pts/$m, ownership), scoring-category filter,
+   AVG column/row, heatmap, own-team highlight, cell click -> that round's scoring lines.
+6. [ ] Elite ownership ± per round: log top-500 line-ups through the Baku weekend first to learn when the public
+   leaderboard's line-ups update (their site snapshots after the qualifying lock).
+7. [ ] League chart: "relative to you" and race-points modes, chip markers.
+8. [ ] Direct xPts override per asset (alongside pace nudges).
+Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
+presets/scenario versions, light theme, log rank scale, treemaps/gauges.

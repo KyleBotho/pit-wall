@@ -25,6 +25,19 @@ ARCHIVE = os.path.join(HERE, "history", str(SEASON))
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36"
 PAUSE = 2.5
 
+# F1's scoring-event names -> short category codes (first match wins, so specific phrases come first)
+EV_SESSION = {"Qualifying": "Q", "Sprint Qualifying": "S", "Race": "R"}
+EV_RULES = [("not classified", "NC"), ("dq", "DQ"), ("disqualif", "DQ"), ("position gained", "PG"),
+            ("position lost", "PL"), ("overtake", "OV"), ("fastest lap", "FL"), ("driver of day", "DOTD"),
+            ("world record", "WRFP"), ("2nd fastest pit", "FP2"), ("fastest pit", "FP"), ("pit", "PIT"),
+            ("q3", "TW"), ("q2", "TW"), ("position", "POS")]
+
+
+def ev_code(session, name):
+    n = name.strip().lower()
+    return EV_SESSION.get(session, "?") + " " + next((c for k, c in EV_RULES if k in n), "OTH")
+
+
 JOLPICA_TEAM = {
     "mercedes": "Mercedes", "mclaren": "McLaren", "red_bull": "Red Bull Racing", "ferrari": "Ferrari",
     "alpine": "Alpine", "rb": "Racing Bulls", "williams": "Williams", "haas": "Haas F1 Team",
@@ -222,6 +235,7 @@ def main():
             sess = {s["sessiontype"]: s["points"] for s in q.get("SessionWisePoints") or []}
             hist.append({
                 "gd": g, "price": q["Value"], "pts": float(q["GamedayPoints"] or 0),
+                "own": float(q.get("SelectedPercentage") or 0),
                 "active": q["IsActive"] == "1",
                 "team": q["TeamName"] if kind == "D" else q["FUllName"],
                 "q": sess.get("Qualifying"), "s": sess.get("Sprint Qualifying"), "r": sess.get("Race"),
@@ -238,15 +252,30 @@ def main():
     print("Player stats (per-round scoring events)…")
     track_stats = {}
     ovt = {}
+    ev_names = []  # event name table; hist[].ev rows are [name index, points, frequency]
     for a in assets:
-        if a["kind"] != "D":
-            continue
         ps_path = os.path.join(CACHE, f"ps_{a['id']}_{len(done)}.json")
         ps = get(f"https://fantasy.formula1.com/feeds/popup/playerstats_{a['id']}.json", ps_path, reuse=True)
         shutil.copyfile(ps_path, archived("playerstats", f"{a['id']}.json"))
         for m in (ps.get("Value") or {}).get("MatchWiseStats") or []:
             g = m.get("GamedayId")
             if g not in done:
+                continue
+            h = a["hist"][done.index(g)]
+            if h is not None:
+                rows = []
+                for rd in m.get("RaceDayWise") or []:
+                    for e in rd.get("StatsWise") or []:
+                        if e.get("Event") == "Total":  # per-session subtotal, not an event
+                            continue
+                        key = (rd.get("SessionType"), e.get("Event", "").strip())
+                        if key not in ev_names:
+                            ev_names.append(key)
+                        rows.append([ev_names.index(key), e.get("Value") or 0, e.get("Frequency")])
+                h["ev"] = rows
+                # No Negative floors every negative event at 0 (checked against official scores)
+                h["nn"] = sum(max(0, r[1]) for r in rows) if rows else max(0, h["pts"])
+            if a["kind"] != "D":
                 continue
             for rd in m.get("RaceDayWise") or []:
                 if rd.get("SessionType") == "Race":
@@ -298,7 +327,8 @@ def main():
     data = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "season": SEASON, "next": nxt, "done": done, "schedule": schedule,
-        "assets": assets, "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed,
+        "assets": assets, "evNames": [{"s": EV_SESSION.get(st, "?"), "n": n, "c": ev_code(st, n)} for st, n in ev_names],
+        "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
     }
     freeze_projection(data, next(g for g in schedule if g["gd"] == nxt))

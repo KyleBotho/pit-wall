@@ -1,0 +1,3120 @@
+{
+  "Value": {
+    "PlayerId": 27,
+    "PlayerSkill": 2,
+    "GamedayWiseStats": [
+      {
+        "GamedayId": 1,
+        "PlayerValue": 28.9,
+        "OldPlayerValue": 28.9,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 19
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
+          },
+          {
+            "Frequency": "5",
+            "Event": "race overtake bonus",
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "GamedayId": 2,
+        "PlayerValue": 28.8,
+        "OldPlayerValue": 28.9,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": -7
+          },
+          {
+            "Frequency": "2",
+            "Event": "Sprint Position lost",
+            "Value": -2
+          },
+          {
+            "Frequency": "6",
+            "Event": "Sprint overtake bonus",
+            "Value": 6
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 8
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -40
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          }
+        ]
+      },
+      {
+        "GamedayId": 3,
+        "PlayerValue": 28.5,
+        "OldPlayerValue": 28.8,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 72
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 28
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 14
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "14",
+            "Event": "race overtake bonus",
+            "Value": 14
+          }
+        ]
+      },
+      {
+        "GamedayId": 4,
+        "PlayerValue": 28.6,
+        "OldPlayerValue": 28.5,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 110
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Fastest lap",
+            "Value": 5
+          },
+          {
+            "Frequency": "1",
+            "Event": "Sprint position gained",
+            "Value": 1
+          },
+          {
+            "Frequency": "1",
+            "Event": "Sprint overtake bonus",
+            "Value": 1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 33
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 15
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "6",
+            "Event": "Race position gained",
+            "Value": 6
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Fastest lap",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "13",
+            "Event": "race overtake bonus",
+            "Value": 13
+          }
+        ]
+      },
+      {
+        "GamedayId": 5,
+        "PlayerValue": 28.9,
+        "OldPlayerValue": 28.6,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 33
+          },
+          {
+            "Frequency": "1",
+            "Event": "Sprint position gained",
+            "Value": 1
+          },
+          {
+            "Frequency": "2",
+            "Event": "Sprint overtake bonus",
+            "Value": 2
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 15
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 12
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "7",
+            "Event": "Race Position lost",
+            "Value": -7
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "15",
+            "Event": "race overtake bonus",
+            "Value": 15
+          }
+        ]
+      },
+      {
+        "GamedayId": 6,
+        "PlayerValue": 29.2,
+        "OldPlayerValue": 28.9,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 17
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 12
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 7
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "3",
+            "Event": "Race position gained",
+            "Value": 3
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "GamedayId": 7,
+        "PlayerValue": 29.5,
+        "OldPlayerValue": 29.2,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 67
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 25
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "3",
+            "Event": "Race position gained",
+            "Value": 3
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "2nd Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "3",
+            "Event": "race overtake bonus",
+            "Value": 3
+          }
+        ]
+      },
+      {
+        "GamedayId": 8,
+        "PlayerValue": 29.8,
+        "OldPlayerValue": 29.5,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 49
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 18
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 9
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "2",
+            "Event": "Race position gained",
+            "Value": 2
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "5",
+            "Event": "race overtake bonus",
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "GamedayId": 9,
+        "PlayerValue": 30.1,
+        "OldPlayerValue": 29.8,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 72
+          },
+          {
+            "Frequency": "3",
+            "Event": "Sprint position gained",
+            "Value": 3
+          },
+          {
+            "Frequency": "11",
+            "Event": "Sprint overtake bonus",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 12
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 8
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 8
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race Position lost",
+            "Value": -1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "16",
+            "Event": "race overtake bonus",
+            "Value": 16
+          }
+        ]
+      },
+      {
+        "GamedayId": 10,
+        "PlayerValue": 30.4,
+        "OldPlayerValue": 30.1,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 71
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 16
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 12
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "7",
+            "Event": "Race position gained",
+            "Value": 7
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Fastest lap",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
+          },
+          {
+            "Frequency": "14",
+            "Event": "race overtake bonus",
+            "Value": 14
+          }
+        ]
+      },
+      {
+        "GamedayId": 11,
+        "PlayerValue": 30.7,
+        "OldPlayerValue": 30.4,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 38
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 25
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 16
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
+          },
+          {
+            "Frequency": "5",
+            "Event": "race overtake bonus",
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "GamedayId": 12,
+        "PlayerValue": 31.0,
+        "OldPlayerValue": 30.7,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 80
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Fastest lap",
+            "Value": 5
+          },
+          {
+            "Frequency": "2",
+            "Event": "Sprint Position lost",
+            "Value": -2
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 33
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 17
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "2",
+            "Event": "Race Position lost",
+            "Value": -2
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
+          },
+          {
+            "Frequency": "7",
+            "Event": "race overtake bonus",
+            "Value": 7
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "PlayerValue": 31.3,
+        "OldPlayerValue": 31.0,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 77
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 22
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "5",
+            "Event": "Race position gained",
+            "Value": 5
+          },
+          {
+            "Frequency": "30",
+            "Event": "race overtake bonus",
+            "Value": 30
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "PlayerValue": 31.6,
+        "OldPlayerValue": 31.3,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 44
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 19
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 14
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "3",
+            "Event": "Race Position lost",
+            "Value": -3
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
+          },
+          {
+            "Frequency": "2",
+            "Event": "race overtake bonus",
+            "Value": 2
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "PlayerValue": 31.9,
+        "OldPlayerValue": 31.6,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
+      }
+    ],
+    "TourWiseStats": [
+      {
+        "TourId": 4,
+        "PlayerValue": 31.9,
+        "OldPlayerValue": 31.6,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 742
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Fastest lap",
+            "Value": 10
+          },
+          {
+            "Frequency": "4",
+            "Event": "Sprint Position lost",
+            "Value": -4
+          },
+          {
+            "Frequency": "5",
+            "Event": "Sprint position gained",
+            "Value": 5
+          },
+          {
+            "Frequency": "20",
+            "Event": "Sprint overtake bonus",
+            "Value": 20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 253
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 166
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 53
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -120
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 140
+          },
+          {
+            "Frequency": "28",
+            "Event": "Race position gained",
+            "Value": 28
+          },
+          {
+            "Frequency": "13",
+            "Event": "Race Position lost",
+            "Value": -13
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Fastest lap",
+            "Value": 20
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 50
+          },
+          {
+            "Frequency": "-",
+            "Event": "2nd Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "129",
+            "Event": "race overtake bonus",
+            "Value": 129
+          }
+        ]
+      }
+    ],
+    "FixtureWiseStats": [
+      {
+        "GamedayId": 1,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7307,
+            "TeamId": 27,
+            "DateTime": "03/06/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Melbourne",
+            "MeetingNumber": 1,
+            "MeetingName": "Australian Grand Prix",
+            "CountryId": 6,
+            "CountryName": "Australia",
+            "CircuitOfficialName": "Albert Park Grand Prix Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-07T16:00:00+11:00",
+            "Season": "2026",
+            "SelectedPercentage": "16",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7308,
+            "TeamId": 27,
+            "DateTime": "03/06/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Melbourne",
+            "MeetingNumber": 1,
+            "MeetingName": "Australian Grand Prix",
+            "CountryId": 6,
+            "CountryName": "Australia",
+            "CircuitOfficialName": "Albert Park Grand Prix Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-08T15:00:00+11:00",
+            "Season": "2026",
+            "SelectedPercentage": "16",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 2,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7311,
+            "TeamId": 27,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-14T11:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7312,
+            "TeamId": 27,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-14T15:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7313,
+            "TeamId": 27,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-15T15:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 3,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.5,
+            "OldPlayerValue": 28.8,
+            "RaceDayId": 7318,
+            "TeamId": 27,
+            "DateTime": "03/27/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Suzuka",
+            "MeetingNumber": 3,
+            "MeetingName": "Japanese Grand Prix",
+            "CountryId": 5,
+            "CountryName": "Japan",
+            "CircuitOfficialName": "Suzuka Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-28T15:00:00+09:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.5,
+            "OldPlayerValue": 28.8,
+            "RaceDayId": 7316,
+            "TeamId": 27,
+            "DateTime": "03/27/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Suzuka",
+            "MeetingNumber": 3,
+            "MeetingName": "Japanese Grand Prix",
+            "CountryId": 5,
+            "CountryName": "Japan",
+            "CircuitOfficialName": "Suzuka Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-29T14:00:00+09:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 4,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7332,
+            "TeamId": 27,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-02T12:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7333,
+            "TeamId": 27,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-02T16:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7334,
+            "TeamId": 27,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-03T13:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 5,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7337,
+            "TeamId": 27,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-23T12:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7338,
+            "TeamId": 27,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-23T16:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7339,
+            "TeamId": 27,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-24T16:00:00-04:00",
+            "Season": "2026",
+            "SelectedPercentage": "12",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 6,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.2,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7343,
+            "TeamId": 27,
+            "DateTime": "06/05/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monte Carlo",
+            "MeetingNumber": 6,
+            "MeetingName": "Monaco Grand Prix",
+            "CountryId": 115,
+            "CountryName": "Monaco",
+            "CircuitOfficialName": "Circuit de Monaco",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-06T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 29.2,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7344,
+            "TeamId": 27,
+            "DateTime": "06/05/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monte Carlo",
+            "MeetingNumber": 6,
+            "MeetingName": "Monaco Grand Prix",
+            "CountryId": 115,
+            "CountryName": "Monaco",
+            "CircuitOfficialName": "Circuit de Monaco",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-07T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 7,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.5,
+            "OldPlayerValue": 29.2,
+            "RaceDayId": 7348,
+            "TeamId": 27,
+            "DateTime": "06/12/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Barcelona",
+            "MeetingNumber": 7,
+            "MeetingName": "Barcelona Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Circuit de Barcelona-Catalunya",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-13T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 29.5,
+            "OldPlayerValue": 29.2,
+            "RaceDayId": 7349,
+            "TeamId": 27,
+            "DateTime": "06/12/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Barcelona",
+            "MeetingNumber": 7,
+            "MeetingName": "Barcelona Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Circuit de Barcelona-Catalunya",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-14T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 8,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.8,
+            "OldPlayerValue": 29.5,
+            "RaceDayId": 7353,
+            "TeamId": 27,
+            "DateTime": "06/26/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spielberg",
+            "MeetingNumber": 8,
+            "MeetingName": "Austrian Grand Prix",
+            "CountryId": 18,
+            "CountryName": "Austria",
+            "CircuitOfficialName": "Red Bull Ring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-27T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 29.8,
+            "OldPlayerValue": 29.5,
+            "RaceDayId": 7354,
+            "TeamId": 27,
+            "DateTime": "06/26/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spielberg",
+            "MeetingNumber": 8,
+            "MeetingName": "Austrian Grand Prix",
+            "CountryId": 18,
+            "CountryName": "Austria",
+            "CircuitOfficialName": "Red Bull Ring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-28T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 9,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7356,
+            "TeamId": 27,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-04T12:00:00+01:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7357,
+            "TeamId": 27,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-04T16:00:00+01:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7358,
+            "TeamId": 27,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-05T15:00:00+01:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 10,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.4,
+            "OldPlayerValue": 30.1,
+            "RaceDayId": 7362,
+            "TeamId": 27,
+            "DateTime": "07/17/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spa-Francorchamps",
+            "MeetingNumber": 10,
+            "MeetingName": "Belgian Grand Prix",
+            "CountryId": 17,
+            "CountryName": "Belgium",
+            "CircuitOfficialName": "Circuit de Spa-Francorchamps",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-18T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 30.4,
+            "OldPlayerValue": 30.1,
+            "RaceDayId": 7363,
+            "TeamId": 27,
+            "DateTime": "07/17/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spa-Francorchamps",
+            "MeetingNumber": 10,
+            "MeetingName": "Belgian Grand Prix",
+            "CountryId": 17,
+            "CountryName": "Belgium",
+            "CircuitOfficialName": "Circuit de Spa-Francorchamps",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-19T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 11,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.7,
+            "OldPlayerValue": 30.4,
+            "RaceDayId": 7368,
+            "TeamId": 27,
+            "DateTime": "07/24/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Budapest",
+            "MeetingNumber": 11,
+            "MeetingName": "Hungarian Grand Prix",
+            "CountryId": 15,
+            "CountryName": "Hungary",
+            "CircuitOfficialName": "Hungaroring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-25T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 30.7,
+            "OldPlayerValue": 30.4,
+            "RaceDayId": 7369,
+            "TeamId": 27,
+            "DateTime": "07/24/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Budapest",
+            "MeetingNumber": 11,
+            "MeetingName": "Hungarian Grand Prix",
+            "CountryId": 15,
+            "CountryName": "Hungary",
+            "CircuitOfficialName": "Hungaroring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-26T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 12,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7372,
+            "TeamId": 27,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7373,
+            "TeamId": 27,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7374,
+            "TeamId": 27,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "11",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.3,
+            "OldPlayerValue": 31.0,
+            "RaceDayId": 7378,
+            "TeamId": 27,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 31.3,
+            "OldPlayerValue": 31.0,
+            "RaceDayId": 7379,
+            "TeamId": 27,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.6,
+            "OldPlayerValue": 31.3,
+            "RaceDayId": 7383,
+            "TeamId": 27,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 31.6,
+            "OldPlayerValue": 31.3,
+            "RaceDayId": 7384,
+            "TeamId": 27,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.9,
+            "OldPlayerValue": 31.6,
+            "RaceDayId": 7388,
+            "TeamId": 27,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 31.9,
+            "OldPlayerValue": 31.6,
+            "RaceDayId": 7389,
+            "TeamId": 27,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-26T15:00:00+04:00",
+            "Season": "2026",
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      }
+    ],
+    "MatchWiseStats": [
+      {
+        "GamedayId": 1,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7307,
+            "DateTime": "03/06/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Melbourne",
+            "MeetingNumber": 1,
+            "MeetingName": "Australian Grand Prix",
+            "CountryId": 6,
+            "CountryName": "Australia",
+            "CircuitOfficialName": "Albert Park Grand Prix Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-07T16:00:00+11:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 21
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7308,
+            "DateTime": "03/06/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Melbourne",
+            "MeetingNumber": 1,
+            "MeetingName": "Australian Grand Prix",
+            "CountryId": 6,
+            "CountryName": "Australia",
+            "CircuitOfficialName": "Albert Park Grand Prix Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-08T15:00:00+11:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -2
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -20
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "5",
+                "Event": "race overtake bonus",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 2,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7311,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-14T11:00:00+08:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 12
+              },
+              {
+                "Frequency": "2",
+                "Event": "Sprint Position lost",
+                "Value": -2
+              },
+              {
+                "Frequency": "6",
+                "Event": "Sprint overtake bonus",
+                "Value": 6
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Position",
+                "Value": 8
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7312,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-14T15:00:00+08:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 21
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.8,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7313,
+            "DateTime": "03/13/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Shanghai",
+            "MeetingNumber": 2,
+            "MeetingName": "Chinese Grand Prix",
+            "CountryId": 54,
+            "CountryName": "China",
+            "CircuitOfficialName": "Shanghai International Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-15T15:00:00+08:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -40
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 0
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -40
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 3,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.5,
+            "OldPlayerValue": 28.8,
+            "RaceDayId": 7318,
+            "DateTime": "03/27/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Suzuka",
+            "MeetingNumber": 3,
+            "MeetingName": "Japanese Grand Prix",
+            "CountryId": 5,
+            "CountryName": "Japan",
+            "CircuitOfficialName": "Suzuka Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-28T15:00:00+09:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 24
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 14
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.5,
+            "OldPlayerValue": 28.8,
+            "RaceDayId": 7316,
+            "DateTime": "03/27/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Suzuka",
+            "MeetingNumber": 3,
+            "MeetingName": "Japanese Grand Prix",
+            "CountryId": 5,
+            "CountryName": "Japan",
+            "CircuitOfficialName": "Suzuka Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-03-29T14:00:00+09:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 48
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 28
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "14",
+                "Event": "race overtake bonus",
+                "Value": 14
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 4,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7332,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-02T12:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 22
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Fastest lap",
+                "Value": 5
+              },
+              {
+                "Frequency": "1",
+                "Event": "Sprint position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "1",
+                "Event": "Sprint overtake bonus",
+                "Value": 1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Position",
+                "Value": 15
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7333,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-02T16:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 21
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.6,
+            "OldPlayerValue": 28.5,
+            "RaceDayId": 7334,
+            "DateTime": "05/01/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Miami Gardens",
+            "MeetingNumber": 4,
+            "MeetingName": "Miami Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Miami International Autodrome",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-03T13:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 67
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 33
+              },
+              {
+                "Frequency": "6",
+                "Event": "Race position gained",
+                "Value": 6
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Fastest lap",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "13",
+                "Event": "race overtake bonus",
+                "Value": 13
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 5,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7337,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-23T12:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 15
+              },
+              {
+                "Frequency": "1",
+                "Event": "Sprint position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "2",
+                "Event": "Sprint overtake bonus",
+                "Value": 2
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Position",
+                "Value": 12
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7338,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-23T16:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 25
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 15
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 28.9,
+            "OldPlayerValue": 28.6,
+            "RaceDayId": 7339,
+            "DateTime": "05/22/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Montréal",
+            "MeetingNumber": 5,
+            "MeetingName": "Canadian Grand Prix",
+            "CountryId": 47,
+            "CountryName": "Canada",
+            "CircuitOfficialName": "Circuit Gilles-Villeneuve",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-05-24T16:00:00-04:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -7
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 0
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -20
+              },
+              {
+                "Frequency": "7",
+                "Event": "Race Position lost",
+                "Value": -7
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "15",
+                "Event": "race overtake bonus",
+                "Value": 15
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 6,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.2,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7343,
+            "DateTime": "06/05/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monte Carlo",
+            "MeetingNumber": 6,
+            "MeetingName": "Monaco Grand Prix",
+            "CountryId": 115,
+            "CountryName": "Monaco",
+            "CircuitOfficialName": "Circuit de Monaco",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-06T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 17
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 7
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 29.2,
+            "OldPlayerValue": 28.9,
+            "RaceDayId": 7344,
+            "DateTime": "06/05/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monte Carlo",
+            "MeetingNumber": 6,
+            "MeetingName": "Monaco Grand Prix",
+            "CountryId": 115,
+            "CountryName": "Monaco",
+            "CircuitOfficialName": "Circuit de Monaco",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-07T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 12
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -20
+              },
+              {
+                "Frequency": "3",
+                "Event": "Race position gained",
+                "Value": 3
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 7,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.5,
+            "OldPlayerValue": 29.2,
+            "RaceDayId": 7348,
+            "DateTime": "06/12/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Barcelona",
+            "MeetingNumber": 7,
+            "MeetingName": "Barcelona Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Circuit de Barcelona-Catalunya",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-13T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 21
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 29.5,
+            "OldPlayerValue": 29.2,
+            "RaceDayId": 7349,
+            "DateTime": "06/12/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Barcelona",
+            "MeetingNumber": 7,
+            "MeetingName": "Barcelona Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Circuit de Barcelona-Catalunya",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-14T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 46
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 25
+              },
+              {
+                "Frequency": "3",
+                "Event": "Race position gained",
+                "Value": 3
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "2nd Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "3",
+                "Event": "race overtake bonus",
+                "Value": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 8,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 29.8,
+            "OldPlayerValue": 29.5,
+            "RaceDayId": 7353,
+            "DateTime": "06/26/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spielberg",
+            "MeetingNumber": 8,
+            "MeetingName": "Austrian Grand Prix",
+            "CountryId": 18,
+            "CountryName": "Austria",
+            "CircuitOfficialName": "Red Bull Ring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-27T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 19
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 9
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 29.8,
+            "OldPlayerValue": 29.5,
+            "RaceDayId": 7354,
+            "DateTime": "06/26/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spielberg",
+            "MeetingNumber": 8,
+            "MeetingName": "Austrian Grand Prix",
+            "CountryId": 18,
+            "CountryName": "Austria",
+            "CircuitOfficialName": "Red Bull Ring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-06-28T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 30
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 18
+              },
+              {
+                "Frequency": "2",
+                "Event": "Race position gained",
+                "Value": 2
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "5",
+                "Event": "race overtake bonus",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 9,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7356,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-04T12:00:00+01:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 22
+              },
+              {
+                "Frequency": "3",
+                "Event": "Sprint position gained",
+                "Value": 3
+              },
+              {
+                "Frequency": "11",
+                "Event": "Sprint overtake bonus",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Position",
+                "Value": 8
+              }
+            ]
+          },
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7357,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-04T16:00:00+01:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 18
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 8
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 30.1,
+            "OldPlayerValue": 29.8,
+            "RaceDayId": 7358,
+            "DateTime": "07/03/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Silverstone",
+            "MeetingNumber": 9,
+            "MeetingName": "British Grand Prix",
+            "CountryId": 3,
+            "CountryName": "United Kingdom",
+            "CircuitOfficialName": "Silverstone Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-05T15:00:00+01:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 32
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 12
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race Position lost",
+                "Value": -1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "16",
+                "Event": "race overtake bonus",
+                "Value": 16
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 10,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.4,
+            "OldPlayerValue": 30.1,
+            "RaceDayId": 7362,
+            "DateTime": "07/17/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spa-Francorchamps",
+            "MeetingNumber": 10,
+            "MeetingName": "Belgian Grand Prix",
+            "CountryId": 17,
+            "CountryName": "Belgium",
+            "CircuitOfficialName": "Circuit de Spa-Francorchamps",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-18T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 22
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 12
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 30.4,
+            "OldPlayerValue": 30.1,
+            "RaceDayId": 7363,
+            "DateTime": "07/17/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Spa-Francorchamps",
+            "MeetingNumber": 10,
+            "MeetingName": "Belgian Grand Prix",
+            "CountryId": 17,
+            "CountryName": "Belgium",
+            "CircuitOfficialName": "Circuit de Spa-Francorchamps",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-19T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 49
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 16
+              },
+              {
+                "Frequency": "7",
+                "Event": "Race position gained",
+                "Value": 7
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Fastest lap",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "14",
+                "Event": "race overtake bonus",
+                "Value": 14
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 11,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 30.7,
+            "OldPlayerValue": 30.4,
+            "RaceDayId": 7368,
+            "DateTime": "07/24/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Budapest",
+            "MeetingNumber": 11,
+            "MeetingName": "Hungarian Grand Prix",
+            "CountryId": 15,
+            "CountryName": "Hungary",
+            "CircuitOfficialName": "Hungaroring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-25T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 26
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 16
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 30.7,
+            "OldPlayerValue": 30.4,
+            "RaceDayId": 7369,
+            "DateTime": "07/24/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Budapest",
+            "MeetingNumber": 11,
+            "MeetingName": "Hungarian Grand Prix",
+            "CountryId": 15,
+            "CountryName": "Hungary",
+            "CircuitOfficialName": "Hungaroring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-07-26T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 12
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 25
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -20
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "5",
+                "Event": "race overtake bonus",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 12,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7372,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 13
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Fastest lap",
+                "Value": 5
+              },
+              {
+                "Frequency": "2",
+                "Event": "Sprint Position lost",
+                "Value": -2
+              },
+              {
+                "Frequency": "-",
+                "Event": "Sprint Position",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7373,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 27
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 17
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 31.0,
+            "OldPlayerValue": 30.7,
+            "RaceDayId": 7374,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 40
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 33
+              },
+              {
+                "Frequency": "2",
+                "Event": "Race Position lost",
+                "Value": -2
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "7",
+                "Event": "race overtake bonus",
+                "Value": 7
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.3,
+            "OldPlayerValue": 31.0,
+            "RaceDayId": 7378,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 20
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 31.3,
+            "OldPlayerValue": 31.0,
+            "RaceDayId": 7379,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 57
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 22
+              },
+              {
+                "Frequency": "5",
+                "Event": "Race position gained",
+                "Value": 5
+              },
+              {
+                "Frequency": "30",
+                "Event": "race overtake bonus",
+                "Value": 30
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.6,
+            "OldPlayerValue": 31.3,
+            "RaceDayId": 7383,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 24
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 14
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              }
+            ]
+          },
+          {
+            "PlayerValue": 31.6,
+            "OldPlayerValue": 31.3,
+            "RaceDayId": 7384,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 20
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 19
+              },
+              {
+                "Frequency": "3",
+                "Event": "Race Position lost",
+                "Value": -3
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "2",
+                "Event": "race overtake bonus",
+                "Value": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 31.9,
+            "OldPlayerValue": 31.6,
+            "RaceDayId": 7388,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
+          }
+        ]
+      }
+    ]
+  },
+  "FeedTime": {
+    "UTCTime": "9/24/2026 7:32:56 AM",
+    "ISTTime": "9/24/2026 1:02:56 PM",
+    "CESTTime": "9/24/2026 9:32:56 AM"
+  }
+}

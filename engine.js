@@ -342,8 +342,18 @@
   }
 
   /* ---------- optimiser ---------- */
-  // cand: [{id, kind, price, e, eNext, active}], team: ids, opts: {cap, free, maxT, chip, locks:Set, bans:Set, top}
+  // cand: [{id, kind, price, e, eNext, active, f?}], team: ids, opts: {cap, free, maxT, chip, locks:Set, bans:Set, top, filters?}
+  // filters: [{k, min, max}] on the whole team. k is "cost", "score" (after Boost and penalties) or a key of each
+  // candidate's f (additive per asset, e.g. price change or points in a scoring category; not multiplied by Boost).
   function optimise(cand, team, o) {
+    const F = (o.filters || []).filter((f) => f.k && (f.min != null || f.max != null));
+    const fk = [...new Set(F.map((f) => f.k).filter((k) => k !== "cost" && k !== "score"))];
+    const fsum = (list) => fk.map((k) => list.reduce((s, c) => s + ((c.f && c.f[k]) || 0), 0));
+    const fj = F.map((f) => fk.indexOf(f.k));
+    const passes = (c, p, score) => F.every((f, i) => {
+      const v = f.k === "cost" ? c.cost + p.cost : f.k === "score" ? score : c.fs[fj[i]] + p.fs[fj[i]];
+      return (f.min == null || v >= f.min - 1e-9) && (f.max == null || v <= f.max + 1e-9);
+    });
     const inTeam = new Set(team);
     const Ds = cand.filter((c) => c.kind === "D" && c.active && !o.bans.has(c.id));
     const Cs = cand.filter((c) => c.kind === "C" && !o.bans.has(c.id));
@@ -368,13 +378,13 @@
           if (v > m1) { m2 = m1; i2 = i1; m1 = v; i1 = k; } else if (v > m2) { m2 = v; i2 = k; }
         }
         const boost = o.chip === "x3" ? 2 * m1 + m2 : m1;
-        combos.push({ mask, idx, cost, val: sum + boost, i1, i2, keep: pop(mask & curD) });
+        combos.push({ mask, idx, cost, val: sum + boost, i1, i2, keep: pop(mask & curD), fs: fk.length ? fsum(idx.map((k) => Ds[k])) : null });
       }
     const pairs = [];
     for (let a = 0; a < m; a++) for (let b = a + 1; b < m; b++) {
       const mask = (1 << a) | (1 << b);
       if ((mask & lockC) !== lockC) continue;
-      pairs.push({ mask, a, b, cost: Cs[a].price + Cs[b].price, val: Cs[a].e + Cs[b].e, keep: pop(mask & curC) });
+      pairs.push({ mask, a, b, cost: Cs[a].price + Cs[b].price, val: Cs[a].e + Cs[b].e, keep: pop(mask & curC), fs: fk.length ? fsum([Cs[a], Cs[b]]) : null });
     }
     const top = [], K = o.top || 60;
     let floor = -1e9;
@@ -385,6 +395,7 @@
       const pen = unlimited ? 0 : 10 * Math.max(0, t - o.free);
       const score = c.val + p.val - pen;
       if (score <= floor && top.length >= K) continue;
+      if (F.length && !passes(c, p, score)) continue;
       top.push({ score, c, p, t, pen });
       if (top.length > K * 2) { top.sort((x, y) => y.score - x.score); top.length = K; floor = top[K - 1].score; }
     }
