@@ -187,9 +187,15 @@ User-approved order: 1–5, then the rest.
     Playerstats caching changed with it: `ps_<id>_<live_gd>_<fingerprint of the live weekend's points>`, so they're
     refetched whenever anything is scored (before, a round's lines froze at race start, missing the race until the
     next round). If lines don't add up to the feed total (playerstats lagging), the file is dropped and refetched.
-    Only as fresh as the last build: F1's feeds have no CORS. GitHub's cron often skips runs (2026-09-24: one
-    scheduled run in 4 h); if that matters on race days, options are an external trigger for `workflow_dispatch` or
-    a Supabase Edge Function that fetches the feeds for the page (cached ~1 min, so F1 sees few requests).
+    Live feed (2026-09-24): Supabase Edge Function `live` (`supabase/functions/live/index.ts`, deployed from the
+    dashboard editor with Verify JWT OFF; public, read-only). `GET /functions/v1/live?gd=N` fetches F1's player feed
+    at most once a minute (cache table `live_cache`, service role only; SQL in setup.sql) and, in the background,
+    playerstats only for assets whose points changed (1.5 s apart). The page calls it on opening Live Scoring and
+    every minute while that view is open (`pullLive`, gameday = latest lock passed), and falls back to the build's
+    `DATA.live` if it fails. Tested under Node with a mocked table against real R14 feeds (33 assets' lines in
+    ~63 s, cache hit within a minute, no refetch when nothing changed). GitHub's cron still skips runs (one
+    scheduled run in 4 h on 2026-09-24), but Live Scoring no longer depends on it.
+    [ ] Deploy + first real call (user deploys: SQL snippet, function via editor, Verify JWT off).
     Next options: league rivals' live totals (sealed line-ups, Boost unknown).
 - [x] Practice archive (2026-09-24): OpenF1 refuses everything, past sessions included, while any F1 session is live,
     and the CI runs during Baku FP1/FP2 had no cached copy, so the site had NO practice for Baku. Now each analysed

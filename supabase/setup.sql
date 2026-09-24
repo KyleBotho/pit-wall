@@ -40,3 +40,13 @@ create trigger configs_touch before insert or update on public.configs
 create or replace function public.ping() returns int
   language sql stable set search_path = '' as $$ select 1 $$;
 grant execute on function public.ping() to anon;
+
+-- Live feed cache for the "live" Edge Function (supabase/functions/live). One row per gameday: F1's public feed data,
+-- nothing personal. RLS on with no policies and no grants: only the function (service role) reads or writes it.
+create table if not exists public.live_cache (
+  gd         int primary key,
+  body       jsonb not null,
+  fetched_at timestamptz not null default now()
+);
+alter table public.live_cache enable row level security;
+revoke all on public.live_cache from anon, authenticated;

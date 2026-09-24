@@ -1645,8 +1645,11 @@ function renderLive() {
   $("#lvStamp").textContent = over ? "final" : "live";
   $("#lvSess").innerHTML = sess.map((s) => { const st = state(s);
     return `<span class="tag ${st}">${esc(LV_SESS[s.type] || s.type)} ${st === "done" ? "✓" : st === "live" ? "· scoring" : "· " + esc(when(s.start))}</span>`; }).join("");
-  const asOf = L.feedTime ? new Date(L.feedTime).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "—";
-  $("#lvNote").innerHTML = `Scores as of <b>${esc(asOf)}</b> (F1's feed at the last site build; the site rebuilds about every 30 min Thu–Sun). ` +
+  const tm = (t) => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  const asOf = L.feedTime ? tm(L.feedTime) : "—";
+  $("#lvNote").innerHTML = (L.src === "fn"
+    ? `Live feed · F1's scores as of <b>${esc(asOf)}</b>, checked ${esc(new Date(LV.at).toLocaleTimeString())} (every minute while this view is open). `
+    : `Scores as of <b>${esc(asOf)}</b> (F1's feed at the last site build). ${esc(LV.err)} `) +
     (over ? "The weekend is over; these are its final points until the next one starts." : "Points appear after each session is scored.") +
     (Object.values(L.assets).some((a) => a.lag) ? " Some scoring lines are still catching up with the totals." : "");
 
@@ -1680,6 +1683,37 @@ function renderLive() {
       `<td${heat(r.pts, lo, hi)} data-lvcell="${r.a.id}"><b>${f0(r.pts)}</b></td><td class="muted">${r.px == null ? "—" : f1(r.px)}</td>` + (r.px == null ? "<td>—</td>" : over ? `<td class="${r.pts - r.px >= 0 ? "good" : "bad"}">${sgn(r.pts - r.px, 0)}</td>` : `<td class="${r.pts >= r.px ? "good" : "muted"}">${r.pts >= r.px ? "✓" : f0(r.px - r.pts)}</td>`) + "</tr>").join("") + "</tbody>";
   $("#lvTNote").textContent = "Click a total for its scoring lines. xPts is our projection for the whole weekend, frozen at lock; " +
     (over ? "Δ is the final total minus it." : "To go is what's still needed to reach it (✓ = already there).");
+}
+// Live feed: the Supabase function "live" reads F1's feeds for the page (they have no CORS), cached for a minute
+// there, so F1 sees one request a minute however many pages are open. Falls back to the build's DATA.live.
+const LIVE_FN = SB_URL + "/functions/v1/live";
+const LV = { at: null, err: "", busy: false };
+const liveGd = () => Math.max(0, ...DATA.schedule.filter((g) => Date.parse(g.lock) <= Date.now()).map((g) => g.gd)) || null;
+function evIdx(s, n, c) {
+  let i = DATA.evNames.findIndex((e) => e.s === s && e.n.trim() === n);
+  if (i < 0) { DATA.evNames.push({ s, n, c }); i = DATA.evNames.length - 1; }
+  return i;
+}
+async function pullLive() {
+  const gd = liveGd();
+  if (!gd || LV.busy) return;
+  LV.busy = true;
+  try {
+    const r = await fetch(`${LIVE_FN}?gd=${gd}`), b = await r.json();
+    if (!r.ok || !b.assets) throw new Error(b.error || "HTTP " + r.status);
+    const old = DATA.live && DATA.live.gd === gd ? DATA.live.assets : {};
+    DATA.live = { gd, feedTime: b.feedTime, src: "fn", assets: Object.fromEntries(Object.entries(b.assets).map(([id, a]) => {
+      let ev = (a.ev || []).map(([s, n, c, v, f]) => [evIdx(s, n, c), v, f]), pending = a.evKey !== a.key;
+      const o = old[id];
+      if (pending && o && o.pts === a.pts && o.ev && o.ev.length) { ev = o.ev; pending = false; } // lines still loading there: keep ours
+      return [id, { pts: a.pts, act: a.act, sess: a.sess || {}, ev, lag: !!a.lag || pending }];
+    })) };
+    LV.err = ""; LV.at = Date.now();
+  } catch (e) {
+    LV.err = "The live feed isn't answering right now.";
+  }
+  LV.busy = false;
+  if (!$("#view-live").hidden) renderLive();
 }
 function lvCell(id) {
   const a = byId[id], x = DATA.live.assets[id]; if (!x) return;
@@ -2124,6 +2158,7 @@ function showView(v) {
   if (v === "calc" && isPhone()) requestAnimationFrame(() => showPane(S.pane && PANES.includes(S.pane) ? S.pane : "best", true));
   $$("#nav button").forEach((b) => (b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
   $$("[data-v]").forEach((m) => (m.hidden = m.id !== "view-" + v));
+  if (v === "live") pullLive();
   save();
 }
 const PANES = ["best", "settings", "drivers", "cons"];
@@ -2349,7 +2384,8 @@ if (DATA.leagueSealed) { let k = null; try { k = localStorage.getItem(LK); } cat
 syncInit();
 setInterval(() => { renderHeader(); renderSync(); }, 30000);
 // back on this tab (say after using the site on the phone): pick up changes made elsewhere
-document.addEventListener("visibilitychange", () => { if (!document.hidden && SY.ready) pull(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && SY.ready) pull(); if (!document.hidden && S.view === "live") pullLive(); });
+setInterval(() => { if (S.view === "live" && !document.hidden) pullLive(); }, 60000);
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   if (!$("#appMenu").hidden) { $("#appMenu").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false"); }
