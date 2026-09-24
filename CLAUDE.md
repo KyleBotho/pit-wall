@@ -17,6 +17,15 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
   Drivers + Constructors), 44px asset chips. Inspiration only — never their name/logo.
 - `.github/workflows/refresh.yml` — rebuild + deploy every 30 min Thu–Sun, every 6 h Mon–Wed, on push, and manually.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
+- `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it.
+  Used by the private repo's workflow, which checks this repo out.
+- `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
+- `data/league.sealed.json` — encrypted league standings, written ONLY by the private repo's workflow. Don't hand-edit.
+- Private repo `KyleBotho/pit-wall-private` (local clone `../pit-wall-private`): `leagues.py` + `leagues.yml`
+  (every 6 h, hourly Sun–Mon) fetch the private-league feeds, keep plaintext `history/<leagueId>/<feedTime>.json`
+  there, and push the sealed snapshot here with the `PUBLIC_REPO_TOKEN` PAT (which triggers a rebuild). Secrets
+  `LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN` live in that repo only. Its runs aren't visible without auth;
+  check for its commits here instead: `https://api.github.com/repos/KyleBotho/pit-wall/commits?path=data/league.sealed.json`.
 
 ## Commands
 - Rebuild locally: `python refresh.py` (run from this folder; `PYTHONIOENCODING=utf-8` on Windows bash).
@@ -30,7 +39,8 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
 - Jolpica `api.jolpi.ca/ergast/f1/2026/{results,qualifying,sprint}.json`.
 - OpenF1 `api.openf1.org/v1/{sessions,laps,stints,drivers}` (practice; free data lands shortly after sessions).
 - The old `fantasy-api.formula1.com` API (Postman doc, dlthub, skelmis package) is dead since 2023 — don't use.
-- Logged-in data (own teams, private/global leagues, rivals' teams) is NOT fetched by code. The user collects an
+- Private-league standings come from the private repo (above), sealed. Chips, bank and round history are
+  logged-in data and are NOT fetched by code. The user collects an
   export with Claude for Chrome; the page's Import button reads it in the browser only (localStorage).
   Never put league or personal data into the repo/site, and never handle the user's F1 login or tokens.
 
@@ -58,14 +68,13 @@ manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the
    `top100`; unlock form, league picker, pending league and auto-unlock on reload in a browser; Import `ovPts`/`ovRank`
    feeding Elite. F1's `FeedTime` is US text (`9/17/2026 1:59:44 PM`); `feed_time()` now converts it to ISO because
    Firefox/Safari can't parse the original.
-0b. [ ] **User chose a private/public split** (2026-09-24): new private repo `KyleBotho/pit-wall-private` holds the
-     league IDs and a workflow (every 6 h + hourly Sun–Mon) that fetches the private-league feeds, commits plaintext
-     weekly snapshots there (season history; F1 keeps none), seals a snapshot with `seal.js` and pushes only
-     `data/league.sealed.json` to the public repo using a fine-grained PAT secret (Contents: write on `pit-wall` only).
-     Then the public `refresh.py` embeds `data/league.sealed.json` instead of fetching leagues itself, and the
-     `LEAGUE_*` env/secrets move out of the public repo. User must create the private repo, the PAT and the secrets
-     (`LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN`); Claude writes the workflow and pushes via Git Credential Manager.
-     Until then the public workflow already accepts `LEAGUE_KEY`/`LEAGUE_IDS` secrets and skips leagues without them.
+0b. [x] 2026-09-24: private/public split built. The private repo fetches and seals; this repo's `refresh.py` only
+     embeds `data/league.sealed.json`, and the `LEAGUE_*` env is gone from `refresh.yml`. Tested locally end to end
+     (seal, skip when unchanged, FORCE reseal, snapshot, embed, page decrypt). If `LEAGUE_KEY`/`LEAGUE_IDS` were ever
+     added as secrets on the PUBLIC repo, delete them there. After changing `LEAGUE_KEY`: run the private workflow
+     with **force**.
+0c. [ ] Season history: the private repo now keeps one snapshot per leaderboard update. Add the per-round points to
+     the sealed payload so the League "Points race" chart works without an Import.
 1. [x] `data/elite_top100.json` built from the R14 top-100 CSV (100 teams, all names matched). Re-run
    `python elite_import.py "<Downloads>/f1_global_top100_lineups.csv"` after a fresh export and commit the JSON.
 2. Leaderboard feeds (public, no login): global top 500 `feeds/leaderboard/public/global/list_1_0_1.json`;

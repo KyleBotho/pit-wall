@@ -32,10 +32,8 @@ jobs:
           path: cache
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
+      # data/league.sealed.json is pushed here by the private pit-wall-private workflow
       - run: python refresh.py
-        env:  # optional: encrypted private-league standings (see CLAUDE.md); empty if the secrets aren't set
-          LEAGUE_KEY: ${{ secrets.LEAGUE_KEY }}
-          LEAGUE_IDS: ${{ secrets.LEAGUE_IDS }}
       - uses: actions/upload-pages-artifact@v5
         with:
           path: build

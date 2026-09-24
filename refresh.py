@@ -8,7 +8,7 @@ Sources (public, no login):
   - api.jolpi.ca/ergast/f1/...        qualifying / sprint / race classifications
 Requests are paced slowly on purpose; cached files are reused for locked (finished) gamedays.
 """
-import json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+import json, os, sys, time, urllib.error, urllib.request
 import practice
 from datetime import datetime, timezone
 
@@ -97,34 +97,21 @@ def build_elite(assets):
 
 
 def sealed_leagues():
-    """Private-league standings, encrypted with the LEAGUE_KEY secret so they can sit on the public site.
-    LEAGUE_IDS = "<leagueId>:<Name>,...". Keeps team name, points, rank and line-up only."""
-    key, spec = os.environ.get("LEAGUE_KEY"), os.environ.get("LEAGUE_IDS", "")
-    if not key or not spec.strip():
+    """Encrypted private-league standings. The private pit-wall-private workflow fetches and seals them and pushes
+    data/league.sealed.json here; this repo never sees the league IDs or the key. None until that file exists."""
+    path = os.path.join(HERE, "data", "league.sealed.json")
+    if not os.path.exists(path):
         return None
-    leagues = []
-    for part in spec.split(","):
-        lid, _, name = part.strip().partition(":")
-        lid = lid.strip()
-        if not lid.isdigit():
-            continue
-        d = get_optional(f"https://fantasy.formula1.com/feeds/leaderboard/privateleague/list_1_{lid}_0_1.json")
-        rows = ((d or {}).get("Value") or {}).get("leaderboard") or []
-        print(f"  league {name or lid}: " + (f"{len(rows)} teams" if rows else "not published yet"))
-        leagues.append({
-            "name": name.strip() or lid, "pending": not rows,
-            "feedTime": feed_time(d),
-            "members": [{"team": urllib.parse.unquote(r.get("team_name") or ""), "teamNo": r.get("team_no"),
-                         "pts": r.get("cur_points"), "rank": r.get("cur_rank"),
-                         "ids": [str(x) for x in r.get("user_team") or []]} for r in rows],
-        })
     try:
-        res = subprocess.run(["node", os.path.join(HERE, "seal.js")], input=json.dumps({"leagues": leagues}, ensure_ascii=False),
-                             capture_output=True, text=True, encoding="utf-8", check=True)
-        return json.loads(res.stdout)
-    except Exception as e:  # standings are a bonus; never block a price refresh on them
-        print(f"  ! league sealing skipped: {e}")
+        with open(path, encoding="utf-8") as f:
+            z = json.load(f)
+    except ValueError:
+        print("  ! data/league.sealed.json is not valid JSON; leagues skipped")
         return None
+    if not all(k in z for k in ("v", "iter", "salt", "iv", "ct")):
+        print("  ! data/league.sealed.json is missing fields; leagues skipped")
+        return None
+    return z
 
 
 def main():
@@ -243,6 +230,7 @@ def main():
     elite = build_elite(assets)
     print("  global top 500: " + (f"{elite['n']} teams" if elite else "unavailable"))
     sealed = sealed_leagues()
+    print("  private leagues: " + ("sealed snapshot embedded" if sealed else "none"))
 
     data = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
