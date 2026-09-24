@@ -179,7 +179,9 @@ User-approved order: 1–5, then the rest.
     under it). The header's team switch is hidden there (Settings has the picker).
 11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
     your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
-12. [x] 2026-09-24 built; [ ] confirm a real Google sign-in on the live site (the user must do it). Supabase project
+12. [x] 2026-09-24 built, and the user signed in on the live site. "Unable to exchange external code" = the Client secret
+    in Supabase's Google provider doesn't match the Client ID: add a new secret in Google Cloud and paste both again
+    (Google shows a secret only once). [ ] Check a second browser picks up teams + leagues. Supabase project
     `tfljgylwpkpammzsapin` (URL + publishable key are public, in app.html and refresh.yml); SQL in
     `supabase/setup.sql` (table, RLS, grants, server-set `updated_at`, `ping()`). Google provider on, Email off,
     sign-ups on (the Google test-user list is the gate). Page: `SY` + `syncInit/pull/push/applyRemote` after `save()`;
