@@ -15,12 +15,12 @@
     prior: 1.5, // hand-set: pseudo-races of the team-mate average mixed into each driver's pace
     defaultQuali: 16, // hand-set: grid slot for a team with no qualifying history
     defaultRace: 15, // hand-set: race rank for a team with no finishes
-    dnfHalfLife: 6, // backtested: recency weighting of retirements (races)
-    dnfShrink: 4, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
+    dnfHalfLife: Infinity, // backtested: no recency weighting of retirements (every race counts the same)
+    dnfShrink: 16, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
     dnfFallback: 0.12, // hand-set: retirement rate before any race has run
     defaultOvertakes: 3, // hand-set: race overtake points for a driver with no races
     sprintOvertakeShare: 0.4, // hand-set: a sprint's overtakes relative to a race (a third of the distance)
-    practiceQ: 0.3, // backtested: share of practice short-run rank blended into qualifying pace
+    practiceQ: 0.5, // backtested: share of practice short-run rank blended into qualifying pace
     practiceR: 0.1, // backtested: share of practice long-run rank blended into race pace
     practicePull: 6, // backtested: most places practice can move a driver (a spin or red flag shouldn't wreck one)
     practiceMinLaps: 6, // hand-set: fewer laps than this in a session = no signal
@@ -99,8 +99,8 @@
      section 2; R1-R14 2026 against a flat average of the other rounds):
      overtaking  ~6% better at lambda 0.5 -> used fully
      retirements ~1% better at lambda 2   -> mild
-     team pace   no better at any lambda  -> kept tiny (lambda 8); practice pace does this job better */
-  const TRACK = { ovLambda: 0.5, dnfLambda: 2, teamLambda: 8, minRounds: 6, teamShiftMax: 1.5 };
+     team pace   no better at any lambda  -> off (teamPace: false); practice pace does this job better */
+  const TRACK = { ovLambda: 0.5, dnfLambda: 2, teamPace: false, teamLambda: 8, minRounds: 6, teamShiftMax: 1.5 };
   /** @param {Data} data @param {Partial<typeof TRACK>} [opt] */
   function trackModel(data, opt) {
     const o = { ...TRACK, ...opt };
@@ -141,7 +141,7 @@
     ];
     /** @type {Record<string, number[]>} */
     const bTeam = {};
-    for (const t of teams) {
+    for (const t of o.teamPace ? teams : []) {
       const rs = [],
         ys = [];
       for (const r of rounds) {

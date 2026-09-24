@@ -310,7 +310,9 @@ function renderCal() {
                 `<span class="${v < 0 ? "good" : "bad"}">${esc(teamCode(t))} ${v < 0 ? "▲" : "▼"}${Math.abs(v).toFixed(1)}</span>`,
             )
             .join(" ")
-        : '<span class="dim">none worth noting</span>';
+        : Engine.TRACK.teamPace
+          ? '<span class="dim">none worth noting</span>'
+          : '<span class="dim">not used (it didn\'t improve the backtest; practice pace covers it)</span>';
       const fit = trackFit.fitted && !state.circuits[g.gd];
       return `<section class="panel"><h3>${esc(g.name.replace(" Grand Prix", " GP"))} <small>R${g.gd}</small></h3>
       <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>

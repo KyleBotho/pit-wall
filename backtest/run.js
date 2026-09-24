@@ -63,7 +63,7 @@ function track() {
     const e = { ov: [], ovFlat: [], dnf: [], dnfFlat: [], team: [], teamFlat: [] };
     for (const r of withStats) {
       const Dm = asOf(last, [r]);
-      const tm = E.trackModel(Dm, { ovLambda: lam, dnfLambda: lam, teamLambda: lam });
+      const tm = E.trackModel(Dm, { ovLambda: lam, dnfLambda: lam, teamLambda: lam, teamPace: true });
       if (!tm.fitted) continue;
       const c = tm.forCircuit(nameOf[r]);
       e.ov.push(Math.abs(c.ov * tm.ovMean - D.trackStats[r].ovt));
@@ -90,7 +90,7 @@ function track() {
   }
   table(out);
   console.log(
-    `   in use: overtakes λ=${E.TRACK.ovLambda}, retirements λ=${E.TRACK.dnfLambda}, team pace λ=${E.TRACK.teamLambda}`,
+    `   in use: overtakes λ=${E.TRACK.ovLambda}, retirements λ=${E.TRACK.dnfLambda}, team pace ${E.TRACK.teamPace ? "λ=" + E.TRACK.teamLambda : "off"}`,
   );
 }
 
@@ -117,7 +117,9 @@ function retirements() {
     }
   out.sort((a, b) => a["log loss"] - b["log loss"]);
   table(out.slice(0, 8));
-  console.log(`   in use: half-life ${E.MODEL.dnfHalfLife}, shrink ${E.MODEL.dnfShrink}`);
+  console.log(
+    `   in use: half-life ${Number.isFinite(E.MODEL.dnfHalfLife) ? E.MODEL.dnfHalfLife : "none"}, shrink ${E.MODEL.dnfShrink}`,
+  );
 }
 
 /* ---------- 4. practice weights ---------- */

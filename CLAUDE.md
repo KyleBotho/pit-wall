@@ -108,16 +108,16 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - Scoring = official 2026 rules (sprint DNF −10, sprint losses capped −10, constructor Q2/Q3 bonus, pit bands).
 - Price change: 3-race avg pts / price, rounded to 3 dp; bands 0.605 / 0.9 / 1.195; ≥$18.5m ±0.1/0.3, else ±0.2/0.6;
   clamp $3–34m. Fitted on 2026 history and matches f1fantasytools. Backtest 2026-09-24: 390/392 real changes.
-- Practice: short-run rank blended 30% into quali pace, long-run 10% into race pace, pull capped ±6 places
-  (R6–R14 backtest). Only applied to the next race. The reproducible walk-forward (R4–R14, 2026-09-24) agrees on
-  long-run 0.1 but finds short-run 0.5 better than 0.3 (quali MAE 1.735 vs 1.809 places) and no cap marginally
-  better than 6 (1.801 vs 1.809). Not changed yet: the user's call (see open items).
-- Race pace from finish rank rescaled to a full field; DNF = team rate, recent-weighted (half-life 6), shrunk k=4.
-  Walk-forward log loss (R4–R14): 0.4696 in use; no recency with k=16 is 0.4638; grid-wide rate alone 0.4828.
+- Practice: short-run rank blended 50% into quali pace, long-run 10% into race pace, pull capped ±6 places. Only
+  applied to the next race. Changed 2026-09-24 (user approved) from 30% after the reproducible walk-forward on R4–R14:
+  quali MAE 1.735 at 0.5 vs 1.804 at 0.3 (0.7 is worse again); long-run 0.1 still best; at 0.5 the ±6 cap ties "none".
+- Race pace from finish rank rescaled to a full field; DNF = team rate, no recency weighting, shrunk toward the
+  grid-wide rate with k=16. Changed 2026-09-24 (user approved) from half-life 6 / k=4: walk-forward log loss (R4–R14)
+  0.4638 vs 0.4696; grid-wide rate alone 0.4828.
 - Track type: circuits tagged [power, street, fast corners] in `config/season.json`. Leave-one-out on R1–R14
   (reproducible run 2026-09-24; overtakes now per car that started, not /22): overtaking ~6% better at λ=0.5 (used;
-  λ=0.25 gives 7.8%), DNF ~1% at λ=2 (mild), team pace slightly worse than none at every λ (kept tiny, λ=8). The
-  earlier notes said 13% / 4% / 0%.
+  λ=0.25 gives 7.8%), DNF ~1% at λ=2 (mild). Team-specific pace was slightly worse than none at every λ, so it is OFF
+  since 2026-09-24 (`TRACK.teamPace: false`; the backtest still measures it). The earlier notes said 13% / 4% / 0%.
 - Neutral-track sim matches actual 2026 per-category points (backtest section 5; overtakes run low, 4.15 vs 4.78
   per driver-race; retirements −3.63 vs −3.90); FL/DOTD go to the top seven ~89% / 87% of the time.
 - Default 10,000 sims per race × next 3 races. Optimiser enumerates all 5-driver × 2-constructor teams.
@@ -137,8 +137,9 @@ R. Code review (2026-09-24, user asked for a critique then "implement all"): spl
    switch (`data-v` clash); an open practice stint was dropped.
    - [ ] Redeploy the Supabase `smooth-action` function (paste `supabase/functions/live/index.ts`): the lost-update
          fix and the generated event tables only take effect after that.
-   - [ ] Backtest disagreements for the user to decide: practice short-run weight 0.5 vs 0.3; track team-pace shift
-         (no help at any λ); DNF shrink 16 without recency vs half-life 6 / k 4. Values unchanged until then.
+   - [x] 2026-09-24, user approved: practice short-run weight 0.3 -> 0.5, track team-pace shift off, DNF no
+         recency with shrink k=16 (was half-life 6 / k=4). See Model decisions. Worth re-running `npm run backtest`
+         after a few more rounds (practice needs `python backtest/practice_rounds.py` first).
 0. [x] 2026-09-24: tested and pushed the Elite view, sealed private leagues and the Actions bump (checkout@v7,
    setup-python@v7, cache@v6, upload-pages-artifact@v5, deploy-pages@v5). Checked: tags resolve; global feed
    aggregates; a 403 league comes through as `pending`; seal.js -> page `unseal` round-trip under WebCrypto (wrong key
