@@ -199,7 +199,13 @@ User-approved order: 1–5, then the rest.
     Deployed and checked 2026-09-24: 35 assets, all 33 scoring-line sets within ~1 min, none lagging, cache hits.
     To redeploy: paste index.ts into the smooth-action function in the dashboard editor (or `supabase functions
     deploy smooth-action` with the CLI) and keep Verify JWT off.
-    Next options: league rivals' live totals (sealed line-ups, Boost unknown).
+    League live standings (2026-09-24, `renderLiveLeague`): per league (unlocked or imported; picker `S.lvLg`),
+    season points before the round + the round so far = live total and rank change. Your teams score as in the
+    cards; rivals from their league-feed line-up, Boost from an import only if it covers the round (`S.league.round
+    >= gd`), else guessed = their highest-projected driver (shown "2×?"). Official round points from the round
+    table (`m.hist`) replace the estimate once they exist (before = feed total − that round). Warns when the line-ups
+    are older than the round's lock. Tested with a fake league (R14 final + simulated Baku Friday); not yet on the
+    real leagues (needs the passphrase).
 - [x] Header cleanup (2026-09-24, user's ask): the header's team buttons and Import are gone (sign-in sync made
     them redundant). Import = any `[data-import]` button (Settings "Account & data", ☰ menu, League empty state)
     opening the hidden `#importFile`. The Calculator picks the team in Settings; Hindsight's budget has one button

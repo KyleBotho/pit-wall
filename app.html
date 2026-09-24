@@ -397,6 +397,11 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
       <p class="note" id="lvNote"></p>
     </section>
     <div class="dash" id="lvTeams" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:16px"></div>
+    <section class="panel" id="lvLeague" style="margin-top:16px" hidden>
+      <h3><span id="lvLgTitle">League</span> <small>live standings</small> <span class="seg" id="lvLgPick"></span></h3>
+      <p class="note" id="lvLgNote"></p>
+      <div class="tw"><table class="stat" id="lvLgTable"></table></div>
+    </section>
     <section class="panel" style="margin-top:16px">
       <h3>Points this weekend <span class="seg" id="lvKind"><button data-lk="D">Drivers</button><button data-lk="C">Constructors</button></span>
         <span class="seg" id="lvBy"><button data-lvby="sess">By session</button><button data-lvby="cat">By category</button></span></h3>
@@ -1671,6 +1676,8 @@ function renderLive() {
       ${t.autoB ? '<p class="note">Boost is set to auto, so 2×? marks the driver we projected highest. Set your real Boost in the Calculator.</p>' : ""}</section>`;
   }).join("");
 
+  renderLiveLeague(g, over);
+
   // assets table
   const kind = S.lvKind || "D", by = S.lvBy || "sess";
   $$("#lvKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lk === kind)));
@@ -1720,6 +1727,48 @@ async function pullLive() {
   }
   LV.busy = false;
   if (!$("#view-live").hidden) renderLive();
+}
+// A league's standings with this weekend added: season points before the round + the round's points so far.
+// Your teams score as in the cards above; rivals from their line-up in the league feed. A rival's Boost is known
+// only from an import that covers this round; otherwise it's assumed on their highest-projected driver (2×?).
+// Once the round table has official points for the round (after the race), those are used instead.
+function renderLiveLeague(g, over) {
+  const L = DATA.live, gd = L.gd, all = leagueList().filter((l) => (l.members || []).length), box = $("#lvLeague");
+  box.hidden = !all.length;
+  if (!all.length) return;
+  const lg = all[Math.min(S.lvLg | 0, all.length - 1)];
+  $("#lvLgTitle").textContent = lg.name;
+  $("#lvLgPick").hidden = all.length < 2;
+  $("#lvLgPick").innerHTML = all.map((l, i) => `<button data-lvlg="${i}" aria-pressed="${l === lg}">${esc(l.name)}</button>`).join("");
+  const boostKnown = S.league && S.league.round >= gd; // an import taken after this round's lock
+  const rows = lg.members.map((m) => {
+    const ti = S.teams.findIndex((t) => t.name === m.name), off = (m.hist || []).find((h) => h.gd === gd);
+    let t = ti >= 0 ? lvTeam(S.teams[ti]) : null, guess = false;
+    if (!t && m.ids) {
+      const ids = m.ids.map(String), ds = ids.filter((id) => byId[id] && byId[id].kind === "D");
+      const b = boostKnown && ds.includes(String(m.boost)) ? String(m.boost) : null;
+      guess = !b;
+      t = { ids, boost: b || ds.reduce((x, id) => ((lvProj(id) ?? 0) > (lvProj(x) ?? 0) ? id : x), ds[0]), x3: "", chip: null };
+    }
+    const live = off ? off.pts : t ? lvScore(t, lvPts) : null;
+    const before = (+m.pts || 0) - (off ? off.pts : 0); // the feed's season total includes the round once it's official
+    return { m, ti, t, guess, live, before, total: before + (live || 0), official: !!off };
+  });
+  const rankBy = (k) => { const s = rows.slice().sort((a, b) => b[k] - a[k]); return (r) => s.indexOf(r) + 1; };
+  const rBefore = rankBy("before"), rNow = rankBy("total");
+  rows.sort((a, b) => b.total - a.total);
+  const boostOf = (r) => (r.t && byId[r.t.boost] ? code(byId[r.t.boost]) + (r.guess ? "?" : "") : "");
+  $("#lvLgTable").innerHTML = `<thead><tr><th>#</th><th>Team</th><th title="This round so far">R${gd}</th><th>Boost</th><th title="Season total before this round">Before</th><th>Total</th><th title="Places gained or lost this round">±</th></tr></thead><tbody>` +
+    rows.map((r) => { const d = rBefore(r) - rNow(r);
+      return `<tr${r.ti >= 0 ? ' style="background:var(--accent-soft)"' : ""}><td>${rNow(r)}</td><td style="text-align:left;position:static"><b>${esc(r.m.name)}</b>${r.ti >= 0 ? ` <span class="tag sprint">T${r.ti + 1}</span>` : ""}</td>` +
+        `<td>${r.live == null ? '<span class="dim">no line-up</span>' : `<b>${f0(r.live)}</b>${r.official ? ' <span class="dim" title="Official round score">✓</span>' : ""}`}</td>` +
+        `<td class="muted">${r.official ? "" : esc(boostOf(r))}</td><td class="muted">${f0(r.before)}</td><td><b>${f0(r.total)}</b></td>` +
+        `<td class="${d > 0 ? "good" : d < 0 ? "bad" : "muted"}">${d > 0 ? "▲" + d : d < 0 ? "▼" + -d : "–"}</td></tr>`; }).join("") + "</tbody>";
+  const when = lg.collected ? new Date(lg.collected) : null, stale = when && !isNaN(when) && when < new Date(g.lock);
+  $("#lvLgNote").innerHTML = `Rivals' line-ups from the league feed${when && !isNaN(when) ? ` as of ${esc(when.toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" }))}` : ""}.` +
+    (stale && !over ? " <b>That's before this round's lock</b>, so rivals' transfers for this round aren't in yet." : "") +
+    (rows.some((r) => r.guess && !r.official) ? " A Boost with ? is a guess (their highest-projected driver): the league feed doesn't say, only an import after the lock does." : "") +
+    " Transfer penalties and chips are only counted once the round's official points arrive (✓).";
 }
 function lvCell(id) {
   const a = byId[id], x = DATA.live.assets[id]; if (!x) return;
@@ -2278,6 +2327,7 @@ document.addEventListener("click", (e) => {
   if (d.sk) { S.stKind = d.sk; S.stSort = null; save(); return renderStats(); }
   if (d.lk) { S.lvKind = d.lk; save(); return renderLive(); }
   if (d.lvby) { S.lvBy = d.lvby; save(); return renderLive(); }
+  if (d.lvlg != null) { S.lvLg = +d.lvlg; save(); return renderLive(); }
   if (d.stt != null) { S.stTeam = +d.stt; save(); return renderStats(); }
   if (d.stcat || d.stsess) {
     const off = stExcluded(), cs = d.stsess ? [...new Set(DATA.evNames.map((x) => x.c))].filter((c) => c[0] === d.stsess) : [d.stcat];
