@@ -19,6 +19,7 @@ const RENDER = {
   grid: () => renderGrid(),
   cal: () => renderCal(),
   model: () => renderModel(),
+  settings: () => renderSync(),
 };
 const stale = new Set(VIEWS);
 function renderView(v) {
@@ -53,7 +54,7 @@ function showView(v) {
   if (SEASON_OVER && FORECAST_VIEWS.includes(v)) v = "hind";
   state.view = v;
   const nb = document.querySelector(`#nav button[data-view="${v}"] .lbl`);
-  $("#appTitle").textContent = nb ? nb.textContent : "Pit Wall";
+  $("#appTitle").textContent = nb ? nb.textContent : "Fantasy Pit Wall";
   for (const b of $$("#menuList button, #nav button")) {
     if (b.dataset.view === v) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");

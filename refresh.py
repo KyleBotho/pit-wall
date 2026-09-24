@@ -1,4 +1,4 @@
-"""Refresh the Pit Wall fantasy planner with the latest F1 Fantasy prices and this season's results.
+"""Refresh the Fantasy Pit Wall planner with the latest F1 Fantasy prices and this season's results.
 
 Run:  python refresh.py              fetch everything, then build build/index.html (GitHub Pages)
       python refresh.py --offline    rebuild the page from cache/data.json without fetching (page/CSS/JS edits)
@@ -516,11 +516,18 @@ def build_page(data, out_dir=BUILD):
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, "pit-wall.html"), "w", encoding="utf-8") as f:
         f.write(out)  # retired Claude artifact copy: the publisher adds doctype/head/viewport
+    # logo files sit next to index.html; link previews need an absolute image URL
+    shutil.copytree(os.path.join(HERE, "web", "brand"), os.path.join(out_dir, "brand"), dirs_exist_ok=True)
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(
             '<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
-            '<meta name="theme-color" content="#050505">\n' + out + "\n</html>\n"
+            '<meta name="theme-color" content="#050505">\n'
+            '<link rel="icon" type="image/svg+xml" href="brand/fantasy-pit-wall-icon.svg">\n'
+            '<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">\n'
+            '<meta property="og:title" content="Fantasy Pit Wall">\n'
+            '<meta property="og:image" content="https://kylebotho.github.io/pit-wall/brand/fantasy-pit-wall-banner.png">\n'
+            '<meta name="twitter:card" content="summary_large_image">\n' + out + "\n</html>\n"
         )
     return len(out)
 

@@ -1,11 +1,22 @@
-<title>Pit Wall Planner</title>
+<title>Fantasy Pit Wall</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&display=swap" />
 <link rel="stylesheet" href="web/app.css" />
 
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <symbol id="pwMark" viewBox="145 240 970 707" fill="none" stroke-width="110" stroke-linejoin="round">
+    <path stroke="#AB47FF" d="M200 892 V398 Q200 295 305 295 H746 C866 295 866 505 746 505 H460 C393 505 350 550 350 618 V763" />
+    <circle cx="200" cy="892" r="55" fill="#AB47FF" stroke="none" />
+    <path stroke="#F5F5F7" d="M350 763 V785 C350 897 421 932 492 864 L641 727 C677 693 714 704 745 736 L882 866 C948 929 1060 899 1060 816 V555" />
+    <circle cx="1060" cy="555" r="55" fill="#F5F5F7" stroke="none" />
+  </symbol>
+</svg>
+
 <aside class="rail" aria-label="Tools">
-  <div class="logo" aria-hidden="true">P<b>W</b></div>
+  <div class="logo" aria-hidden="true">
+    <svg><use href="#pwMark" /></svg>
+  </div>
   <nav class="nav" id="nav">
     <button data-view="calc">
       <svg viewBox="0 0 24 24">
@@ -73,24 +84,35 @@
     <button data-view="model">
       <svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg><span class="lbl">Model</span>
     </button>
+    <button data-view="settings" class="navend">
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+        />
+        <circle cx="12" cy="12" r="3" /></svg
+      ><span class="lbl">Settings</span>
+    </button>
   </nav>
 </aside>
 
 <div class="shell">
   <div class="appbar">
-    <div class="logo-sm" aria-hidden="true">P<b>W</b></div>
-    <b id="appTitle">Pit Wall</b>
+    <div class="logo-sm" aria-hidden="true">
+      <svg><use href="#pwMark" /></svg>
+    </div>
+    <b id="appTitle">Fantasy Pit Wall</b>
     <button class="menubtn" id="menuBtn" aria-label="Open the tools menu" aria-expanded="false">
       <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
     </button>
   </div>
   <nav class="appmenu" id="appMenu" hidden aria-label="Tools">
     <div class="mhead">
-      <div class="logo-sm" aria-hidden="true">P<b>W</b></div>
-      <b>Pit Wall</b><button class="menubtn" id="menuClose" aria-label="Close the menu" style="margin-left: auto">✕</button>
+      <div class="logo-sm" aria-hidden="true">
+        <svg><use href="#pwMark" /></svg>
+      </div>
+      <b>Fantasy Pit Wall</b><button class="menubtn" id="menuClose" aria-label="Close the menu" style="margin-left: auto">✕</button>
     </div>
     <div class="mlist" id="menuList"></div>
-    <div class="macct" data-acct hidden><div class="acct"></div></div>
   </nav>
   <header class="bar">
     <div class="race">
@@ -244,10 +266,6 @@
             <button class="btn ghost sm" data-view="model">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button
             ><button class="btn ghost sm" id="xoReset" hidden>Clear xPts edits</button>
           </div>
-        </section>
-        <section class="panel" data-pane="settings" data-acct hidden>
-          <h3>Account &amp; data</h3>
-          <div class="acct"></div>
         </section>
       </div>
       <div class="col col-c">
@@ -554,6 +572,16 @@
       race; Reset in Model restores the fitted values.
     </p>
     <div class="grid-cards" id="cal"></div>
+  </main>
+
+  <!-- SETTINGS -->
+  <main id="view-settings" data-v hidden>
+    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
+      <section class="panel" data-acct hidden>
+        <h3>Account &amp; data</h3>
+        <div class="acct"></div>
+      </section>
+    </div>
   </main>
 
   <!-- MODEL -->

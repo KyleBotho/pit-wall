@@ -129,7 +129,7 @@ function renderSettings() {
     nadj ? `${nadj} pace nudge${nadj > 1 ? "s" : ""}` : "",
   ].filter(Boolean);
   $("#simNote").innerHTML =
-    `Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
+    `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
     `Practice used: ${prac.length ? esc(prac.join(", ")) : "none yet"}. Data updated ${esc(new Date(DATA.generated).toLocaleString(undefined, shortDate))}.` +
     (edits.length ? ` <span class="warn">${edits.join(", ")} active.</span>` : "");
   $("#xoReset").hidden = !nxo;

@@ -18,6 +18,7 @@ const VIEWS = [
   "grid",
   "cal",
   "model",
+  "settings",
 ];
 
 // the example team a new browser starts with (config/season.json defaultTeam)

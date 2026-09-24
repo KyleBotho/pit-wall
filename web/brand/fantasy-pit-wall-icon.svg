@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1280" viewBox="0 0 1280 1280" role="img" aria-labelledby="title"><title id="title">Fantasy Pit Wall icon</title><rect id="background" width="100%" height="100%" fill="#000000"/><g id="pw-mark" fill="none" stroke-width="110" stroke-linejoin="round">
+<path id="purple-sector" stroke="#AB47FF" d="M200 892 V398 Q200 295 305 295 H746 C866 295 866 505 746 505 H460 C393 505 350 550 350 618 V763"/>
+<circle cx="200" cy="892" r="55" fill="#AB47FF" stroke="none"/>
+<path id="white-sector" stroke="#F5F5F7" d="M350 763 V785 C350 897 421 932 492 864 L641 727 C677 693 714 704 745 736 L882 866 C948 929 1060 899 1060 816 V555"/>
+<circle cx="1060" cy="555" r="55" fill="#F5F5F7" stroke="none"/>
+</g></svg>

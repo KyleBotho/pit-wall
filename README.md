@@ -1,4 +1,4 @@
-# Pit Wall Planner
+# Fantasy Pit Wall
 
 F1 Fantasy planner: simulated race weekends scored with the official rules, best transfers, price-change odds,
 practice-session pace, hindsight on past rounds, live scoring and private leagues. Live at

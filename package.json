@@ -1,7 +1,7 @@
 {
   "name": "pit-wall",
   "private": true,
-  "description": "Pit Wall F1 Fantasy planner: checks, tests and backtests (the site itself is built by refresh.py)",
+  "description": "Fantasy Pit Wall F1 Fantasy planner: checks, tests and backtests (the site itself is built by refresh.py)",
   "scripts": {
     "test": "node --test",
     "lint": "eslint .",

@@ -1,4 +1,4 @@
-# Pit Wall Planner — F1 Fantasy 2026
+# Fantasy Pit Wall — F1 Fantasy 2026
 
 Personal F1 Fantasy planner that replaces an f1fantasytools.com subscription. Live at
 https://kylebotho.github.io/pit-wall/ (repo `KyleBotho/pit-wall`, public). That is THE site. The old private Claude
@@ -32,6 +32,10 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
   `state.calcStart`; pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
   `state.maxPen`; the chip played is `activeChip()`.
+- `web/brand/` — logo (renamed "Fantasy Pit Wall" 2026-09-24; repo/URL stay `pit-wall`). Icon SVG = favicon; its
+  mark is also the `#pwMark` symbol in app.html (rail/app bar/menu); banner PNG = link preview (og:image);
+  apple-touch-icon.png 180px. `build_page` copies the folder to `build/brand/`. Originals from the user (their banner
+  SVG drew the mark too big, off the bottom edge; the copy here is re-laid out; their PNGs are right).
 - `.github/workflows/refresh.yml` — rebuild + deploy every 30 min Thu–Sun, every 6 h Mon–Wed, on push, and manually.
   Commits `history/`, then runs the tests (they gate the deploy). A separate `check` job (pushes only) runs lint,
   formatting, types and ruff, so style never blocks a price refresh.
@@ -264,7 +268,7 @@ User-approved order: 1–5, then the rest.
     are older than the round's lock. Tested with a fake league (R14 final + simulated Baku Friday); not yet on the
     real leagues (needs the passphrase).
 - [x] Header cleanup (2026-09-24, user's ask): the header's team buttons and Import are gone (sign-in sync made
-    them redundant). Import = any `[data-import]` button (Settings "Account & data", ☰ menu, League empty state)
+    them redundant). Import = any `[data-import]` button (Account & data in the Settings view, bottom of the rail; League empty state)
     opening the hidden `#importFile`. The Calculator picks the team in Settings; Hindsight's budget has one button
     per team (`state.hdCap` = "100" | "team:i" | "none"); Elite has its own team
     picker at the top (`state.elT`, `elTeam()`) for the template, ownership and chip grid. League follows `state.active`.
