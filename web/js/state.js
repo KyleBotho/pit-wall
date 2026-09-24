@@ -57,6 +57,7 @@ const defaults = () => ({
   syncKey: true,
   view: SEASON_OVER ? "hind" : "calc",
   pane: "best",
+  sub: {}, // the view last open in each tool group (main.js GROUPS)
   kind: "D",
   raceIdx: 0,
   grid: "r",
@@ -114,6 +115,7 @@ const CARRY = [
   "maxPen",
   "view",
   "pane",
+  "sub",
   "kind",
   "grid",
   "sort",
@@ -166,6 +168,7 @@ function normalise(s) {
   s.active = Math.min(2, Math.max(0, s.active | 0));
   if (s.calcStart && s.calcStart.type === "draft" && !s.drafts[s.calcStart.i]) s.calcStart = null;
   s.pins = (s.pins || []).filter((p) => p.ids && p.ids.every((id) => byId[id]));
+  if (!s.sub || typeof s.sub !== "object") s.sub = {};
   if (s.view === "cal" || s.view === "model") s.view = "settings"; // both moved into Settings (2026-09-24)
   if (!VIEWS.includes(s.view) || (SEASON_OVER && FORECAST_VIEWS.includes(s.view)))
     s.view = SEASON_OVER ? "hind" : "calc";

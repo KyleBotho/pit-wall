@@ -192,7 +192,7 @@ function renderEliteSeason(El) {
     (gap
       ? "Points above or below the global top-100 cut-off after each round. "
       : "Cumulative points after each round. ") +
-    (mine.length ? "" : "Unlock your leagues on the League tab to add your teams.");
+    (mine.length ? "" : "Unlock your leagues under Leagues → My leagues to add your teams.");
   const cell = (p, avg) =>
     p == null
       ? '<td class="dim">—</td>'

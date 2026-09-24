@@ -52,15 +52,47 @@ function rerender() {
   save();
 }
 
+/* ---------- tool groups: one rail button each, their views as sub-tabs ---------- */
+const GROUPS = {
+  proj: [
+    ["assets", "Points"],
+    ["prices", "Budget"],
+    ["grid", "Positions"],
+    ["practice", "Practice"],
+  ],
+  leagues: [
+    ["league", "My leagues"],
+    ["elite", "Global elite"],
+  ],
+  season: [
+    ["hind", "Hindsight"],
+    ["stats", "Statistics"],
+  ],
+};
+const groupOf = (v) => Object.keys(GROUPS).find((g) => GROUPS[g].some(([x]) => x === v));
+const groupViews = (g) => GROUPS[g].filter(([v]) => !(SEASON_OVER && FORECAST_VIEWS.includes(v)));
+
 function showView(v) {
+  if (GROUPS[v]) {
+    // a group's rail button opens the view last used in it
+    const vs = groupViews(v).map(([x]) => x);
+    v = vs.includes(state.sub[v]) ? state.sub[v] : vs[0] || "hind";
+  }
   if (SEASON_OVER && FORECAST_VIEWS.includes(v)) v = "hind";
   state.view = v;
-  const nb = document.querySelector(`#nav button[data-view="${v}"] .lbl`);
+  const g = groupOf(v);
+  if (g) state.sub[g] = v;
+  const nb = document.querySelector(`#nav button[data-view="${g || v}"] .lbl`);
   $("#appTitle").textContent = nb ? nb.textContent : "Fantasy Pit Wall";
   for (const b of $$("#menuList button, #nav button")) {
-    if (b.dataset.view === v) b.setAttribute("aria-current", "page");
+    if (b.dataset.view === v || b.dataset.view === g) b.setAttribute("aria-current", "page");
     else b.removeAttribute("aria-current");
   }
+  $("#subTabs").hidden = !g;
+  if (g)
+    $("#subTabs").innerHTML = groupViews(g)
+      .map(([x, l]) => `<button data-view="${x}"${x === v ? ' aria-current="page"' : ""}>${l}</button>`)
+      .join("");
   closeMenu();
   $$("[data-v]").forEach((m) => (m.hidden = m.id !== "view-" + v));
   if (stale.has(v)) renderView(v);
@@ -767,7 +799,11 @@ document.addEventListener("keydown", (e) => {
 
 /* ---------- start-up ---------- */
 if (SEASON_OVER) {
-  $$("#nav button").forEach((b) => (b.hidden = FORECAST_VIEWS.includes(b.dataset.view)));
+  $$("#nav button").forEach(
+    (b) =>
+      (b.hidden =
+        FORECAST_VIEWS.includes(b.dataset.view) || (GROUPS[b.dataset.view] && !groupViews(b.dataset.view).length)),
+  );
   $("#calHead").hidden = $("#cal").hidden = true; // no races left to tune
 }
 // phone menu: the same tools as the rail, as a full-screen list

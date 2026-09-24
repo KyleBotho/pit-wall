@@ -27,53 +27,27 @@
     <button data-view="live">
       <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4" /></svg><span class="lbl">Live Scoring</span>
     </button>
-    <button data-view="league">
+    <button data-view="proj">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 17l6-6 4 4 8-8" />
+        <path d="M15 7h6v6" /></svg
+      ><span class="lbl">Projections</span>
+    </button>
+    <button data-view="leagues">
       <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /></svg
-      ><span class="lbl">League</span>
+      ><span class="lbl">Leagues</span>
     </button>
-    <button data-view="elite">
-      <svg viewBox="0 0 24 24"><path d="M3 18h18M4 18l-1-10 5 4 4-7 4 7 5-4-1 10" /></svg><span class="lbl">Elite</span>
-    </button>
-    <button data-view="hind">
+    <button data-view="season">
       <svg viewBox="0 0 24 24">
         <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
         <path d="M3 3v5h5M12 7v5l3 3" /></svg
-      ><span class="lbl">Hindsight</span>
-    </button>
-    <button data-view="stats">
-      <svg viewBox="0 0 24 24">
-        <path d="M3 3v18h18" />
-        <path d="M7 16v-4M11 16V8M15 16v-6M19 16V5" /></svg
-      ><span class="lbl">Statistics</span>
+      ><span class="lbl">Season</span>
     </button>
     <button data-view="compare">
       <svg viewBox="0 0 24 24">
         <rect x="3" y="3" width="7" height="18" rx="1.5" />
         <rect x="14" y="3" width="7" height="18" rx="1.5" /></svg
       ><span class="lbl">Compare</span>
-    </button>
-    <button data-view="assets">
-      <svg viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18M9 5v14" /></svg><span class="lbl">Projections</span>
-    </button>
-    <button data-view="prices">
-      <svg viewBox="0 0 24 24">
-        <path d="M3 17l6-6 4 4 8-8" />
-        <path d="M15 7h6v6" /></svg
-      ><span class="lbl">Budget</span>
-    </button>
-    <button data-view="practice">
-      <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="13" r="8" />
-        <path d="M12 9v4l2 2M9 2h6" /></svg
-      ><span class="lbl">Practice</span>
-    </button>
-    <button data-view="grid">
-      <svg viewBox="0 0 24 24">
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" /></svg
-      ><span class="lbl">Positions</span>
     </button>
     <button data-view="settings" class="navend">
       <svg viewBox="0 0 24 24">
@@ -111,6 +85,8 @@
       <span class="lock" id="lock"></span>
     </div>
   </header>
+  <nav class="subtabs" id="subTabs" hidden aria-label="Sections"></nav>
+  <!-- the open group's views (main.js GROUPS) -->
   <input type="file" id="importFile" accept=".json,application/json" hidden /><!-- opened by any [data-import] button -->
 
   <!-- TEAM CALCULATOR -->

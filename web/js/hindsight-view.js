@@ -191,7 +191,7 @@ function renderHind() {
   }));
   if (!SEALED)
     $("#hdMine").innerHTML =
-      '<p class="note">Unlock your leagues on the League tab to see your teams here. Their round-by-round line-ups are saved (encrypted) from your data exports.</p>';
+      '<p class="note">Unlock your leagues under Leagues → My leagues to see your teams here. Their round-by-round line-ups are saved (encrypted) from your data exports.</p>';
   else
     $("#hdMine").innerHTML = mine
       .map(({ t, r, off }) => {
