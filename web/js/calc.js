@@ -112,6 +112,10 @@ function renderSettings() {
   $("#maxPen").value = state.maxPen == null ? "any" : String(state.maxPen);
   $("#maxPen").disabled = !!T.none || chipK === "wildcard" || chipK === "limitless";
   $("#maxBudget").disabled = !T.none;
+  // a starting team plans from its budget and transfers; no team plans from a maximum budget
+  $("#budgetField").hidden = $("#maxPen").closest(".field").hidden = !!T.none;
+  $("#maxOr").hidden = $("#maxField").hidden = !T.none;
+  needSync();
   if (document.activeElement !== $("#maxBudget"))
     $("#maxBudget").value = T.none ? +state.maxBudget || 100 : cap().toFixed(1);
   $$("[data-editteam],[data-keep]").forEach((b) => (b.disabled = !!T.none || (b.dataset.editteam && T.ro)));

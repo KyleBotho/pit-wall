@@ -342,5 +342,14 @@ User-approved order: 1–5, then the rest.
 - [x] 2026-09-24 Settings | Simulation divider (wide screens, `#setSplit`): drag, arrow keys, double-click resets.
     The position lives in `setSplit` (calc.js) only, NOT in `state`: the user wants a reload to reset it. Also fixed:
     `applyRemote` now keeps every `NOSYNC` key (before, only view and pane survived a sync from another device).
+- [x] 2026-09-24 UI polish from the second review (7.5/10): how-to paragraphs moved into ⓘ popovers
+    (`details.info` next to a title; outside click / Escape closes; fixed-position inside the Calculator, a sheet on
+    phones); status lines stay visible. Plain wording (league passphrase, no GitHub/Claude for Chrome), sign-in +
+    import prompts where only example teams exist (`[data-needsync]` = hidden unless sign-in works). Calculator
+    settings show either budget+transfers (a team) or Maximum budget (no team); labelled Keep all / Edit / Clear.
+    Statistics categories in a dropdown like Simulation's. Header labelled "Next race". Live panels sit side by side
+    at content width (`.lvgrid`), roomier heat tables, Settings stacks Account + Model left. Type: tables/notes 14px
+    (13px in the Calculator), `--dim` #8b8b94. Drivers with two assets show the team (`DUP_TLA`, all name cells use
+    `who()`).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

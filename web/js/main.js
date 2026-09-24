@@ -602,6 +602,7 @@ document.addEventListener("click", (e) => {
   const tg = e.target;
   if (!tg.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
   if (!tg.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
+  for (const d of $$("details.info[open]")) if (!d.contains(tg)) d.open = false; // ⓘ popovers close on an outside click
   const cell = tg.closest("[data-stcell]");
   if (cell) {
     const [id, g] = cell.dataset.stcell.split(":");
@@ -842,6 +843,7 @@ document.addEventListener("keydown", (e) => {
   if (!$("#modal").hidden) closeModal();
   $$(".pop").forEach((x) => (x.hidden = true));
   $("#rowMenu").hidden = true;
+  $$("details.info[open]").forEach((d) => (d.open = false));
 });
 // phone: swiping the Calculator's panes moves the tab bar with you
 {

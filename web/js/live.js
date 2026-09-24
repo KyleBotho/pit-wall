@@ -106,22 +106,28 @@ function renderLive() {
       : "Points appear after each session is scored.") +
     (Object.values(L.assets).some((a) => a.lag) ? " Some scoring lines are still catching up with the totals." : "");
 
-  // your teams
-  $("#lvTeams").innerHTML = state.teams
-    .map((T, i) => {
-      const t = lvTeam(T);
-      if (!t)
-        return `<section class="panel"><h3>${esc(T.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
-      const live = lvScore(t, lvPts),
-        proj = lvScore(t, (id) => lvProj(id) ?? 0),
-        hasProj = t.ids.some((id) => lvProj(id) != null);
-      const chipName = t.chip ? (CHIPS.find(([k]) => k === t.chip) || [])[2] : "";
-      return `<section class="panel"><h3>${esc(T.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
+  // your teams (with only example teams: one card that says how to load yours)
+  if (state.teams.every((T) => !lvTeam(T))) {
+    $("#lvTeams").innerHTML =
+      `<section class="panel" style="grid-column:1/-1"><h3>Your teams</h3><p class="note">Load your teams to follow them live here.</p>` +
+      `<div class="chipbar"><button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button><button class="btn ghost sm" data-import="1">Import a data export</button></div></section>`;
+    needSync();
+  } else
+    $("#lvTeams").innerHTML = state.teams
+      .map((T, i) => {
+        const t = lvTeam(T);
+        if (!t)
+          return `<section class="panel"><h3>${esc(T.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
+        const live = lvScore(t, lvPts),
+          proj = lvScore(t, (id) => lvProj(id) ?? 0),
+          hasProj = t.ids.some((id) => lvProj(id) != null);
+        const chipName = t.chip ? (CHIPS.find(([k]) => k === t.chip) || [])[2] : "";
+        return `<section class="panel"><h3>${esc(T.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
       <div class="lvbig"><b>${f0(live)}</b><span class="muted">pts${hasProj ? ` · projected ${f0(proj)} at lock` : ""}${chipName ? ` · ${esc(chipName)}` : ""}</span></div>
       <div class="chips">${t.ids.map((id) => chip(id, { a: f0(lvPts(id)), b: lvProj(id) != null ? `<span class="dim">x${f0(lvProj(id))}</span>` : "", x: id === t.x3 ? "3×" : id === t.boost ? (t.autoB ? "2×?" : "2×") : "" })).join("")}</div>
       ${t.autoB ? '<p class="note">Boost is set to auto, so 2×? marks the driver we projected highest. Set your real Boost in the Calculator.</p>' : ""}</section>`;
-    })
-    .join("");
+      })
+      .join("");
 
   renderLiveLeague(g, over);
 
@@ -163,7 +169,7 @@ function renderLive() {
     rows
       .map(
         (r) =>
-          `<tr><td><span class="who">${codeBox(r.a)}<span>${esc(r.a.kind === "D" ? r.a.short : r.a.team)}</span></span></td><td class="muted">${teamsOf(r.a.id).join(" ")}</td>` +
+          `<tr><td>${who(r.a)}</td><td class="muted">${teamsOf(r.a.id).join(" ")}</td>` +
           cols
             .map(([, , f]) => {
               const v = f(r.a.id);

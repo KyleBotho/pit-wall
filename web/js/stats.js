@@ -68,6 +68,7 @@ function renderStats() {
   const off = stExcluded(),
     codes = [...new Set((DATA.evNames || []).map((e) => e.c))];
   $("#stCatField").hidden = !["pts", "ppm"].includes(m);
+  $("#stCatN").textContent = `${codes.filter((c) => !off.has(c)).length} / ${codes.length}`;
   $("#stCats").innerHTML = ["Q", "S", "R"]
     .map((ss) => {
       const cs = codes.filter((c) => c[0] === ss).sort();
@@ -121,7 +122,7 @@ function renderStats() {
     rows
       .map(
         (r) =>
-          `<tr><td><span class="who">${codeBox(r.a)}<span>${esc(r.a.kind === "D" ? r.a.short : r.a.team)}</span></span></td><td${stHeat(r.avg, m, lo, hiV)}><b>${stFmt(r.avg, m)}</b></td>` +
+          `<tr><td>${who(r.a)}</td><td${stHeat(r.avg, m, lo, hiV)}><b>${stFmt(r.avg, m)}</b></td>` +
           done
             .map((g, i) => {
               const h = Hind.at(r.a.id, g),

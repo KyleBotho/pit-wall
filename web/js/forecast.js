@@ -248,8 +248,14 @@ function chip(id, o = {}) {
     <span class="c">${esc(code(a))}</span><span class="a">${o.a ?? f1(p)}</span>${b}${o.x ? `<span class="x">${o.x}</span>` : ""}</span>`;
 }
 const codeBox = (a) => `<span class="code" style="--tc:${col(a)}">${esc(code(a))}</span>`;
+// drivers with more than one asset this season (a mid-season team change): their rows also name the team
+const DUP_TLA = new Set(
+  DATA.assets
+    .filter((a, i, all) => a.kind === "D" && all.some((b, j) => j !== i && b.kind === "D" && b.tla === a.tla))
+    .map((a) => a.tla),
+);
 const who = (a, label) =>
-  `<span class="who">${codeBox(a)}<span>${esc(label ?? (a.kind === "D" ? a.short : a.team))}</span></span>`;
+  `<span class="who">${codeBox(a)}<span>${esc(label ?? (a.kind === "D" ? a.short : a.team))}${label == null && a.kind === "D" && DUP_TLA.has(a.tla) ? ` <span class="dim">${esc(teamCode(a.team))}</span>` : ""}</span></span>`;
 function heat(v, lo, hi) {
   if (!state.heat || v == null || isNaN(v)) return "";
   const t = Math.max(-1, Math.min(1, v >= 0 ? (hi > 0 ? v / hi : 0) : lo < 0 ? -(v / lo) : 0));

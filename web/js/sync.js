@@ -303,7 +303,10 @@ const ago = (t) => {
         ? `${Math.round(m / 60)} h ago`
         : new Date(t).toLocaleDateString();
 };
+// [data-needsync] buttons (sign in) only show when sign-in is available and nobody is signed in
+const needSync = () => $$("[data-needsync]").forEach((b) => (b.hidden = !syncState.sb || !!syncState.user));
 function renderSync() {
+  needSync();
   const U = syncState.user,
     ss = syncState;
   let h = "";

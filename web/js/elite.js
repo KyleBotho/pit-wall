@@ -146,7 +146,7 @@ function renderElite() {
               : has
                 ? '<span class="muted">Owned</span>'
                 : "";
-        return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
+        return `<tr><td>${who(a)}</td>
         <td>${pct(o(a.id, 0))}</td><td${heat(p100, 0, 1)}><b>${pct(p100)}</b></td>${pv ? dCell(dOwn(a.id, 1)) : ""}<td>${pct(o(a.id, 2))}</td>${pv ? dCell(dOwn(a.id, 2)) : ""}<td class="muted">${f0(a.own)}%</td>
         ${top ? `<td>${top.boost && top.boost[a.id] ? pct(top.boost[a.id]) : "—"}</td>` : ""}
         <td style="text-align:left">${state.teams.map((t, i) => (t.team.includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "")).join("")}</td><td style="text-align:left">${tag}</td></tr>`;

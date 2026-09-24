@@ -146,7 +146,7 @@ function renderAssets() {
         const a = r.a,
           m = state.marks[a.id] || "",
           adj = state.adj[a.id] || 0;
-        return `<tr><td><span class="who">${codeBox(a)}<span>${esc(isD ? a.short : a.team)}</span></span></td>
+        return `<tr><td>${who(a)}</td>
         <td>${f1(a.price)}</td><td class="muted">${f0(a.own)}%</td><td${heat(r.x, mn, mx)}><b>${f1(r.x)}</b></td><td class="muted">${f0(r.p25)}–${f0(r.p75)}</td>
         <td>${r.ppm.toFixed(2)}</td><td>${f1(r.form)}</td><td>${spark(a)}</td>
         ${
@@ -199,7 +199,7 @@ function renderPractice() {
       .map((d) => {
         const a = byId[d.id],
           diff = d.practiceQ == null ? 0 : d.formQ - d.practiceQ;
-        return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.short)}</span></span></td>${perSess(d.tla)}<td>${g(pr.gapQ[d.tla])}</td><td>${g(pr.gapR[d.tla])}</td>
+        return `<tr><td>${who(a)}</td>${perSess(d.tla)}<td>${g(pr.gapQ[d.tla])}</td><td>${g(pr.gapR[d.tla])}</td>
         <td class="${diff > 1.5 ? "good" : diff < -1.5 ? "bad" : ""}">${d.practiceQ == null ? "—" : f1(d.practiceQ)}</td>
         <td class="muted">${f1(d.formQ)}</td><td><b>${f1(d.qMu)}</b></td><td class="muted">${f1(d.formR)}</td><td><b>${f1(d.rMu)}</b></td></tr>`;
       })
@@ -261,7 +261,7 @@ function renderPrices() {
             const dist = pi.dist
               ? `<span class="dist" title="${pi.dist.map((v, i) => binLbl[i] + ": " + Math.round(v * 100) + "%").join(" · ")}">${pi.dist.map((v, i) => `<span class="${i < 4 ? "dn" : i > 4 ? "up" : "z"}" style="height:${Math.max(1, v * 22)}px"></span>`).join("")}</span>`
               : "—";
-            return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
+            return `<tr><td>${who(a)}</td>
       <td>${f1(a.price)}</td><td class="muted">${f0(pi.p2)} · ${f0(pi.p1)}</td><td><b>${f1(p.mean)}</b></td>
       ${needCell(pi.need[0])}${needCell(pi.need[1])}${needCell(pi.need[2])}
       <td class="good">${pct(pi.up)}</td><td class="bad">${pct(pi.down)}</td><td>${dist}</td>

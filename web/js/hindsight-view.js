@@ -338,7 +338,7 @@ function renderHind() {
       .map(({ a, h }) => {
         const m = (state.hdMarks || {})[a.id] || "",
           dv = Hind.delta(a.id, gd);
-        return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td><td class="muted">${money(h.price)}</td><td class="${dv > 0 ? "good" : dv < 0 ? "bad" : "muted"}">${sgn(dv, 1)}</td><td${heat(h.pts, -20, 60)}><b>${f0(h.pts)}</b></td><td class="muted">${f0(h.nn)}</td><td>${f1(h.pts / h.price)}</td><td class="muted">${f0(h.own)}%</td>${proj ? `<td class="muted">${f1(proj[a.id])}</td>` : ""}
+        return `<tr><td>${who(a)}</td><td class="muted">${money(h.price)}</td><td class="${dv > 0 ? "good" : dv < 0 ? "bad" : "muted"}">${sgn(dv, 1)}</td><td${heat(h.pts, -20, 60)}><b>${f0(h.pts)}</b></td><td class="muted">${f0(h.nn)}</td><td>${f1(h.pts / h.price)}</td><td class="muted">${f0(h.own)}%</td>${proj ? `<td class="muted">${f1(proj[a.id])}</td>` : ""}
       <td style="text-align:left">${bestIds.includes(a.id) ? '<span class="good">✓</span>' : ""}</td><td style="text-align:left">${state.teams.map((t, i) => (((lineups(t.name) || {})[gd]?.ids || []).includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "")).join("")}</td>
       <td>${inclExcl(a.id, m, "hmark")}</td></tr>`;
       })

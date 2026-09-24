@@ -135,7 +135,7 @@ function renderLeagueForecast(L, myIds, myName) {
           .map((r) => {
             const a = byId[r.id];
             const sw = r.mine ? r.x * (1 - r.n / nr) : -r.x * (r.n / nr);
-            return `<tr><td><span class="who">${codeBox(a)}<span>${esc(a.kind === "D" ? a.short : a.team)}</span></span></td>
+            return `<tr><td>${who(a)}</td>
         <td style="text-align:left">${r.mine ? '<span class="good">Only you</span>' : '<span class="bad">Threat</span>'}</td><td>${r.n}/${rivals.length}</td><td>${f1(r.x)}</td><td${heat(sw, -30, 30)} class="${sw >= 0 ? "good" : "bad"}">${sgn(sw)}</td></tr>`;
           })
           .join("")
