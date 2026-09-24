@@ -21,6 +21,8 @@ button,select,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .muted{color:var(--muted)} .dim{color:var(--dim)}
 .good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+.lvbig{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap} .lvbig b{font:700 34px/1 var(--display)}
+.tag.live{background:rgba(239,68,68,.16);color:var(--bad)} .tag.done{background:var(--tile);color:var(--fg)} .tag.up{background:transparent;outline:1px solid var(--line);color:var(--muted)}
 .acct{display:flex;flex-direction:column;gap:8px;align-items:flex-start} .acct .note{margin:0} .acct .em{font-weight:600;font-size:13px;word-break:break-all}
 p{margin:0}
 
@@ -312,6 +314,7 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   <div class="logo" aria-hidden="true">P<b>W</b></div>
   <nav class="nav" id="nav">
     <button data-view="calc"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3M8 18h.01M12 18h.01"/></svg><span class="lbl">Calculator</span></button>
+    <button data-view="live"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="lbl">Live Scoring</span></button>
     <button data-view="league"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="lbl">League</span></button>
     <button data-view="elite"><svg viewBox="0 0 24 24"><path d="M3 18h18M4 18l-1-10 5 4 4-7 4 7 5-4-1 10"/></svg><span class="lbl">Elite</span></button>
     <button data-view="hind"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 3"/></svg><span class="lbl">Hindsight</span></button>
@@ -388,6 +391,22 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
       </div>
     </div>
     <div class="menu" id="rowMenu" hidden></div>
+  </main>
+
+  <!-- LIVE SCORING -->
+  <main id="view-live" data-v hidden>
+    <section class="panel">
+      <h3><span id="lvTitle">Live Scoring</span> <small id="lvStamp"></small></h3>
+      <div class="chipbar" id="lvSess"></div>
+      <p class="note" id="lvNote"></p>
+    </section>
+    <div class="dash" id="lvTeams" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:16px"></div>
+    <section class="panel" style="margin-top:16px">
+      <h3>Points this weekend <span class="seg" id="lvKind"><button data-lk="D">Drivers</button><button data-lk="C">Constructors</button></span>
+        <span class="seg" id="lvBy"><button data-lvby="sess">By session</button><button data-lvby="cat">By category</button></span></h3>
+      <p class="note" id="lvTNote"></p>
+      <div class="tw"><table class="heat stat" id="lvTable"></table></div>
+    </section>
   </main>
 
   <!-- LEAGUE -->
@@ -646,7 +665,7 @@ try {
     S = Object.assign(S, s);
   }
 } catch (e) {}
-const VIEWS = ["calc", "league", "elite", "hind", "stats", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
+const VIEWS = ["calc", "live", "league", "elite", "hind", "stats", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
 // saved state (this browser's, or the account's) -> current shape
 function normalise() {
   S.teams = (S.teams || []).slice(0, 3);
@@ -687,7 +706,7 @@ async function tryUnseal(pass, quiet) {
     SEALED = null;
     if (!quiet) toast(e.message && e.message.includes("https") ? e.message : "That passphrase didn't work.");
   }
-  if (R) { renderLeague(); renderElite(); renderHind(); }
+  if (R) { renderLeague(); renderElite(); renderHind(); renderLive(); }
 }
 // A browser with only example teams takes the line-ups from the last data export (sealed with the leagues).
 function fillFromLineups() {
@@ -828,7 +847,7 @@ async function signOut() {
   writeMark(null);
   try { localStorage.removeItem(LK); } catch (e) {}
   SEALED = null; renderSync();
-  if (R) { renderLeague(); renderElite(); renderHind(); }
+  if (R) { renderLeague(); renderElite(); renderHind(); renderLive(); }
   toast("Signed out. Your leagues are locked again in this browser; its settings stay.");
 }
 const ago = (t) => { const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : new Date(t).toLocaleDateString(); };
@@ -1593,6 +1612,88 @@ function stCell(id, gd) {
   $("#modal").hidden = false;
 }
 
+/* ---------- live scoring: the weekend in progress (or the last one), as fresh as the last build ---------- */
+const LV_SESS = { "Sprint Shootout": "SQ", "Sprint Qualifying": "Sprint", "Sprint": "Sprint", "Qualifying": "Quali", "Race": "Race" };
+const LV_CATS = [["POS", "Position"], ["TW", "Q2/Q3"], ["PG", "Gained"], ["PL", "Lost"], ["OV", "Overtakes"], ["FL", "Fastest lap"], ["DOTD", "DotD"], ["PIT", "Pit stops"], ["NEG", "DNF/DQ"], ["OTH", "Other"]];
+const lvCat = (c) => { const k = c.slice(2); return ["FP", "FP2", "WRFP", "PIT"].includes(k) ? "PIT" : ["NC", "DQ"].includes(k) ? "NEG" : LV_CATS.some(([x]) => x === k) ? k : "OTH"; };
+const lvPts = (id) => (DATA.live.assets[id] || {}).pts || 0;
+const lvProj = (id) => ((DATA.projHist || {})[DATA.live.gd] || {})[id];
+// the line-up that scores this weekend: the export's (after the round) or, for the round in progress, your current team
+function lvTeam(T) {
+  const gd = DATA.live.gd, r = (lineups(T.name) || {})[gd];
+  if (r) return { ids: r.ids.map(String), boost: String(r.boost || ""), x3: String(r.x3 || ""), chip: r.chip, src: "from your data export" };
+  if (T.example) return null;
+  const ids = T.team.slice(), ds = ids.filter((id) => byId[id].kind === "D");
+  const boost = T.boost !== "auto" && ds.includes(T.boost) ? T.boost
+    : ds.reduce((b, id) => ((lvProj(id) ?? 0) > (lvProj(b) ?? 0) ? id : b), ds[0]);
+  return { ids, boost, x3: "", chip: null, src: NEXT && gd === NEXT.gd ? "your current team" : "your current team (this round's line-up needs an export)", autoB: T.boost === "auto" };
+}
+function lvScore(t, f) { // f: points of one asset; Boost doubles, x3 triples, No Negative floors each scoring line
+  const one = (id) => (t.chip === "noneg" && f === lvPts ? (DATA.live.assets[id]?.ev || []).reduce((s, r) => s + Math.max(0, r[1]), 0) : f(id));
+  return t.ids.reduce((s, id) => s + one(id) * (id === t.x3 ? 3 : id === t.boost ? 2 : 1), 0);
+}
+function renderLive() {
+  const L = DATA.live;
+  $("#lvTeams").hidden = !L; $("#lvTable").closest("section").hidden = !L;
+  if (!L) { $("#lvTitle").textContent = "Live Scoring"; $("#lvNote").textContent = "No race weekend has started yet."; return; }
+  const g = DATA.schedule.find((x) => x.gd === L.gd) || {}, now = Date.now(), sess = g.sessions || [];
+  const scored = (s) => DATA.assets.some((a) => (L.assets[a.id]?.sess || {})[s.type] != null);
+  const state = (s) => (scored(s) && Date.parse(s.end || s.start) < now ? "done" : Date.parse(s.start) <= now && now <= Date.parse(s.end || s.start) + 3 * 36e5 ? "live" : "up");
+  const over = sess.length && sess.every((s) => state(s) === "done");
+  const when = (t) => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
+  $("#lvTitle").textContent = `R${L.gd} · ${g.name || ""}`;
+  $("#lvStamp").textContent = over ? "final" : "live";
+  $("#lvSess").innerHTML = sess.map((s) => { const st = state(s);
+    return `<span class="tag ${st}">${esc(LV_SESS[s.type] || s.type)} ${st === "done" ? "✓" : st === "live" ? "· scoring" : "· " + esc(when(s.start))}</span>`; }).join("");
+  const asOf = L.feedTime ? new Date(L.feedTime).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+  $("#lvNote").innerHTML = `Scores as of <b>${esc(asOf)}</b> (F1's feed at the last site build; the site rebuilds about every 30 min Thu–Sun). ` +
+    (over ? "The weekend is over; these are its final points until the next one starts." : "Points appear after each session is scored.") +
+    (Object.values(L.assets).some((a) => a.lag) ? " Some scoring lines are still catching up with the totals." : "");
+
+  // your teams
+  $("#lvTeams").innerHTML = S.teams.map((T, i) => {
+    const t = lvTeam(T);
+    if (!t) return `<section class="panel"><h3>${esc(T.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
+    const live = lvScore(t, lvPts), proj = lvScore(t, (id) => lvProj(id) ?? 0), hasProj = t.ids.some((id) => lvProj(id) != null);
+    const chipName = t.chip ? (CHIPS.find(([k]) => k === t.chip) || [])[2] : "";
+    return `<section class="panel"><h3>${esc(T.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
+      <div class="lvbig"><b>${f0(live)}</b><span class="muted">pts${hasProj ? ` · projected ${f0(proj)} at lock` : ""}${chipName ? ` · ${esc(chipName)}` : ""}</span></div>
+      <div class="chips">${t.ids.map((id) => chip(id, { a: f0(lvPts(id)), b: lvProj(id) != null ? `<span class="dim">x${f0(lvProj(id))}</span>` : "", x: id === t.x3 ? "3×" : id === t.boost ? (t.autoB ? "2×?" : "2×") : "" })).join("")}</div>
+      ${t.autoB ? '<p class="note">Boost is set to auto, so 2×? marks the driver we projected highest. Set your real Boost in the Calculator.</p>' : ""}</section>`;
+  }).join("");
+
+  // assets table
+  const kind = S.lvKind || "D", by = S.lvBy || "sess";
+  $$("#lvKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lk === kind)));
+  $$("#lvBy button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lvby === by)));
+  const cats = (id) => { const o = {}; for (const [ni, v] of L.assets[id]?.ev || []) { const c = lvCat(DATA.evNames[ni].c); o[c] = (o[c] || 0) + v; } return o; };
+  // racing that weekend (a driver who changed team mid-season has two assets; only one is active per round)
+  const assets = DATA.assets.filter((a) => a.kind === kind && L.assets[a.id] && ((L.assets[a.id].act ?? a.active) || lvPts(a.id)));
+  const cols = by === "sess" ? sess.map((s) => [s.type, LV_SESS[s.type] || s.type, (id) => (L.assets[id]?.sess || {})[s.type] ?? null])
+    : LV_CATS.filter(([c]) => assets.some((a) => cats(a.id)[c])).map(([c, n]) => [c, n, (id) => cats(id)[c] ?? null]);
+  const teamsOf = (id) => S.teams.map((T, i) => { const t = lvTeam(T); return t && t.ids.includes(id) ? `T${i + 1}` : ""; }).filter(Boolean);
+  const rows = assets.map((a) => ({ a, pts: lvPts(a.id), px: lvProj(a.id) })).sort((x, y) => y.pts - x.pts || (y.px ?? -99) - (x.px ?? -99));
+  const lo = Math.min(0, ...rows.map((r) => r.pts)), hi = Math.max(0, ...rows.map((r) => r.pts));
+  $("#lvTable").innerHTML = `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th><th>Yours</th>${cols.map(([, n]) => `<th>${esc(n)}</th>`).join("")}<th>Total</th><th title="Our projection at lock">xPts</th>${over ? '<th title="Total minus projection">Δ</th>' : '<th title="Points still needed to reach the projection">To go</th>'}</tr></thead><tbody>` +
+    rows.map((r) => `<tr><td><span class="who">${codeBox(r.a)}<span>${esc(r.a.kind === "D" ? r.a.short : r.a.team)}</span></span></td><td class="muted">${teamsOf(r.a.id).join(" ")}</td>` +
+      cols.map(([, , f]) => { const v = f(r.a.id); return `<td class="${v < 0 ? "bad" : ""}">${v == null ? '<span class="dim">—</span>' : f0(v)}</td>`; }).join("") +
+      `<td${heat(r.pts, lo, hi)} data-lvcell="${r.a.id}"><b>${f0(r.pts)}</b></td><td class="muted">${r.px == null ? "—" : f1(r.px)}</td>` + (r.px == null ? "<td>—</td>" : over ? `<td class="${r.pts - r.px >= 0 ? "good" : "bad"}">${sgn(r.pts - r.px, 0)}</td>` : `<td class="${r.pts >= r.px ? "good" : "muted"}">${r.pts >= r.px ? "✓" : f0(r.px - r.pts)}</td>`) + "</tr>").join("") + "</tbody>";
+  $("#lvTNote").textContent = "Click a total for its scoring lines. xPts is our projection for the whole weekend, frozen at lock; " +
+    (over ? "Δ is the final total minus it." : "To go is what's still needed to reach it (✓ = already there).");
+}
+function lvCell(id) {
+  const a = byId[id], x = DATA.live.assets[id]; if (!x) return;
+  const groups = {};
+  for (const [ni, v, f] of x.ev || []) { const e = DATA.evNames[ni]; (groups[e.s] = groups[e.s] || []).push({ n: e.n, f, v }); }
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  $("#modalBody").innerHTML = `<h3 id="modalTitle">${esc(code(a))} · R${DATA.live.gd} scoring</h3>` +
+    (Object.keys(groups).length ? ["Q", "S", "R"].filter((ss) => groups[ss]).map((ss) => `<div class="mline" style="margin-top:8px"><b>${SESSN[ss]}</b><b>${groups[ss].reduce((p, q) => p + q.v, 0)}</b></div>` +
+      groups[ss].map((q) => `<div class="mline"><span class="muted">${esc(cap(q.n.trim()))}${q.f && q.f !== "-" ? ` (${esc(q.f)})` : ""}</span><span class="${q.v < 0 ? "bad" : ""}">${q.v}</span></div>`).join("")).join("")
+      : '<p class="note">No scoring lines yet.</p>') +
+    `<div class="mline" style="margin-top:8px"><b>Total</b><b>${f0(x.pts)}</b></div>`;
+  $("#modal").hidden = false;
+}
+
 /* ---------- header ---------- */
 function renderHeader() {
   $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : "Season complete";
@@ -2044,7 +2145,7 @@ function showPane(p, instant) {
 }
 function renderAll() {
   renderHeader(); renderSwitch(); renderSettings(); runOptimiser(); renderAssetPanels();
-  renderCompare(); renderLeague(); renderElite(); renderHind(); renderStats(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
+  renderLive(); renderCompare(); renderLeague(); renderElite(); renderHind(); renderStats(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
 }
 let timer = null;
 function recompute(delay = 120) { clearTimeout(timer); timer = setTimeout(() => { compute(); renderAll(); save(); }, delay); }
@@ -2061,6 +2162,8 @@ document.addEventListener("click", (e) => {
   if (!e.target.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
   const cell = e.target.closest("[data-stcell]");
   if (cell) { const [id, g] = cell.dataset.stcell.split(":"); editorOpen = false; return stCell(id, +g); }
+  const lcell = e.target.closest("[data-lvcell]");
+  if (lcell) { editorOpen = false; return lvCell(lcell.dataset.lvcell); }
   if (e.target.id === "modal") { $("#modal").hidden = true; editorOpen = false; return; }
   const bth = e.target.closest("th[data-bsort]");
   if (bth) { const k = bth.dataset.bsort, cur = bestSort(); S.bsort = { k, d: cur.k === k ? -cur.d : k === "cost" || k === "dnf" || k === "neg" ? (k === "neg" ? -1 : 1) : -1 }; S.showN = 20; return rerender(); }
@@ -2137,6 +2240,8 @@ document.addEventListener("click", (e) => {
   if (d.hc) { S.hdCap = d.hc; save(); return renderHind(); }
   if (d.close) { $("#modal").hidden = true; editorOpen = false; return; }
   if (d.sk) { S.stKind = d.sk; S.stSort = null; save(); return renderStats(); }
+  if (d.lk) { S.lvKind = d.lk; save(); return renderLive(); }
+  if (d.lvby) { S.lvBy = d.lvby; save(); return renderLive(); }
   if (d.stt != null) { S.stTeam = +d.stt; save(); return renderStats(); }
   if (d.stcat || d.stsess) {
     const off = stExcluded(), cs = d.stsess ? [...new Set(DATA.evNames.map((x) => x.c))].filter((c) => c[0] === d.stsess) : [d.stcat];

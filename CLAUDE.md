@@ -177,8 +177,25 @@ User-approved order: 1–5, then the rest.
     Teams / Settings+Simulation / Drivers / Constructors; tabs follow via a debounced scroll listener, tapping a tab
     scrolls there), each pane scrolls vertically, and the tab bar is docked in normal flow at the bottom (nothing
     under it). The header's team switch is hidden there (Settings has the picker).
-11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
-    your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
+11. [x] 2026-09-24: Live Scoring view (`view-live`, `renderLive`). `DATA.live` = the weekend whose lock has passed
+    most recently (`live_gd`: the next round from qualifying on, else the last finished one): per asset `pts`,
+    session points `sess` (player feed `SessionWisePoints`), scoring lines `ev` (playerstats), `act` (active that
+    round: Lawson has two assets, Racing Bulls 114 / Red Bull 116). Your teams' totals use the export line-up for
+    that round if there is one, else the current team (Boost ×2, x3, No Negative floors lines; penalties and other
+    chips not counted); xPts = the frozen projection, "To go" mid-weekend, Δ once it's over. Tested on R14 (real) and
+    a simulated Baku Friday. [ ] Check it against real Baku qualifying (Fri 25 Sep, 12:00 UTC).
+    Playerstats caching changed with it: `ps_<id>_<live_gd>_<fingerprint of the live weekend's points>`, so they're
+    refetched whenever anything is scored (before, a round's lines froze at race start, missing the race until the
+    next round). If lines don't add up to the feed total (playerstats lagging), the file is dropped and refetched.
+    Only as fresh as the last build: F1's feeds have no CORS. GitHub's cron often skips runs (2026-09-24: one
+    scheduled run in 4 h); if that matters on race days, options are an external trigger for `workflow_dispatch` or
+    a Supabase Edge Function that fetches the feeds for the page (cached ~1 min, so F1 sees few requests).
+    Next options: league rivals' live totals (sealed line-ups, Boost unknown).
+- [x] Practice archive (2026-09-24): OpenF1 refuses everything, past sessions included, while any F1 session is live,
+    and the CI runs during Baku FP1/FP2 had no cached copy, so the site had NO practice for Baku. Now each analysed
+    session is saved in `history/2026/practice/gdNN.json` and reused when OpenF1 is closed; one failing session no
+    longer drops the others (`practice.py`). FP2 moved Baku projections by at most ±1.3 (mostly undoing FP1's
+    shifts: ANT back up, VRB/LAW down).
 12. [x] 2026-09-24 built, and the user signed in on the live site. "Unable to exchange external code" = the Client secret
     in Supabase's Google provider doesn't match the Client ID: add a new secret in Google Cloud and paste both again
     (Google shows a secret only once). Confirmed the same day: his phone picked up teams + leagues. Supabase project

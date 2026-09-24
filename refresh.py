@@ -12,6 +12,7 @@ Season archive (committed by the workflow, so history survives F1 changing or dr
   history/<season>/players/gdNN.json      raw player feed per finished gameday (prices, ownership, points)
   history/<season>/playerstats/<id>.json  latest per-asset scoring events (every round so far)
   history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock
+  history/<season>/practice/gdNN.json    analysed OpenF1 practice sessions (OpenF1 closes during live sessions)
   history/<season>/elite/<feedTime>_<hash>.json  top-10/100/500 ownership each time the global line-ups change,
                                          with the time we first saw it (when does the feed update: at lock?)
 """
@@ -256,9 +257,10 @@ def main():
         g = gds.setdefault(s["GamedayId"], {
             "gd": s["GamedayId"], "name": s["MeetingName"], "loc": s["CircuitLocation"],
             "country": s["CountryName"], "sprint": False, "lock": None, "raceStart": None,
-            "locked": s["GDIsLocked"] == 1,
+            "locked": s["GDIsLocked"] == 1, "sessions": [],
         })
         g["locked"] = g["locked"] and s["GDIsLocked"] == 1
+        g["sessions"].append({"type": s["SessionType"], "start": s["SessionStartDateISO8601"], "end": s.get("SessionEndDateISO8601")})
         if "Sprint" in s["SessionType"]:
             g["sprint"] = True
         start = s["SessionStartDateISO8601"]
@@ -267,15 +269,21 @@ def main():
         if s["SessionType"] == "Race":
             g["raceStart"] = start
     schedule = [gds[k] for k in sorted(gds)]
-    done = [g["gd"] for g in schedule if g["locked"] and datetime.fromisoformat(g["raceStart"]) < datetime.now(timezone.utc)]
+    for g in schedule:
+        g["sessions"].sort(key=lambda s: s["start"])
+    now = datetime.now(timezone.utc)
+    done = [g["gd"] for g in schedule if g["locked"] and datetime.fromisoformat(g["raceStart"]) < now]
     nxt = next((g["gd"] for g in schedule if g["gd"] not in done), schedule[-1]["gd"])
-    print(f"  completed gamedays: {done[-1] if done else 0}, next: {nxt}")
+    # the weekend Live Scoring shows: the last one whose first scored session has started (nxt or done[-1])
+    live_gd = max([g["gd"] for g in schedule if datetime.fromisoformat(g["lock"]) <= now], default=None)
+    print(f"  completed gamedays: {done[-1] if done else 0}, next: {nxt}, live: {live_gd}")
 
     print("Fantasy player feeds…")
-    feeds = {}
+    feeds, feed_times = {}, {}
     for g in done + [nxt]:
         path = archived("players", f"gd{g:02d}.json") if g in done else os.path.join(CACHE, f"players{g}.json")
-        feeds[g] = get(f"https://fantasy.formula1.com/feeds/drivers/{g}_en.json", path, reuse=(g in done[:-1]))["Data"]["Value"]
+        d = get(f"https://fantasy.formula1.com/feeds/drivers/{g}_en.json", path, reuse=(g in done[:-1]))["Data"]
+        feeds[g], feed_times[g] = d["Value"], feed_time(d)
 
     cur = feeds[nxt]
     assets = []
@@ -308,25 +316,51 @@ def main():
     track_stats = {}
     ovt = {}
     ev_names = []  # event name table; hist[].ev rows are [name index, points, frequency]
+
+    def ev_rows(m):
+        rows = []
+        for rd in m.get("RaceDayWise") or []:
+            for e in rd.get("StatsWise") or []:
+                if e.get("Event") == "Total":  # per-session subtotal, not an event
+                    continue
+                key = (rd.get("SessionType"), e.get("Event", "").strip())
+                if key not in ev_names:
+                    ev_names.append(key)
+                rows.append([ev_names.index(key), e.get("Value") or 0, e.get("Frequency")])
+        return rows
+
+    # Live weekend: session points straight from the player feed, scoring lines from playerstats. The playerstats
+    # cache is keyed by a fingerprint of the live weekend's points, so it's refetched whenever anything is scored
+    # (and the latest round's race lines are complete, not frozen at race start).
+    live_feed = feeds.get(live_gd) or []
+    fp = hashlib.sha1(json.dumps(sorted([str(p["PlayerId"]), str(p.get("GamedayPoints")), [str(s.get("points")) for s in p.get("SessionWisePoints") or []]]
+                                        for p in live_feed)).encode()).hexdigest()[:8]
+    live = None
+    if live_feed:
+        live = {"gd": live_gd, "feedTime": feed_times.get(live_gd), "assets": {
+            p["PlayerId"]: {"pts": float(p.get("GamedayPoints") or 0), "ev": [], "act": p.get("IsActive") == "1",
+                            "sess": {s["sessiontype"]: s["points"] for s in p.get("SessionWisePoints") or [] if s.get("points") is not None}}
+            for p in live_feed}}
     for a in assets:
-        ps_path = os.path.join(CACHE, f"ps_{a['id']}_{len(done)}.json")
+        ps_path = os.path.join(CACHE, f"ps_{a['id']}_{live_gd}_{fp}.json")
+        for old in glob.glob(os.path.join(CACHE, f"ps_{a['id']}_*.json")):
+            if old != ps_path:
+                os.remove(old)
         ps = get(f"https://fantasy.formula1.com/feeds/popup/playerstats_{a['id']}.json", ps_path, reuse=True)
         shutil.copyfile(ps_path, archived("playerstats", f"{a['id']}.json"))
         for m in (ps.get("Value") or {}).get("MatchWiseStats") or []:
             g = m.get("GamedayId")
+            if live and g == live_gd and a["id"] in live["assets"]:
+                la = live["assets"][a["id"]]
+                la["ev"] = ev_rows(m)
+                if abs(sum(r[1] for r in la["ev"]) - la["pts"]) > 0.5:
+                    os.remove(ps_path)  # playerstats lagging the player feed: fetch again next build
+                    la["lag"] = True
             if g not in done:
                 continue
             h = a["hist"][done.index(g)]
             if h is not None:
-                rows = []
-                for rd in m.get("RaceDayWise") or []:
-                    for e in rd.get("StatsWise") or []:
-                        if e.get("Event") == "Total":  # per-session subtotal, not an event
-                            continue
-                        key = (rd.get("SessionType"), e.get("Event", "").strip())
-                        if key not in ev_names:
-                            ev_names.append(key)
-                        rows.append([ev_names.index(key), e.get("Value") or 0, e.get("Frequency")])
+                rows = ev_rows(m)
                 h["ev"] = rows
                 # No Negative floors every negative event at 0 (checked against official scores)
                 h["nn"] = sum(max(0, r[1]) for r in rows) if rows else max(0, h["pts"])
@@ -364,11 +398,23 @@ def main():
 
     print("OpenF1 practice…")
     nxt_g = next(g for g in schedule if g["gd"] == nxt)
+    # Analysed sessions are archived: OpenF1 refuses everything (past sessions too) while any F1 session is live,
+    # and a CI runner that only ran during those windows would otherwise have no practice at all.
+    prac_path = archived("practice", f"gd{nxt:02d}.json")
+    saved = []
+    if os.path.exists(prac_path):
+        with open(prac_path, encoding="utf-8") as f:
+            saved = json.load(f)
     try:
         prac = practice.practice_for(get_soft, lambda n: os.path.join(CACHE, n), nxt_g["lock"], datetime.now(timezone.utc))
     except Exception as e:  # practice data is a bonus; never block a price refresh on it (OpenF1 is closed during live sessions)
-        print(f"  ! practice skipped: {e}")
+        print(f"  ! practice from OpenF1 skipped: {e}")
         prac = []
+    old = {p["name"]: p for p in saved if p["done"]}
+    prac = [old.get(p["name"], p) if not p["done"] else p for p in prac] or saved
+    if any(p["done"] for p in prac) and prac != saved:
+        with open(prac_path, "w", encoding="utf-8") as f:
+            json.dump(prac, f, indent=1, sort_keys=True)
     print("  " + ", ".join(f'{p["name"]}: {len(p["drivers"])} drivers' if p["done"] else f'{p["name"]}: pending' for p in prac))
 
     print("Leaderboards…")
@@ -381,7 +427,7 @@ def main():
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "season": SEASON, "next": nxt, "done": done, "schedule": schedule,
         "assets": assets, "evNames": [{"s": EV_SESSION.get(st, "?"), "n": n, "c": ev_code(st, n)} for st, n in ev_names],
-        "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed,
+        "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed, "live": live,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
     }
     freeze_projection(data, next(g for g in schedule if g["gd"] == nxt))

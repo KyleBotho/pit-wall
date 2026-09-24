@@ -112,11 +112,15 @@ def practice_for(get, cache_path, lock_iso, now):
             d = get(url, path, reuse=True)
             return d if isinstance(d, list) and d else get(url, path)  # don't trust an empty cached answer
 
-        laps = fetch("laps")
-        if not isinstance(laps, list) or not laps:
+        try:
+            laps = fetch("laps")
+            if not isinstance(laps, list) or not laps:
+                raise ValueError("no laps yet")
+            stints, drivers = fetch("stints"), fetch("drivers")
+        except Exception as e:  # one session unavailable (OpenF1 closed during live sessions): keep the others
+            print(f"  ! {s['session_name']}: {e}")
             out.append({"name": s["session_name"], "start": s["date_start"], "done": False, "drivers": {}})
             continue
-        stints, drivers = fetch("stints"), fetch("drivers")
         out.append({"name": s["session_name"], "start": s["date_start"], "done": True,
                     "drivers": analyse_session(laps, stints if isinstance(stints, list) else [], drivers if isinstance(drivers, list) else [])})
     return out
