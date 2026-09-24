@@ -181,7 +181,7 @@ User-approved order: 1–5, then the rest.
     your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
 12. [x] 2026-09-24 built, and the user signed in on the live site. "Unable to exchange external code" = the Client secret
     in Supabase's Google provider doesn't match the Client ID: add a new secret in Google Cloud and paste both again
-    (Google shows a secret only once). [ ] Check a second browser picks up teams + leagues. Supabase project
+    (Google shows a secret only once). Confirmed the same day: his phone picked up teams + leagues. Supabase project
     `tfljgylwpkpammzsapin` (URL + publishable key are public, in app.html and refresh.yml); SQL in
     `supabase/setup.sql` (table, RLS, grants, server-set `updated_at`, `ping()`). Google provider on, Email off,
     sign-ups on (the Google test-user list is the gate). Page: `SY` + `syncInit/pull/push/applyRemote` after `save()`;
