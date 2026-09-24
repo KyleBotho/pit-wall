@@ -47,11 +47,30 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
 - Default 10,000 sims per race × next 3 races. Optimiser enumerates all 5-driver × 2-constructor teams.
 - vs rhter's Baku sim (f1fantasytools): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
 
-## Open items
-- [ ] Elite tab (top-100/500 ownership, x2 %, chip timing, differentials) — waiting on a global-leaderboard export
-      from Claude for Chrome (also capture the exact leaderboard feed URL; if public, automate standings).
-- [ ] Automatic private-league standings — needs the exact `leaderboard/privateleague/list_…` file name from a real
-      logged-in request. Don't guess feed parameters (blocked as probing).
-- [ ] Bump `actions/deploy-pages` / `upload-pages-artifact` off Node 20 before GitHub removes it (warning in runs).
+## Open items — next session starts here
+Private league IDs are never written into this public repo: anyone holding one can read that league's feed,
+manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the private repo).
+
+0. [x] 2026-09-24: tested and pushed the Elite view, sealed private leagues and the Actions bump (checkout@v7,
+   setup-python@v7, cache@v6, upload-pages-artifact@v5, deploy-pages@v5). Checked: tags resolve; global feed
+   aggregates; a 403 league comes through as `pending`; seal.js -> page `unseal` round-trip under WebCrypto (wrong key
+   rejected, no user_name/guid/social_id in the payload); first render with no `DATA.elite`, no `leagueSealed`, no
+   `top100`; unlock form, league picker, pending league and auto-unlock on reload in a browser; Import `ovPts`/`ovRank`
+   feeding Elite. F1's `FeedTime` is US text (`9/17/2026 1:59:44 PM`); `feed_time()` now converts it to ISO because
+   Firefox/Safari can't parse the original.
+0b. [ ] **User chose a private/public split** (2026-09-24): new private repo `KyleBotho/pit-wall-private` holds the
+     league IDs and a workflow (every 6 h + hourly Sun–Mon) that fetches the private-league feeds, commits plaintext
+     weekly snapshots there (season history; F1 keeps none), seals a snapshot with `seal.js` and pushes only
+     `data/league.sealed.json` to the public repo using a fine-grained PAT secret (Contents: write on `pit-wall` only).
+     Then the public `refresh.py` embeds `data/league.sealed.json` instead of fetching leagues itself, and the
+     `LEAGUE_*` env/secrets move out of the public repo. User must create the private repo, the PAT and the secrets
+     (`LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN`); Claude writes the workflow and pushes via Git Credential Manager.
+     Until then the public workflow already accepts `LEAGUE_KEY`/`LEAGUE_IDS` secrets and skips leagues without them.
+1. [x] `data/elite_top100.json` built from the R14 top-100 CSV (100 teams, all names matched). Re-run
+   `python elite_import.py "<Downloads>/f1_global_top100_lineups.csv"` after a fresh export and commit the JSON.
+2. Leaderboard feeds (public, no login): global top 500 `feeds/leaderboard/public/global/list_1_0_1.json`;
+   private league `feeds/leaderboard/privateleague/list_1_{leagueId}_0_1.json` (403 until first published). Rows:
+   `cur_rank, cur_points, team_name (URL-encoded), team_no, user_team` (7 PlayerIds) plus `user_name, user_guid,
+   social_id` (personal: never publish). Boost and chips are NOT in these feeds; that's what the top-100 CSV adds.
 - [ ] After Baku: compare projections with results and rhter; re-check the practice weights with R15 added.
 - [ ] Final Fix chip isn't modelled in the optimiser.

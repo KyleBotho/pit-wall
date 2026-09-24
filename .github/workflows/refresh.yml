@@ -21,18 +21,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # current majors (Node 24 runtimes); the v4/v5/v3 set ran on the retiring Node 20
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       # finished gamedays / sessions are cached so each run makes only a handful of requests
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: cache
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
       - run: python refresh.py
-      - uses: actions/upload-pages-artifact@v3
+        env:  # optional: encrypted private-league standings (see CLAUDE.md); empty if the secrets aren't set
+          LEAGUE_KEY: ${{ secrets.LEAGUE_KEY }}
+          LEAGUE_IDS: ${{ secrets.LEAGUE_IDS }}
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build
 
@@ -44,4 +48,4 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

@@ -8,7 +8,7 @@ Sources (public, no login):
   - api.jolpi.ca/ergast/f1/...        qualifying / sprint / race classifications
 Requests are paced slowly on purpose; cached files are reused for locked (finished) gamedays.
 """
-import json, os, sys, time, urllib.request
+import json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 import practice
 from datetime import datetime, timezone
 
@@ -45,6 +45,86 @@ def get(url, path, reuse=False):
         f.write(body)
     time.sleep(PAUSE)
     return json.loads(body)
+
+
+def get_optional(url):
+    """Fetch a feed that may not exist yet: a new league's standings file returns 403 until the next rebuild."""
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code in (403, 404):
+            return None
+        raise
+    finally:
+        time.sleep(PAUSE)
+
+
+def feed_time(d):
+    """F1's FeedTime.UTCTime is US-style text ("9/17/2026 1:59:44 PM"); return ISO UTC so every browser can parse it."""
+    t = ((d or {}).get("FeedTime") or {}).get("UTCTime")
+    try:
+        return datetime.strptime(t, "%m/%d/%Y %I:%M:%S %p").strftime("%Y-%m-%dT%H:%M:%SZ")
+    except (TypeError, ValueError):
+        return None
+
+
+def build_elite(assets):
+    """Top-10/100/500 ownership and points cut-offs from the public global leaderboard. Numbers only, no names."""
+    d = get_optional("https://fantasy.formula1.com/feeds/leaderboard/public/global/list_1_0_1.json")
+    rows = sorted(((d or {}).get("Value") or {}).get("leaderboard") or [], key=lambda r: r.get("cur_rank") or 1e9)
+    if not rows:
+        return None
+    known = {a["id"] for a in assets}
+    tiers = [10, 100, 500]
+    own = {}
+    for ti, t in enumerate(tiers):
+        sub = rows[:t]
+        for r in sub:
+            for pid in {str(x) for x in r.get("user_team") or []} & known:
+                own.setdefault(pid, [0.0] * len(tiers))[ti] += 1 / len(sub)
+    elite = {
+        "feedTime": feed_time(d), "n": len(rows), "tiers": tiers,
+        "own": {k: [round(v, 3) for v in vs] for k, vs in own.items()},
+        "cut": {str(k): rows[min(k, len(rows)) - 1].get("cur_points") for k in (1, 10, 100, 500)},
+    }
+    extra = os.path.join(HERE, "data", "elite_top100.json")  # Boost % and chip timing from a top-100 export
+    if os.path.exists(extra):
+        with open(extra, encoding="utf-8") as f:
+            elite["top100"] = json.load(f)
+    return elite
+
+
+def sealed_leagues():
+    """Private-league standings, encrypted with the LEAGUE_KEY secret so they can sit on the public site.
+    LEAGUE_IDS = "<leagueId>:<Name>,...". Keeps team name, points, rank and line-up only."""
+    key, spec = os.environ.get("LEAGUE_KEY"), os.environ.get("LEAGUE_IDS", "")
+    if not key or not spec.strip():
+        return None
+    leagues = []
+    for part in spec.split(","):
+        lid, _, name = part.strip().partition(":")
+        lid = lid.strip()
+        if not lid.isdigit():
+            continue
+        d = get_optional(f"https://fantasy.formula1.com/feeds/leaderboard/privateleague/list_1_{lid}_0_1.json")
+        rows = ((d or {}).get("Value") or {}).get("leaderboard") or []
+        print(f"  league {name or lid}: " + (f"{len(rows)} teams" if rows else "not published yet"))
+        leagues.append({
+            "name": name.strip() or lid, "pending": not rows,
+            "feedTime": feed_time(d),
+            "members": [{"team": urllib.parse.unquote(r.get("team_name") or ""), "teamNo": r.get("team_no"),
+                         "pts": r.get("cur_points"), "rank": r.get("cur_rank"),
+                         "ids": [str(x) for x in r.get("user_team") or []]} for r in rows],
+        })
+    try:
+        res = subprocess.run(["node", os.path.join(HERE, "seal.js")], input=json.dumps({"leagues": leagues}, ensure_ascii=False),
+                             capture_output=True, text=True, encoding="utf-8", check=True)
+        return json.loads(res.stdout)
+    except Exception as e:  # standings are a bonus; never block a price refresh on them
+        print(f"  ! league sealing skipped: {e}")
+        return None
 
 
 def main():
@@ -159,10 +239,15 @@ def main():
         prac = []
     print("  " + ", ".join(f'{p["name"]}: {len(p["drivers"])} drivers' if p["done"] else f'{p["name"]}: pending' for p in prac))
 
+    print("Leaderboards…")
+    elite = build_elite(assets)
+    print("  global top 500: " + (f"{elite['n']} teams" if elite else "unavailable"))
+    sealed = sealed_leagues()
+
     data = {
         "generated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "season": SEASON, "next": nxt, "done": done, "schedule": schedule,
-        "assets": assets, "practice": prac, "trackStats": track_stats,
+        "assets": assets, "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
     }
     js = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
