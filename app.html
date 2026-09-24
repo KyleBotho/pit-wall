@@ -219,12 +219,20 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 .switch input:checked::after{transform:translateX(18px)}
 .xin{width:62px;height:28px;border:1px solid var(--line);border-radius:6px;background:var(--bg);text-align:right;padding:0 6px;font-weight:600}
 .xin.ov{border-color:var(--accent);color:var(--accent)}
+.appbar,.appmenu{display:none}
+.logo-sm{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:var(--card);outline:1px solid var(--line);font-family:var(--display);font-weight:700;font-size:13px;flex:none}
+.logo-sm b{color:var(--accent)}
+.menubtn{width:40px;height:40px;border:0;background:var(--card);outline:1px solid var(--line);border-radius:8px;display:grid;place-items:center;color:var(--fg);cursor:pointer;font-size:16px}
+.menubtn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.bestt .mv,.bestt .mobonly{display:none}
+.bestt .mv .pill{display:block;margin:2px 0;text-align:center}
+td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
 .chiptok{display:inline-block;font-size:10px;font-weight:600;padding:1px 4px;border-radius:4px;margin-right:2px;background:var(--tile);color:var(--fg)}
 .chiptok.used{background:transparent;color:var(--dim);text-decoration:line-through}
 @media (max-width:900px){
   #leagueDash,#eliteDash,#hindDash{grid-template-columns:1fr!important}
   :root{--rail:0px}
-  .rail{top:auto;left:0;right:0;width:auto;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(10,10,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
+  .rail{display:none}
   .rail .logo{display:none}
   .nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:2px;width:100%;justify-content:space-between}
   .nav::-webkit-scrollbar{display:none}
@@ -232,15 +240,47 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
   .nav button[aria-current="page"]{background:transparent;color:var(--fg)}
   .nav button[aria-current="page"] svg{color:var(--accent)}
   .nav .lbl{position:static;transform:none;opacity:1;background:none;outline:0;padding:0;font-size:10px;color:inherit}
-  .shell{padding-block:12px calc(84px + env(safe-area-inset-bottom,0px))}
+  .shell{padding-block:0 calc(24px + env(safe-area-inset-bottom,0px))}
+  body:has(#view-calc:not([hidden])) .shell{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .appbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:45;background:rgba(5,5,5,.94);backdrop-filter:blur(8px);margin:0 -16px 12px;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px;border-bottom:1px solid var(--line)}
+  .appbar #appTitle{font-family:var(--display);font-size:17px;flex:1}
+  .appmenu:not([hidden]){display:flex;position:fixed;inset:0;z-index:80;background:var(--bg);flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto}
+  .appmenu .mhead{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:17px}
+  .appmenu .mlist{display:flex;flex-direction:column;gap:2px;margin:auto 0;padding:24px 0 24px 16px}
+  .appmenu .mlist button{background:none;border:0;text-align:left;font:600 23px/1.2 var(--display);padding:10px 0;color:var(--muted);display:flex;gap:16px;align-items:center;cursor:pointer}
+  .appmenu .mlist button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .appmenu .mlist button[aria-current="page"]{color:var(--fg)}
+  .appmenu .mlist button[aria-current="page"] span{text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:2px}
   .calc{grid-template-columns:1fr}
   .calc .col-c{display:flex}
-  .panel-tabs{display:flex;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);padding-block:4px 8px}
-  .panel-tabs .seg{width:100%;justify-content:space-between}
-  .panel-tabs .seg button{flex:1;padding:7px 4px;font-size:12px}
+  .panel-tabs{display:flex;position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;background:rgba(10,10,10,.96);border-radius:14px;outline:1px solid var(--line);padding:6px;backdrop-filter:blur(8px)}
+  .panel-tabs .seg{width:100%;justify-content:space-between;flex-wrap:nowrap;background:none;outline:0;padding:0}
+  .panel-tabs .seg button{flex:0 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:14px}
+  .panel-tabs .seg button .t{display:none}
+  .panel-tabs .seg button[aria-pressed="true"]{flex:1 0 auto}
+  .panel-tabs .seg button[aria-pressed="true"] .t{display:inline}
+  .panel-tabs svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  /* Best Teams on a phone: constructors stacked, drivers 2×2, xPts and the second value in one cell, ⋯ under the rank */
+  .bestt [data-vc],.bestt .dots{display:none}
+  .bestt .mv{display:table-cell}
+  .bestt .mobonly{display:inline-grid;margin-top:6px}
+  .bestt td.cr .chips{flex-direction:column}
+  .bestt td.dr .chips{flex-wrap:wrap;width:94px}
+  .bestt td{padding:8px 2px}
+  .bestt .chips{gap:4px}
+  .bestt td.dr .chips{width:92px}
+  .bestt .pill{padding:5px 4px}
+  .bestt td.rk{width:26px}
+  #view-calc .panel{padding:12px}
+  #view-calc .tw{margin-inline:-12px;padding-inline:12px}
+  #elChips th,#elChips td{padding:6px 3px;text-align:center}
+  #drvTable td,#drvTable th,#conTable td,#conTable th{padding:8px 4px}
+  .xin{width:54px}
+  .race h1{font-size:18px}
+  .race .lock{font-size:12px}
   .calc [data-pane]:not(.on){display:none}
   .calc .col:not(:has(.on)){display:none}
-  .toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 }
 /* Calculator on wide screens: fits the window; each pane scrolls on its own, the page doesn't */
 @media (min-width:1281px){
@@ -278,6 +318,9 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 </aside>
 
 <div class="shell">
+  <div class="appbar"><div class="logo-sm" aria-hidden="true">P<b>W</b></div><b id="appTitle">Pit Wall</b>
+    <button class="menubtn" id="menuBtn" aria-label="Open the tools menu" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+  <nav class="appmenu" id="appMenu" hidden aria-label="Tools"><div class="mhead"><div class="logo-sm" aria-hidden="true">P<b>W</b></div><b>Pit Wall</b><button class="menubtn" id="menuClose" aria-label="Close the menu" style="margin-left:auto">✕</button></div><div class="mlist" id="menuList"></div></nav>
   <header class="bar">
     <div class="race"><h1 id="raceName">—</h1><span class="lock" id="lock"></span></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -289,7 +332,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
   <!-- TEAM CALCULATOR -->
   <main id="view-calc" data-v>
     <div class="panel-tabs"><div class="seg" id="paneTabs">
-      <button data-pane-btn="best">Best</button><button data-pane-btn="settings">Settings</button><button data-pane-btn="drivers">Drivers</button><button data-pane-btn="cons">Teams</button>
+      <button data-pane-btn="best"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="t">Best Teams</span></button><button data-pane-btn="settings"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3.2 14H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 19.4 9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="t">Settings</span></button><button data-pane-btn="drivers"><svg viewBox="0 0 24 24"><path d="M3 14a9 9 0 0 1 18 0v3H3v-3zM3 17h18M12 5v4M14 11h7"/></svg><span class="t">Drivers</span></button><button data-pane-btn="cons"><svg viewBox="0 0 24 24"><path d="M3 15h18M5 15l2-5h10l2 5M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM10 10V7h4v3"/></svg><span class="t">Constructors</span></button>
     </div></div>
     <div class="dash calc">
       <div class="col">
@@ -394,7 +437,8 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <p class="note" id="elTemplateNote"></p>
       </section>
       <section class="panel">
-        <h3>Chips in the top 100 <small id="elChipNote"></small></h3>
+        <h3>Chip usage by round <small id="elChipNote"></small></h3>
+        <p class="note" id="elChipSub"></p>
         <div class="tw"><table id="elChips"></table></div>
       </section>
       <section class="panel" style="grid-column:1/-1">
@@ -1010,17 +1054,18 @@ function renderElite() {
   $("#elTemplateNote").innerHTML = `${esc(A().name)} shares <b>${shared} of 7</b> with the template.` +
     (topBoost ? ` ${pct(topBoost[1])} of the top 100 boosted ${esc(code(byId[topBoost[0]]))} in R${top.round}.` : "");
 
-  // chips
+  // chips: share of the top 100 playing each chip in each round (from the top-100 export); your team's chip rounds outlined
   if (top) {
-    $("#elChipNote").textContent = `after R${top.round}`;
-    const lastFor = (k) => { const re = { x3: /drs|x3|boost/i, limitless: /limit/i, wildcard: /wild/i, noneg: /neg/i, autopilot: /auto/i, finalfix: /final/i }[k];
-      return Object.entries(top.playedLast || {}).filter(([n]) => re.test(n)).reduce((s, [, v]) => s + v, 0); };
-    $("#elChips").innerHTML = `<thead><tr><th>Chip</th><th title="Share of the top 100 that have played it">Used</th><th title="Most common rounds it was played">Busiest rounds</th><th title="Top-100 teams that played it last round">R${top.round}</th><th style="text-align:left">Your teams</th></tr></thead><tbody>` +
-      CHIPS.map(([k, sh, n]) => {
-        const rounds = Object.entries((top.chipRound || {})[k] || {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([r, c]) => `R${r} (${c})`).join(", ");
-        return `<tr><td><b>${sh}</b> <span class="muted">${n}</span></td><td>${pct((top.chipUsed || {})[k])}</td><td class="muted" style="text-align:left">${rounds || "—"}</td><td>${lastFor(k) || "—"}</td>
-          <td style="text-align:left">${S.teams.map((t) => `<span class="chiptok ${t.chipsUsed[k] ? "used" : ""}" title="${esc(t.name)}${t.chipsUsed[k] ? " has used it" : " still has it"}">${esc(t.name.slice(0, 8))}</span>`).join("")}</td></tr>`;
-      }).join("") + "</tbody>";
+    const order = ["x3", "limitless", "wildcard", "noneg", "autopilot", "finalfix"], chipDef = (k) => CHIPS.find(([c]) => c === k);
+    const ti = Math.min(S.teams.length - 1, S.elT ?? S.active), tm = S.teams[ti], Lu = tm ? lineups(tm.name) : null;
+    const max = Math.max(0.05, ...order.flatMap((k) => Object.values(top.chipRound[k] || {}).map((v) => v / top.n)));
+    $("#elChipNote").innerHTML = `<span class="seg">${S.teams.map((t, i) => `<button data-elt="${i}" aria-pressed="${i === ti}" title="${esc(t.name)}">T${i + 1}</button>`).join("")}</span>`;
+    $("#elChipSub").textContent = `Share of the top 100 (line-ups export after R${top.round}) playing each chip, by round.` + (Lu ? ` Outlined: when ${tm.name} played it.` : " Unlock your leagues to outline your own chip rounds.");
+    const rounds = Array.from({ length: top.round }, (_, i) => top.round - i);
+    $("#elChips").innerHTML = `<thead><tr><th>Round</th>${order.map((k) => `<th title="${esc(chipDef(k)[2])}">${chipDef(k)[1]}</th>`).join("")}</tr></thead><tbody>` +
+      `<tr><td><b>Total</b></td>${order.map((k) => `<td><b>${pct((top.chipUsed || {})[k])}</b></td>`).join("")}</tr>` +
+      rounds.map((g) => `<tr><td>R${g}</td>${order.map((k) => { const v = ((top.chipRound[k] || {})[g] || 0) / top.n, mine = Lu && Lu[g] && Lu[g].chip === k;
+        return `<td${heat(v, 0, max)}${mine ? ' class="chl"' : ""}>${v ? pct(v) : '<span class="dim">0</span>'}</td>`; }).join("")}</tr>`).join("") + "</tbody>";
   } else {
     $("#elChipNote").textContent = "";
     $("#elChips").innerHTML = `<tbody><tr><td class="muted" style="position:static">Chip timing and Boost share come from a top-100 line-ups export. Run <code>elite_import.py</code> on one to add them.</td></tr></tbody>`;
@@ -1548,16 +1593,18 @@ function renderBestTable(C) {
       : kind === "pin" ? `<button class="pinb on" data-unpin="${i}" title="Unpin" aria-label="Unpin"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z"/></svg></button>`
       : `<button class="pinb${pj >= 0 ? " on" : ""}" data-${pj >= 0 ? "unpin" : "pin"}="${pj >= 0 ? pj : i}" title="${pj >= 0 ? "Unpin" : "Pin this team"}" aria-label="${pj >= 0 ? "Unpin" : "Pin"} team ${i + 1}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z"/></svg></button><span class="n${pj >= 0 ? " hide" : ""}">${i + 1}</span>`;
     const st = r.st, over = !C.unlimited && kind === "pin" && st.cost > cap() + 1e-6;
-    return `<tr><td class="rk">${rk}</td><td class="tl"><div class="chips">${cons.map((id) => tile(r, id, kind)).join("")}</div></td><td class="tl"><div class="chips">${boostsIn.map((id) => tile(r, id, kind)).join("")}</div></td>
-      <td class="tl"><div class="chips">${drs.map((id) => tile(r, id, kind)).join("")}</div></td>
+    const second = S.xdp ? f1(st.xsp) : sgn(st.xd, 2);
+    return `<tr><td class="rk">${rk}<br><button class="tbtn mobonly" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td><td class="tl cr"><div class="chips">${cons.map((id) => tile(r, id, kind)).join("")}</div></td><td class="tl"><div class="chips">${boostsIn.map((id) => tile(r, id, kind)).join("")}</div></td>
+      <td class="tl dr"><div class="chips">${drs.map((id) => tile(r, id, kind)).join("")}</div></td>
       <td><span class="pill ${over ? "bad" : ""}" title="${over ? "Over budget" : "Total cost"}" style="${sortK === "cost" ? "background:var(--fg);color:#18181B" : ""}">${st.cost.toFixed(1)}</span></td>
-      <td><span class="pill" style="${sortK === "x" ? "background:var(--fg);color:#18181B" : ""}">${f1(st.x)}</span>${st.pen ? `<span class="pen">−${st.pen}</span>` : ""}</td>${cols.map(([k]) => cell(k, st)).join("")}
-      <td><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
+      <td data-vc="1"><span class="pill" style="${sortK === "x" ? "background:var(--fg);color:#18181B" : ""}">${f1(st.x)}</span>${st.pen ? `<span class="pen">−${st.pen}</span>` : ""}</td>${cols.map(([k]) => cell(k, st).replace("<td", '<td data-vc="1"')).join("")}
+      <td class="mv"><span class="pill" style="background:var(--fg);color:#18181B">${f1(S.xdp ? st.xsp : st.x)}</span><span class="pill ${S.xdp ? "" : st.xd >= 0 ? "good" : "bad"}">${S.xdp ? f1(st.x) : second}</span>${st.pen ? `<span class="pen">−${st.pen}</span>` : ""}</td>
+      <td class="dots"><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
   };
   const shown = rows.best.slice(0, S.showN || 20);
   const arrow = (k) => (k === sortK ? (bs.d < 0 ? " ↓" : " ↑") : "");
   const sth = (k, n, t) => BSORT.some(([b]) => b === k) ? `<th class="bsort" data-bsort="${k}" title="${esc(t)}. Click to rank by it" ${k === sortK ? `aria-sort="${bs.d < 0 ? "descending" : "ascending"}"` : ""}>${n}${arrow(k)}</th>` : `<th title="${esc(t)}">${n}</th>`;
-  const hd = `<thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th>${sth("cost", "$", "Total cost")}${sth("x", "xPts", "Expected points (after Boost, chip and penalties)")}${cols.map(([k, n, t]) => sth(k, n, t)).join("")}<th></th></tr></thead>`;
+  const hd = `<thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th>${sth("cost", "$", "Total cost")}${sth("x", "xPts", "Expected points (after Boost, chip and penalties)").replace("<th", '<th data-vc="1"')}${cols.map(([k, n, t]) => sth(k, n, t).replace("<th", '<th data-vc="1"')).join("")}<th class="mv">${S.xdp ? "xSPts ↓<br>xPts" : "xPts ↓<br>xΔ$"}</th><th class="dots"></th></tr></thead>`;
   const sec = (label, extra = "") => `<tr class="sec"><td colspan="${ncol}">${label}${extra}</td></tr>`;
   $("#bestTable").innerHTML = hd + "<tbody>" +
     (rows.cur ? sec("Current Team") + row("cur", 0, rows.cur) : "") +
@@ -1800,6 +1847,10 @@ function renderModel() {
 /* ---------- orchestration ---------- */
 function showView(v) {
   S.view = v;
+  const nb = document.querySelector(`#nav button[data-view="${v}"] .lbl`);
+  $("#appTitle").textContent = nb ? nb.textContent : "Pit Wall";
+  $$("#menuList button").forEach((b) => (b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+  $("#appMenu").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false");
   $$("#nav button").forEach((b) => (b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
   $$("[data-v]").forEach((m) => (m.hidden = m.id !== "view-" + v));
   save();
@@ -1895,6 +1946,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "toastUndo" && undoTeam) { const { idx, ref, ...rest } = undoTeam; Object.assign(ref || S.teams[idx], rest); undoTeam = null; $("#toast").hidden = true; return rerender(); }
   if (t.id === "resetAll") { S.adj = {}; S.marks = {}; S.circuits = {}; return recompute(0); }
   if (d.lg != null) { S.lgIdx = +d.lg; save(); return renderLeague(); }
+  if (d.elt != null) { S.elT = +d.elt; save(); return renderElite(); }
   if (d.lgm) { S.lgMode = d.lgm; save(); return renderLeague(); }
   if (d.em) { S.elMode = d.em; save(); return renderEliteSeason(DATA.elite); }
   if (d.hg) { S.hdGd = +d.hg; save(); return renderHind(); }
@@ -1985,11 +2037,16 @@ document.addEventListener("submit", (e) => {
   const v = $("#lgKey").value; if (v) tryUnseal(v, false);
 });
 
+// phone menu: the same tools as the rail, as a full-screen list
+$("#menuList").innerHTML = $$("#nav button").map((b) => `<button data-view="${b.dataset.view}">${b.querySelector("svg").outerHTML}<span>${esc(b.querySelector(".lbl").textContent)}</span></button>`).join("");
+$("#menuBtn").addEventListener("click", () => { $("#appMenu").hidden = false; $("#menuBtn").setAttribute("aria-expanded", "true"); $("#menuClose").focus(); });
+$("#menuClose").addEventListener("click", () => { $("#appMenu").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false"); $("#menuBtn").focus(); });
 compute(); renderAll(); showView(S.view); showPane(S.pane && S.pane !== "team" ? S.pane : "best");
 if (DATA.leagueSealed) { let k = null; try { k = localStorage.getItem(LK); } catch (e) {} if (k) tryUnseal(k, true); }
 setInterval(renderHeader, 30000);
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
+  if (!$("#appMenu").hidden) { $("#appMenu").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false"); }
   if (!$("#modal").hidden) { $("#modal").hidden = true; editorOpen = false; }
   $$(".pop").forEach((x) => (x.hidden = true)); $("#rowMenu").hidden = true;
 });

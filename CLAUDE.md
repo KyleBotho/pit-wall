@@ -167,5 +167,12 @@ User-approved order: 1–5, then the rest.
    - Later asks, done: Best Teams column headers sort AND set the optimiser's goal (`S.bsort`; $ / xPts / xΔ$ /
      xΔ$Pts / xSPts / odds; value goals use `penW: 0`). On screens ≥1281px the Calculator fits the window and each
      pane scrolls on its own (the page doesn't).
+10. [x] Phone layout like f1fantasytools' mobile site (user's screenshots, 2026-09-24): top app bar with the tool
+    name and a ☰ full-screen tools menu (built from the rail); the rail is hidden ≤900px; the Calculator's panes are a
+    floating bottom tab bar (icon, label on the active one); Best Teams rows fit a 375px phone (constructors stacked,
+    drivers 2×2, xPts + xΔ$ (or xSPts + xPts) stacked in `td.mv`, ⋯ under the rank; desktop-only cells carry
+    `data-vc`). Elite "Chip usage by round" grid (top-100 export) with T1/T2/T3 outlines of your chip rounds.
+11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
+    your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.
