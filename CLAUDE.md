@@ -1,8 +1,9 @@
 # Pit Wall Planner — F1 Fantasy 2026
 
 Personal F1 Fantasy planner that replaces an f1fantasytools.com subscription. Live at
-https://kylebotho.github.io/pit-wall/ (repo `KyleBotho/pit-wall`, public). A private Claude artifact copy also
-exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when republished.
+https://kylebotho.github.io/pit-wall/ (repo `KyleBotho/pit-wall`, public). That is THE site. The old private Claude
+artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 14) is retired: the user asked on
+2026-09-24 to stop republishing it. Don't publish it again unless asked.
 
 ## Files
 - `refresh.py` — fetches data, builds `build/index.html` (GitHub Pages, own doctype/viewport) and
@@ -49,7 +50,6 @@ exists (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF) but only updates when
   `../pit-wall-private` run `python backfill.py "<that file>"` and push. It rewrites `history/backfill.json` (round
   points R1+ and the user's per-round line-ups), and the push triggers a reseal. Own line-ups need login, so they
   only advance with exports; everything else is saved automatically.
-- Update the Claude artifact: Artifact publish `build/pit-wall.html` with url above.
 - Check a CI run without auth: `https://api.github.com/repos/KyleBotho/pit-wall/actions/runs?per_page=3`.
 
 ## Data sources (all public, no login)
