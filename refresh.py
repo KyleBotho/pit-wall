@@ -93,7 +93,29 @@ def build_elite(assets):
     if os.path.exists(extra):
         with open(extra, encoding="utf-8") as f:
             elite["top100"] = json.load(f)
+    elite["history"] = elite_history((elite.get("top100") or {}).pop("history", []))
     return elite
+
+
+def elite_history(est):
+    """Season cut-offs per gameday: the export's estimate (today's top 100, R1 onward), replaced by the real
+    cut-offs the private workflow records after each leaderboard update (data/elite_history.json)."""
+    by = {h["gd"]: h for h in est}
+    path = os.path.join(HERE, "data", "elite_history.json")
+    real = []
+    if os.path.exists(path):
+        with open(path, encoding="utf-8") as f:
+            real = json.load(f)
+    prev = None
+    for g in sorted(real, key=lambda g: g["gd"]):
+        row = {"gd": g["gd"], "est": False, "cut": g["cut"], "avg": {}}
+        if prev and prev["gd"] == g["gd"] - 1:  # round average from consecutive real snapshots only
+            row["avg"] = {k: round(g["mean"][k] - prev["mean"][k], 1) for k in ("10", "100") if k in g["mean"] and k in prev["mean"]}
+        elif g["gd"] in by:
+            row["avg"] = by[g["gd"]].get("avg", {})
+        by[g["gd"]] = row
+        prev = g
+    return [by[k] for k in sorted(by)]
 
 
 def sealed_leagues():

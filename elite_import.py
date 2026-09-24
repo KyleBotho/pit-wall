@@ -45,7 +45,19 @@ def main(path):
         c = (r.get(f"Chip played R{rnd}") or "").strip()
         if c:
             played_last[c] = played_last.get(c, 0) + 1
-    out = {"source": "top 100 global line-ups", "round": rnd, "n": n,
+    # season paths of today's top 100 (R<n> pts columns): the k-th best running total each round, and the average
+    # round score of today's top 10 / top 100. An estimate of the historical cut-offs (the real #100 in round 5 may
+    # have been someone else), labelled as such on the page; live snapshots replace it from the next round on.
+    gds = sorted(int(k[1:-4]) for k in rows[0] if k.startswith("R") and k.endswith(" pts") and k[1:-4].isdigit())
+    ranked = sorted(rows, key=lambda r: int(r.get("Rank") or 1e9))
+    run, history = [0] * n, []
+    for gd in gds:
+        rp = [int(float(r.get(f"R{gd} pts") or 0)) for r in ranked]
+        run = [a + b for a, b in zip(run, rp)]
+        tot = sorted(run, reverse=True)
+        history.append({"gd": gd, "est": True, "cut": {str(k): tot[k - 1] for k in (1, 10, 100) if k <= n},
+                        "avg": {str(k): round(sum(rp[:k]) / k, 1) for k in (10, 100) if k <= n}})
+    out = {"source": "top 100 global line-ups", "round": rnd, "n": n, "history": history,
            "boost": {k: round(v / n, 3) for k, v in boost.items()},
            "x3": {k: round(v / n, 3) for k, v in x3.items()},
            "chipUsed": {k: round(v / n, 3) for k, v in chip_used.items()},

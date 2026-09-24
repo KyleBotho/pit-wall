@@ -162,7 +162,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 .chiptok{display:inline-block;font-size:10px;font-weight:600;padding:1px 4px;border-radius:4px;margin-right:2px;background:var(--tile);color:var(--fg)}
 .chiptok.used{background:transparent;color:var(--dim);text-decoration:line-through}
 @media (max-width:900px){
-  #leagueDash{grid-template-columns:1fr!important}
+  #leagueDash,#eliteDash{grid-template-columns:1fr!important}
   :root{--rail:0px}
   .rail{top:auto;left:0;right:0;width:auto;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(10,10,10,.96);border-top:1px solid var(--line);backdrop-filter:blur(8px)}
   .rail .logo{display:none}
@@ -293,6 +293,13 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <h3>Global cut-offs <small id="elStamp"></small></h3>
         <div class="kv" id="elCut"></div>
         <div class="tw"><table id="elMine"></table></div>
+      </section>
+      <section class="panel" style="grid-column:1/-1">
+        <h3>Season vs the elite <span class="seg" id="elMode"><button data-em="gap">Gap to #100</button><button data-em="total">Total</button></span></h3>
+        <p class="note" id="elSeasonNote"></p>
+        <div id="elSeasonChart" style="position:relative"></div>
+        <div class="tw"><table id="elRounds"></table></div>
+        <p class="note" id="elSeasonFoot"></p>
       </section>
       <section class="panel">
         <h3>Top-100 template <small>most-owned line-up</small></h3>
@@ -647,7 +654,7 @@ function leagueList() {
       const im = imp && imp.members.find((x) => x.name === m.team);
       const ds = m.ids.filter((id) => byId[id]?.kind === "D"), cs = m.ids.filter((id) => byId[id]?.kind === "C");
       return { name: m.team, pts: +m.pts || 0, ids: ds.length === 5 && cs.length === 2 ? ds.concat(cs) : im ? im.ids : null,
-        boost: im ? im.boost : "", bank: im ? im.bank : null, chips: im ? im.chips : {}, hist: im ? im.hist : [], mine: S.teams.some((t) => t.name === m.team) };
+        boost: im ? im.boost : "", bank: im ? im.bank : null, chips: im ? im.chips : {}, hist: teamHist(m.team), mine: S.teams.some((t) => t.name === m.team) };
     }).sort((a, b) => b.pts - a.pts);
     out.push({ name: L.name, pending: L.pending, collected: L.feedTime || null, members, auto: true });
   }
@@ -710,38 +717,55 @@ function renderLeague() {
         <td style="text-align:left">${r.mine ? '<span class="good">Only you</span>' : '<span class="bad">Threat</span>'}</td><td>${r.n}/${rivals.length}</td><td>${f1(r.x)}</td><td${heat(sw, -30, 30)} class="${sw >= 0 ? "good" : "bad"}">${sgn(sw)}</td></tr>`; }).join("")
       : `<tr><td colspan="5" class="muted">Your line-up matches the whole league.</td></tr>`) + "</tbody>";
 }
+// Round points for a team: the private repo's round table (after unlocking) first, else an imported league.
+function teamHist(name) {
+  const rs = ((SEALED && SEALED.rounds) || []).filter((r) => r.pts[name] != null).map((r) => ({ gd: r.gd, pts: r.pts[name] }));
+  if (rs.length) return rs;
+  const im = S.league && S.league.members.find((m) => m.name === name);
+  return im ? im.hist : [];
+}
+const cumPts = (hist, gds) => { let c = 0; const by = Object.fromEntries(hist.map((h) => [h.gd, h.pts])); return gds.map((gd) => ({ v: (c += by[gd] || 0), r: by[gd] ?? null })); };
 function renderLeagueChart(L) {
-  const box = $("#lgChart");
-  const series = L.members.filter((m) => m.hist.length).map((m) => { let c = 0; return { name: m.name, me: m.name === A().name, pts: m.hist.map((h) => ({ gd: h.gd, v: (c += h.pts) })) }; });
-  if (!series.length) { box.innerHTML = '<p class="note">No round history in this export.</p>'; return; }
+  const withH = L.members.filter((m) => m.hist.length);
+  const gds = [...new Set(withH.flatMap((m) => m.hist.map((h) => h.gd)))].sort((a, b) => a - b);
+  lineChart($("#lgChart"), gds, withH.map((m) => ({ name: m.name, me: m.name === A().name, pts: cumPts(m.hist, gds) })), "Cumulative league points by round");
+}
+// Cumulative line chart on a gameday axis. series: [{name, me, color, dash, pts: [{v, r}] aligned with gds}]; v null = no data.
+function lineChart(box, gds, series, label) {
+  series = series.filter((s) => s.pts.some((p) => p.v != null));
+  if (!series.length || !gds.length) { box.innerHTML = '<p class="note">No round history yet.</p>'; return; }
   const W = 640, H = 260, ml = 44, mr = 120, mt = 10, mb = 26;
-  const gds = series[0].pts.map((p) => p.gd), maxV = Math.max(...series.flatMap((s) => s.pts.map((p) => p.v)));
-  const step = maxV > 3000 ? 1000 : 500, top = Math.ceil(maxV / step) * step;
-  const x = (i) => ml + (i / Math.max(1, gds.length - 1)) * (W - ml - mr), y = (v) => mt + (1 - v / top) * (H - mt - mb);
+  const vs = series.flatMap((s) => s.pts.map((p) => p.v).filter((v) => v != null));
+  const maxV = Math.max(0, ...vs), minV = Math.min(0, ...vs), span = maxV - minV;
+  const step = span > 3000 ? 1000 : span > 1000 ? 500 : span > 400 ? 100 : 50;
+  const top = Math.max(step, Math.ceil(maxV / step) * step), lo = Math.floor(minV / step) * step;
+  const x = (i) => ml + (i / Math.max(1, gds.length - 1)) * (W - ml - mr), y = (v) => mt + (1 - (v - lo) / (top - lo)) * (H - mt - mb);
+  const col = (s) => (s.me ? "#A855F7" : s.color || "#71717A");
+  const lastI = (s) => s.pts.reduce((k, p, i) => (p.v != null ? i : k), -1);
   let g = "";
-  for (let v = 0; v <= top; v += step) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="#27272A" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${v.toLocaleString()}</text>`;
-  gds.forEach((gd, i) => { if (i % 2 === 0 || i === gds.length - 1) g += `<text x="${x(i)}" y="${H - 6}" fill="#A1A1AA" font-size="11" text-anchor="middle">R${gd}</text>`; });
-  const order = series.slice().sort((a, b) => a.me - b.me); // draw yours last, on top
-  const labels = series.map((s) => ({ s, y: y(s.pts[s.pts.length - 1].v) })).sort((a, b) => a.y - b.y);
+  for (let v = lo; v <= top; v += step) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 && lo < 0 ? "#52525B" : "#27272A"}" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${v.toLocaleString()}</text>`;
+  const every = Math.ceil(gds.length / 12);
+  gds.forEach((gd, i) => { if (i % every === 0 || i === gds.length - 1) g += `<text x="${x(i)}" y="${H - 6}" fill="#A1A1AA" font-size="11" text-anchor="middle">R${gd}</text>`; });
+  const labels = series.map((s) => ({ s, y: y(s.pts[lastI(s)].v) })).sort((a, b) => a.y - b.y);
   for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13; // keep end labels apart
-  for (const s of order) {
-    const d = s.pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
-    g += `<path d="${d}" fill="none" stroke="${s.me ? "#A855F7" : "#71717A"}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-    const last = s.pts[s.pts.length - 1];
-    g += `<circle cx="${x(s.pts.length - 1)}" cy="${y(last.v)}" r="4" fill="${s.me ? "#A855F7" : "#71717A"}" stroke="#0A0A0A" stroke-width="2"/>`;
+  for (const s of series.slice().sort((a, b) => a.me - b.me)) { // draw the active team last, on top
+    let d = "", pen = false;
+    s.pts.forEach((p, i) => { if (p.v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`; pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${col(s)}" stroke-width="2"${s.dash ? ' stroke-dasharray="5 4"' : ""} stroke-linejoin="round" stroke-linecap="round"/>`;
+    const li = lastI(s);
+    g += `<circle cx="${x(li)}" cy="${y(s.pts[li].v)}" r="4" fill="${col(s)}" stroke="#0A0A0A" stroke-width="2"/>`;
   }
   for (const l of labels) g += `<text x="${W - mr + 10}" y="${l.y + 4}" fill="${l.s.me ? "#FAFAFA" : "#A1A1AA"}" font-size="11" font-weight="${l.s.me ? 600 : 400}">${esc(l.s.name.length > 16 ? l.s.name.slice(0, 15) + "…" : l.s.name)}</text>`;
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative league points by round">${g}<line id="lgX" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent" id="lgHit"/></svg><div class="lgtip" id="lgTip" hidden></div>`;
-  const svg = box.querySelector("svg"), tip = $("#lgTip"), cross = $("#lgX");
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">${g}<line class="cx" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
+  const svg = box.querySelector("svg"), tip = box.querySelector(".lgtip"), cross = box.querySelector(".cx");
   const move = (ev) => {
     const r = svg.getBoundingClientRect(), px = ((ev.clientX - r.left) / r.width) * W;
     const i = Math.max(0, Math.min(gds.length - 1, Math.round(((px - ml) / (W - ml - mr)) * (gds.length - 1))));
     cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i)); cross.setAttribute("visibility", "visible");
-    const rows = series.map((s) => ({ n: s.name, v: s.pts[i]?.v ?? 0, r: L.members.find((m) => m.name === s.name)?.hist[i]?.pts ?? 0, me: s.me })).sort((a, b) => b.v - a.v);
-    tip.innerHTML = `<b>Round ${gds[i]}</b>` + rows.map((q) => `<div style="${q.me ? "color:#FAFAFA;font-weight:600" : "color:#A1A1AA"}"><span>${esc(q.n)}</span><span>${q.v.toLocaleString()} <span class="dim">(+${q.r})</span></span></div>`).join("");
+    const rows = series.filter((s) => s.pts[i].v != null).map((s) => ({ n: s.name, v: s.pts[i].v, r: s.pts[i].r, me: s.me })).sort((a, b) => b.v - a.v);
+    tip.innerHTML = `<b>Round ${gds[i]}</b>` + rows.map((q) => `<div style="${q.me ? "color:#FAFAFA;font-weight:600" : "color:#A1A1AA"}"><span>${esc(q.n)}</span><span>${(q.v < 0 ? "−" : "") + Math.abs(Math.round(q.v)).toLocaleString()}${q.r != null ? ` <span class="dim">(+${q.r})</span>` : ""}</span></div>`).join("");
     tip.hidden = false;
-    const left = (x(i) / W) * r.width;
-    tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, left + 12)) + "px"; tip.style.top = "8px";
+    tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, (x(i) / W) * r.width + 12)) + "px"; tip.style.top = "8px";
   };
   svg.addEventListener("pointermove", move);
   svg.addEventListener("pointerleave", () => { tip.hidden = true; cross.setAttribute("visibility", "hidden"); });
@@ -766,6 +790,8 @@ function renderElite() {
       return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">import</span>' : Math.round(p).toLocaleString()}</td><td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>
         <td>${gap(p, El.cut["500"])}</td><td>${gap(p, El.cut["100"])}</td><td>${gap(p, El.cut["1"])}</td></tr>`;
     }).join("") + "</tbody>";
+
+  renderEliteSeason(El);
 
   // template: the 5 drivers and 2 constructors most owned by the top 100
   const by = (kind) => DATA.assets.filter((a) => a.kind === kind && (a.active || kind === "C")).sort((x, y) => o(y.id, 1) - o(x.id, 1));
@@ -806,6 +832,33 @@ function renderElite() {
         ${top ? `<td>${top.boost && top.boost[a.id] ? pct(top.boost[a.id]) : "—"}</td>` : ""}
         <td style="text-align:left">${S.teams.map((t, i) => t.team.includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "").join("")}</td><td style="text-align:left">${tag}</td></tr>`;
     }).join("") + "</tbody>";
+}
+
+function renderEliteSeason(El) {
+  const Hs = El.history || [], byGd = Object.fromEntries(Hs.map((h) => [h.gd, h]));
+  const mine = S.teams.map((t) => ({ t, h: teamHist(t.name) })).filter((x) => x.h.length);
+  const gds = [...new Set(Hs.map((h) => h.gd).concat(mine.flatMap((x) => x.h.map((h) => h.gd))))].sort((a, b) => a - b);
+  // gap mode: every line minus the #100 cut-off that round, so the distances are readable
+  const gap = S.elMode !== "total", base = (i) => (gap ? byGd[gds[i]]?.cut?.["100"] ?? null : 0);
+  const rel = (pts) => pts.map((p, i) => ({ v: p.v == null || base(i) == null ? null : p.v - base(i), r: p.r }));
+  $$("#elMode button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.em === "gap") === gap)));
+  const cuts = ["1", "10", "100", "500"].filter((k) => Hs.some((h) => h.cut && h.cut[k] != null))
+    .map((k) => ({ name: "#" + k, dash: true, pts: rel(gds.map((gd) => ({ v: byGd[gd]?.cut?.[k] ?? null, r: null }))) }));
+  lineChart($("#elSeasonChart"), gds, cuts.concat(mine.map(({ t, h }) => ({ name: t.name, me: t === A(), color: "#D4D4D8", pts: rel(cumPts(h, gds)) }))),
+    gap ? "Points above or below the global top-100 cut-off, by round" : "Cumulative points: your teams against global cut-offs");
+  $("#elSeasonNote").textContent = (gap ? "Points above or below the global top-100 cut-off after each round. " : "Cumulative points after each round. ") +
+    (mine.length ? "" : "Unlock your leagues on the League tab to add your teams.");
+  const cell = (p, avg) => (p == null ? '<td class="dim">—</td>' : `<td><b>${p}</b>${avg == null ? "" : ` <span class="${p >= avg ? "good" : "bad"}">${sgn(p - avg, 0)}</span>`}</td>`);
+  const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
+  const rows = gds.slice().reverse().map((gd) => {
+    const e = byGd[gd] || {}, a100 = e.avg?.["100"];
+    return `<tr><td>R${gd}</td><td>${f0(e.avg?.["10"])}</td><td>${f0(a100)}</td>${mine.map(({ h }) => cell(h.find((x) => x.gd === gd)?.pts, a100)).join("")}</tr>`;
+  });
+  const avgRow = `<tr><td><b>Average</b></td><td>${f0(mean(Hs.map((h) => h.avg?.["10"]).filter((v) => v != null)))}</td><td>${f0(mean(Hs.map((h) => h.avg?.["100"]).filter((v) => v != null)))}</td>${mine.map(({ h }) => `<td><b>${f0(mean(h.map((x) => x.pts)))}</b></td>`).join("")}</tr>`;
+  $("#elRounds").innerHTML = `<thead><tr><th>Round</th><th title="Average round score of the current global top 10">Top 10</th><th title="Average round score of the current global top 100">Top 100</th>${mine.map(({ t }) => `<th>${esc(t.name)}</th>`).join("")}</tr></thead><tbody>${avgRow}${rows.join("")}</tbody>`;
+  const est = Hs.filter((h) => h.est).map((h) => h.gd);
+  $("#elSeasonFoot").innerHTML = "Your round score against the top-100 average (green: beat it). " +
+    (est.length ? `Cut-offs for R${est[0]}–R${est[est.length - 1]} trace today's top 100 through the season, so they are an estimate and run slightly low; later rounds are the real cut-offs recorded after each race.` : "Cut-offs are recorded after each race.");
 }
 
 /* ---------- header ---------- */
@@ -1179,6 +1232,7 @@ document.addEventListener("click", (e) => {
   if (t.id === "toastUndo" && undoTeam) { const { idx, ...rest } = undoTeam; Object.assign(S.teams[idx], rest); undoTeam = null; $("#toast").hidden = true; return rerender(); }
   if (t.id === "resetAll") { S.adj = {}; S.marks = {}; S.circuits = {}; return recompute(0); }
   if (d.lg != null) { S.lgIdx = +d.lg; save(); return renderLeague(); }
+  if (d.em) { S.elMode = d.em; save(); return renderEliteSeason(DATA.elite); }
 });
 document.addEventListener("change", (e) => {
   const t = e.target;
