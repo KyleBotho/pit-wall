@@ -339,5 +339,8 @@ User-approved order: 1–5, then the rest.
     asset scored 0 and the list was 60 arbitrary teams sorted afterwards. Fixed; every sortable column now matches a
     brute force over all legal teams in both directions (checked in the browser). xPts / xSPts rank highest first
     only: minimising gave the Boost to the worst driver and counted penalties the wrong way.
+- [x] 2026-09-24 Settings | Simulation divider (wide screens, `#setSplit`): drag, arrow keys, double-click resets.
+    The position lives in `setSplit` (calc.js) only, NOT in `state`: the user wants a reload to reset it. Also fixed:
+    `applyRemote` now keeps every `NOSYNC` key (before, only view and pane survived a sync from another device).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

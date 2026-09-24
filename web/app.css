@@ -394,6 +394,10 @@ p {
   background: var(--tile);
   color: var(--fg);
 }
+/* the Settings | Simulation divider only shows where the Calculator fits the window (min-width 1281px below) */
+.vsplit {
+  display: none;
+}
 /* Simulation presets (Calculator): point types, decay / window, per-round weights */
 .simpast {
   display: flex;
@@ -1976,6 +1980,46 @@ td.chl {
     flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
+  }
+  /* the divider sits in the 16px gap between Settings and Simulation (negative margins cancel the extra gap) */
+  .vsplit {
+    display: block;
+    flex: none;
+    position: relative;
+    height: 16px;
+    margin: -16px 0;
+    cursor: row-resize;
+    touch-action: none;
+    border-radius: 6px;
+  }
+  .vsplit::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 40px;
+    height: 4px;
+    margin: -2px 0 0 -20px;
+    border-radius: 2px;
+    background: var(--line);
+    transition:
+      background 0.12s,
+      width 0.12s,
+      margin 0.12s;
+  }
+  .vsplit:hover::after,
+  .vsplit.drag::after,
+  .vsplit:focus-visible::after {
+    width: 64px;
+    margin-left: -32px;
+    background: var(--accent);
+  }
+  /* a position set by dragging beats the automatic sizes below (their :has(#simPast) outranks a class) */
+  #view-calc .col.split > [data-pane="settings"]:first-child {
+    flex: 0 0 var(--setsplit) !important;
+  }
+  #view-calc .col.split > [data-pane="settings"]:not(:first-child) {
+    flex: 1 1 0 !important;
   }
   /* a past-performance preset makes Simulation long: Settings and Simulation then share the column */
   #view-calc .col:has(#simPast:not([hidden])) > [data-pane="settings"] {

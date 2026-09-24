@@ -868,6 +868,40 @@ document.addEventListener("keydown", (e) => {
   );
 }
 
+// the Settings | Simulation divider (wide screens): drag it, or focus it and use the arrow keys; double-click or a
+// reload resets
+{
+  const sp = $("#setSplit");
+  sp.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    try {
+      sp.setPointerCapture(e.pointerId); // keeps the drag when the pointer leaves the thin bar
+    } catch (err) {}
+    sp.classList.add("drag");
+    const r = sp.parentElement.getBoundingClientRect();
+    const move = (ev) => setSplitFrac((ev.clientY - r.top - sp.offsetHeight / 2) / r.height);
+    const end = () => {
+      sp.classList.remove("drag");
+      sp.removeEventListener("pointermove", move);
+      sp.removeEventListener("pointerup", end);
+      sp.removeEventListener("pointercancel", end);
+    };
+    sp.addEventListener("pointermove", move);
+    sp.addEventListener("pointerup", end);
+    sp.addEventListener("pointercancel", end);
+  });
+  sp.addEventListener("dblclick", () => {
+    setSplit = null;
+    applySplit();
+  });
+  sp.addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+    e.preventDefault();
+    const cur = setSplit ?? $("#view-calc [data-pane=settings]").offsetHeight / sp.parentElement.clientHeight;
+    setSplitFrac(cur + (e.key === "ArrowDown" ? 0.05 : -0.05));
+  });
+}
+
 /* ---------- start-up ---------- */
 if (SEASON_OVER) {
   $$("#nav button").forEach(

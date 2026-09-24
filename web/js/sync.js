@@ -190,7 +190,8 @@ function applyRemote(row, msg) {
     return push();
   }
   const next = loadState({ ...d.s, v: d.v });
-  state = Object.assign(next, { view: state.view, pane: state.pane });
+  for (const k of NOSYNC) if (state[k] !== undefined) next[k] = state[k]; // this device's place and layout stay
+  state = next;
   if (d.lk) {
     try {
       localStorage.setItem(LK, d.lk);

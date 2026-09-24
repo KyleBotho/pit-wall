@@ -155,7 +155,23 @@ function renderSettings() {
     (edits.length ? ` <span class="warn">${edits.join(", ")} active.</span>` : "");
   $("#xoReset").hidden = !nxo;
   renderSim();
+  applySplit();
   if (modalKind === "editor") openTeamEditor();
+}
+
+// wide screens: the Settings | Simulation divider's position = Settings' share of the column (0..1), null =
+// automatic. Deliberately not saved: a reload goes back to the automatic split (the user's ask).
+let setSplit = null;
+function applySplit() {
+  const col = $("#setSplit").parentElement;
+  col.classList.toggle("split", setSplit != null);
+  if (setSplit != null) col.style.setProperty("--setsplit", (setSplit * 100).toFixed(1) + "%");
+}
+function setSplitFrac(f) {
+  const h = $("#setSplit").parentElement.clientHeight,
+    min = Math.min(0.45, 140 / Math.max(1, h)); // keep both panels at least ~140px
+  setSplit = Math.max(min, Math.min(1 - min, f));
+  applySplit();
 }
 
 /* ---------- simulation presets ---------- */
