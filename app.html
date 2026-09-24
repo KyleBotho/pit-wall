@@ -415,7 +415,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
         <div class="seg" id="hdRound" style="align-self:flex-start"></div>
         <div class="fields">
           <div class="field">Budget for the best teams<div class="seg" id="hdCap"><button data-hc="100">$100m</button><button data-hc="team">Your budget</button><button data-hc="none">No cap</button></div></div>
-          <div class="field">Chip<div class="seg" id="hdChip"><button data-hch="">None</button><button data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button><button data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button></div></div>
+          <div class="field">Chip<div class="seg" id="hdChip"><button data-hch="">None</button><button data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button><button data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button><button data-hch="finalfix" title="Final Fix: swap one driver after qualifying; the new one scores the race">FF</button></div></div>
           <div class="field full">Team filters<div id="hdFilters"></div></div>
         </div>
       </section>
@@ -435,7 +435,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
       <section class="panel" style="grid-column:1/-1">
         <h3>Decisions <small>what your transfers, Boost changes and chips were worth</small></h3>
         <div class="tw"><table id="hdDecide"></table></div>
-        <p class="note">Transfers: points of the assets brought in minus the ones sold, in that round, minus any penalty. Boost change: the new Boost driver's points minus the previous one's, when both were in the team. Chips: X3 = the X3 driver's points plus the Boost driver's (what the chip added over plain Boost), No Negative = negative events wiped, Wildcard = penalties avoided, Limitless = against keeping the previous team.</p>
+        <p class="note">Transfers: points of the assets brought in minus the ones sold, in that round, minus any penalty. Boost change: the new Boost driver's points minus the previous one's, when both were in the team. Chips: X3 = the X3 driver's points plus the Boost driver's (what the chip added over plain Boost), No Negative = negative events wiped, Wildcard = penalties avoided, Limitless = against keeping the previous team, Final Fix = the new driver's race points minus the old driver's (times the slot's Boost).</p>
       </section>
       <section class="panel" style="grid-column:1/-1">
         <h3>Round scores <small id="hdAssetsNote"></small></h3>
@@ -1099,7 +1099,8 @@ const teamText = (label, cons, drs, boost, x3, cost, pts) => `${label}: ${cons.m
 
 /* ---------- hindsight: best teams on actual points ---------- */
 // Scoring = each asset's round points, Boost 2×, X3 3×, −10 per transfer over the free ones; No Negative floors every
-// negative scoring event at 0. This reproduces F1's official round scores (three teams, R1–R14) except Final Fix.
+// negative scoring event at 0; Final Fix splits the slot at the swap (hdFF). This reproduces F1's official round
+// scores for three teams on R1–R14 exactly.
 const HD = {}, HDC = {};
 const lineups = (name) => (SEALED && SEALED.lineups && SEALED.lineups[name]) || null;
 const hdAt = (id, gd) => byId[id].hist[DATA.done.indexOf(gd)] || null;
@@ -1131,7 +1132,33 @@ function hdRun(gd, o) {
   }
   return HD[key];
 }
-const hdOwn = (r, gd) => hdRun(gd, { cap: hdBudget(r, gd), start: r.start, free: r.free, chip: r.chip })[0] || null;
+// Final Fix: one driver swapped before a session (cat R = before the race; weekends run Sprint, Qualifying, Race).
+// The outgoing driver keeps the sessions before it, the incoming one scores from it on, and the slot keeps its
+// Boost. Checked against F1's official score for the one Final Fix round in the export (MaxPeet R6: 203, exact).
+const SESS_ORDER = { S: 0, Q: 1, R: 2 };
+function hdSess(id, gd, cat, part) {
+  const h = hdAt(id, gd), k = SESS_ORDER[cat] ?? 2;
+  return h ? (h.ev || []).reduce((a, [ni, v]) => a + (((SESS_ORDER[DATA.evNames[ni].s] ?? 2) >= k) === (part === "post") ? v : 0), 0) : 0;
+}
+// the best single swap on top of a team (within the budget): the gain is the new driver's points from the swap on
+// minus the old driver's, times the slot's Boost
+function hdFF(t, gd, cap, cat = "R") {
+  let best = null;
+  for (const d of t.drivers) {
+    const hd = hdAt(d, gd); if (!hd) continue;
+    const m = d === t.boost ? 2 : 1;
+    for (const a of DATA.assets) {
+      if (a.kind !== "D" || t.drivers.includes(a.id)) continue;
+      const h = hdAt(a.id, gd); if (!h || !h.active) continue;
+      if (cap != null && t.cost - hd.price + h.price > cap + 1e-6) continue;
+      const gain = (hdSess(a.id, gd, cat, "post") - hdSess(d, gd, cat, "post")) * m;
+      if (!best || gain > best.gain) best = { out: d, in: a.id, cat, gain };
+    }
+  }
+  return best && best.gain > 0 ? best : null;
+}
+const withFF = (t, gd, cap) => { if (!t) return t; const f = hdFF(t, gd, cap); return f ? Object.assign({}, t, { score: t.score + f.gain, ff: f }) : t; };
+const hdOwn = (r, gd) => { const b = hdRun(gd, { cap: hdBudget(r, gd), start: r.start, free: r.free, chip: r.chip })[0] || null; return r.chip === "finalfix" ? withFF(b, gd, hdBudget(r, gd)) : b; };
 function hdCap(gd) {
   const mode = S.hdCap || "team"; // default: the active team's budget that round, the fair comparison
   if (mode === "none") return null;
@@ -1139,12 +1166,19 @@ function hdCap(gd) {
   return 100;
 }
 const hdMarks = (to) => Object.keys(S.hdMarks || {}).filter((k) => S.hdMarks[k] === to);
-const hdBestList = (gd, top) => hdRun(gd, { cap: hdCap(gd), chip: S.hdChip || "", filters: filters("hd"), locks: hdMarks("lock"), bans: hdMarks("ban"), top });
-function hdChips(ids, boost, x3, start, gd, chipK) {
+const hdBestList = (gd, top) => {
+  const ff = S.hdChip === "finalfix", list = hdRun(gd, { cap: hdCap(gd), chip: ff ? "" : S.hdChip || "", filters: filters("hd"), locks: hdMarks("lock"), bans: hdMarks("ban"), top });
+  return ff ? list.map((t) => withFF(t, gd, hdCap(gd))).sort((a, b) => b.score - a.score) : list;
+};
+function hdChips(ids, boost, x3, start, gd, chipK, ff) {
+  if (ff) ids = ids.concat([ff.in]);
   const cons = ids.filter((id) => byId[id]?.kind === "C"), drs = ids.filter((id) => byId[id]?.kind === "D");
-  const m = (id) => (id === x3 ? 3 : id === boost ? 2 : 1);
-  const one = (id) => { const h = hdAt(id, gd); return chip(id, { a: h ? f0(hdPts(id, gd, chipK) * m(id)) : "—", b: h ? h.price.toFixed(1) : "", x: id === x3 ? "3×" : id === boost ? "2×" : "", cls: start && !start.includes(id) ? "in" : "" }); };
-  return cons.map(one).join("") + '<span class="sep"></span>' + drs.sort((a, b) => m(b) - m(a) || hdPts(b, gd, chipK) - hdPts(a, gd, chipK)).map(one).join("");
+  const slotB = ff && (boost === ff.in || boost === ff.out), isFF = (id) => ff && (id === ff.in || id === ff.out);
+  const m = (id) => (isFF(id) ? (slotB ? 2 : 1) : id === x3 ? 3 : id === boost ? 2 : 1);
+  const pts = (id) => (!isFF(id) ? hdPts(id, gd, chipK) : hdSess(id, gd, ff.cat, id === ff.in ? "post" : "pre"));
+  const one = (id) => { const h = hdAt(id, gd); return chip(id, { a: h ? f0(pts(id) * m(id)) : "—", b: h ? h.price.toFixed(1) : "",
+    x: ff && id === ff.in ? "FF" : ff && id === ff.out ? "" : id === x3 ? "3×" : id === boost ? "2×" : "", cls: [start && !start.includes(id) && !isFF(id) ? "in" : "", ff && id === ff.out ? "out" : ""].join(" ") }); };
+  return cons.map(one).join("") + '<span class="sep"></span>' + drs.sort((a, b) => m(b) - m(a) || pts(b) - pts(a)).map(one).join("");
 }
 // What each decision was worth that round. Formulas as in the Decisions panel note.
 function hdDecisions(name, gd) {
@@ -1170,7 +1204,8 @@ function hdDecisions(name, gd) {
   // F1 records 0 transfers made on a Wildcard round, so count the actual changes
   if (r.chip === "wildcard") out.list.push({ k: "chip", label: "Wildcard (penalties avoided)", pts: 10 * Math.max(0, ins.length - (r.free || 0)) });
   if (r.chip === "autopilot") out.list.push({ k: "chip", label: `Autopilot gave the Boost to ${r.boost ? code(byId[r.boost]) : "—"}`, pts: null });
-  if (r.chip === "finalfix") out.list.push({ k: "chip", label: "Final Fix (not modelled)", pts: null });
+  if (r.chip === "finalfix" && r.ff) out.list.push({ k: "chip", label: `Final Fix ${code(byId[r.ff.out])} → ${code(byId[r.ff.in])}`,
+    pts: (hdSess(r.ff.in, gd, r.ff.cat, "post") - hdSess(r.ff.out, gd, r.ff.cat, "post")) * (r.boost === r.ff.in || r.boost === r.ff.out ? 2 : 1) });
   return out;
 }
 const decHtml = (dec) => dec.list.map((x) => `<div class="dec"><span>${esc(x.label)}</span><span>${x.pts == null ? "" : `<b class="${x.pts > 0 ? "good" : x.pts < 0 ? "bad" : "muted"}">${sgn(x.pts, 0) || "0"}</b>`}${x.d ? ` <span class="muted">Δ$ ${sgn(x.d, 1)}</span>` : ""}</span></div>`).join("");
@@ -1188,11 +1223,11 @@ function renderHind() {
 
   // best possible teams
   const list = hdBestList(gd, 10), nf = filters("hd").length, nm = Object.keys(S.hdMarks || {}).length;
-  $("#hdBestNote").textContent = `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipK ? " · " + (chipK === "x3" ? "X3" : "No Negative") : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} Incl/Excl` : ""}`;
+  $("#hdBestNote").textContent = `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipK ? " · " + ({ x3: "X3", noneg: "No Negative", finalfix: "Final Fix" }[chipK]) : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} Incl/Excl` : ""}`;
   $("#hdBest").innerHTML = list.length ? list.map((b, i) => {
     const ids = b.drivers.concat(b.cons), x3 = b.boost2 ? b.boost : null, boost = b.boost2 || b.boost, dv = ids.reduce((s, id) => s + hdDelta(id, gd), 0);
-    const txt = teamText(`R${gd} best #${i + 1}`, b.cons, b.drivers, boost, x3, b.cost, b.score);
-    return `<div class="bt"><span class="rk">${i + 1}</span><div class="chips">${hdChips(ids, boost, x3, null, gd, chipK)}</div>
+    const txt = teamText(`R${gd} best #${i + 1}`, b.cons, b.drivers, boost, x3, b.cost, b.score) + (b.ff ? ` | Final Fix ${code(byId[b.ff.out])} → ${code(byId[b.ff.in])}` : "");
+    return `<div class="bt"><span class="rk">${i + 1}</span><div class="chips">${hdChips(ids, boost, x3, null, gd, chipK === "finalfix" ? "" : chipK, b.ff)}</div>
       <div class="num"><b>${f0(b.score)}</b>${i ? `<span class="bad">${sgn(b.score - list[0].score, 0)}</span>` : '<span class="muted">pts</span>'}</div>
       <div class="sub"><span>${money(b.cost)}</span><span class="${dv >= 0 ? "good" : "bad"}">Δ$ ${sgn(dv, 1)}</span><span class="acts"><button class="btn ghost sm" data-copy="${esc(txt)}">Copy</button></span></div></div>`;
   }).join("") : '<p class="note">No team fits this budget and these filters.</p>';
@@ -1209,10 +1244,10 @@ function renderHind() {
     const txt = teamText(`${t.name} R${gd} best`, b.cons, b.drivers, b.boost2 || b.boost, b.boost2 ? b.boost : null, b.cost, b.score);
     return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0">
       <b>${esc(t.name)}${chipName ? ` <span class="tag sprint">${esc(chipName)}</span>` : ""}</b>
-      <span class="muted" style="font-size:12px">Used · ${off == null ? "—" : off + " pts"}</span><div class="chips">${hdChips(r.ids, r.boost, r.x3, null, gd, r.chip)}</div>
+      <span class="muted" style="font-size:12px">Used · ${off == null ? "—" : off + " pts"}</span><div class="chips">${hdChips(r.ids, r.boost, r.x3, null, gd, r.chip, r.ff)}</div>
       ${dec && dec.list.length ? `<div>${decHtml(dec)}</div>` : ""}
-      <span class="muted" style="font-size:12px">Best from your line-up · ${esc(moves)} <button class="btn ghost sm" data-copy="${esc(txt)}">Copy</button></span><div class="chips">${hdChips(bids, b.boost2 || b.boost, b.boost2 ? b.boost : null, fresh ? null : r.start, gd, r.chip)}</div>
-      ${r.chip === "finalfix" ? `<p class="note">Final Fix isn't modelled, so this round's best is scored without it.</p>` : ""}</div>
+      <span class="muted" style="font-size:12px">Best from your line-up · ${esc(moves)} <button class="btn ghost sm" data-copy="${esc(txt)}">Copy</button></span><div class="chips">${hdChips(bids, b.boost2 || b.boost, b.boost2 ? b.boost : null, fresh ? null : r.start, gd, r.chip, b.ff)}</div>
+      ${b.ff ? `<p class="note">Best Final Fix: ${esc(code(byId[b.ff.out]))} → ${esc(code(byId[b.ff.in]))} before the race (+${f0(b.ff.gain)}).</p>` : ""}</div>
       <div class="num"><b>${f0(b.score)}</b><span class="muted">best</span>${miss == null ? "" : `<span class="${miss > 0 ? "bad" : "good"}">${miss > 0 ? "−" + f0(miss) + " left" : "optimal"}</span>`}</div></div>`;
   }).join("");
 
@@ -1317,7 +1352,7 @@ function renderStats() {
   // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs unlocked leagues)
   const team = hi >= 0 ? S.teams[hi] : null, L = team ? lineups(team.name) : null;
   const pick = (id, g) => { if (!team) return ""; const r = L && L[g]; if (!r) return !L && team.team.includes(id) ? "hl" : "";
-    return id === String(r.x3) ? "hl3" : id === String(r.boost) ? "hl2" : r.ids.includes(id) ? "hl" : ""; };
+    return id === String(r.x3) ? "hl3" : id === String(r.boost) ? "hl2" : r.ids.includes(id) || (r.ff && r.ff.in === id) ? "hl" : ""; };
   const th = (k, label, title) => `<th class="sort" data-stsort="${k}" ${String(sort.k) === String(k) ? `aria-sort="${sort.d < 0 ? "descending" : "ascending"}"` : ""} title="${esc(title || "")}">${label}${String(sort.k) === String(k) ? (sort.d < 0 ? " ↓" : " ↑") : ""}</th>`;
   const sched = (g) => DATA.schedule.find((x) => x.gd === g) || {};
   $("#stTable").innerHTML = `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th>${th("avg", "AVG", "Average over the rounds shown")}${done.map((g) => th(g, `R${g}${sched(g).sprint ? "<sup>S</sup>" : ""}`, sched(g).name)).join("")}</tr></thead><tbody>` +

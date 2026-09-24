@@ -113,7 +113,13 @@ manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the
 - [ ] After Baku: compare projections with results and rhter; re-check the practice weights with R15 added. R15 is
       the first round with a frozen projection (`history/2026/projections/gd15.json`); a projected-vs-actual view
       across rounds could go in Hindsight once a few exist.
-- [ ] Final Fix isn't modelled in the optimiser or Hindsight (a driver swap after qualifying).
+- [x] Final Fix (2026-09-24): the outgoing driver keeps the sessions before the swap (`ff.cat`, R = before the
+      race; order Sprint, Qualifying, Race), the incoming one scores from it on, and the slot keeps its Boost.
+      Reproduces MaxPeet R6 (203) exactly; with it all 42 team-rounds R1–R14 match official scores. `backfill.py`
+      stores the qualifying line-up as `ids` plus `ff: {out, in, cat}` (the export lists 8 ids). Hindsight finds the
+      best single swap on top of a team (`hdFF`, within budget) and has an FF chip option. Only one example seen:
+      sprint-weekend Final Fix (cat S?) is an assumption. Not offered in the Calculator (a forward FF is a
+      post-qualifying decision).
 
 ### Feature plan from the f1fantasytools spec review (2026-09-24)
 Spec: `Downloads/f1-fantasy-tools-feature-spec.md` (an agent's walk-through of their site). Its R14 Hindsight fixture
