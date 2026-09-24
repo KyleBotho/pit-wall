@@ -280,6 +280,47 @@ p {
   background: var(--tile);
   color: var(--fg);
 }
+/* the Best Teams pane's two bodies (Best Teams, Compare) lay out like the panel itself */
+#view-calc div[data-bm] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#view-calc div[data-bm="cmp"] .tw {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+/* the Calculator's Best Teams | Compare switch doubles as the pane's title */
+.seg.bmode {
+  flex-wrap: nowrap;
+}
+.seg.bmode button {
+  font: 600 16px var(--display);
+  padding: 6px 14px;
+  white-space: nowrap;
+}
+.panel h3:has(> .bmode) {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.hbtns .btn {
+  white-space: nowrap;
+}
+.cmpt th,
+.cmpt td {
+  padding-inline: 6px;
+}
+.cmpt th:first-child,
+.cmpt td:first-child {
+  padding-left: 0;
+}
+.cmpname {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+.cmpname .dim {
+  font-size: 12px;
+}
 .seg button:disabled {
   opacity: 0.35;
   cursor: not-allowed;
@@ -1375,6 +1416,39 @@ td.chl {
   #hindDash {
     grid-template-columns: 1fr !important;
   }
+  .seg.bmode button {
+    font-size: 14px;
+    padding: 5px 10px;
+  }
+  /* Compare on a phone: one card per team (name and line-up, then the numbers in a row) */
+  .cmpt thead {
+    display: none;
+  }
+  .cmpt tr {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .cmpt td {
+    display: block;
+    padding: 0;
+    border: 0;
+    text-align: left !important;
+  }
+  .cmpt td:first-child {
+    grid-column: 1 / -1;
+  }
+  .cmpt td[data-l]::before {
+    content: attr(data-l);
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .cmpt .chips {
+    flex-wrap: wrap !important;
+  }
   :root {
     --rail: 0px;
   }
@@ -1698,7 +1772,18 @@ td.chl {
     flex: 1 1 0;
     overflow: hidden;
   }
-  #view-calc [data-pane="best"] .tw,
+  /* Best Teams / Compare sit in a wrapper each: Best Teams passes the height on to its table, Compare scrolls whole */
+  #view-calc [data-pane="best"] > div[data-bm="best"] {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  #view-calc [data-pane="best"] > div[data-bm="cmp"] {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #view-calc div[data-bm="best"] .tw,
   #view-calc [data-pane="drivers"] .tw,
   #view-calc [data-pane="cons"] .tw {
     flex: 1 1 auto;

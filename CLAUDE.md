@@ -316,8 +316,12 @@ User-approved order: 1–5, then the rest.
       (F1 feeds have no CORS, so fetching stays server-side).
 - [x] 2026-09-24 UI/UX review (user asked for a score + tab merges): the Calendar and Model views moved into
     Settings (Account & data | Model settings | How it works, then a "Circuits" section; hidden once the season is
-    over). Saved `view` "cal"/"model" maps to "settings" in `normalise`. Proposed next merges (not done, ask first):
-    Projections + Budget + Positions + Practice -> one Projections view with sub-tabs; Compare into the Calculator;
-    League + Elite -> Leagues; Hindsight + Statistics -> Season.
+    over). Saved `view` "cal"/"model" maps to "settings" in `normalise`. Same day, all approved: the rail is 6 items.
+    `GROUPS` (main.js) = one rail button per group with sub-tabs (`#subTabs`): Projections (assets, prices, grid,
+    practice), Leagues (league, elite), Season (hind, stats); a group button reopens `state.sub[group]`. Compare is a
+    Best Teams | Compare switch in the Calculator's left pane (`state.bmode`; saved view "compare" -> calc + cmp);
+    manual teams are edited in the team-editor pop-up (`openTeamEditor(i)`, `editTarget`/`editing()` in calc.js;
+    `openTeamEditor(null)` = the starting team). Best Teams and Compare each sit in a `div[data-bm]`; on screens
+    >=1281px Best Teams passes the height to its table (own scroll bar) and Compare scrolls whole.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

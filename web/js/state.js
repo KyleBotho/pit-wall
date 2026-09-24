@@ -4,20 +4,7 @@
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 const KEY = "pitwall.v1";
 const SCHEMA = 3;
-const VIEWS = [
-  "calc",
-  "live",
-  "league",
-  "elite",
-  "hind",
-  "stats",
-  "compare",
-  "assets",
-  "prices",
-  "practice",
-  "grid",
-  "settings",
-];
+const VIEWS = ["calc", "live", "league", "elite", "hind", "stats", "assets", "prices", "practice", "grid", "settings"];
 
 // the example team a new browser starts with (config/season.json defaultTeam)
 function defaultTeam() {
@@ -57,6 +44,7 @@ const defaults = () => ({
   syncKey: true,
   view: SEASON_OVER ? "hind" : "calc",
   pane: "best",
+  bmode: "best", // the Calculator's left pane: "best" (Best Teams) or "cmp" (Compare)
   sub: {}, // the view last open in each tool group (main.js GROUPS)
   kind: "D",
   raceIdx: 0,
@@ -115,6 +103,7 @@ const CARRY = [
   "maxPen",
   "view",
   "pane",
+  "bmode",
   "sub",
   "kind",
   "grid",
@@ -169,6 +158,7 @@ function normalise(s) {
   if (s.calcStart && s.calcStart.type === "draft" && !s.drafts[s.calcStart.i]) s.calcStart = null;
   s.pins = (s.pins || []).filter((p) => p.ids && p.ids.every((id) => byId[id]));
   if (!s.sub || typeof s.sub !== "object") s.sub = {};
+  if (s.view === "compare") Object.assign(s, { view: "calc", bmode: "cmp" }); // Compare moved into the Calculator
   if (s.view === "cal" || s.view === "model") s.view = "settings"; // both moved into Settings (2026-09-24)
   if (!VIEWS.includes(s.view) || (SEASON_OVER && FORECAST_VIEWS.includes(s.view)))
     s.view = SEASON_OVER ? "hind" : "calc";

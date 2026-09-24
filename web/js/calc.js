@@ -12,9 +12,14 @@ const pill = (v, on, cls = "", title = "") =>
   `<span class="pill ${cls}${on ? " on" : ""}"${title ? ` title="${title}"` : ""}>${v}</span>`;
 
 /* ---------- edit team (dialog) ---------- */
-function openTeamEditor() {
-  const T = startTeam();
-  if (T.none || T.ro)
+// what the editor changes: null = the starting team, a number = that manual team (from Compare's ✎)
+let editTarget = null;
+const editing = () => (editTarget != null && state.drafts[editTarget] ? state.drafts[editTarget] : editStart());
+function openTeamEditor(target = editTarget) {
+  editTarget = target != null && state.drafts[target] ? target : null;
+  const draft = editTarget != null,
+    T = draft ? state.drafts[editTarget] : startTeam();
+  if (!draft && (T.none || T.ro))
     return toast(
       T.none
         ? "Pick one of your teams or a manual team first."
@@ -33,10 +38,21 @@ function openTeamEditor() {
     return `<div class="slotrow" style="--tc:${col(a)}"><select id="slot-${k}" data-slot="${k}" aria-label="${label}">${optionList(kind, id)}</select>
         <span class="x">${forecast.proj[0][id].out ? '<span class="tag">out</span>' : f1(xpts(id, 1))}</span>${boostBtn}</div>`;
   };
-  $("#modalBody").innerHTML = `<h3 id="modalTitle">Edit ${esc(T.name)}</h3>
+  $("#modalBody").innerHTML =
+    `<h3 id="modalTitle">Edit ${esc(T.name)}</h3>
     <label class="field">Team name<input id="tname" class="inp" type="text" maxlength="24" value="${esc(T.name)}"></label>
     ${T.example ? '<div class="banner">This is an <b>example team</b>. Pick your drivers and constructors below.</div>' : ""}
-    <div class="slots">${T.team.map(slot).join("")}</div>`;
+    <div class="slots">${T.team.map(slot).join("")}</div>` +
+    (draft
+      ? `<div class="chipbar" style="align-items:center"><span class="muted" style="margin-right:auto">${money(T.team.reduce((s, id) => s + byId[id].price, 0))}</span>` +
+        state.teams
+          .map(
+            (t, j) =>
+              `<button class="btn ghost sm" data-todraft="${editTarget}:${j}" title="Copy this line-up into ${esc(t.name)}">→ ${esc(t.name)}</button>`,
+          )
+          .join("") +
+        `<button class="tbtn ban" aria-pressed="true" data-deldraft="${editTarget}">Delete</button></div>`
+      : "");
   openModal("editor");
 }
 
@@ -465,7 +481,7 @@ function pinTeam(ids) {
 }
 function addDraft(name, team) {
   if (state.drafts.length >= 8) {
-    toast("Up to 8 manual teams. Delete one in Compare first.");
+    toast("Up to 8 manual teams. Delete one in Calculator → Compare first.");
     return false;
   }
   state.drafts.push({ name, team: team.slice(), bank: 0, free: 2, chipsUsed: {}, boost: "auto" });
@@ -520,7 +536,7 @@ function menuAction(a) {
   if (a === "save") {
     if (!addDraft("Option " + (state.drafts.length + 1), r.ids)) return;
     rerender();
-    return toast("Saved as a manual team (see Compare).");
+    return toast("Saved as a manual team (see Compare, next to Best Teams).");
   }
   if (a === "use") {
     undoTeam = { ref: T, team: T.team.slice(), bank: T.bank, boost: T.boost, example: T.example };

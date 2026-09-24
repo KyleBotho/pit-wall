@@ -83,7 +83,7 @@ const SB_URL = "https://tfljgylwpkpammzsapin.supabase.co";
 const SB_KEY = "sb_publishable_5XxT7rr5X-XS1HyduNK1qQ_TfoP2PLV"; // public by design (RLS protects the rows)
 const SB_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/+esm";
 const SK = "pitwall.sync"; // {uid, at, dirty}: the row version this browser last matched, and whether it has unsent changes
-const NOSYNC = ["view", "pane", "sub", "showN"]; // where you are on this device, not settings
+const NOSYNC = ["view", "pane", "bmode", "sub", "showN"]; // where you are on this device, not settings
 const syncState = {
   sb: null,
   user: null,

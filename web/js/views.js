@@ -36,7 +36,7 @@ function horizonPts(ids, H) {
 function renderCompare() {
   const list = state.teams
     .map((t) => ({ name: t.name, ids: t.team, own: true, boost: t.boost, example: t.example }))
-    .concat(state.drafts.map((d) => ({ name: d.name, ids: d.team, own: false, boost: "auto" })));
+    .concat(state.drafts.map((d, di) => ({ name: d.name, ids: d.team, own: false, boost: d.boost || "auto", di })));
   const H = forecast.races.length;
   const rows = list.map((t) => {
     const boost = boostFor(t.ids, 0, t);
@@ -62,30 +62,22 @@ function renderCompare() {
     rows[b].wins++;
   }
   const best = Math.max(...rows.map((r) => r.mean));
+  $("#cmpGd").textContent = NEXT.gd;
   $("#cmpTable").innerHTML =
-    `<thead><tr><th>Team</th><th style="text-align:left">Line-up</th><th>$</th><th>xPts R${NEXT.gd}</th><th>25–75</th><th>Next ${H} races</th><th>xΔ$</th><th title="Share of simulated weekends where this team scores the most">Wins</th></tr></thead><tbody>` +
+    `<thead><tr><th style="text-align:left">Team</th><th title="Mean, with the middle half of outcomes (25–75) below">xPts R${NEXT.gd}</th><th>Next ${H}</th><th>xΔ$</th><th title="Share of simulated weekends where this team scores the most">Wins</th></tr></thead><tbody>` +
     rows
       .map((r) => {
         const cons = r.ids.filter((id) => byId[id].kind === "C"),
           drs = r.ids
             .filter((id) => byId[id].kind === "D")
             .sort((x, y) => (x === r.boost ? -1 : y === r.boost ? 1 : xpts(y, 1) - xpts(x, 1)));
-        return `<tr><td><b>${esc(r.name)}</b><br><span class="dim" style="font-size:12px">${r.own ? (r.example ? "your team · example" : "your team") : "manual"}</span></td>
-      <td style="text-align:left"><div class="chips" style="flex-wrap:nowrap">${cons.map((id) => chip(id, { pts: xpts(id, 1) })).join("")}<span class="sep"></span>${drs.map((id) => chip(id, { pts: xpts(id, 1) * (id === r.boost ? 2 : 1), x: id === r.boost ? "2×" : "" })).join("")}</div></td>
-      <td>${f1(r.cost)}</td><td class="${r.mean === best ? "good" : ""}"><b>${f1(r.mean)}</b></td><td class="muted">${f0(r.p25)}–${f0(r.p75)}</td>
-      <td>${f1(r.h)}</td><td class="${r.dv >= 0 ? "good" : "bad"}">${sgn(r.dv, 2)}</td><td><b>${pct(r.wins / N)}</b></td></tr>`;
+        return `<tr><td style="text-align:left"><div class="cmpname"><b>${esc(r.name)}</b> <span class="dim">${r.own ? (r.example ? "your team · example" : "your team") : "manual"} · ${money(r.cost)}</span>${r.own ? "" : ` <button class="tbtn sm" data-editdraft="${r.di}" title="Edit this manual team" aria-label="Edit ${esc(r.name)}">✎</button>`}</div>
+      <div class="chips" style="flex-wrap:nowrap">${cons.map((id) => chip(id, { pts: xpts(id, 1) })).join("")}<span class="sep"></span>${drs.map((id) => chip(id, { pts: xpts(id, 1) * (id === r.boost ? 2 : 1), x: id === r.boost ? "2×" : "" })).join("")}</div></td>
+      <td data-l="xPts" class="${r.mean === best ? "good" : ""}"><b>${f1(r.mean)}</b><div class="muted" style="font-size:12px">${f0(r.p25)}–${f0(r.p75)}</div></td>
+      <td data-l="Next ${H}">${f1(r.h)}</td><td data-l="xΔ$" class="${r.dv >= 0 ? "good" : "bad"}">${sgn(r.dv, 2)}</td><td data-l="Wins"><b>${pct(r.wins / N)}</b></td></tr>`;
       })
       .join("") +
     "</tbody>";
-  $("#drafts").innerHTML = state.drafts
-    .map(
-      (d, i) => `<section class="panel">
-      <h3 style="gap:8px"><input class="inp" id="dname-${i}" data-dname="${i}" value="${esc(d.name)}" maxlength="24" aria-label="Manual team name" style="font-family:var(--display);font-weight:600;font-size:16px;flex:1"><button class="tbtn ban" aria-pressed="true" data-deldraft="${i}">Delete</button></h3>
-      <div class="slots" style="margin:0">${d.team.map((id, k) => `<div class="slotrow" style="--tc:${col(byId[id])};grid-template-columns:1fr auto"><select id="d-${i}-${k}" data-dslot="${i}:${k}" aria-label="Slot ${k + 1}">${optionList(k < 5 ? "D" : "C", id)}</select><span class="x">${f1(xpts(id, 1))}</span></div>`).join("")}</div>
-      <div class="chipbar"><span class="muted" style="align-self:center;margin-right:auto">${money(d.team.reduce((s, id) => s + byId[id].price, 0))}</span>${state.teams.map((t, j) => `<button class="btn ghost sm" data-todraft="${i}:${j}">→ ${esc(t.name)}</button>`).join("")}</div>
-    </section>`,
-    )
-    .join("");
 }
 
 /* ---------- projections ---------- */

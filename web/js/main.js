@@ -6,13 +6,13 @@ const RENDER = {
     renderSettings();
     runOptimiser();
     renderAssetPanels();
+    showBmode();
   },
   live: () => renderLive(),
   league: () => renderLeague(),
   elite: () => renderElite(),
   hind: () => renderHind(),
   stats: () => renderStats(),
-  compare: () => renderCompare(),
   assets: () => renderAssets(),
   prices: () => renderPrices(),
   practice: () => renderPractice(),
@@ -125,6 +125,14 @@ function showPane(p, instant) {
   save();
 }
 
+// the Best Teams pane shows the ranked teams or the comparison of your teams and manual teams
+function showBmode() {
+  const cmp = state.bmode === "cmp";
+  $$("#bmode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.bmode === state.bmode)));
+  $$("#view-calc [data-bm]").forEach((el) => (el.hidden = el.dataset.bm !== (cmp ? "cmp" : "best")));
+  if (cmp) renderCompare();
+}
+
 /* ---------- modal, menu, toast ---------- */
 let modalKind = null; // "editor" while the team editor is open (it re-renders as the team changes)
 function openModal(kind = null) {
@@ -132,8 +140,11 @@ function openModal(kind = null) {
   $("#modal").hidden = false;
 }
 function closeModal() {
+  const draft = editTarget != null; // a manual team edited from Compare: show its new name there
   $("#modal").hidden = true;
   modalKind = null;
+  editTarget = null;
+  if (draft) rerender();
 }
 function closeMenu() {
   $("#appMenu").hidden = true;
@@ -167,7 +178,7 @@ function pickStart(start) {
     state.calcStart = { type: "draft", i: state.drafts.length - 1 };
     state.chip = "";
     rerender();
-    return openTeamEditor();
+    return openTeamEditor(null);
   }
   state.chip = "";
   state.showN = 20;
@@ -209,6 +220,14 @@ const renderFilterScope = (sc) => (sc === "hd" ? saveAnd(renderHind) : rerender(
 const CLICK = [
   ["view", (d) => showView(d.view)],
   ["paneBtn", (d) => showPane(d.paneBtn)],
+  [
+    "bmode",
+    (d) => {
+      state.bmode = d.bmode;
+      showBmode();
+      save();
+    },
+  ],
   ["import", () => $("#importFile").click()],
   ["signin", () => signIn()],
   ["signout", () => signOut()],
@@ -216,7 +235,7 @@ const CLICK = [
   [
     "boost",
     (d) => {
-      const T = editStart();
+      const T = editing();
       T.boost = T.boost === d.boost ? "auto" : d.boost;
       rerender();
     },
@@ -261,7 +280,8 @@ const CLICK = [
     },
   ],
   ["start", (d) => pickStart(d.start)],
-  ["editteam", () => openTeamEditor()],
+  ["editteam", () => openTeamEditor(null)],
+  ["editdraft", (d) => openTeamEditor(+d.editdraft)],
   [
     "clearstart",
     () => {
@@ -386,6 +406,8 @@ const CLICK = [
   [
     "deldraft",
     (d) => {
+      editTarget = null;
+      closeModal();
       state.drafts.splice(+d.deldraft, 1);
       if (state.calcStart && state.calcStart.type === "draft") state.calcStart = null;
       rerender();
@@ -519,7 +541,11 @@ const CLICK_ID = {
     state.xo = {};
     recompute(0);
   },
-  addDraft: () => addDraft("Manual " + (state.drafts.length + 1), activeTeam().team) && rerender(),
+  addDraft: () => {
+    if (!addDraft("Manual " + (state.drafts.length + 1), activeTeam().team)) return;
+    rerender();
+    openTeamEditor(state.drafts.length - 1);
+  },
   toastUndo: () => {
     if (!undoTeam) return;
     const { ref, ...rest } = undoTeam;
@@ -651,18 +677,10 @@ const CHANGE = [
   [
     "slot",
     (d, t) => {
-      const T = editStart(),
+      const T = editing(),
         prev = setSlot(T.team, +d.slot, t.value);
       T.example = false;
       if (T.boost === prev) T.boost = "auto";
-      rerender();
-    },
-  ],
-  [
-    "dslot",
-    (d, t) => {
-      const [i, k] = d.dslot.split(":").map(Number);
-      setSlot(state.drafts[i].team, k, t.value);
       rerender();
     },
   ],
@@ -719,9 +737,10 @@ const slider = (id, key, label) => (t) => {
 };
 const INPUT_ID = {
   tname: (t) => {
-    const T = editStart();
-    T.name = t.value.trim() || (startKind() === "draft" ? "Manual" : "Team " + (state.active + 1));
-    $("#startBtn").lastChild.textContent = T.name;
+    const T = editing(),
+      draft = editTarget != null || startKind() === "draft";
+    T.name = t.value.trim() || (draft ? "Manual" : "Team " + (state.active + 1));
+    if (editTarget == null) $("#startBtn").lastChild.textContent = T.name;
     save();
   },
   valW: (t) => {
@@ -748,10 +767,6 @@ const INPUT_ID = {
 document.addEventListener("input", (e) => {
   const t = e.target;
   if (INPUT_ID[t.id]) return INPUT_ID[t.id](t);
-  if (t.dataset.dname != null) {
-    state.drafts[+t.dataset.dname].name = t.value.trim() || "Manual";
-    return save();
-  }
   if (t.dataset.circ) {
     const g = t.dataset.circ;
     state.circuits[g] = { ...state.circuits[g], [t.dataset.key]: +t.value };
