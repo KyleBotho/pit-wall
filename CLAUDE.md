@@ -326,5 +326,18 @@ User-approved order: 1–5, then the rest.
     Desktop rail (>=901px) opens on hover into a labelled menu over the page, like f1fantasytools' (user's screenshot):
     logo + name on top, account row `#railAcct` (filled by `renderSync`) at the bottom. Keyboard focus keeps it open via
     `.rail:has(:focus-visible)`, not `:focus-within` (a clicked item would hold it open).
+- [x] 2026-09-24 Simulation presets (user's f1fantasytools screenshots): the Calculator's Simulation panel picks
+    `state.simPreset` = "sim" (our Monte Carlo) | "classic" | "weighted" (`simDecay`) | "form" (`simWin`) | "ppm".
+    `Engine.presetWeights` + `Engine.pastPoints` (tested): per-round weighted average of each asset's scoring lines
+    (rounds it didn't race don't count), sprint ("S …") lines averaged over sprint rounds and added on sprint weekends,
+    categories in `simOff` left out; PPM = price x points per $1m of its kind and tier (under / from $18.5m).
+    `compute()` sets `proj[k].mean` from it and shifts the simulated distribution to match (like xPts edits, which
+    still apply on top). Per-round weights by hand in `simW` (cleared when the preset/decay/window changes);
+    `simSprint` {gd, v} runs the next race as a sprint weekend or not (the sim too). rhter's sims are NOT offered
+    (calibration only, never in the product).
+- [x] 2026-09-24 Best Teams sort bug: ranking by xΔ$ looked up `fprop(id).xd`, but fprop calls it `d`, so every
+    asset scored 0 and the list was 60 arbitrary teams sorted afterwards. Fixed; every sortable column now matches a
+    brute force over all legal teams in both directions (checked in the browser). xPts / xSPts rank highest first
+    only: minimising gave the Boost to the worst driver and counted penalties the wrong way.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

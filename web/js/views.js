@@ -98,6 +98,10 @@ function spark(a) {
   return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="#27272A"/>${bars}</svg>`;
 }
 function renderAssets() {
+  const pre = $("#simPreset").selectedOptions[0];
+  $("#assetPreset").hidden = state.simPreset === "sim";
+  $("#assetPreset").textContent =
+    `xPts come from the ${pre ? pre.textContent : state.simPreset} preset (Calculator → Simulation), not the Pit Wall sim.`;
   $$("#assetKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.kind === state.kind)));
   $("#assetRace").innerHTML = forecast.races
     .map(

@@ -473,6 +473,34 @@ const CLICK = [
   ],
   ["close", () => closeModal()],
   [
+    "simcat",
+    (d) => {
+      const off = new Set(state.simOff);
+      if (off.has(d.simcat)) off.delete(d.simcat);
+      else off.add(d.simcat);
+      state.simOff = [...off];
+      recompute(0);
+    },
+  ],
+  [
+    "simsess",
+    (d) => {
+      const cs = [...new Set(DATA.evNames.map((x) => x.c))].filter((c) => c[0] === d.simsess),
+        off = new Set(state.simOff),
+        turnOn = cs.some((c) => off.has(c)); // a session button re-includes everything if anything in it was off
+      cs.forEach((c) => (turnOn ? off.delete(c) : off.add(c)));
+      state.simOff = [...off];
+      recompute(0);
+    },
+  ],
+  [
+    "simreset",
+    () => {
+      Object.assign(state, { simPreset: "sim", simDecay: 0.9, simWin: 5, simW: {}, simOff: [], simSprint: null });
+      recompute(0);
+    },
+  ],
+  [
     "sk",
     (d) => {
       state.stKind = d.sk;
@@ -586,8 +614,10 @@ document.addEventListener("click", (e) => {
   if (bth) {
     const k = bth.dataset.bsort,
       cur = bestSort();
-    // ascending first for cost and retirements, descending for the rest (negative points are negative numbers)
-    state.bsort = { k, d: cur.k === k ? -cur.d : k === "cost" || k === "dnf" ? 1 : -1 };
+    // ascending first for cost and retirements, descending for the rest (negative points are negative numbers);
+    // points columns only rank highest first: the optimiser's Boost and penalties assume you want the best team
+    const pts = k === "x" || k === "xsp";
+    state.bsort = { k, d: pts ? -1 : cur.k === k ? -cur.d : k === "cost" || k === "dnf" ? 1 : -1 };
     state.showN = 20;
     return rerender();
   }
@@ -641,6 +671,15 @@ function setSlot(team, k, id) {
 }
 const CHANGE_ID = {
   importFile,
+  simPreset: (t) => {
+    state.simPreset = t.value;
+    state.simW = {}; // a new preset starts from its own round weights
+    recompute(0);
+  },
+  simSprint: (t) => {
+    state.simSprint = NEXT ? { gd: NEXT.gd, v: t.checked } : null;
+    recompute(0);
+  },
   free: (t) => {
     editStart().free = +t.value;
     rerender();
@@ -736,6 +775,18 @@ const slider = (id, key, label) => (t) => {
   recompute(250);
 };
 const INPUT_ID = {
+  simDecay: (t) => {
+    state.simDecay = +t.value;
+    state.simW = {};
+    $("#simDecayV").textContent = Math.round(state.simDecay * 100) + "%";
+    recompute(250);
+  },
+  simWin: (t) => {
+    state.simWin = +t.value;
+    state.simW = {};
+    $("#simWinV").textContent = state.simWin + (state.simWin === 1 ? " race" : " races");
+    recompute(250);
+  },
   tname: (t) => {
     const T = editing(),
       draft = editTarget != null || startKind() === "draft";
@@ -767,6 +818,11 @@ const INPUT_ID = {
 document.addEventListener("input", (e) => {
   const t = e.target;
   if (INPUT_ID[t.id]) return INPUT_ID[t.id](t);
+  if (t.dataset.simw) {
+    state.simW[t.dataset.simw] = +t.value;
+    t.closest("tr").querySelector(".simwv").textContent = Math.round(+t.value * 100) + "%";
+    return recompute(300);
+  }
   if (t.dataset.circ) {
     const g = t.dataset.circ;
     state.circuits[g] = { ...state.circuits[g], [t.dataset.key]: +t.value };

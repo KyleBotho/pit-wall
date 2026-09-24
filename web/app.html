@@ -235,8 +235,45 @@
           </details>
         </section>
         <section class="panel" data-pane="settings">
-          <h3>Simulation</h3>
+          <h3>
+            Simulation
+            <button class="tbtn" data-simreset="1" title="Back to the Pit Wall sim with default settings" aria-label="Reset the simulation">↺</button>
+          </h3>
+          <label class="field"
+            >Select a simulation preset
+            <select id="simPreset" class="inp">
+              <optgroup label="Fantasy Pit Wall">
+                <option value="sim">Pit Wall sim (race-weekend Monte Carlo)</option>
+              </optgroup>
+              <optgroup label="Past performance">
+                <option value="classic">Classic average</option>
+                <option value="weighted">Weighted average</option>
+                <option value="form">Form (average of the last races)</option>
+              </optgroup>
+              <optgroup label="Points per million">
+                <option value="ppm">Equal PPM</option>
+              </optgroup>
+            </select></label
+          >
+          <label class="switch"><input type="checkbox" id="simSprint" /><span id="simSprintL">Simulate a sprint weekend</span></label>
           <p class="note" id="simNote"></p>
+          <div id="simPast" class="simpast" hidden>
+            <details class="simcats">
+              <summary>Point types for calculations <span class="pill" id="simCatN"></span></summary>
+              <div id="simCats"></div>
+            </details>
+            <div class="slider" id="simDecayBox">
+              <span>Recency decay</span><input id="simDecay" type="range" min="0.5" max="1" step="0.01" aria-label="Recency decay factor" /><output
+                id="simDecayV"
+              ></output>
+            </div>
+            <div class="slider" id="simWinBox">
+              <span>Form window</span><input id="simWin" type="range" min="1" max="14" step="1" aria-label="Form window in races" /><output
+                id="simWinV"
+              ></output>
+            </div>
+            <div class="tw"><table class="simw" id="simW"></table></div>
+          </div>
           <div class="chipbar">
             <button class="btn ghost sm" data-view="settings">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button
             ><button class="btn ghost sm" id="xoReset" hidden>Clear xPts edits</button>
@@ -478,6 +515,7 @@
         Projections <span class="seg" id="assetKind"><button data-kind="D">Drivers</button><button data-kind="C">Constructors</button></span>
       </h3>
       <div class="seg" id="assetRace" style="align-self: flex-start"></div>
+      <p class="note warn" id="assetPreset" hidden></p>
       <p class="note">
         xPts blends the simulated weekends with recent form; 25–75 is the middle half of outcomes. <b>Pace</b> nudges a driver faster or slower (grid places).
         <b>Incl / Excl</b> forces an asset into or out of Best Teams.

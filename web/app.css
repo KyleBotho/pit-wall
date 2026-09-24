@@ -394,6 +394,70 @@ p {
   background: var(--tile);
   color: var(--fg);
 }
+/* Simulation presets (Calculator): point types, decay / window, per-round weights */
+.simpast {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.simcats summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  list-style: none;
+}
+.simcats .pill {
+  white-space: nowrap;
+}
+.simcats summary::-webkit-details-marker {
+  display: none;
+}
+#simCats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+#simPast .tw {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+.simw {
+  table-layout: fixed;
+}
+.simw td,
+.simw th {
+  padding: 5px 6px;
+}
+.simw td:first-child,
+.simw th:first-child {
+  width: 42%;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.simw td:nth-child(3),
+.simw th:nth-child(3) {
+  width: 46px;
+}
+.simw th:nth-child(2) {
+  text-align: left;
+}
+.simw input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.simwv {
+  width: 48px;
+}
 /* the Best Teams pane's two bodies (Best Teams, Compare) lay out like the panel itself */
 #view-calc div[data-bm] {
   display: flex;
@@ -1909,7 +1973,13 @@ td.chl {
     overflow-y: auto;
   }
   #view-calc [data-pane="settings"]:not(:first-child) {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* a past-performance preset makes Simulation long: Settings and Simulation then share the column */
+  #view-calc .col:has(#simPast:not([hidden])) > [data-pane="settings"] {
+    flex: 1 1 0;
   }
   #view-calc thead th {
     position: sticky;

@@ -144,12 +144,74 @@ function renderSettings() {
     nxo ? `${nxo} xPts edit${nxo > 1 ? "s" : ""}` : "",
     nadj ? `${nadj} pace nudge${nadj > 1 ? "s" : ""}` : "",
   ].filter(Boolean);
+  const P = state.simPreset,
+    upd = `Data updated ${esc(new Date(DATA.generated).toLocaleString(undefined, shortDate))}.`;
   $("#simNote").innerHTML =
-    `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
-    `Practice used: ${prac.length ? esc(prac.join(", ")) : "none yet"}. Data updated ${esc(new Date(DATA.generated).toLocaleString(undefined, shortDate))}.` +
+    (P === "sim"
+      ? `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
+        `Practice used: ${prac.length ? esc(prac.join(", ")) : "none yet"}. `
+      : SIM_NOTES[P] + " Ranges and odds still come from the simulated weekends. ") +
+    upd +
     (edits.length ? ` <span class="warn">${edits.join(", ")} active.</span>` : "");
   $("#xoReset").hidden = !nxo;
+  renderSim();
   if (modalKind === "editor") openTeamEditor();
+}
+
+/* ---------- simulation presets ---------- */
+const SIM_NOTES = {
+  classic: "<b>Classic average</b>: each asset's points averaged over every round it raced this season.",
+  weighted: "<b>Weighted average</b>: like Classic, but each older round counts less (the recency decay).",
+  form: "<b>Form</b>: each asset's average over the last few rounds only.",
+  ppm: "<b>Equal PPM</b>: each asset's price times the points per $1m of its kind (driver / constructor) and price tier (under / from $18.5m) this season.",
+};
+function renderSim() {
+  const P = state.simPreset,
+    past = P !== "sim";
+  $("#simPreset").value = P;
+  $("#simSprint").checked = sprintNext();
+  $("#simSprintL").textContent =
+    `Simulate a sprint weekend` + (NEXT ? ` (R${NEXT.gd} is ${NEXT.sprint ? "one" : "not"})` : "");
+  $("#simPast").hidden = !past;
+  if (!past) return;
+  // scoring categories: whole sessions, then each category (as in Statistics)
+  const off = new Set(state.simOff),
+    codes = [...new Set((DATA.evNames || []).map((e) => e.c))];
+  $("#simCatN").textContent = `${codes.filter((c) => !off.has(c)).length} / ${codes.length}`;
+  $("#simCats").innerHTML = ["Q", "S", "R"]
+    .map((ss) => {
+      const cs = codes.filter((c) => c[0] === ss).sort();
+      if (!cs.length) return "";
+      return `<div class="catrow"><button class="tbtn" data-simsess="${ss}" aria-pressed="${cs.every((c) => !off.has(c))}">${SESSN[ss]}</button>${cs.map((c) => `<button class="tbtn" data-simcat="${c}" aria-pressed="${!off.has(c)}" title="${esc(evLabel(c))}">${esc(EVLABEL[c.slice(2)] || c.slice(2))}</button>`).join("")}</div>`;
+    })
+    .join("");
+  $("#simDecayBox").hidden = P !== "weighted";
+  $("#simWinBox").hidden = P !== "form";
+  $("#simWin").max = String(Math.max(1, DATA.done.length));
+  if (document.activeElement !== $("#simDecay")) $("#simDecay").value = String(state.simDecay);
+  if (document.activeElement !== $("#simWin")) $("#simWin").value = String(state.simWin);
+  $("#simDecayV").textContent = Math.round(state.simDecay * 100) + "%";
+  $("#simWinV").textContent = state.simWin + (state.simWin === 1 ? " race" : " races");
+  // each finished round's relative importance, newest first (skipped while a slider in it is being dragged)
+  if ($("#simW").contains(document.activeElement)) return;
+  const w = simWeights(),
+    byGd = Object.fromEntries(DATA.schedule.map((g) => [g.gd, g]));
+  $("#simW").innerHTML =
+    `<thead><tr><th>Race</th><th title="Relative importance of each round in the average">Weight</th><th></th></tr></thead><tbody>` +
+    DATA.done
+      .slice()
+      .reverse()
+      .map((gd) => {
+        const g = byGd[gd] || {},
+          v = Math.max(0, Math.min(1, w[gd] ?? 1));
+        return (
+          `<tr><td title="${esc(g.name || "")}"><b>R${gd}</b>${g.sprint ? ' <span class="tag sprint">S</span>' : ""} <span class="dim">${esc(g.country || "")}</span></td>` +
+          `<td><input type="range" min="0" max="1" step="0.01" value="${v}" data-simw="${gd}" aria-label="Weight of round ${gd}"></td>` +
+          `<td class="simwv">${Math.round(v * 100)}%</td></tr>`
+        );
+      })
+      .join("") +
+    "</tbody>";
 }
 
 /* ---------- best teams ---------- */
@@ -183,6 +245,7 @@ function bestSort() {
   const b = state.bsort,
     def = { k: state.xdp ? "xsp" : "x", d: -1 };
   if (!b || ((b.k === "xsp" || b.k === "xdp") && !state.xdp)) return def;
+  if ((b.k === "x" || b.k === "xsp") && b.d > 0) return { k: b.k, d: -1 }; // points rank highest first only
   return b;
 }
 const visCols = () =>
@@ -280,7 +343,9 @@ function runOptimiser() {
           ? vp(id)
           : bs.k === "cost"
             ? byId[id].price
-            : (fprop(id)[bs.k] ?? 0);
+            : bs.k === "xd"
+              ? priceEv(id) // fprop calls it `d` (the filters' name)
+              : (fprop(id)[bs.k] ?? 0);
   const cand = DATA.assets
     .map((a) => ({
       id: a.id,

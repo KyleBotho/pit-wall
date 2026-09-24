@@ -42,6 +42,13 @@ const defaults = () => ({
   xo: {},
   rivalCfg: {},
   syncKey: true,
+  // the Calculator's Simulation preset: "sim" (Monte Carlo) or a past-performance one (classic, weighted, form, ppm)
+  simPreset: "sim",
+  simDecay: 0.9, // weighted: each older round counts this much of the next
+  simWin: 5, // form: rounds averaged
+  simW: {}, // per-round weights set by hand (gameday -> 0..1), on top of the preset's
+  simOff: [], // scoring categories left out of the past-performance presets
+  simSprint: null, // {gd, v}: the next race simulated as a sprint weekend (v) or not; null = the calendar
   view: SEASON_OVER ? "hind" : "calc",
   pane: "best",
   bmode: "best", // the Calculator's left pane: "best" (Best Teams) or "cmp" (Compare)
@@ -121,6 +128,10 @@ const CARRY = [
   "hdChip",
   "showN",
   "syncKey",
+  "simPreset",
+  "simDecay",
+  "simWin",
+  "simOff",
 ];
 function carryOver(old) {
   const s = defaults();

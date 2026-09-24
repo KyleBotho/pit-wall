@@ -22,7 +22,9 @@ function compute() {
       practiceWeight: state.pw,
     }),
   );
-  const sims = races.map((g, k) => Engine.simulate(models[k], circ(g), g.sprint, state.sims, g.gd * 7919 + 13));
+  const sims = races.map((g, k) =>
+    Engine.simulate(models[k], circ(g), k === 0 ? sprintNext() : g.sprint, state.sims, g.gd * 7919 + 13),
+  );
   const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
   const proj = sims.map((sim) => {
     const o = {};
@@ -38,6 +40,20 @@ function compute() {
     }
     return o;
   });
+  // a past-performance preset replaces the simulated means (the simulated spread is kept, shifted to match)
+  if (state.simPreset !== "sim") {
+    const pp = Engine.pastPoints(DATA, { preset: state.simPreset, weights: simWeights(), off: state.simOff });
+    races.forEach((g, k) => {
+      const sprint = k === 0 ? sprintNext() : g.sprint;
+      for (const [id, v] of Object.entries(pp)) {
+        const p = proj[k][id];
+        if (!p || p.out) continue;
+        p.mean = v.base + (sprint ? v.sprint : 0);
+        p.nn = v.nnBase + (sprint ? v.nnSprint : 0);
+        p.shift = p.mean - p.st.mean;
+      }
+    });
+  }
   // xPts typed in the Drivers / Constructors tables replace the next race's projection (distribution shifted to match)
   for (const [id, v] of Object.entries(state.xo || {})) {
     const p = proj[0][id];
@@ -51,6 +67,14 @@ function compute() {
   forecast = { model: models[0], races, sims, idx, form, proj, price: {} };
   forecast.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
 }
+// the next race as a sprint weekend: as the Simulation panel's toggle says for that race, else the calendar
+const sprintNext = () =>
+  state.simSprint && NEXT && state.simSprint.gd === NEXT.gd ? !!state.simSprint.v : !!(NEXT && NEXT.sprint);
+// each finished round's weight for a past-performance preset: the preset's, with any set by hand on top
+const simWeights = () => ({
+  ...Engine.presetWeights(state.simPreset, DATA.done, { decay: state.simDecay, win: state.simWin }),
+  ...state.simW,
+});
 const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
 // price change after the next race, from the simulated weekends (the game's rule: Engine.priceStep)
 function priceInfo(a) {

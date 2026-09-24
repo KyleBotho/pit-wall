@@ -204,3 +204,65 @@ test("optimise: the Boost goes to the best driver of each race", () => {
   assert.equal(best.score, 30 + 30 + 30 + 20 + 20 + 20); // assets + Boost on a (race 1) and b (race 2)
   assert.equal(best.boost, "a");
 });
+
+test("presetWeights: classic, weighted decay and a form window", () => {
+  const done = [1, 2, 3, 4];
+  assert.deepEqual(E.presetWeights("classic", done), { 1: 1, 2: 1, 3: 1, 4: 1 });
+  const w = E.presetWeights("weighted", done, { decay: 0.5 });
+  assert.deepEqual([w[4], w[3], w[2], w[1]], [1, 0.5, 0.25, 0.125]);
+  assert.deepEqual(E.presetWeights("form", done, { win: 2 }), { 1: 0, 2: 0, 3: 1, 4: 1 });
+});
+
+test("pastPoints: weighted averages, sprint lines, left-out categories and PPM tiers", () => {
+  const evNames = [{ c: "R POS" }, { c: "S POS" }, { c: "R OV" }];
+  const row = (gd, price, ev, active = true) => ({
+    gd,
+    price,
+    active,
+    team: "T",
+    pts: ev.reduce((s, [, v]) => s + v, 0),
+    ev,
+  });
+  const data = {
+    evNames,
+    done: [1, 2, 3],
+    schedule: [
+      { gd: 1, name: "a", sprint: false, lock: "" },
+      { gd: 2, name: "b", sprint: true, lock: "" },
+      { gd: 3, name: "c", sprint: false, lock: "" },
+      { gd: 4, name: "d", sprint: false, lock: "" },
+    ],
+    assets: [
+      {
+        id: "A",
+        kind: "D",
+        price: 10,
+        active: true,
+        hist: [
+          row(1, 10, [[0, 10]]),
+          row(2, 10, [
+            [0, 20],
+            [1, 6],
+            [2, -4],
+          ]),
+          row(3, 10, [[0, 30]]),
+        ],
+      },
+      { id: "B", kind: "D", price: 12, active: true, hist: [row(1, 12, [[0, 5]]), null, row(3, 12, [[0, 7]], false)] },
+    ],
+  };
+  const classic = E.pastPoints(data, { preset: "classic", weights: E.presetWeights("classic", data.done) });
+  assert.equal(classic.A.base, (10 + 16 + 30) / 3); // round 2's race lines: 20 - 4
+  assert.equal(classic.A.sprint, 6); // sprint lines only, averaged over the sprint round
+  assert.equal(classic.A.nnBase, (10 + 20 + 30) / 3); // the -4 floored
+  assert.equal(classic.B.base, 5); // rounds it didn't race don't count as zero
+  const form = E.pastPoints(data, { preset: "form", weights: E.presetWeights("form", data.done, { win: 1 }) });
+  assert.equal(form.A.base, 30);
+  assert.equal(form.A.sprint, 6); // no sprint round in the window: every sprint round it raced
+  const noOv = E.pastPoints(data, { preset: "classic", weights: { 1: 1, 2: 1, 3: 1 }, off: ["R OV"] });
+  assert.equal(noOv.A.base, 20);
+  // PPM: both drivers are in the under-$18.5m tier; (10+16+30+5) pts over (10+10+10+12) $m, times each price
+  const ppm = E.pastPoints(data, { preset: "ppm", weights: { 1: 1, 2: 1, 3: 1 } });
+  assert.ok(Math.abs(ppm.A.base - (10 * 61) / 42) < 1e-9);
+  assert.ok(Math.abs(ppm.B.base - (12 * 61) / 42) < 1e-9);
+});

@@ -849,6 +849,118 @@
     return { gd: g.gd, sims: o.sims, practice: (data.practice || []).filter((p) => p.done).map((p) => p.name), assets };
   }
 
+  /* ---------- past-performance presets (the Calculator's Simulation panel) ---------- */
+  /** Default weight of each finished round: "weighted" = decay^(rounds back), "form" = 1 for the last `win`
+   * rounds and 0 before, anything else ("classic", "ppm") = 1 for every round.
+   * @param {string} preset @param {number[]} done @param {{ decay?: number, win?: number }} [o]
+   * @returns {Record<number, number>} */
+  function presetWeights(preset, done, o = {}) {
+    const decay = o.decay ?? 0.9,
+      win = o.win ?? 5;
+    return Object.fromEntries(
+      done.map((gd, i) => {
+        const back = done.length - 1 - i;
+        return [gd, preset === "weighted" ? Math.pow(decay, back) : preset === "form" ? (back < win ? 1 : 0) : 1];
+      }),
+    );
+  }
+  /** Expected points per asset from past rounds, split into sprint scoring lines ("S …" codes) and the rest, so a
+   * sprint weekend can add the sprint part. Each part is a weighted average over the rounds the asset raced (sprint
+   * lines over sprint rounds only; if none carries weight, over all of them). `off` drops scoring categories.
+   * "ppm": the asset's price times the points per $1m of its kind and price tier (under / from $18.5m), from the same
+   * weighted rounds. `nnBase` / `nnSprint` are the same with every negative line floored at 0 (No Negative).
+   * Assets without a weighted round are left out.
+   * @param {Data & { evNames?: { c: string }[] }} data
+   * @param {{ preset: string, weights: Record<number, number>, off?: string[] }} o
+   * @returns {Record<string, { base: number, sprint: number, nnBase: number, nnSprint: number }>} */
+  function pastPoints(data, o) {
+    const off = new Set(o.off || []),
+      names = data.evNames || [],
+      sprintGd = new Set(data.schedule.filter((g) => g.sprint).map((g) => g.gd));
+    const w = (/** @type {number} */ gd) => (data.done.includes(gd) ? Math.max(0, o.weights[gd] ?? 1) : 0);
+    // one round's points: [base, sprint, nn base, nn sprint]
+    const split = (/** @type {HistRow} */ h) => {
+      const r = [0, 0, 0, 0];
+      if (!h.ev || !h.ev.length) {
+        r[0] = h.pts;
+        r[2] = h.nn ?? Math.max(0, h.pts);
+        return r;
+      }
+      for (const [ni, v] of h.ev) {
+        const c = (names[ni] && names[ni].c) || "";
+        if (off.has(c)) continue;
+        const s = c[0] === "S" ? 1 : 0;
+        r[s] += v;
+        r[s + 2] += Math.max(0, v);
+      }
+      return r;
+    };
+    const rows = (/** @type {Asset} */ a) =>
+      /** @type {HistRow[]} */ (a.hist.filter((h) => h && h.active && data.done.includes(h.gd))).map((h) => ({
+        h,
+        p: split(h),
+      }));
+    // weighted sums of [base, sprint, nnBase, nnSprint] and their weights, with a price-weighted denominator for PPM
+    const acc = (/** @type {{ h: HistRow, p: number[] }[]} */ rs) => {
+      const s = [0, 0, 0, 0],
+        ws = [0, 0],
+        wp = [0, 0],
+        all = [0, 0, 0]; // unweighted sprint rounds: count, sprint sum, nn sprint sum
+      for (const { h, p } of rs) {
+        const k = w(h.gd);
+        s[0] += k * p[0];
+        s[2] += k * p[2];
+        ws[0] += k;
+        wp[0] += k * h.price;
+        if (sprintGd.has(h.gd)) {
+          s[1] += k * p[1];
+          s[3] += k * p[3];
+          ws[1] += k;
+          wp[1] += k * h.price;
+          all[0]++;
+          all[1] += p[1];
+          all[2] += p[3];
+        }
+      }
+      return { s, ws, wp, all };
+    };
+    /** @type {Record<string, { base: number, sprint: number, nnBase: number, nnSprint: number }>} */
+    const out = {};
+    if (o.preset === "ppm") {
+      /** @type {Record<string, { s: number[], wp: number[] }>} */
+      const tiers = {};
+      const tierOf = (/** @type {Asset} */ a, /** @type {number} */ price) => a.kind + (price >= 18.5 ? "hi" : "lo");
+      for (const a of data.assets)
+        for (const { h, p } of rows(a)) {
+          const t = (tiers[tierOf(a, h.price)] ||= { s: [0, 0, 0, 0], wp: [0, 0] }),
+            k = w(h.gd);
+          t.s[0] += k * p[0];
+          t.s[2] += k * p[2];
+          t.wp[0] += k * h.price;
+          if (sprintGd.has(h.gd)) {
+            t.s[1] += k * p[1];
+            t.s[3] += k * p[3];
+            t.wp[1] += k * h.price;
+          }
+        }
+      for (const a of data.assets) {
+        const t = tiers[tierOf(a, a.price)];
+        if (!t || !t.wp[0]) continue;
+        const per = (/** @type {number} */ i, /** @type {number} */ d) => (t.wp[d] ? (a.price * t.s[i]) / t.wp[d] : 0);
+        out[a.id] = { base: per(0, 0), sprint: per(1, 1), nnBase: per(2, 0), nnSprint: per(3, 1) };
+      }
+      return out;
+    }
+    for (const a of data.assets) {
+      const { s, ws, all } = acc(rows(a));
+      if (!ws[0]) continue;
+      // sprint lines: weighted sprint rounds, else every sprint round the asset raced, else none
+      const spr = (/** @type {number} */ i) => (ws[1] ? s[i] / ws[1] : all[0] ? all[i === 1 ? 1 : 2] / all[0] : 0);
+      out[a.id] = { base: s[0] / ws[0], sprint: spr(1), nnBase: s[2] / ws[0], nnSprint: spr(3) };
+    }
+    return out;
+  }
+
   const api = {
     QPTS,
     RPTS,
@@ -872,6 +984,8 @@
     recentForm,
     blendMean,
     project,
+    presetWeights,
+    pastPoints,
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else /** @type {any} */ (root).Engine = api;
