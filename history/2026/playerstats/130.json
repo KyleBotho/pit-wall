@@ -1,0 +1,667 @@
+{
+  "Value": {
+    "PlayerId": 130,
+    "PlayerSkill": 1,
+    "GamedayWiseStats": [
+      {
+        "GamedayId": 12,
+        "PlayerValue": 10.3,
+        "OldPlayerValue": 10.3,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 5
+          },
+          {
+            "Frequency": "1",
+            "Event": "Sprint Position lost",
+            "Value": -1
+          },
+          {
+            "Frequency": "11th",
+            "Event": "Race Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "12th",
+            "Event": "Qualifying Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "13th",
+            "Event": "Sprint Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
+          },
+          {
+            "Frequency": "5",
+            "Event": "race overtake bonus",
+            "Value": 5
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "PlayerValue": 9.7,
+        "OldPlayerValue": 10.3,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 17
+          },
+          {
+            "Frequency": "10th",
+            "Event": "Race Position",
+            "Value": 1
+          },
+          {
+            "Frequency": "17th",
+            "Event": "Qualifying Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "5",
+            "Event": "Race position gained",
+            "Value": 5
+          },
+          {
+            "Frequency": "11",
+            "Event": "race overtake bonus",
+            "Value": 11
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "PlayerValue": 9.9,
+        "OldPlayerValue": 9.7,
+        "IsPlayed": 1,
+        "IsActive": 1,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 1
+          },
+          {
+            "Frequency": "14th",
+            "Event": "Race Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "15th",
+            "Event": "Qualifying Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "PlayerValue": 9.7,
+        "OldPlayerValue": 9.9,
+        "IsPlayed": 0,
+        "IsActive": 0,
+        "StatsWise": []
+      }
+    ],
+    "TourWiseStats": [
+      {
+        "TourId": 4,
+        "PlayerValue": 9.7,
+        "OldPlayerValue": 9.9,
+        "IsPlayed": 1,
+        "IsActive": 0,
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 23
+          },
+          {
+            "Frequency": "1",
+            "Event": "Sprint Position lost",
+            "Value": -1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "Sprint Position",
+            "Value": 0
+          },
+          {
+            "Frequency": "7",
+            "Event": "Race position gained",
+            "Value": 7
+          },
+          {
+            "Frequency": "16",
+            "Event": "race overtake bonus",
+            "Value": 16
+          }
+        ]
+      }
+    ],
+    "FixtureWiseStats": [
+      {
+        "GamedayId": 12,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7372,
+            "TeamId": 2636,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7373,
+            "TeamId": 2636,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7374,
+            "TeamId": 2636,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7378,
+            "TeamId": 2636,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7379,
+            "TeamId": 2636,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.9,
+            "OldPlayerValue": 9.7,
+            "RaceDayId": 7383,
+            "TeamId": 2636,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 9.9,
+            "OldPlayerValue": 9.7,
+            "RaceDayId": 7384,
+            "TeamId": 2636,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 9.9,
+            "RaceDayId": 7388,
+            "TeamId": 2636,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 9.9,
+            "RaceDayId": 7389,
+            "TeamId": 2636,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-26T15:00:00+04:00",
+            "Season": "2026",
+            "SelectedPercentage": "1",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      }
+    ],
+    "MatchWiseStats": [
+      {
+        "GamedayId": 12,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7372,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -1
+              },
+              {
+                "Frequency": "1",
+                "Event": "Sprint Position lost",
+                "Value": -1
+              },
+              {
+                "Frequency": "13th",
+                "Event": "Sprint Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7373,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "12th",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 10.3,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7374,
+            "DateTime": "08/21/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Zandvoort",
+            "MeetingNumber": 12,
+            "MeetingName": "Dutch Grand Prix",
+            "CountryId": 134,
+            "CountryName": "Netherlands",
+            "CircuitOfficialName": "Circuit Zandvoort",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 6
+              },
+              {
+                "Frequency": "11th",
+                "Event": "Race Position",
+                "Value": 0
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "5",
+                "Event": "race overtake bonus",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 13,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7378,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "17th",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 10.3,
+            "RaceDayId": 7379,
+            "DateTime": "09/04/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Monza",
+            "MeetingNumber": 13,
+            "MeetingName": "Italian Grand Prix",
+            "CountryId": 14,
+            "CountryName": "Italy",
+            "CircuitOfficialName": "Autodromo Nazionale Monza",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 17
+              },
+              {
+                "Frequency": "10th",
+                "Event": "Race Position",
+                "Value": 1
+              },
+              {
+                "Frequency": "5",
+                "Event": "Race position gained",
+                "Value": 5
+              },
+              {
+                "Frequency": "11",
+                "Event": "race overtake bonus",
+                "Value": 11
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 14,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.9,
+            "OldPlayerValue": 9.7,
+            "RaceDayId": 7383,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "15th",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 9.9,
+            "OldPlayerValue": 9.7,
+            "RaceDayId": 7384,
+            "DateTime": "09/11/2026 00:00:00",
+            "MatchStatus": "4",
+            "MeetingLocation": "Madrid",
+            "MeetingNumber": 14,
+            "MeetingName": "Spanish Grand Prix",
+            "CountryId": 2,
+            "CountryName": "Spain",
+            "CircuitOfficialName": "Madring",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 1
+              },
+              {
+                "Frequency": "14th",
+                "Event": "Race Position",
+                "Value": 0
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 15,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 9.7,
+            "OldPlayerValue": 9.9,
+            "RaceDayId": 7388,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
+          }
+        ]
+      }
+    ]
+  },
+  "FeedTime": {
+    "UTCTime": "9/23/2026 12:22:35 PM",
+    "ISTTime": "9/23/2026 5:52:35 PM",
+    "CESTTime": "9/23/2026 2:22:35 PM"
+  }
+}

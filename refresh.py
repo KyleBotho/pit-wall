@@ -7,8 +7,13 @@ Sources (public, no login):
   - fantasy.formula1.com/feeds/...   prices, ownership, per-race fantasy points
   - api.jolpi.ca/ergast/f1/...        qualifying / sprint / race classifications
 Requests are paced slowly on purpose; cached files are reused for locked (finished) gamedays.
+
+Season archive (committed by the workflow, so history survives F1 changing or dropping old feeds):
+  history/<season>/players/gdNN.json      raw player feed per finished gameday (prices, ownership, points)
+  history/<season>/playerstats/<id>.json  latest per-asset scoring events (every round so far)
+  history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock
 """
-import json, os, sys, time, urllib.error, urllib.request
+import json, os, shutil, subprocess, sys, time, urllib.error, urllib.request
 import practice
 from datetime import datetime, timezone
 
@@ -16,6 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "cache")
 BUILD = os.path.join(HERE, "build")
 SEASON = 2026
+ARCHIVE = os.path.join(HERE, "history", str(SEASON))
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36"
 PAUSE = 2.5
 
@@ -24,6 +30,12 @@ JOLPICA_TEAM = {
     "alpine": "Alpine", "rb": "Racing Bulls", "williams": "Williams", "haas": "Haas F1 Team",
     "audi": "Audi", "sauber": "Audi", "aston_martin": "Aston Martin", "cadillac": "Cadillac",
 }
+
+
+def archived(*parts):
+    path = os.path.join(ARCHIVE, *parts)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    return path
 
 
 def get(url, path, reuse=False):
@@ -136,6 +148,34 @@ def sealed_leagues():
     return z
 
 
+def freeze_projection(data, g):
+    """Before lock, save this build's default-settings projection for the coming race. After lock the last one
+    stands: that is what the model said going in, for checking against the result later."""
+    if datetime.now(timezone.utc) >= datetime.fromisoformat(g["lock"]):
+        return
+    try:
+        res = subprocess.run(["node", "-e", "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>"
+                              "process.stdout.write(JSON.stringify(require('./engine.js').project(JSON.parse(s)))))"],
+                             input=json.dumps(data), capture_output=True, text=True, encoding="utf-8", check=True, cwd=HERE)
+        proj = json.loads(res.stdout)
+    except Exception as e:  # a bonus; never block a price refresh on it
+        print(f"  ! projection not frozen: {e}")
+        return
+    with open(archived("projections", f"gd{g['gd']:02d}.json"), "w", encoding="utf-8") as f:
+        json.dump(proj, f, indent=1, sort_keys=True)
+    print(f"  projection for gameday {g['gd']} saved (practice: {', '.join(proj['practice']) or 'none'})")
+
+
+def load_projections():
+    out = {}
+    folder = os.path.join(ARCHIVE, "projections")
+    for name in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
+        with open(os.path.join(folder, name), encoding="utf-8") as f:
+            p = json.load(f)
+        out[str(p["gd"])] = {k: v["x"] for k, v in p["assets"].items()}
+    return out
+
+
 def main():
     os.makedirs(CACHE, exist_ok=True)
     os.makedirs(BUILD, exist_ok=True)
@@ -166,8 +206,8 @@ def main():
     print("Fantasy player feeds…")
     feeds = {}
     for g in done + [nxt]:
-        feeds[g] = get(f"https://fantasy.formula1.com/feeds/drivers/{g}_en.json",
-                       os.path.join(CACHE, f"players{g}.json"), reuse=(g in done[:-1]))["Data"]["Value"]
+        path = archived("players", f"gd{g:02d}.json") if g in done else os.path.join(CACHE, f"players{g}.json")
+        feeds[g] = get(f"https://fantasy.formula1.com/feeds/drivers/{g}_en.json", path, reuse=(g in done[:-1]))["Data"]["Value"]
 
     cur = feeds[nxt]
     assets = []
@@ -201,8 +241,9 @@ def main():
     for a in assets:
         if a["kind"] != "D":
             continue
-        ps = get(f"https://fantasy.formula1.com/feeds/popup/playerstats_{a['id']}.json",
-                 os.path.join(CACHE, f"ps_{a['id']}_{len(done)}.json"), reuse=True)
+        ps_path = os.path.join(CACHE, f"ps_{a['id']}_{len(done)}.json")
+        ps = get(f"https://fantasy.formula1.com/feeds/popup/playerstats_{a['id']}.json", ps_path, reuse=True)
+        shutil.copyfile(ps_path, archived("playerstats", f"{a['id']}.json"))
         for m in (ps.get("Value") or {}).get("MatchWiseStats") or []:
             g = m.get("GamedayId")
             if g not in done:
@@ -260,6 +301,8 @@ def main():
         "assets": assets, "practice": prac, "trackStats": track_stats, "elite": elite, "leagueSealed": sealed,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
     }
+    freeze_projection(data, next(g for g in schedule if g["gd"] == nxt))
+    data["projHist"] = load_projections()
     js = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
     with open(os.path.join(HERE, "app.html"), encoding="utf-8") as f:
         html = f.read()

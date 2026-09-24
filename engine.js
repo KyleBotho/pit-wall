@@ -396,7 +396,36 @@
     }));
   }
 
-  const api = { QPTS, RPTS, SPTS, CIRCUITS, FEAT_NAMES, PRICE_BANDS, circuitFor, trackModel, gridFromOv, buildModel, practiceRanks, simulate, priceStep, optimise, mulberry32 };
+  /* ---------- projections ---------- */
+  const DEFAULTS = { halfLife: 4, blend: 0.3, sims: 10000, pw: 1 };
+  // recency-weighted fantasy points over the last six active rounds, same team where possible
+  function recentForm(a) {
+    let h = a.hist.filter((x) => x && x.active && x.team === a.team);
+    if (h.length < 2) h = a.hist.filter((x) => x && x.active);
+    h = h.slice(-6);
+    if (!h.length) return null;
+    let s = 0, w = 0;
+    h.forEach((x, i) => { const k = Math.pow(0.8, h.length - 1 - i); s += k * x.pts; w += k; });
+    return s / w;
+  }
+  const blendMean = (st, form, blend) => (form == null ? st.mean : (1 - blend) * st.mean + blend * form);
+  // The coming race's projection at default settings: what refresh.py freezes into the season archive at lock.
+  function project(data, o) {
+    o = Object.assign({}, DEFAULTS, o);
+    const g = data.schedule.find((x) => !data.done.includes(x.gd));
+    if (!g) return null;
+    const c = trackModel(data).forCircuit(g.name);
+    const model = buildModel(data, { halfLife: o.halfLife, teamShift: c.teamShift || {}, practice: data.practice || [], practiceWeight: o.pw });
+    const sim = simulate(model, c, g.sprint, o.sims, g.gd * 7919 + 13);
+    const assets = {};
+    sim.ids.forEach((id, i) => {
+      const a = data.assets.find((x) => x.id === id), st = sim.stats[i];
+      assets[id] = { x: Math.round(blendMean(st, recentForm(a), o.blend) * 10) / 10, p25: st.p25, p75: st.p75 };
+    });
+    return { gd: g.gd, sims: o.sims, practice: (data.practice || []).filter((p) => p.done).map((p) => p.name), assets };
+  }
+
+  const api = { QPTS, RPTS, SPTS, CIRCUITS, FEAT_NAMES, PRICE_BANDS, DEFAULTS, circuitFor, trackModel, gridFromOv, buildModel, practiceRanks, simulate, priceStep, optimise, mulberry32, recentForm, blendMean, project };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.Engine = api;
 })(typeof window !== "undefined" ? window : globalThis);

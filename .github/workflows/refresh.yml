@@ -9,7 +9,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write   # commits the season archive (history/)
   pages: write
   id-token: write
 
@@ -34,6 +34,17 @@ jobs:
           restore-keys: f1-cache-
       # data/league.sealed.json is pushed here by the private pit-wall-private workflow
       - run: python refresh.py
+      # Save the season as it happens. Pushes made with GITHUB_TOKEN don't trigger another run.
+      - name: Commit season history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history
+          if ! git diff --cached --quiet; then
+            git commit -m "Season history"
+            git pull --rebase
+            git push
+          fi
       - uses: actions/upload-pages-artifact@v5
         with:
           path: build
