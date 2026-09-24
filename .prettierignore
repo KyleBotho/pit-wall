@@ -1,0 +1,11 @@
+build/
+build-seasonover/
+cache/
+history/
+data/
+research/
+node_modules/
+supabase/
+backtest/practice_by_round.json
+package-lock.json
+*.md

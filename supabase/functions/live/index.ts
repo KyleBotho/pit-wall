@@ -7,7 +7,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const F1 = "https://fantasy.formula1.com/feeds";
-const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36";
 const FRESH_MS = 60_000; // serve the cached copy for this long
 const PAUSE_MS = 1500; // between playerstats requests (go slow: F1 is the one being asked)
 const BUSY_MS = 180_000; // a playerstats refresh older than this is assumed dead
@@ -15,12 +14,28 @@ const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
-// F1's scoring-event names -> category codes; mirrors EV_SESSION / EV_RULES in refresh.py
-const EV_SESSION: Record<string, string> = { "Qualifying": "Q", "Sprint Qualifying": "S", "Race": "R" };
-const EV_RULES: [string, string][] = [["not classified", "NC"], ["dq", "DQ"], ["disqualif", "DQ"], ["position gained", "PG"],
-  ["position lost", "PL"], ["overtake", "OV"], ["fastest lap", "FL"], ["driver of day", "DOTD"],
-  ["world record", "WRFP"], ["2nd fastest pit", "FP2"], ["fastest pit", "FP"], ["pit", "PIT"],
-  ["q3", "TW"], ["q2", "TW"], ["position", "POS"]];
+// F1's scoring-event names -> category codes (first match wins); the same tables refresh.py uses
+// <shared:feeds> generated from config/feeds.json by tools/sync-shared.js; don't edit here
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36";
+const EV_SESSION: Record<string, string> = {"Qualifying": "Q", "Sprint Qualifying": "S", "Race": "R"};
+const EV_RULES: [string, string][] = [
+  ["not classified", "NC"],
+  ["dq", "DQ"],
+  ["disqualif", "DQ"],
+  ["position gained", "PG"],
+  ["position lost", "PL"],
+  ["overtake", "OV"],
+  ["fastest lap", "FL"],
+  ["driver of day", "DOTD"],
+  ["world record", "WRFP"],
+  ["2nd fastest pit", "FP2"],
+  ["fastest pit", "FP"],
+  ["pit", "PIT"],
+  ["q3", "TW"],
+  ["q2", "TW"],
+  ["position", "POS"],
+];
+// </shared:feeds>
 const evCode = (s: string, n: string) => (EV_SESSION[s] ?? "?") + " " + (EV_RULES.find(([k]) => n.toLowerCase().includes(k))?.[1] ?? "OTH");
 
 type Ev = [string, string, string, number, string | null];
@@ -94,7 +109,11 @@ Deno.serve(async (req) => {
 
   try {
     const d = (await getJSON(`${F1}/drivers/${gd}_en.json`)).Data;
-    const prev = cached?.assets ?? {};
+    // Build on the row as it is now, not as it was before the fetch: a background playerstats refresh may have
+    // saved newer scoring lines meanwhile, and copying the older ones over them would undo it.
+    const { data: now } = await db.from("live_cache").select("body").eq("gd", gd).maybeSingle();
+    const base = (now?.body as Body | undefined) ?? cached;
+    const prev = base?.assets ?? {};
     const assets: Record<string, Asset> = {};
     for (const p of d?.Value ?? []) {
       const id = String(p.PlayerId), o = prev[id];
@@ -104,7 +123,7 @@ Deno.serve(async (req) => {
       assets[id] = { pts, act: p.IsActive === "1", sess, key: `${pts}|${JSON.stringify(sess)}`, ev: o?.ev ?? [], evKey: o?.evKey ?? null, lag: o?.lag };
     }
     const body: Body = { gd, feedTime: feedTime(d), checked: new Date().toISOString(), assets,
-      statsAt: cached?.statsAt ?? null, statsBusy: cached?.statsBusy ?? null };
+      statsAt: base?.statsAt ?? null, statsBusy: base?.statsBusy ?? null };
     const todo = Object.fromEntries(Object.entries(assets).filter(([, a]) => a.evKey !== a.key || a.lag).map(([id, a]) => [id, { key: a.key!, pts: a.pts }]));
     const busy = body.statsBusy && Date.now() - Date.parse(body.statsBusy) < BUSY_MS;
     if (Object.keys(todo).length && !busy) {

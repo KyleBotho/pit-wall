@@ -6,30 +6,50 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 2026-09-24 to stop republishing it. Don't publish it again unless asked.
 
 ## Files
-- `refresh.py` — fetches data, builds `build/index.html` (GitHub Pages, own doctype/viewport) and
-  `build/pit-wall.html` (Claude artifact; the publisher wraps it). Paced 2.5 s/request; caches finished rounds in `cache/`.
-- `engine.js` — pure JS, no DOM: `buildModel` (pace, DNF, overtakes, pit stops, practice blend, track-type shift),
-  `simulate` (Monte Carlo weekend scored with official 2026 rules), `trackModel`, `priceStep`, `optimise`,
-  `recentForm`/`blendMean`/`DEFAULTS` (shared with the page) and `project` (next race at default settings, used by
-  refresh.py to freeze projections). Loadable from node (`require("./engine.js")`) for checks.
+- `refresh.py` — fetches data in stages (`load_schedule`, `load_player_feeds`, `build_assets`, `load_results`,
+  `load_playerstats`, `load_practice`, `build_elite`), then `build_page` inlines `web/` into `build/index.html` (GitHub
+  Pages) and `build/pit-wall.html` (retired artifact copy). `--offline` rebuilds from `cache/data.json` without
+  fetching. Once the season is over `next` is null and nothing is projected.
+- `f1feeds.py` — shared feed helpers: paced `get` / `get_soft` / `get_optional` raising `FeedError` (never
+  `sys.exit` deep inside), `feed_time`, `ev_code`. The private repo's `leagues.py` imports it from its checkout.
+- `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
+  example team. Embedded as `DATA.cfg`; update it before a new season. `config/feeds.json` — user agent, pacing,
+  scoring-event codes (shared by Python, the page data and the Supabase function).
+- `engine.js` — pure JS, no DOM, `// @ts-check`: `buildModel` (pace, DNF, overtakes, pit stops, practice blend,
+  track-type shift; `opt.model` overrides `MODEL` for backtests), `simulate` (Monte Carlo weekend scored with the
+  official rules), `trackModel`, `priceStep`, `optimise` (`boostE` may be one value per race of the horizon: the
+  Boost goes to each race's best driver, chips play in the first), `project`. Settings are named in `MODEL`, `SIM`,
+  `TRACK`, each marked backtested or hand-set.
+- `hindsight.js` — pure, `// @ts-check`: `Hindsight.create(DATA, Engine)` -> best teams on actual points (`run`,
+  `own`, Final Fix `ff`) and `score(lineup, gd)`, which rebuilds F1's official round score (42/42 team-rounds).
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
-  fuel/tyre/compound-corrected) gaps.
-- `app.html` — the page (inlines engine.js and data at build). Dark zinc UI modelled on f1fantasytools
-  (the user's explicit ask): icon rail, Team Calculator dashboard (Best Teams table | Settings + Simulation |
-  Drivers + Constructors), 44px asset chips. Inspiration only — never their name/logo. Calculator state: the
-  starting team is `ST()` (your team `A()`, a manual team, a rival's line-up or none, via `S.calcStart`); pins in
-  `S.pins`; xPts edits in `S.xo` (applied to the next race's projection in `compute()`, distribution shifted);
-  xΔ$Pts = `S.xdp` + `S.valW` pts per $1m per remaining race; max penalty `S.maxPen` (null = any).
+  fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap.
+- `web/app.html` + `web/app.css` + `web/js/*.js` — the page. Plain scripts sharing one global scope, loaded in
+  the order app.html lists them (core, state, sync, forecast, import, league, elite, filters, hindsight-view, stats,
+  live, calc, views, main). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  never their name/logo. Key globals: `state` (settings), `forecast` (sims and projections from `compute()`),
+  `syncState`, `SEALED`, `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
+  the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
+  `state.calcStart`; pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
+  `state.maxPen`; the chip played is `activeChip()`.
 - `.github/workflows/refresh.yml` — rebuild + deploy every 30 min Thu–Sun, every 6 h Mon–Wed, on push, and manually.
-  Commits `history/` after each build (GITHUB_TOKEN pushes don't retrigger it), so it has `contents: write`.
+  Commits `history/`, then runs the tests (they gate the deploy). A separate `check` job (pushes only) runs lint,
+  formatting, types and ruff, so style never blocks a price refresh.
 - `history/2026/` — the season archive, saved as it happens: `players/gdNN.json` raw player feed per finished round
   (read back instead of refetched; the latest round is refetched for late corrections), `playerstats/<id>.json`
   latest per-asset scoring events, `projections/gdNN.json` our default-settings projection, rewritten until lock and
-  then frozen (embedded as `DATA.projHist` for projected-vs-actual).
+  then frozen (embedded as `DATA.projHist` for projected-vs-actual), `practice/gdNN.json`, `elite/`.
+- `tests/` — `node --test` (engine vs brute force, price rule vs real changes, scoring lines, state migrations,
+  seal round-trip, shared tables, Hindsight vs official scores when the private clone is next door) and
+  `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
+- `backtest/run.js` (`npm run backtest`) — price rule, track-model lambdas, retirement recency/shrinkage, practice
+  weights, calibration. `backtest/practice_rounds.py` rebuilds `practice_by_round.json` from OpenF1 (cached).
+- `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
+  deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
 - `supabase/setup.sql` — the sign-in/sync database (item 12). Re-runnable in Supabase's SQL Editor.
-- `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it.
-  Used by the private repo's workflow, which checks this repo out.
+- `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it
+  (`tests/seal.test.js`). Used by the private repo's workflow, which checks this repo out.
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
 - `data/league.sealed.json` — encrypted `{leagues, rounds, lineups}`, written ONLY by the private repo's workflow.
   `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per round
@@ -39,12 +59,30 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - Private repo `KyleBotho/pit-wall-private` (local clone `../pit-wall-private`): `leagues.py` + `leagues.yml`
   (every 6 h, hourly Sun–Mon) fetch the private-league feeds and the global top 500, keep plaintext
   `history/<leagueId>/<feedTime>.json` and `history/global/` there, map each snapshot to a gameday via the schedule
-  (last race started before the feed time), and push the sealed snapshot and `elite_history.json` here with the `PUBLIC_REPO_TOKEN` PAT (which triggers a rebuild). Secrets
-  `LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN` live in that repo only. Its runs aren't visible without auth;
-  check for its commits here instead: `https://api.github.com/repos/KyleBotho/pit-wall/commits?path=data/league.sealed.json`.
+  (last race started before the feed time), and push the sealed snapshot and `elite_history.json` here with the
+  `PUBLIC_REPO_TOKEN` PAT (which triggers a rebuild). Secrets `LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN` live in
+  that repo only. Its runs aren't visible without auth; check for its commits here instead:
+  `https://api.github.com/repos/KyleBotho/pit-wall/commits?path=data/league.sealed.json`.
+  `leagues.py` imports `f1feeds.py` from the public checkout: push this repo before a private change that needs it.
+
+## Code conventions (2026-09-24 review)
+- Page scripts share one scope, so ESLint collects every file's top-level names as globals (`eslint.config.mjs`) and
+  forbids locals that shadow the shared state (`state`, `forecast`, …): a `renderLive` helper called `state` once
+  broke Live Scoring.
+- Saved settings go through `loadState()` (`web/js/state.js`): bump `SCHEMA` and add a `MIGRATIONS` step for any
+  shape change; `CARRY` lists what survives into a new season. `defaults()` returns fresh objects.
+- Only the visible view renders: after a change call `rerender()` (all views stale, visible one redrawn) or
+  `refreshViews([...])`. Clicks/changes/inputs dispatch through the `CLICK` / `CHANGE` / `INPUT_ID` tables in
+  `main.js`; add an entry rather than a branch.
+- Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
+  local instead. `web/js/core.js` keeps the `/*__DATA__*/ null` placeholder (refresh.py matches it with a regex).
 
 ## Commands
-- Rebuild locally: `python refresh.py` (run from this folder; `PYTHONIOENCODING=utf-8` on Windows bash).
+- Rebuild locally: `python refresh.py` (run from this folder; `PYTHONIOENCODING=utf-8` on Windows bash);
+  `python refresh.py --offline` rebuilds the page from the last fetch (page/CSS/JS edits).
+- Checks: `npm run check` (ESLint, Prettier, tsc on engine/hindsight, node tests; `npm install` once),
+  `python -m unittest discover tests`, `ruff check . && ruff format --check .`. `npm run backtest` for the model.
+- After editing `config/feeds.json`: `node tools/sync-shared.js`, then redeploy the Supabase function.
 - Deploy: commit and `git push` (Git Credential Manager handles auth; no gh CLI). Pages rebuilds on push.
   `git pull --rebase` first: both workflows push to main (history, sealed files).
 - After a fresh F1 Fantasy export (Claude for Chrome -> `Downloads/f1fantasy_official_data_<date>.json`): in
@@ -66,16 +104,22 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   export with Claude for Chrome; the page's Import button reads it in the browser only (localStorage).
   Never put league or personal data into the repo/site, and never handle the user's F1 login or tokens.
 
-## Model decisions (backtested — keep unless new evidence)
+## Model decisions (backtested — keep unless new evidence; `npm run backtest` reproduces the evidence)
 - Scoring = official 2026 rules (sprint DNF −10, sprint losses capped −10, constructor Q2/Q3 bonus, pit bands).
 - Price change: 3-race avg pts / price, rounded to 3 dp; bands 0.605 / 0.9 / 1.195; ≥$18.5m ±0.1/0.3, else ±0.2/0.6;
-  clamp $3–34m. Fitted on 2026 history and matches f1fantasytools.
+  clamp $3–34m. Fitted on 2026 history and matches f1fantasytools. Backtest 2026-09-24: 390/392 real changes.
 - Practice: short-run rank blended 30% into quali pace, long-run 10% into race pace, pull capped ±6 places
-  (R6–R14 backtest). Only applied to the next race.
+  (R6–R14 backtest). Only applied to the next race. The reproducible walk-forward (R4–R14, 2026-09-24) agrees on
+  long-run 0.1 but finds short-run 0.5 better than 0.3 (quali MAE 1.735 vs 1.809 places) and no cap marginally
+  better than 6 (1.801 vs 1.809). Not changed yet: the user's call (see open items).
 - Race pace from finish rank rescaled to a full field; DNF = team rate, recent-weighted (half-life 6), shrunk k=4.
-- Track type: circuits tagged [power, street, fast corners] in `engine.js` CIRCUITS. Leave-one-out on R1–R14:
-  overtaking fit ~13% better (used), DNF ~4% (mild), team-specific pace ~0% (kept tiny, ridge λ=8).
-- Neutral-track sim matches actual 2026 per-category points; FL/DOTD go to the top seven ~90% of the time.
+  Walk-forward log loss (R4–R14): 0.4696 in use; no recency with k=16 is 0.4638; grid-wide rate alone 0.4828.
+- Track type: circuits tagged [power, street, fast corners] in `config/season.json`. Leave-one-out on R1–R14
+  (reproducible run 2026-09-24; overtakes now per car that started, not /22): overtaking ~6% better at λ=0.5 (used;
+  λ=0.25 gives 7.8%), DNF ~1% at λ=2 (mild), team pace slightly worse than none at every λ (kept tiny, λ=8). The
+  earlier notes said 13% / 4% / 0%.
+- Neutral-track sim matches actual 2026 per-category points (backtest section 5; overtakes run low, 4.15 vs 4.78
+  per driver-race; retirements −3.63 vs −3.90); FL/DOTD go to the top seven ~89% / 87% of the time.
 - Default 10,000 sims per race × next 3 races. Optimiser enumerates all 5-driver × 2-constructor teams.
 - vs rhter's Baku sim (f1fantasytools): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
 
@@ -83,6 +127,18 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 Private league IDs are never written into this public repo: anyone holding one can read that league's feed,
 manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the private repo).
 
+R. Code review (2026-09-24, user asked for a critique then "implement all"): split app.html into `web/`, extracted
+   `hindsight.js`, `f1feeds.py`, `config/`, tests + CI gate, backtests, lint/format/types. Bugs fixed: page crashed
+   once no race was left (now a season-over mode: forecast views hidden, Hindsight/Stats/League/Elite/Live work);
+   sync silently dropped unsent edits when the account had also changed (now asks); defaults shared by reference;
+   rivals identified by name only (now league + name); Live function could overwrite fresh scoring lines; X3 and
+   Autopilot were applied to every race of a 2-3 race horizon (X3 3-race total was ~108 pts too high); a new season
+   wiped saved settings (now carried over, teams fresh); Projections' pace-nudge buttons were hidden after any view
+   switch (`data-v` clash); an open practice stint was dropped.
+   - [ ] Redeploy the Supabase `smooth-action` function (paste `supabase/functions/live/index.ts`): the lost-update
+         fix and the generated event tables only take effect after that.
+   - [ ] Backtest disagreements for the user to decide: practice short-run weight 0.5 vs 0.3; track team-pace shift
+         (no help at any λ); DNF shrink 16 without recency vs half-life 6 / k 4. Values unchanged until then.
 0. [x] 2026-09-24: tested and pushed the Elite view, sealed private leagues and the Actions bump (checkout@v7,
    setup-python@v7, cache@v6, upload-pages-artifact@v5, deploy-pages@v5). Checked: tags resolve; global feed
    aggregates; a 403 league comes through as `pending`; seal.js -> page `unseal` round-trip under WebCrypto (wrong key
@@ -165,7 +221,7 @@ User-approved order: 1–5, then the rest.
      gets xΔ$Pts and xSPts (= xPts + xΔ$Pts) columns and ranks by xSPts; Drivers/Constructors tables get xΔ$Pts and
      xSPts columns. Our existing "Value of $1m" setting is this rate; make it this toggle + slider.
    - Drivers/Constructors tables: search box, Columns picker, editable xPts (ties in with item 8).
-   - Later asks, done: Best Teams column headers sort AND set the optimiser's goal (`S.bsort`; $ / xPts / xΔ$ /
+   - Later asks, done: Best Teams column headers sort AND set the optimiser's goal (`state.bsort`; $ / xPts / xΔ$ /
      xΔ$Pts / xSPts / odds; value goals use `penW: 0`). On screens ≥1281px the Calculator fits the window and each
      pane scrolls on its own (the page doesn't).
 10. [x] Phone layout like f1fantasytools' mobile site (user's screenshots, 2026-09-24): top app bar with the tool
@@ -199,9 +255,9 @@ User-approved order: 1–5, then the rest.
     Deployed and checked 2026-09-24: 35 assets, all 33 scoring-line sets within ~1 min, none lagging, cache hits.
     To redeploy: paste index.ts into the smooth-action function in the dashboard editor (or `supabase functions
     deploy smooth-action` with the CLI) and keep Verify JWT off.
-    League live standings (2026-09-24, `renderLiveLeague`): per league (unlocked or imported; picker `S.lvLg`),
+    League live standings (2026-09-24, `renderLiveLeague`): per league (unlocked or imported; picker `state.lvLg`),
     season points before the round + the round so far = live total and rank change. Your teams score as in the
-    cards; rivals from their league-feed line-up, Boost from an import only if it covers the round (`S.league.round
+    cards; rivals from their league-feed line-up, Boost from an import only if it covers the round (`state.league.round
     >= gd`), else guessed = their highest-projected driver (shown "2×?"). Official round points from the round
     table (`m.hist`) replace the estimate once they exist (before = feed total − that round). Warns when the line-ups
     are older than the round's lock. Tested with a fake league (R14 final + simulated Baku Friday); not yet on the
@@ -209,8 +265,8 @@ User-approved order: 1–5, then the rest.
 - [x] Header cleanup (2026-09-24, user's ask): the header's team buttons and Import are gone (sign-in sync made
     them redundant). Import = any `[data-import]` button (Settings "Account & data", ☰ menu, League empty state)
     opening the hidden `#importFile`. The Calculator picks the team in Settings; Hindsight's budget has one button
-    per team (`S.hdCap` = "100" | "team:i" | "none"; old "team" = the Calculator's team); Elite has its own team
-    picker at the top (`S.elT`, `elTeam()`) for the template, ownership and chip grid. League follows `S.active`.
+    per team (`state.hdCap` = "100" | "team:i" | "none"); Elite has its own team
+    picker at the top (`state.elT`, `elTeam()`) for the template, ownership and chip grid. League follows `state.active`.
 - [x] Practice archive (2026-09-24): OpenF1 refuses everything, past sessions included, while any F1 session is live,
     and the CI runs during Baku FP1/FP2 had no cached copy, so the site had NO practice for Baku. Now each analysed
     session is saved in `history/2026/practice/gdNN.json` and reused when OpenF1 is closed; one failing session no
@@ -219,12 +275,14 @@ User-approved order: 1–5, then the rest.
 12. [x] 2026-09-24 built, and the user signed in on the live site. "Unable to exchange external code" = the Client secret
     in Supabase's Google provider doesn't match the Client ID: add a new secret in Google Cloud and paste both again
     (Google shows a secret only once). Confirmed the same day: his phone picked up teams + leagues. Supabase project
-    `tfljgylwpkpammzsapin` (URL + publishable key are public, in app.html and refresh.yml); SQL in
+    `tfljgylwpkpammzsapin` (URL + publishable key are public, in web/js/sync.js and refresh.yml); SQL in
     `supabase/setup.sql` (table, RLS, grants, server-set `updated_at`, `ping()`). Google provider on, Email off,
-    sign-ups on (the Google test-user list is the gate). Page: `SY` + `syncInit/pull/push/applyRemote` after `save()`;
-    synced = all of `S` except `NOSYNC` (view, pane, showN) plus `lk` (LEAGUE_KEY); `pitwall.sync` = {uid, at, dirty}.
-    Rules: a row changed since this browser's mark wins; else unsent local edits are pushed; a browser with its own
-    teams and no mark asks which to keep (nothing syncs until it chooses). Re-pulls on tab focus. `fillFromLineups`
+    sign-ups on (the Google test-user list is the gate). Page: `syncState` + `syncInit/pull/push/applyRemote` after `save()`;
+    synced = all of `state` except `NOSYNC` (view, pane, showN) plus `lk` (LEAGUE_KEY, only while `state.syncKey`:
+    "Keep my league passphrase in my account", default on); `pitwall.sync` = {uid, at, dirty}.
+    Rules: a row changed since this browser's mark wins if this browser has nothing unsent; unsent local edits are
+    pushed if the row didn't change; if both changed, or a browser with its own teams has no mark, it asks which to
+    keep (nothing syncs until it chooses). Before 2026-09-24 the both-changed case silently dropped the local edits. Re-pulls on tab focus. `fillFromLineups`
     fills an all-example browser from the sealed export line-ups after unlock. Tested against a mocked table
     (first sign-in, debounced push, other-device pull, ask-on-conflict, sign-out flush, Final Fix line-up fill).
     Keep-alive: refresh.yml calls `rpc/ping`; still to confirm Supabase counts that as activity.

@@ -5,20 +5,22 @@ For each practice session:
   long run   = median clean lap of stints of 5+ laps, corrected for tyre compound
                and fuel burn, as % gap to the best long run in the session  -> race pace
 """
+
 import statistics
 from datetime import datetime, timedelta
 
 COMPOUND_ORDER = ["SOFT", "MEDIUM", "HARD"]
-FUEL_S_PER_LAP = 0.055   # lap-time gain per lap of fuel burned (s)
-DEG_S_PER_LAP = 0.04     # typical tyre degradation per lap of tyre age (s)
+FUEL_S_PER_LAP = 0.055  # lap-time gain per lap of fuel burned (s)
+DEG_S_PER_LAP = 0.04  # typical tyre degradation per lap of tyre age (s)
 
 
 def sessions_for(get, cache_path, lock_iso):
     """Practice sessions of the meeting whose qualifying/sprint lock is lock_iso."""
     lock = datetime.fromisoformat(lock_iso)
     year = lock.year
-    allp = get(f"https://api.openf1.org/v1/sessions?year={year}&session_type=Practice",
-               cache_path(f"of_sessions_{year}.json"))
+    allp = get(
+        f"https://api.openf1.org/v1/sessions?year={year}&session_type=Practice", cache_path(f"of_sessions_{year}.json")
+    )
     out = []
     for s in allp:
         start = datetime.fromisoformat(s["date_start"])
@@ -30,44 +32,50 @@ def sessions_for(get, cache_path, lock_iso):
 def analyse_session(laps, stints, drivers):
     num2tla = {d["driver_number"]: d["name_acronym"] for d in drivers}
     by_drv = {}
-    for l in laps:
-        by_drv.setdefault(l["driver_number"], []).append(l)
+    for lap in laps:
+        by_drv.setdefault(lap["driver_number"], []).append(lap)
     stint_of = {}
-    for s in stints:
-        for n in range(s["lap_start"] or 0, (s["lap_end"] or 0) + 1):
+    # a stint still open when the data was pulled has no lap_end: it runs to the driver's last lap. Later stints
+    # are applied last so they win any overlap.
+    for s in sorted(stints, key=lambda s: (s["driver_number"], s.get("stint_number") or 0)):
+        for n in range(s["lap_start"] or 0, (s["lap_end"] or 999) + 1):
             stint_of[(s["driver_number"], n)] = s
 
     best, runs = {}, {}
     for num, ls in by_drv.items():
-        clean = [l for l in ls if l.get("lap_duration") and not l.get("is_pit_out_lap")]
+        clean = [lap for lap in ls if lap.get("lap_duration") and not lap.get("is_pit_out_lap")]
         if clean:
-            best[num] = min(l["lap_duration"] for l in clean)
+            best[num] = min(lap["lap_duration"] for lap in clean)
             # ideal lap: sum of the driver's best three sectors (robust to one scrappy sector)
-            secs = [min((l.get(f"duration_sector_{i}") or 1e9) for l in ls if not l.get("is_pit_out_lap")) for i in (1, 2, 3)]
+            secs = [
+                min((lap.get(f"duration_sector_{i}") or 1e9) for lap in ls if not lap.get("is_pit_out_lap"))
+                for i in (1, 2, 3)
+            ]
             if max(secs) < 1e8:
                 best[num] = min(best[num], sum(secs))
         # long runs: group clean laps by stint
         groups = {}
-        for l in clean:
-            st = stint_of.get((num, l["lap_number"]))
+        for lap in clean:
+            st = stint_of.get((num, lap["lap_number"]))
             if st:
-                groups.setdefault(st["stint_number"], (st, []))[1].append(l)
+                groups.setdefault(st["stint_number"], (st, []))[1].append(lap)
         for st, gl in groups.values():
             if len(gl) < 6:
                 continue
-            gl = sorted(gl, key=lambda l: l["lap_number"])[:-1]  # drop in-lap/cool-down tail
-            med = statistics.median(l["lap_duration"] for l in gl)
-            gl = [l for l in gl if l["lap_duration"] < med * 1.025]  # traffic, push laps, mistakes
+            gl = sorted(gl, key=lambda lap: lap["lap_number"])[:-1]  # drop in-lap/cool-down tail
+            med = statistics.median(lap["lap_duration"] for lap in gl)
+            gl = [lap for lap in gl if lap["lap_duration"] < med * 1.025]  # traffic, push laps, mistakes
             if len(gl) < 5:
                 continue
             # normalise each lap to "fresh tyre, start-of-run fuel" conditions
             adj = []
-            for l in gl:
-                age = (st.get("tyre_age_at_start") or 0) + l["lap_number"] - st["lap_start"]
-                k = l["lap_number"] - gl[0]["lap_number"]
-                adj.append(l["lap_duration"] + FUEL_S_PER_LAP * k - DEG_S_PER_LAP * age)
-            runs.setdefault(num, []).append({"compound": st.get("compound") or "MEDIUM",
-                                             "pace": statistics.median(adj), "laps": len(gl)})
+            for lap in gl:
+                age = (st.get("tyre_age_at_start") or 0) + lap["lap_number"] - st["lap_start"]
+                k = lap["lap_number"] - gl[0]["lap_number"]
+                adj.append(lap["lap_duration"] + FUEL_S_PER_LAP * k - DEG_S_PER_LAP * age)
+            runs.setdefault(num, []).append(
+                {"compound": st.get("compound") or "MEDIUM", "pace": statistics.median(adj), "laps": len(gl)}
+            )
 
     # compound offsets from the field: median run pace per compound vs medium
     comp = {}
@@ -105,10 +113,10 @@ def practice_for(get, cache_path, lock_iso, now):
         if end > now:
             out.append({"name": s["session_name"], "start": s["date_start"], "done": False, "drivers": {}})
             continue
-        k = s["session_key"]
+        key = s["session_key"]
 
-        def fetch(kind):
-            url, path = f"https://api.openf1.org/v1/{kind}?session_key={k}", cache_path(f"of_{kind}_{k}.json")
+        def fetch(kind, key=key):
+            url, path = f"https://api.openf1.org/v1/{kind}?session_key={key}", cache_path(f"of_{kind}_{key}.json")
             d = get(url, path, reuse=True)
             return d if isinstance(d, list) and d else get(url, path)  # don't trust an empty cached answer
 
@@ -121,6 +129,14 @@ def practice_for(get, cache_path, lock_iso, now):
             print(f"  ! {s['session_name']}: {e}")
             out.append({"name": s["session_name"], "start": s["date_start"], "done": False, "drivers": {}})
             continue
-        out.append({"name": s["session_name"], "start": s["date_start"], "done": True,
-                    "drivers": analyse_session(laps, stints if isinstance(stints, list) else [], drivers if isinstance(drivers, list) else [])})
+        out.append(
+            {
+                "name": s["session_name"],
+                "start": s["date_start"],
+                "done": True,
+                "drivers": analyse_session(
+                    laps, stints if isinstance(stints, list) else [], drivers if isinstance(drivers, list) else []
+                ),
+            }
+        )
     return out

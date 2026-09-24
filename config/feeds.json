@@ -1,0 +1,26 @@
+{
+  "_comment": "Shared by refresh.py, f1feeds.py, the private repo's leagues.py and (via tools/sync_shared.py) supabase/functions/live/index.ts.",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128 Safari/537.36",
+  "pauseSeconds": 2.5,
+  "evSession": { "Qualifying": "Q", "Sprint Qualifying": "S", "Race": "R" },
+  "evRules": {
+    "_comment": "F1's scoring-event names -> short category codes. First match wins, so specific phrases come first.",
+    "list": [
+      ["not classified", "NC"],
+      ["dq", "DQ"],
+      ["disqualif", "DQ"],
+      ["position gained", "PG"],
+      ["position lost", "PL"],
+      ["overtake", "OV"],
+      ["fastest lap", "FL"],
+      ["driver of day", "DOTD"],
+      ["world record", "WRFP"],
+      ["2nd fastest pit", "FP2"],
+      ["fastest pit", "FP"],
+      ["pit", "PIT"],
+      ["q3", "TW"],
+      ["q2", "TW"],
+      ["position", "POS"]
+    ]
+  }
+}

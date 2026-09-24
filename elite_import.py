@@ -4,11 +4,22 @@ Run:  python elite_import.py "C:/Users/<you>/Downloads/f1_global_top100_lineups.
 Writes data/elite_top100.json: Boost share per driver and chip usage by round. No team or manager names are kept,
 so the file is safe to commit to the public repo.
 """
-import csv, json, os, sys, unicodedata
+
+import csv
+import json
+import os
+import sys
+import unicodedata
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-CHIP_COLS = {"wildcard": "Wildcard round", "limitless": "Limitless round", "finalfix": "Final Fix round",
-             "x3": "Extra DRS round", "noneg": "No Negative round", "autopilot": "Autopilot round"}
+CHIP_COLS = {
+    "wildcard": "Wildcard round",
+    "limitless": "Limitless round",
+    "finalfix": "Final Fix round",
+    "x3": "Extra DRS round",
+    "noneg": "No Negative round",
+    "autopilot": "Autopilot round",
+}
 
 
 def norm(s):
@@ -53,19 +64,34 @@ def main(path):
     run, history = [0] * n, []
     for gd in gds:
         rp = [int(float(r.get(f"R{gd} pts") or 0)) for r in ranked]
-        run = [a + b for a, b in zip(run, rp)]
+        run = [a + b for a, b in zip(run, rp, strict=True)]
         tot = sorted(run, reverse=True)
-        history.append({"gd": gd, "est": True, "cut": {str(k): tot[k - 1] for k in (1, 10, 100) if k <= n},
-                        "avg": {str(k): round(sum(rp[:k]) / k, 1) for k in (10, 100) if k <= n}})
-    out = {"source": "top 100 global line-ups", "round": rnd, "n": n, "history": history,
-           "boost": {k: round(v / n, 3) for k, v in boost.items()},
-           "x3": {k: round(v / n, 3) for k, v in x3.items()},
-           "chipUsed": {k: round(v / n, 3) for k, v in chip_used.items()},
-           "chipRound": chip_round, "playedLast": played_last}
+        history.append(
+            {
+                "gd": gd,
+                "est": True,
+                "cut": {str(k): tot[k - 1] for k in (1, 10, 100) if k <= n},
+                "avg": {str(k): round(sum(rp[:k]) / k, 1) for k in (10, 100) if k <= n},
+            }
+        )
+    out = {
+        "source": "top 100 global line-ups",
+        "round": rnd,
+        "n": n,
+        "history": history,
+        "boost": {k: round(v / n, 3) for k, v in boost.items()},
+        "x3": {k: round(v / n, 3) for k, v in x3.items()},
+        "chipUsed": {k: round(v / n, 3) for k, v in chip_used.items()},
+        "chipRound": chip_round,
+        "playedLast": played_last,
+    }
     os.makedirs(os.path.join(HERE, "data"), exist_ok=True)
     with open(os.path.join(HERE, "data", "elite_top100.json"), "w", encoding="utf-8") as f:
         json.dump(out, f, indent=1)
-    print(f"Wrote data/elite_top100.json from {n} teams (round {rnd}).", "Unmatched names: " + ", ".join(unknown) if unknown else "")
+    print(
+        f"Wrote data/elite_top100.json from {n} teams (round {rnd}).",
+        "Unmatched names: " + ", ".join(unknown) if unknown else "",
+    )
 
 
 if __name__ == "__main__":

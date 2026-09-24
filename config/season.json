@@ -1,0 +1,52 @@
+{
+  "_comment": "Everything that changes from one season to the next. refresh.py embeds this in the page as DATA.cfg; engine.js reads circuits and field size from it. Update it before the first race of a new season.",
+  "season": 2026,
+  "field": 22,
+  "defaultTeam": {
+    "_comment": "The example team a new browser starts with (driver TLAs, constructor team names).",
+    "drivers": ["ANT", "HAD", "LIN", "BOR", "BEA"],
+    "constructors": ["Ferrari", "Racing Bulls"]
+  },
+  "teams": {
+    "_comment": "F1 Fantasy team name -> short code, livery colour and the Jolpica constructorIds that map to it.",
+    "Mercedes": { "code": "MER", "color": "#00D7B6", "jolpica": ["mercedes"] },
+    "McLaren": { "code": "MCL", "color": "#FF8000", "jolpica": ["mclaren"] },
+    "Red Bull Racing": { "code": "RED", "color": "#3671C6", "jolpica": ["red_bull"] },
+    "Ferrari": { "code": "FER", "color": "#DC0000", "jolpica": ["ferrari"] },
+    "Alpine": { "code": "ALP", "color": "#FF87BC", "jolpica": ["alpine"] },
+    "Racing Bulls": { "code": "VRB", "color": "#6692FF", "jolpica": ["rb"] },
+    "Williams": { "code": "WIL", "color": "#1868DB", "jolpica": ["williams"] },
+    "Haas F1 Team": { "code": "HAA", "color": "#B6BABD", "jolpica": ["haas"] },
+    "Audi": { "code": "AUD", "color": "#A6192E", "jolpica": ["audi", "sauber"] },
+    "Aston Martin": { "code": "AST", "color": "#229971", "jolpica": ["aston_martin"] },
+    "Cadillac": { "code": "CAD", "color": "#9CA3AF", "jolpica": ["cadillac"] }
+  },
+  "circuits": {
+    "_comment": "Meeting-name fragment -> [power (straight-line emphasis), street (walls, low grip), fast corners (aero)], 0-1, and a note. Claude's classification; the effects are fitted in engine.js trackModel().",
+    "list": [
+      ["australia", [0.5, 0.5, 0.5], "Albert Park: fast semi-street lap, early-season chaos"],
+      ["chin", [0.55, 0, 0.5], "Shanghai: long back straight, front-limited corners"],
+      ["japan", [0.45, 0, 1], "Suzuka: high-speed esses reward aero efficiency"],
+      ["miami", [0.55, 0.5, 0.3], "Street-style layout with long straights"],
+      ["canad", [0.7, 0.5, 0.2], "Stop-start semi-street circuit, heavy braking"],
+      ["monaco", [0, 1, 0], "Near-impossible to pass"],
+      ["barcelona", [0.35, 0, 0.8], "Aero benchmark track; overtaking is hard"],
+      ["austria", [0.6, 0, 0.5], "Short lap, three big braking zones"],
+      ["brit", [0.5, 0, 1], "Silverstone: very fast corners"],
+      ["belg", [0.8, 0, 0.7], "Spa: power plus fast sweepers, weather risk"],
+      ["hungar", [0.15, 0, 0.3], "Tight and twisty; track position is king"],
+      ["dutch", [0.25, 0, 0.8], "Banked, narrow, hard to pass"],
+      ["ital", [1, 0, 0.2], "Monza: low downforce, slipstream battles"],
+      ["spanish", [0.4, 0.7, 0.3], "Madrid street-style layout"],
+      ["azerbaijan", [0.85, 1, 0.1], "Street circuit, 2 km flat-out run; walls punish mistakes"],
+      ["bahrain", [0.55, 0, 0.4], "Heavy braking zones, high tyre wear, easy passing"],
+      ["singapore", [0.2, 1, 0.1], "Tight street circuit; qualifying is everything, safety cars likely"],
+      ["united states", [0.45, 0, 0.6], "Long back straight into turn 12; plenty of passing"],
+      ["mexico", [0.6, 0, 0.3], "Thin air, long run to turn 1; cooling-limited"],
+      ["paulo", [0.5, 0, 0.5], "Short lap, weather risk, races often turned upside down"],
+      ["vegas", [0.9, 0.9, 0.1], "Cold, low-grip street circuit with huge straights"],
+      ["qatar", [0.4, 0, 1], "Fast, flowing; tyre limits and stint caps shape strategy"],
+      ["abu dhabi", [0.45, 0, 0.4], "Season finale; processional unless strategy splits"]
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["cache", "build", "build-seasonover", "history", "node_modules"]
+
+[tool.ruff.lint]
+# pyflakes, pycodestyle, import order, bugbear, simplifications
+select = ["F", "E", "W", "I", "B", "SIM"]
+ignore = ["E731", "SIM108", "SIM117"]

@@ -1,0 +1,625 @@
+<title>Pit Wall Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&display=swap" />
+<link rel="stylesheet" href="web/app.css" />
+
+<aside class="rail" aria-label="Tools">
+  <div class="logo" aria-hidden="true">P<b>W</b></div>
+  <nav class="nav" id="nav">
+    <button data-view="calc">
+      <svg viewBox="0 0 24 24">
+        <rect x="4" y="2" width="16" height="20" rx="2" />
+        <path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3M8 18h.01M12 18h.01" /></svg
+      ><span class="lbl">Calculator</span>
+    </button>
+    <button data-view="live">
+      <svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4" /></svg><span class="lbl">Live Scoring</span>
+    </button>
+    <button data-view="league">
+      <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /></svg
+      ><span class="lbl">League</span>
+    </button>
+    <button data-view="elite">
+      <svg viewBox="0 0 24 24"><path d="M3 18h18M4 18l-1-10 5 4 4-7 4 7 5-4-1 10" /></svg><span class="lbl">Elite</span>
+    </button>
+    <button data-view="hind">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+        <path d="M3 3v5h5M12 7v5l3 3" /></svg
+      ><span class="lbl">Hindsight</span>
+    </button>
+    <button data-view="stats">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 3v18h18" />
+        <path d="M7 16v-4M11 16V8M15 16v-6M19 16V5" /></svg
+      ><span class="lbl">Statistics</span>
+    </button>
+    <button data-view="compare">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="18" rx="1.5" />
+        <rect x="14" y="3" width="7" height="18" rx="1.5" /></svg
+      ><span class="lbl">Compare</span>
+    </button>
+    <button data-view="assets">
+      <svg viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18M9 5v14" /></svg><span class="lbl">Projections</span>
+    </button>
+    <button data-view="prices">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 17l6-6 4 4 8-8" />
+        <path d="M15 7h6v6" /></svg
+      ><span class="lbl">Budget</span>
+    </button>
+    <button data-view="practice">
+      <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="13" r="8" />
+        <path d="M12 9v4l2 2M9 2h6" /></svg
+      ><span class="lbl">Practice</span>
+    </button>
+    <button data-view="grid">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="1" />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" /></svg
+      ><span class="lbl">Positions</span>
+    </button>
+    <button data-view="cal">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <path d="M16 2v4M8 2v4M3 10h18" /></svg
+      ><span class="lbl">Calendar</span>
+    </button>
+    <button data-view="model">
+      <svg viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg><span class="lbl">Model</span>
+    </button>
+  </nav>
+</aside>
+
+<div class="shell">
+  <div class="appbar">
+    <div class="logo-sm" aria-hidden="true">P<b>W</b></div>
+    <b id="appTitle">Pit Wall</b>
+    <button class="menubtn" id="menuBtn" aria-label="Open the tools menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+    </button>
+  </div>
+  <nav class="appmenu" id="appMenu" hidden aria-label="Tools">
+    <div class="mhead">
+      <div class="logo-sm" aria-hidden="true">P<b>W</b></div>
+      <b>Pit Wall</b><button class="menubtn" id="menuClose" aria-label="Close the menu" style="margin-left: auto">✕</button>
+    </div>
+    <div class="mlist" id="menuList"></div>
+    <div class="macct" data-acct hidden><div class="acct"></div></div>
+  </nav>
+  <header class="bar">
+    <div class="race">
+      <h1 id="raceName">—</h1>
+      <span class="lock" id="lock"></span>
+    </div>
+  </header>
+  <input type="file" id="importFile" accept=".json,application/json" hidden /><!-- opened by any [data-import] button -->
+
+  <!-- TEAM CALCULATOR -->
+  <main id="view-calc" data-v>
+    <div class="panel-tabs">
+      <div class="seg" id="paneTabs">
+        <button data-pane-btn="best">
+          <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /></svg
+          ><span class="t">Best Teams</span></button
+        ><button data-pane-btn="settings">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3.2 14H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 19.4 9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+            /></svg
+          ><span class="t">Settings</span></button
+        ><button data-pane-btn="drivers">
+          <svg viewBox="0 0 24 24"><path d="M3 14a9 9 0 0 1 18 0v3H3v-3zM3 17h18M12 5v4M14 11h7" /></svg><span class="t">Drivers</span></button
+        ><button data-pane-btn="cons">
+          <svg viewBox="0 0 24 24"><path d="M3 15h18M5 15l2-5h10l2 5M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM10 10V7h4v3" /></svg
+          ><span class="t">Constructors</span>
+        </button>
+      </div>
+    </div>
+    <div class="dash calc">
+      <div class="col">
+        <section class="panel" data-pane="best" style="position: relative">
+          <h3>
+            Best Teams
+            <span class="hbtns"
+              ><button class="btn ghost sm" data-pop="flt">Filters<span id="fltN"></span></button
+              ><button class="btn ghost sm" data-pop="cols">Columns</button></span
+            >
+          </h3>
+          <div class="pop" id="pop-flt" hidden>
+            <b style="font-size: 13px">Team filters</b>
+            <p class="note" style="margin: 4px 0 8px">Only teams inside every range are ranked. Per-asset values are summed over the seven assets.</p>
+            <div id="calcFilters"></div>
+          </div>
+          <div class="pop" id="pop-cols" hidden>
+            <b style="font-size: 13px">Columns</b>
+            <div id="colList" style="margin-top: 8px; display: grid; gap: 6px"></div>
+          </div>
+          <p class="note" id="bestNote"></p>
+          <div class="tw"><table class="bestt" id="bestTable"></table></div>
+          <p class="note" id="optNote"></p>
+        </section>
+      </div>
+      <div class="col">
+        <section class="panel" data-pane="settings">
+          <h3>Settings <button class="tbtn" data-calcreset="1" title="Full reset of the calculator settings" aria-label="Full reset">↺</button></h3>
+          <div class="field">
+            Select a starting team
+            <div class="picker">
+              <button class="pick" id="startBtn" data-pop="start"></button>
+              <div class="pop start" id="pop-start" hidden></div>
+            </div>
+          </div>
+          <div class="banner" id="exampleBanner" hidden>
+            This is an <b>example team</b>. Press ✎ to enter your own drivers and constructors, then set the budget.
+          </div>
+          <div class="field" id="budgetField">
+            Remaining budget &amp; Free transfers
+            <div class="inrow">
+              <span class="dim">$</span><input id="bank" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Remaining budget" /><span class="dim"
+                >M</span
+              >
+            </div>
+            <div class="row3">
+              <select id="free" class="inp" aria-label="Free transfers">
+                <option value="0">0 free</option>
+                <option value="1">1 free</option>
+                <option value="2">2 free</option>
+                <option value="3">3 free</option>
+                <option value="7">∞ free</option>
+              </select>
+              <button class="tbtn" data-keep="1" title="Keep the whole team: include all its assets" aria-label="Keep the whole team">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z" />
+                </svg>
+              </button>
+              <button class="tbtn" data-editteam="1" title="Edit the team" aria-label="Edit the team">✎</button>
+              <button class="tbtn ban" data-clearstart="1" title="Clear the starting team" aria-label="Clear the starting team">✕</button>
+            </div>
+          </div>
+          <label class="field"
+            >Max transfer penalty<select id="maxPen" class="inp">
+              <option value="0">0 (no penalties)</option>
+              <option value="1">−10</option>
+              <option value="2">−20</option>
+              <option value="3">−30</option>
+              <option value="4">−40</option>
+              <option value="5">−50</option>
+              <option value="6">−60</option>
+              <option value="any">−∞ (allow any penalty)</option>
+            </select></label
+          >
+          <div class="or">OR</div>
+          <label class="field"
+            >Maximum budget
+            <div class="inrow">
+              <span class="dim">$</span><input id="maxBudget" type="number" step="0.1" min="0" inputmode="decimal" aria-label="Maximum budget" /><span
+                class="dim"
+                >M</span
+              >
+            </div></label
+          >
+          <div class="field">
+            Plan for
+            <div class="seg" id="horizon">
+              <button data-horizon="1">Next race</button><button data-horizon="2">2 races</button><button data-horizon="3">3 races</button>
+            </div>
+          </div>
+          <div class="field">
+            Select a chip
+            <div class="chipbar" id="chipBar"></div>
+          </div>
+          <label class="switch"
+            ><input type="checkbox" id="xdp" /><span>Convert expected price changes (xΔ$) into expected price change points (xΔ$Pts)</span></label
+          >
+          <div class="field" id="xdpBox" hidden>
+            <span id="xdpLabel"></span>
+            <div class="slider" style="grid-template-columns: 1fr 64px">
+              <input id="valW" type="range" min="0" max="5" step="0.1" aria-label="Points per $1m per race" /><output id="valWv" class="good"></output>
+            </div>
+          </div>
+          <details class="edit">
+            <summary>Chips this team has used</summary>
+            <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
+          </details>
+        </section>
+        <section class="panel" data-pane="settings">
+          <h3>Simulation</h3>
+          <p class="note" id="simNote"></p>
+          <div class="chipbar">
+            <button class="btn ghost sm" data-view="model">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button
+            ><button class="btn ghost sm" id="xoReset" hidden>Clear xPts edits</button>
+          </div>
+        </section>
+        <section class="panel" data-pane="settings" data-acct hidden>
+          <h3>Account &amp; data</h3>
+          <div class="acct"></div>
+        </section>
+      </div>
+      <div class="col col-c">
+        <section class="panel" data-pane="drivers">
+          <h3>Drivers <small id="drvNote"></small></h3>
+          <input class="inp" id="drvSearch" placeholder="Find a driver… (e.g. VER+NOR)" aria-label="Find a driver" />
+          <div class="tw"><table id="drvTable"></table></div>
+        </section>
+        <section class="panel" data-pane="cons">
+          <h3>Constructors</h3>
+          <input class="inp" id="conSearch" placeholder="Find a constructor… (e.g. RED+MCL)" aria-label="Find a constructor" />
+          <div class="tw"><table id="conTable"></table></div>
+        </section>
+      </div>
+    </div>
+    <div class="menu" id="rowMenu" hidden></div>
+  </main>
+
+  <!-- LIVE SCORING -->
+  <main id="view-live" data-v hidden>
+    <section class="panel">
+      <h3><span id="lvTitle">Live Scoring</span> <small id="lvStamp"></small></h3>
+      <div class="chipbar" id="lvSess"></div>
+      <p class="note" id="lvNote"></p>
+    </section>
+    <div class="dash" id="lvTeams" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); margin-top: 16px"></div>
+    <section class="panel" id="lvLeague" style="margin-top: 16px" hidden>
+      <h3><span id="lvLgTitle">League</span> <small>live standings</small> <span class="seg" id="lvLgPick"></span></h3>
+      <p class="note" id="lvLgNote"></p>
+      <div class="tw"><table class="stat" id="lvLgTable"></table></div>
+    </section>
+    <section class="panel" style="margin-top: 16px">
+      <h3>
+        Points this weekend <span class="seg" id="lvKind"><button data-livekind="D">Drivers</button><button data-livekind="C">Constructors</button></span>
+        <span class="seg" id="lvBy"><button data-lvby="sess">By session</button><button data-lvby="cat">By category</button></span>
+      </h3>
+      <p class="note" id="lvTNote"></p>
+      <div class="tw"><table class="heat stat" id="lvTable"></table></div>
+    </section>
+  </main>
+
+  <!-- LEAGUE -->
+  <main id="view-league" data-v hidden>
+    <div id="leagueEmpty" class="panel" hidden>
+      <h3>League</h3>
+      <p class="note">
+        No league loaded yet. In a Claude for Chrome session, ask Claude to collect your F1 Fantasy data (teams and private league) into a JSON file, then
+        import it here. Your league stays in this browser (and your account, if you sign in); it is never published.
+      </p>
+      <div class="chipbar"><button class="btn sm" data-import="1">Import a data export</button></div>
+    </div>
+    <form class="panel" id="lgUnlock" hidden>
+      <h3>Private leagues <small>encrypted</small></h3>
+      <p class="note">
+        This site carries your private-league standings in encrypted form. Enter the passphrase you saved as the <code>LEAGUE_KEY</code> secret on GitHub; this
+        browser remembers it.
+      </p>
+      <div class="chipbar">
+        <input class="inp" id="lgKey" type="password" autocomplete="current-password" placeholder="Passphrase" style="max-width: 260px" /><button
+          class="btn"
+          id="lgKeyBtn"
+          type="submit"
+        >
+          Unlock
+        </button>
+      </div>
+      <p class="note" id="lgSignin" hidden>
+        Unlocked it before while signed in? <button class="btn ghost sm" type="button" data-signin="1">Sign in with Google</button> and it unlocks by itself.
+      </p>
+    </form>
+    <div class="dash" id="leagueDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
+      <section class="panel" style="grid-column: 1/-1">
+        <div class="seg" id="lgPick" style="align-self: flex-start"></div>
+        <h3><span id="lgTitle">League</span> <small id="lgStamp"></small></h3>
+        <div class="tw"><table id="lgTable"></table></div>
+      </section>
+      <section class="panel">
+        <h3>
+          Points race
+          <span class="seg" id="lgMode"
+            ><button data-lgm="total">Total</button><button data-lgm="rel">Relative</button><button data-lgm="race">Race points</button
+            ><button data-lgm="rank">Rank</button></span
+          >
+        </h3>
+        <div class="chipbar" style="align-items: center; gap: 12px">
+          <label class="field" id="lgRefBox" style="flex-direction: row; align-items: center; gap: 8px"
+            >Compare with<select id="lgRef" class="inp" style="width: auto"></select
+          ></label>
+          <label class="switch"><input type="checkbox" id="lgChips" /><span>Show chips</span></label>
+        </div>
+        <div id="lgChart" style="position: relative"></div>
+      </section>
+      <section class="panel">
+        <h3>Next race head-to-head <small id="lgH2hNote"></small></h3>
+        <div id="lgH2h" class="bts"></div>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Differentials <small>who owns what in this league</small></h3>
+        <p class="note">
+          Assets owned by your rivals but not your selected team are threats: if they score big, you fall behind. Assets only you own are your chances to gain.
+        </p>
+        <div class="tw"><table id="lgOwn"></table></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ELITE -->
+  <main id="view-elite" data-v hidden>
+    <div id="eliteEmpty" class="panel" hidden>
+      <h3>Elite</h3>
+      <p class="note">The global top-500 leaderboard wasn't available at the last refresh. It is published after each race.</p>
+    </div>
+    <div class="dash" id="eliteDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Global cut-offs <small id="elStamp"></small> <span class="seg" id="elTeamPick" title="Your team to compare"></span></h3>
+        <div class="kv" id="elCut"></div>
+        <div class="tw"><table id="elMine"></table></div>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>
+          Season vs the elite <span class="seg" id="elMode"><button data-em="gap">Gap to #100</button><button data-em="total">Total</button></span>
+        </h3>
+        <p class="note" id="elSeasonNote"></p>
+        <div id="elSeasonChart" style="position: relative"></div>
+        <div class="tw"><table id="elRounds"></table></div>
+        <p class="note" id="elSeasonFoot"></p>
+      </section>
+      <section class="panel">
+        <h3>Top-100 template <small>most-owned line-up</small></h3>
+        <div class="chips" id="elTemplate"></div>
+        <p class="note" id="elTemplateNote"></p>
+      </section>
+      <section class="panel">
+        <h3>Chip usage by round <small id="elChipNote"></small></h3>
+        <p class="note" id="elChipSub"></p>
+        <div class="tw"><table id="elChips"></table></div>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Elite ownership <small>vs your teams</small></h3>
+        <p class="note">
+          Share of the global top 10 / 100 / 500 teams owning each asset, against everyone's ownership. <b>Differential</b> marks assets your active team owns
+          that the top 100 mostly doesn't (a chance to gain), and top-100 staples your active team is missing (a risk).
+        </p>
+        <div class="tw"><table id="elOwn"></table></div>
+        <p class="note" id="elOwnNote"></p>
+      </section>
+    </div>
+  </main>
+
+  <!-- HINDSIGHT -->
+  <main id="view-hind" data-v hidden>
+    <div id="hindEmpty" class="panel" hidden>
+      <h3>Hindsight</h3>
+      <p class="note">No finished rounds yet. Hindsight fills in after the first race.</p>
+    </div>
+    <div class="dash" id="hindDash" style="grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr)">
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Hindsight <small>scored on the points each asset actually got</small></h3>
+        <div class="seg" id="hdRound" style="align-self: flex-start"></div>
+        <div class="fields">
+          <div class="field">
+            Budget for the best teams
+            <div class="seg" id="hdCap"></div>
+          </div>
+          <div class="field">
+            Chip
+            <div class="seg" id="hdChip">
+              <button data-hch="">None</button><button data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button
+              ><button data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button
+              ><button data-hch="finalfix" title="Final Fix: swap one driver after qualifying; the new one scores the race">FF</button>
+            </div>
+          </div>
+          <div class="field full">
+            Team filters
+            <div id="hdFilters"></div>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <h3>Best possible teams <small id="hdBestNote"></small></h3>
+        <div class="bts" id="hdBest"></div>
+      </section>
+      <section class="panel">
+        <h3>Your teams <small>what you did, and the best move you had</small></h3>
+        <div class="bts" id="hdMine"></div>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Season <small>your official points against the best you could reach</small></h3>
+        <div class="tw"><table id="hdSeason"></table></div>
+        <p class="note" id="hdFoot"></p>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Decisions <small>what your transfers, Boost changes and chips were worth</small></h3>
+        <div class="tw"><table id="hdDecide"></table></div>
+        <p class="note">
+          Transfers: points of the assets brought in minus the ones sold, in that round, minus any penalty. Boost change: the new Boost driver's points minus
+          the previous one's, when both were in the team. Chips: X3 = the X3 driver's points plus the Boost driver's (what the chip added over plain Boost), No
+          Negative = negative events wiped, Wildcard = penalties avoided, Limitless = against keeping the previous team, Final Fix = the new driver's race
+          points minus the old driver's (times the slot's Boost).
+        </p>
+      </section>
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>Round scores <small id="hdAssetsNote"></small></h3>
+        <div class="tw"><table id="hdAssets"></table></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- STATISTICS -->
+  <main id="view-stats" data-v hidden>
+    <section class="panel">
+      <h3>
+        Statistics <span class="seg" id="stKind"><button data-sk="D">Drivers</button><button data-sk="C">Constructors</button></span>
+      </h3>
+      <div class="fields">
+        <label class="field">Data<select id="stMetric" class="inp"></select></label>
+        <div class="field">
+          Highlight a team
+          <div class="seg" id="stTeam"></div>
+        </div>
+        <div class="field full" id="stCatField">
+          Scoring categories counted <span class="dim">(tap to leave one out)</span>
+          <div id="stCats"></div>
+        </div>
+      </div>
+      <p class="note" id="stNote"></p>
+      <div class="tw"><table class="heat stat" id="stTable"></table></div>
+    </section>
+  </main>
+
+  <!-- COMPARE -->
+  <main id="view-compare" data-v hidden>
+    <div class="dash" style="grid-template-columns: 1fr">
+      <section class="panel">
+        <h3>Compare teams <button class="btn sm" id="addDraft">Add manual team</button></h3>
+        <p class="note">
+          Your three teams next to any manual teams. <b>Wins</b> is how often each team scores the most of those listed across the simulated weekends for the
+          next race. Build manual teams below, or save one from Best Teams.
+        </p>
+        <div class="tw"><table id="cmpTable"></table></div>
+      </section>
+      <div class="grid-cards" id="drafts"></div>
+    </div>
+  </main>
+
+  <!-- PROJECTIONS -->
+  <main id="view-assets" data-v hidden>
+    <section class="panel">
+      <h3>
+        Projections <span class="seg" id="assetKind"><button data-kind="D">Drivers</button><button data-kind="C">Constructors</button></span>
+      </h3>
+      <div class="seg" id="assetRace" style="align-self: flex-start"></div>
+      <p class="note">
+        xPts blends the simulated weekends with recent form; 25–75 is the middle half of outcomes. <b>Pace</b> nudges a driver faster or slower (grid places).
+        <b>Incl / Excl</b> forces an asset into or out of Best Teams.
+      </p>
+      <div class="tw"><table id="assetTable"></table></div>
+    </section>
+  </main>
+
+  <!-- BUDGET BUILDER -->
+  <main id="view-prices" data-v hidden>
+    <section class="panel">
+      <h3>Budget Builder</h3>
+      <p class="note">
+        Prices move after each race on the last-three-race average points per $1m, rounded to 3 decimals: below 0.605 is a big drop, 0.605–0.9 a small drop,
+        0.9–1.195 a small rise, 1.195+ a big rise. $18.5m+ assets move ±0.1/0.3m, cheaper ones ±0.2/0.6m. <b>Needs</b> is the points required this weekend for
+        each band (green: projected to reach it).
+      </p>
+      <div class="tw"><table id="priceTable"></table></div>
+    </section>
+  </main>
+
+  <!-- PRACTICE -->
+  <main id="view-practice" data-v hidden>
+    <section class="panel">
+      <h3>Practice pace</h3>
+      <div class="kv" id="pracSessions"></div>
+      <p class="note">
+        From OpenF1 lap times, shortly after each session. <b>Short run</b> = best lap or best-sector sum as a gap to the fastest; it feeds qualifying pace at
+        30%. <b>Long run</b> = median of 5+ lap stints adjusted for tyre, fuel and wear; it feeds race pace at 10%. Weights backtested on rounds 6–14; change
+        them with Practice weight in Model.
+      </p>
+      <div class="tw"><table id="pracTable"></table></div>
+    </section>
+  </main>
+
+  <!-- POSITIONS -->
+  <main id="view-grid" data-v hidden>
+    <section class="panel">
+      <h3>
+        Positions <span class="seg" id="gridKind"><button data-gridmode="q">Qualifying</button><button data-gridmode="r">Race</button></span>
+      </h3>
+      <p class="note" id="gridNote"></p>
+      <div class="tw"><table class="heat" id="heat"></table></div>
+    </section>
+  </main>
+
+  <!-- CALENDAR -->
+  <main id="view-cal" data-v hidden>
+    <p class="note" style="margin-bottom: 12px">
+      Each circuit is typed by <b>Power</b>, <b>Street</b> and <b>Fast corners</b>. From this season's results, the model learns how those change
+      <b>Overtaking</b> (overtake points), <b>Chaos</b> (retirements) and each team's pace; <b>Grid weight</b> follows overtaking. Move a slider to override a
+      race; Reset in Model restores the fitted values.
+    </p>
+    <div class="grid-cards" id="cal"></div>
+  </main>
+
+  <!-- MODEL -->
+  <main id="view-model" data-v hidden>
+    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
+      <section class="panel">
+        <h3>Model settings</h3>
+        <div class="slider"><span>Form half-life</span><input id="halfLife" type="range" min="2" max="10" step="1" /><output id="halfLifeV"></output></div>
+        <div class="slider"><span>Practice weight</span><input id="pw" type="range" min="0" max="2" step="0.25" /><output id="pwV"></output></div>
+        <div class="slider"><span>Form blend</span><input id="blend" type="range" min="0" max="0.6" step="0.05" /><output id="blendV"></output></div>
+        <div class="field">
+          Simulations per race
+          <div class="seg" id="sims">
+            <button data-sims="2000">2,000</button><button data-sims="5000">5,000</button><button data-sims="10000">10,000</button>
+          </div>
+        </div>
+        <div class="field">
+          Heatmap colours
+          <div class="seg" id="heatOpt"><button data-heat="1">On</button><button data-heat="0">Off</button></div>
+        </div>
+        <button class="btn ghost" id="resetAll" style="align-self: flex-start">Reset pace nudges, Incl/Excl and circuits</button>
+      </section>
+      <section class="panel prose">
+        <h3>How it works</h3>
+        <p>
+          Each weekend is simulated thousands of times. Qualifying order comes from recent qualifying positions (blended with practice pace when available) plus
+          random variation. The race blends the grid with recent race pace by the circuit's grid weight, then adds retirements (team's recent rate), overtakes
+          (2026 rate), fastest lap, Driver of the Day and pit-stop points.
+        </p>
+        <p>
+          Every weekend is scored with the official 2026 rules: qualifying 10–1, race 25–1, sprint 8–1, ±1 per place (sprint losses capped at −10), −20 race /
+          −10 sprint for not classifying, the constructor Q2/Q3 bonus and pit-stop bands.
+        </p>
+        <ul>
+          <li>Transfers: 2 free per race; 1 unused carries over. Extras cost −10.</li>
+          <li>
+            Chips: WC and LL remove the transfer limit (LL also the budget). X3 triples your top driver and doubles the second. NN clips negative categories. AP
+            gives the Boost to your highest scorer.
+          </li>
+        </ul>
+        <p class="dim" id="dataStamp"></p>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="modal" id="modal" hidden>
+  <div class="panel mbox" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modalBody"></div>
+    <button class="btn ghost sm" data-close="1" style="align-self: flex-end">Close</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
+
+<script src="engine.js"></script>
+<script src="hindsight.js"></script>
+<script src="web/js/core.js"></script>
+<script src="web/js/state.js"></script>
+<script src="web/js/sync.js"></script>
+<script src="web/js/forecast.js"></script>
+<script src="web/js/import.js"></script>
+<script src="web/js/league.js"></script>
+<script src="web/js/elite.js"></script>
+<script src="web/js/filters.js"></script>
+<script src="web/js/hindsight-view.js"></script>
+<script src="web/js/stats.js"></script>
+<script src="web/js/live.js"></script>
+<script src="web/js/calc.js"></script>
+<script src="web/js/views.js"></script>
+<script src="web/js/main.js"></script>

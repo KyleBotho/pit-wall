@@ -2,14 +2,14 @@ name: Refresh data and publish
 
 on:
   schedule:
-    - cron: "*/30 * * * 4,5,6,0"   # Thu-Sun every 30 min: practice, quali and race updates
-    - cron: "17 */6 * * 1,2,3"     # Mon-Wed every 6 h: price changes settle after the race
-  workflow_dispatch:                # "Run workflow" button for a manual refresh
+    - cron: "*/30 * * * 4,5,6,0" # Thu-Sun every 30 min: practice, quali and race updates
+    - cron: "17 */6 * * 1,2,3" # Mon-Wed every 6 h: price changes settle after the race
+  workflow_dispatch: # "Run workflow" button for a manual refresh
   push:
     branches: [main]
 
 permissions:
-  contents: write   # commits the season archive (history/)
+  contents: write # commits the season archive (history/)
   pages: write
   id-token: write
 
@@ -52,9 +52,28 @@ jobs:
             git pull --rebase
             git push
           fi
+      # The tests gate the deploy (after the history commit, so a failure never loses archived data): engine and
+      # optimiser, the price rule and scoring lines against this season's data, saved-settings migrations, the build.
+      - name: Tests
+        run: |
+          node --test
+          python -m unittest discover tests
       - uses: actions/upload-pages-artifact@v5
         with:
           path: build
+
+  # Lint, formatting and types on pushes only, in their own job: a style nit never blocks a price refresh.
+  check:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint && npm run format:check && npm run typecheck
+      - run: pip install ruff && ruff check . && ruff format --check .
 
   deploy:
     needs: build
