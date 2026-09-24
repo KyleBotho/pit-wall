@@ -125,11 +125,30 @@ User-approved order: 1–5, then the rest.
    impact, chip impact (x3 = base(x3) + base(x2); NN = floored − raw; WC = penalties avoided; LL = vs the start
    team), and a season transfer summary (good/bad transfers). F1 records 0 transfers on Wildcard rounds: count
    line-up changes there. With NN modelled, best reachable >= official holds for every team-round except Final Fix.
-5. [ ] Statistics view: asset × round table (points, price, Δ$, pts/$m, ownership), scoring-category filter,
+5. [x] Statistics view: asset × round table (points, price, Δ$, pts/$m, ownership), scoring-category filter,
    AVG column/row, heatmap, own-team highlight, cell click -> that round's scoring lines.
 6. [ ] Elite ownership ± per round: log top-500 line-ups through the Baku weekend first to learn when the public
    leaderboard's line-ups update (their site snapshots after the qualifying lock).
 7. [ ] League chart: "relative to you" and race-points modes, chip markers.
 8. [ ] Direct xPts override per asset (alongside pace nudges).
+9. [ ] Calculator rework to match f1fantasytools' Team Calculator (user's screenshots, 2026-09-24; he likes its
+   layout and settings pane). Layout: Best Teams (wide, left) | Settings (middle) | Drivers + Constructors (right).
+   - Best Teams is one table: sections **Current Team** (always on top, for quick comparison), **Pinned Teams** (↺
+     clears them) and **Best Teams**. Columns: # | CR ×2 | x2 | DR ×4 | $ | xPts | xΔ$ (or xΔ$Pts) | xSPts | ⋯.
+     Hovering a rank number turns it into a pin icon; clicking pins the team (persisted, re-scored live; a pinned
+     team shows the pin icon in the ranked list too). Assets unchanged from the current team are dimmed, new ones
+     bright. Header buttons: **Filters** (popover with the filter builder: Total Cost, Expected Price Change,
+     Expected Points, DNF/FL/DOTD odds, xOV, negative points, pit points), **Columns** (picker), gear (view options).
+     Row ⋯ menu: Pin, Show transfers (OUT → IN, choose x2), Set as current team, Save as manual team, Copy as text.
+   - Settings pane: "Select a starting team" dropdown with groups My Teams T1–T3, Select a Manual Team, Rival Teams
+     (league members' line-ups) + Manage Rivals; Remaining budget ($, M) & Free transfers (0/1/2/3/∞) with pin /
+     edit (team picker modal) / clear buttons; **Max transfer penalty** (0 … −60, −∞) replacing Max transfers;
+     "OR Maximum budget" when no starting team; chips X3 LL WC NN AP (used ones greyed); **toggle "Convert expected
+     price changes (xΔ$) into expected price change points (xΔ$Pts)"** with a slider "How many points should a 1M
+     budget increase earn you per future race? (over N remaining races)". Full Reset + gear.
+   - xΔ$Pts on: tiles' second line shows xΔ$Pts per asset (xΔ$ × rate × remaining races) instead of xΔ$; table
+     gets xΔ$Pts and xSPts (= xPts + xΔ$Pts) columns and ranks by xSPts; Drivers/Constructors tables get xΔ$Pts and
+     xSPts columns. Our existing "Value of $1m" setting is this rate; make it this toggle + slider.
+   - Drivers/Constructors tables: search box, Columns picker, editable xPts (ties in with item 8).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

@@ -164,6 +164,17 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
 .frule .inp{height:30px;font-size:12px;padding:0 6px}
 .dec{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);border-top:1px solid #18181B;padding-top:4px}
 .dec b{white-space:nowrap}
+.stat td[data-stcell]{cursor:pointer}
+.stat td.hl{outline:1px dashed var(--accent);outline-offset:-3px}
+.stat td.hl2{outline:2px solid var(--accent);outline-offset:-3px}
+.stat td.hl3{outline:3px solid var(--accent);outline-offset:-3px}
+.stat td.inact{opacity:.45}
+.stat tfoot td{color:var(--muted);font-size:11px;border-top:1px solid var(--line)}
+.catrow{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px}
+.catrow .tbtn{height:26px;min-width:0;font-weight:500}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:grid;place-items:center;z-index:70;padding:16px}
+.mbox{max-width:440px;width:100%;max-height:85vh;overflow:auto}
+.mline{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:3px 0;border-bottom:1px solid #18181B}
 .chiptok{display:inline-block;font-size:10px;font-weight:600;padding:1px 4px;border-radius:4px;margin-right:2px;background:var(--tile);color:var(--fg)}
 .chiptok.used{background:transparent;color:var(--dim);text-decoration:line-through}
 @media (max-width:900px){
@@ -197,6 +208,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
     <button data-view="league"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span class="lbl">League</span></button>
     <button data-view="elite"><svg viewBox="0 0 24 24"><path d="M3 18h18M4 18l-1-10 5 4 4-7 4 7 5-4-1 10"/></svg><span class="lbl">Elite</span></button>
     <button data-view="hind"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 3"/></svg><span class="lbl">Hindsight</span></button>
+    <button data-view="stats"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-4M11 16V8M15 16v-6M19 16V5"/></svg><span class="lbl">Statistics</span></button>
     <button data-view="compare"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18" rx="1.5"/><rect x="14" y="3" width="7" height="18" rx="1.5"/></svg><span class="lbl">Compare</span></button>
     <button data-view="assets"><svg viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18M9 5v14"/></svg><span class="lbl">Projections</span></button>
     <button data-view="prices"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="lbl">Budget</span></button>
@@ -363,6 +375,20 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
     </div>
   </main>
 
+  <!-- STATISTICS -->
+  <main id="view-stats" data-v hidden>
+    <section class="panel">
+      <h3>Statistics <span class="seg" id="stKind"><button data-sk="D">Drivers</button><button data-sk="C">Constructors</button></span></h3>
+      <div class="fields">
+        <label class="field">Data<select id="stMetric" class="inp"></select></label>
+        <div class="field">Highlight a team<div class="seg" id="stTeam"></div></div>
+        <div class="field full" id="stCatField">Scoring categories counted <span class="dim">(tap to leave one out)</span><div id="stCats"></div></div>
+      </div>
+      <p class="note" id="stNote"></p>
+      <div class="tw"><table class="heat stat" id="stTable"></table></div>
+    </section>
+  </main>
+
   <!-- COMPARE -->
   <main id="view-compare" data-v hidden>
     <div class="dash" style="grid-template-columns:1fr">
@@ -444,6 +470,7 @@ tbody tr:hover td{background-color:rgba(255,255,255,.02)}
     </div>
   </main>
 </div>
+<div class="modal" id="modal" hidden><div class="panel mbox" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div id="modalBody"></div><button class="btn ghost sm" data-close="1" style="align-self:flex-end">Close</button></div></div>
 <div class="toast" id="toast" hidden><span id="toastMsg"></span><button id="toastUndo">Undo</button></div>
 
 <script src="engine.js"></script>
@@ -501,7 +528,7 @@ for (const t of S.teams) { t.team = (t.team || []).filter((id) => byId[id]); if 
 S.drafts = (S.drafts || []).filter((d) => d.team && d.team.filter((id) => byId[id]).length === 7);
 S.active = Math.min(2, Math.max(0, S.active | 0));
 if (!S.sims10k) { S.sims = 10000; S.sims10k = true; } // one-time move of saved settings to the new 10,000 default
-const VIEWS = ["calc", "league", "elite", "hind", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
+const VIEWS = ["calc", "league", "elite", "hind", "stats", "compare", "assets", "prices", "practice", "grid", "cal", "model"];
 if (!VIEWS.includes(S.view)) S.view = "calc";
 const A = () => S.teams[S.active];
 
@@ -1083,6 +1110,90 @@ function renderHind() {
       <td><span class="mini"><button class="tbtn lock" style="height:24px;min-width:26px" data-hmark="${a.id}" data-to="lock" aria-pressed="${m === "lock"}" aria-label="Include">✓</button><button class="tbtn ban" style="height:24px;min-width:26px" data-hmark="${a.id}" data-to="ban" aria-pressed="${m === "ban"}" aria-label="Exclude">✕</button></span></td></tr>`; }).join("") + "</tbody>";
 }
 
+/* ---------- statistics: every asset, every round ---------- */
+const ST_METRICS = [["pts", "Fantasy points"], ["ppm", "Points per $1m"], ["price", "Price"], ["delta", "Price change"], ["own", "Ownership %"],
+  ["qpos", "Qualifying position"], ["rpos", "Race position"], ["pg", "Race places gained"]];
+const stExcluded = () => new Set(S.stOff || []);
+function stPts(h) {
+  const off = stExcluded();
+  if (!off.size) return h.pts;
+  return (h.ev || []).reduce((s, [ni, v]) => s + (off.has(DATA.evNames[ni].c) ? 0 : v), 0);
+}
+function stValue(a, gd, m) {
+  const h = hdAt(a.id, gd);
+  if (!h) return null;
+  if (m === "pts") return stPts(h);
+  if (m === "ppm") return stPts(h) / h.price;
+  if (m === "price") return h.price;
+  if (m === "delta") return hdDelta(a.id, gd);
+  if (m === "own") return h.own;
+  if (a.kind !== "D") return null;
+  const q = (DATA.results.quali[gd] || []).find((x) => x.tla === a.tla), r = (DATA.results.race[gd] || []).find((x) => x.tla === a.tla);
+  if (m === "qpos") return q ? q.pos : null;
+  if (m === "rpos") return r && r.cls ? r.pos : null;
+  if (m === "pg") return r && r.cls ? r.grid - r.pos : null;
+  return null;
+}
+const stFmt = (v, m) => (v == null ? "" : m === "price" ? v.toFixed(1) : m === "delta" ? sgn(v, 1) : m === "ppm" ? v.toFixed(1) : m === "own" ? f0(v) : f0(v));
+function stHeat(v, m, lo, hi) {
+  if (v == null) return "";
+  if (m === "qpos" || m === "rpos") return heat(11.5 - v, -10.5, 10.5); // lower is better
+  if (m === "price") return "";
+  return heat(v, lo, hi);
+}
+function renderStats() {
+  const kind = S.stKind || "D", m = S.stMetric || "pts", done = DATA.done || [];
+  $$("#stKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.sk === kind)));
+  $("#stMetric").innerHTML = ST_METRICS.filter(([k]) => kind === "D" || !["qpos", "rpos", "pg"].includes(k)).map(([k, n]) => `<option value="${k}" ${k === m ? "selected" : ""}>${n}</option>`).join("");
+  const hi = S.stTeam ?? -1;
+  $("#stTeam").innerHTML = `<button data-stt="-1" aria-pressed="${hi < 0}">None</button>` + S.teams.map((t, i) => `<button data-stt="${i}" aria-pressed="${hi === i}" title="${esc(t.name)}">T${i + 1}</button>`).join("");
+
+  // category toggles: whole sessions, then each category in them
+  const off = stExcluded(), codes = [...new Set((DATA.evNames || []).map((e) => e.c))];
+  $("#stCatField").hidden = !["pts", "ppm"].includes(m);
+  $("#stCats").innerHTML = ["Q", "S", "R"].map((ss) => { const cs = codes.filter((c) => c[0] === ss).sort(); if (!cs.length) return "";
+    const all = cs.every((c) => !off.has(c));
+    return `<div class="catrow"><button class="tbtn" data-stsess="${ss}" aria-pressed="${all}">${SESSN[ss]}</button>${cs.map((c) => `<button class="tbtn" data-stcat="${c}" aria-pressed="${!off.has(c)}" title="${esc(evLabel(c))}">${esc(EVLABEL[c.slice(2)] || c.slice(2))}</button>`).join("")}</div>`; }).join("");
+
+  const assets = DATA.assets.filter((a) => a.kind === kind && a.hist.some((h) => h));
+  const vals = Object.fromEntries(assets.map((a) => [a.id, done.map((g) => stValue(a, g, m))]));
+  const avg = (xs) => { const v = xs.filter((x) => x != null); return v.length ? v.reduce((p, q) => p + q, 0) / v.length : null; };
+  const rows = assets.map((a) => ({ a, v: vals[a.id], avg: avg(vals[a.id]) }));
+  const posM = m === "qpos" || m === "rpos", sort = S.stSort || { k: "avg", d: posM ? 1 : -1 }; // positions: best (lowest) first
+  const key = (r) => (sort.k === "avg" ? r.avg : r.v[done.indexOf(+sort.k)]);
+  rows.sort((x, y) => { const a = key(x), b = key(y); if (a == null) return 1; if (b == null) return -1; return (a - b) * sort.d; });
+  const flat = rows.flatMap((r) => r.v).filter((v) => v != null), lo = Math.min(0, ...flat), hiV = Math.max(0, ...flat);
+
+  // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs unlocked leagues)
+  const team = hi >= 0 ? S.teams[hi] : null, L = team ? lineups(team.name) : null;
+  const pick = (id, g) => { if (!team) return ""; const r = L && L[g]; if (!r) return !L && team.team.includes(id) ? "hl" : "";
+    return id === String(r.x3) ? "hl3" : id === String(r.boost) ? "hl2" : r.ids.includes(id) ? "hl" : ""; };
+  const th = (k, label, title) => `<th class="sort" data-stsort="${k}" ${String(sort.k) === String(k) ? `aria-sort="${sort.d < 0 ? "descending" : "ascending"}"` : ""} title="${esc(title || "")}">${label}${String(sort.k) === String(k) ? (sort.d < 0 ? " ↓" : " ↑") : ""}</th>`;
+  const sched = (g) => DATA.schedule.find((x) => x.gd === g) || {};
+  $("#stTable").innerHTML = `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th>${th("avg", "AVG", "Average over the rounds shown")}${done.map((g) => th(g, `R${g}${sched(g).sprint ? "<sup>S</sup>" : ""}`, sched(g).name)).join("")}</tr></thead><tbody>` +
+    rows.map((r) => `<tr><td><span class="who">${codeBox(r.a)}<span>${esc(r.a.kind === "D" ? r.a.short : r.a.team)}</span></span></td><td${stHeat(r.avg, m, lo, hiV)}><b>${stFmt(r.avg, m)}</b></td>` +
+      done.map((g, i) => { const h = hdAt(r.a.id, g), v = r.v[i], cls = [pick(r.a.id, g), h && !h.active && r.a.kind === "D" ? "inact" : ""].filter(Boolean).join(" ");
+        return `<td${stHeat(v, m, lo, hiV)}${cls ? ` class="${cls}"` : ""}${h ? ` data-stcell="${r.a.id}:${g}"` : ""}>${stFmt(v, m)}</td>`; }).join("") + "</tr>").join("") +
+    `</tbody><tfoot><tr><td>AVG</td><td>${stFmt(avg(rows.map((r) => r.avg)), m)}</td>${done.map((g, i) => `<td>${stFmt(avg(rows.map((r) => r.v[i])), m)}</td>`).join("")}</tr></tfoot>`;
+  $("#stNote").textContent = `${ST_METRICS.find(([k]) => k === m)[1]} by round. Click a cell for that round's scoring lines; click a header to sort.` +
+    (off.size && ["pts", "ppm"].includes(m) ? ` ${off.size} scoring categor${off.size > 1 ? "ies" : "y"} left out.` : "") +
+    (team && !L ? " Unlock your leagues to highlight each round's picks; showing your current team." : team ? " Dashed = picked, solid = Boost, thick = X3." : "") + (posM ? " Blank = no classified result." : "");
+}
+function stCell(id, gd) {
+  const a = byId[id], h = hdAt(id, gd), g = DATA.schedule.find((x) => x.gd === gd) || {};
+  if (!h) return;
+  const groups = {};
+  for (const [ni, v, f] of h.ev || []) { const e = DATA.evNames[ni]; (groups[e.s] = groups[e.s] || []).push({ n: e.n, f, v }); }
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  $("#modalBody").innerHTML = `<h3 id="modalTitle">${esc(code(a))} · R${gd} ${esc(g.name || "")}</h3>
+    <div class="mline"><span>Price at lock</span><span>${money(h.price)} <span class="${hdDelta(id, gd) >= 0 ? "good" : "bad"}">${sgn(hdDelta(id, gd), 1)}</span></span></div>
+    <div class="mline"><span>Owned by</span><span>${f1(h.own)}%</span></div>` +
+    ["Q", "S", "R"].filter((ss) => groups[ss]).map((ss) => `<div class="mline" style="margin-top:8px"><b>${SESSN[ss]}</b><b>${groups[ss].reduce((p, x) => p + x.v, 0)}</b></div>` +
+      groups[ss].map((x) => `<div class="mline"><span class="muted">${esc(cap(x.n.trim()))}${x.f && x.f !== "-" ? ` (${esc(x.f)})` : ""}</span><span class="${x.v < 0 ? "bad" : ""}">${x.v}</span></div>`).join("")).join("") +
+    `<div class="mline" style="margin-top:8px"><b>Total</b><b>${f0(h.pts)}</b></div>${h.nn !== h.pts ? `<div class="mline"><span class="muted">With No Negative</span><span>${f0(h.nn)}</span></div>` : ""}`;
+  $("#modal").hidden = false;
+}
+
 /* ---------- header ---------- */
 function renderHeader() {
   $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : "Season complete";
@@ -1401,7 +1512,7 @@ function showPane(p) {
 }
 function renderAll() {
   renderHeader(); renderSwitch(); renderSettings(); renderTeam(); runOptimiser(); renderAssetPanels();
-  renderCompare(); renderLeague(); renderElite(); renderHind(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
+  renderCompare(); renderLeague(); renderElite(); renderHind(); renderStats(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
 }
 let timer = null;
 function recompute(delay = 120) { clearTimeout(timer); timer = setTimeout(() => { compute(); renderAll(); save(); }, delay); }
@@ -1414,6 +1525,11 @@ function toast(msg, undo) {
 }
 
 document.addEventListener("click", (e) => {
+  const cell = e.target.closest("[data-stcell]");
+  if (cell) { const [id, g] = cell.dataset.stcell.split(":"); return stCell(id, +g); }
+  if (e.target.id === "modal") { $("#modal").hidden = true; return; }
+  const sth = e.target.closest("th[data-stsort]");
+  if (sth) { const k = sth.dataset.stsort, cur = S.stSort || { k: "avg", d: -1 }; S.stSort = { k, d: String(cur.k) === k ? -cur.d : ["qpos", "rpos"].includes(S.stMetric) ? 1 : -1 }; save(); return renderStats(); }
   const th = e.target.closest("th.sort");
   if (th) { const k = th.dataset.sort; S.sort = { k, d: S.sort.k === k ? -S.sort.d : -1 }; return rerender(); }
   const t = e.target.closest("button"); if (!t || t.disabled) return;
@@ -1463,6 +1579,15 @@ document.addEventListener("click", (e) => {
   if (d.em) { S.elMode = d.em; save(); return renderEliteSeason(DATA.elite); }
   if (d.hg) { S.hdGd = +d.hg; save(); return renderHind(); }
   if (d.hc) { S.hdCap = d.hc; save(); return renderHind(); }
+  if (d.close) { $("#modal").hidden = true; return; }
+  if (d.sk) { S.stKind = d.sk; S.stSort = null; save(); return renderStats(); }
+  if (d.stt != null) { S.stTeam = +d.stt; save(); return renderStats(); }
+  if (d.stcat || d.stsess) {
+    const off = stExcluded(), cs = d.stsess ? [...new Set(DATA.evNames.map((x) => x.c))].filter((c) => c[0] === d.stsess) : [d.stcat];
+    const turnOn = cs.some((c) => off.has(c)); // a session button re-includes everything if anything in it was off
+    cs.forEach((c) => (turnOn ? off.delete(c) : off.add(c)));
+    S.stOff = [...off]; save(); return renderStats();
+  }
   if (d.hch != null) { S.hdChip = d.hch; save(); return renderHind(); }
   if (d.hmark) { S.hdMarks = S.hdMarks || {}; if (S.hdMarks[d.hmark] === d.to) delete S.hdMarks[d.hmark]; else S.hdMarks[d.hmark] = d.to; save(); return renderHind(); }
   if (d.fadd) { S.filters = S.filters || {}; (S.filters[d.fadd] = S.filters[d.fadd] || []).push({ k: fprops(d.fadd)[0][0], min: null, max: null }); save(); return d.fadd === "hd" ? renderHind() : rerender(); }
@@ -1501,6 +1626,7 @@ document.addEventListener("change", (e) => {
   if (t.id === "free") { A().free = +t.value; return rerender(); }
   if (t.id === "maxT") { S.maxT = +t.value; return rerender(); }
   if (t.id === "valW") { S.valW = +t.value; return rerender(); }
+  if (t.id === "stMetric") { S.stMetric = t.value; S.stSort = null; save(); return renderStats(); }
   if (t.dataset.flt) {
     const [sc, i, k] = t.dataset.flt.split(":"), f = S.filters[sc][+i];
     f[k] = k === "k" ? t.value : t.value === "" || isNaN(+t.value) ? null : +t.value;
@@ -1530,4 +1656,5 @@ document.addEventListener("submit", (e) => {
 compute(); renderAll(); showView(S.view); showPane(S.pane || "team");
 if (DATA.leagueSealed) { let k = null; try { k = localStorage.getItem(LK); } catch (e) {} if (k) tryUnseal(k, true); }
 setInterval(renderHeader, 30000);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("#modal").hidden) $("#modal").hidden = true; });
 </script>
