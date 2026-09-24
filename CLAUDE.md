@@ -187,16 +187,24 @@ User-approved order: 1–5, then the rest.
     Playerstats caching changed with it: `ps_<id>_<live_gd>_<fingerprint of the live weekend's points>`, so they're
     refetched whenever anything is scored (before, a round's lines froze at race start, missing the race until the
     next round). If lines don't add up to the feed total (playerstats lagging), the file is dropped and refetched.
-    Live feed (2026-09-24): Supabase Edge Function `live` (`supabase/functions/live/index.ts`, deployed from the
-    dashboard editor with Verify JWT OFF; public, read-only). `GET /functions/v1/live?gd=N` fetches F1's player feed
+    Live feed (2026-09-24): Supabase Edge Function "live" (`supabase/functions/live/index.ts`, deployed from the
+    dashboard editor with Verify JWT OFF; public, read-only). Its URL slug is `smooth-action` (the editor's random
+    first name; renaming in the dashboard doesn't change the slug): `GET /functions/v1/smooth-action?gd=N` fetches F1's player feed
     at most once a minute (cache table `live_cache`, service role only; SQL in setup.sql) and, in the background,
     playerstats only for assets whose points changed (1.5 s apart). The page calls it on opening Live Scoring and
     every minute while that view is open (`pullLive`, gameday = latest lock passed), and falls back to the build's
     `DATA.live` if it fails. Tested under Node with a mocked table against real R14 feeds (33 assets' lines in
     ~63 s, cache hit within a minute, no refetch when nothing changed). GitHub's cron still skips runs (one
     scheduled run in 4 h on 2026-09-24), but Live Scoring no longer depends on it.
-    [ ] Deploy + first real call (user deploys: SQL snippet, function via editor, Verify JWT off).
+    Deployed and checked 2026-09-24: 35 assets, all 33 scoring-line sets within ~1 min, none lagging, cache hits.
+    To redeploy: paste index.ts into the smooth-action function in the dashboard editor (or `supabase functions
+    deploy smooth-action` with the CLI) and keep Verify JWT off.
     Next options: league rivals' live totals (sealed line-ups, Boost unknown).
+- [x] Header cleanup (2026-09-24, user's ask): the header's team buttons and Import are gone (sign-in sync made
+    them redundant). Import = any `[data-import]` button (Settings "Account & data", ☰ menu, League empty state)
+    opening the hidden `#importFile`. The Calculator picks the team in Settings; Hindsight's budget has one button
+    per team (`S.hdCap` = "100" | "team:i" | "none"; old "team" = the Calculator's team); Elite has its own team
+    picker at the top (`S.elT`, `elTeam()`) for the template, ownership and chip grid. League follows `S.active`.
 - [x] Practice archive (2026-09-24): OpenF1 refuses everything, past sessions included, while any F1 session is live,
     and the CI runs during Baku FP1/FP2 had no cached copy, so the site had NO practice for Baku. Now each analysed
     session is saved in `history/2026/practice/gdNN.json` and reused when OpenF1 is closed; one failing session no

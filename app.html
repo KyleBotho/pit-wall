@@ -247,7 +247,6 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   body:has(#view-calc:not([hidden])){overflow:hidden}
   body:has(#view-calc:not([hidden])) .shell{height:100dvh;display:flex;flex-direction:column;padding-bottom:0}
   body:has(#view-calc:not([hidden])) .bar{flex:none;margin-bottom:10px}
-  body:has(#view-calc:not([hidden])) .bar > div:last-child{display:none!important} /* the team is picked in Settings */
   #view-calc:not([hidden]){flex:1;min-height:0;display:flex;flex-direction:column}
   .appbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:45;background:rgba(5,5,5,.94);backdrop-filter:blur(8px);margin:0 -16px 12px;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px;border-bottom:1px solid var(--line)}
   .appbar #appTitle{font-family:var(--display);font-size:17px;flex:1}
@@ -335,11 +334,8 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   <nav class="appmenu" id="appMenu" hidden aria-label="Tools"><div class="mhead"><div class="logo-sm" aria-hidden="true">P<b>W</b></div><b>Pit Wall</b><button class="menubtn" id="menuClose" aria-label="Close the menu" style="margin-left:auto">✕</button></div><div class="mlist" id="menuList"></div><div class="macct" data-acct hidden><div class="acct"></div></div></nav>
   <header class="bar">
     <div class="race"><h1 id="raceName">—</h1><span class="lock" id="lock"></span></div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-      <div class="seg teamswitch" role="group" aria-label="Choose team"></div>
-      <label class="btn ghost sm" style="display:inline-flex;align-items:center;cursor:pointer" title="Load your teams, chips and league from an F1 Fantasy data export">Import<input type="file" id="importFile" accept=".json,application/json" hidden></label>
-    </div>
   </header>
+  <input type="file" id="importFile" accept=".json,application/json" hidden><!-- opened by any [data-import] button -->
 
   <!-- TEAM CALCULATOR -->
   <main id="view-calc" data-v>
@@ -383,7 +379,7 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
           <p class="note" id="simNote"></p>
           <div class="chipbar"><button class="btn ghost sm" data-view="model">Model settings</button><button class="btn ghost sm" data-view="practice">Practice pace</button><button class="btn ghost sm" id="xoReset" hidden>Clear xPts edits</button></div>
         </section>
-        <section class="panel" data-pane="settings" data-acct hidden><h3>Account</h3><div class="acct"></div></section>
+        <section class="panel" data-pane="settings" data-acct hidden><h3>Account &amp; data</h3><div class="acct"></div></section>
       </div>
       <div class="col col-c">
         <section class="panel" data-pane="drivers"><h3>Drivers <small id="drvNote"></small></h3><input class="inp" id="drvSearch" placeholder="Find a driver… (e.g. VER+NOR)" aria-label="Find a driver"><div class="tw"><table id="drvTable"></table></div></section>
@@ -413,7 +409,8 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   <main id="view-league" data-v hidden>
     <div id="leagueEmpty" class="panel" hidden>
       <h3>League</h3>
-      <p class="note">No league loaded yet. In a Claude for Chrome session, ask Claude to collect your F1 Fantasy data (teams and private league) into a JSON file, then press <b>Import</b> at the top and pick that file. Your league stays in this browser only; it is never published.</p>
+      <p class="note">No league loaded yet. In a Claude for Chrome session, ask Claude to collect your F1 Fantasy data (teams and private league) into a JSON file, then import it here. Your league stays in this browser (and your account, if you sign in); it is never published.</p>
+      <div class="chipbar"><button class="btn sm" data-import="1">Import a data export</button></div>
     </div>
     <form class="panel" id="lgUnlock" hidden>
       <h3>Private leagues <small>encrypted</small></h3>
@@ -450,7 +447,7 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
     <div id="eliteEmpty" class="panel" hidden><h3>Elite</h3><p class="note">The global top-500 leaderboard wasn't available at the last refresh. It is published after each race.</p></div>
     <div class="dash" id="eliteDash" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
       <section class="panel" style="grid-column:1/-1">
-        <h3>Global cut-offs <small id="elStamp"></small></h3>
+        <h3>Global cut-offs <small id="elStamp"></small> <span class="seg" id="elTeamPick" title="Your team to compare"></span></h3>
         <div class="kv" id="elCut"></div>
         <div class="tw"><table id="elMine"></table></div>
       </section>
@@ -488,7 +485,7 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
         <h3>Hindsight <small>scored on the points each asset actually got</small></h3>
         <div class="seg" id="hdRound" style="align-self:flex-start"></div>
         <div class="fields">
-          <div class="field">Budget for the best teams<div class="seg" id="hdCap"><button data-hc="100">$100m</button><button data-hc="team">Your budget</button><button data-hc="none">No cap</button></div></div>
+          <div class="field">Budget for the best teams<div class="seg" id="hdCap"></div></div>
           <div class="field">Chip<div class="seg" id="hdChip"><button data-hch="">None</button><button data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button><button data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button><button data-hch="finalfix" title="Final Fix: swap one driver after qualifying; the new one scores the race">FF</button></div></div>
           <div class="field full">Team filters<div id="hdFilters"></div></div>
         </div>
@@ -858,7 +855,8 @@ function renderSync() {
     ? `<button class="btn sm" data-signin="1">Sign in with Google</button><p class="note">Your teams, settings and leagues follow you to every browser you sign in on.</p>` + (SY.err ? `<p class="note bad">${esc(SY.err)}</p>` : "")
     : `<div class="em">${esc(U.email || "Signed in")}</div><p class="note${SY.err ? " bad" : ""}">${SY.err ? esc(SY.err) : SY.hold ? "Not syncing until you choose which settings to keep." : SY.busy ? "Syncing…" : SY.at ? "Synced " + ago(SY.at) : "Connecting…"}</p>` +
       `<div class="chipbar">${SY.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>`;
-  $$(".acct").forEach((el) => { el.innerHTML = h; el.closest("[data-acct]").hidden = !h; });
+  h += `<button class="btn ghost sm" data-import="1">Import a data export</button><p class="note">After a new F1 Fantasy export: updates your teams, bank, chips and league.</p>`;
+  $$(".acct").forEach((el) => { el.innerHTML = h; el.closest("[data-acct]").hidden = false; });
   $("#lgSignin").hidden = !(SY.sb && !U);
 }
 
@@ -1211,11 +1209,14 @@ function lineChart(box, gds, series, label, opt = {}) {
 }
 
 /* ---------- elite (global top 500, aggregates only) ---------- */
+// the team the Elite page compares (its own picker at the top; defaults to the team last picked in the Calculator)
+const elTeam = () => S.teams[Math.min(S.teams.length - 1, S.elT ?? S.active)];
 function renderElite() {
   const El = DATA.elite;
   $("#eliteEmpty").hidden = !!El; $("#eliteDash").hidden = !El;
   if (!El) return;
   const own = El.own || {}, top = El.top100, o = (id, t) => (own[id] ? own[id][t] : 0);
+  $("#elTeamPick").innerHTML = S.teams.map((t, i) => `<button data-elt="${i}" aria-pressed="${t === elTeam()}">${esc(t.name)}</button>`).join("");
   const ft = El.feedTime ? new Date(El.feedTime) : null;
   $("#elStamp").textContent = `global top ${El.n}` + (ft && !isNaN(ft) ? " · standings as of " + ft.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "");
   $("#elCut").innerHTML = ["1", "10", "100", "500"].filter((k) => El.cut[k] != null)
@@ -1238,8 +1239,8 @@ function renderElite() {
   const topBoost = top && top.boost ? Object.entries(top.boost).sort((a, b) => b[1] - a[1])[0] : null;
   $("#elTemplate").innerHTML = tCr.map((id) => chip(id, { pts: xpts(id, 1) })).join("") + '<span class="sep"></span>' +
     tDr.map((id) => chip(id, { pts: xpts(id, 1), x: topBoost && topBoost[0] === id ? "2×" : "" })).join("");
-  const shared = A().team.filter((id) => tDr.includes(id) || tCr.includes(id)).length;
-  $("#elTemplateNote").innerHTML = `${esc(A().name)} shares <b>${shared} of 7</b> with the template.` +
+  const shared = elTeam().team.filter((id) => tDr.includes(id) || tCr.includes(id)).length;
+  $("#elTemplateNote").innerHTML = `${esc(elTeam().name)} shares <b>${shared} of 7</b> with the template.` +
     (topBoost ? ` ${pct(topBoost[1])} of the top 100 boosted ${esc(code(byId[topBoost[0]]))} in R${top.round}.` : "");
 
   // chips: share of the top 100 playing each chip in each round (from the top-100 export); your team's chip rounds outlined
@@ -1247,7 +1248,7 @@ function renderElite() {
     const order = ["x3", "limitless", "wildcard", "noneg", "autopilot", "finalfix"], chipDef = (k) => CHIPS.find(([c]) => c === k);
     const ti = Math.min(S.teams.length - 1, S.elT ?? S.active), tm = S.teams[ti], Lu = tm ? lineups(tm.name) : null;
     const max = Math.max(0.05, ...order.flatMap((k) => Object.values(top.chipRound[k] || {}).map((v) => v / top.n)));
-    $("#elChipNote").innerHTML = `<span class="seg">${S.teams.map((t, i) => `<button data-elt="${i}" aria-pressed="${i === ti}" title="${esc(t.name)}">T${i + 1}</button>`).join("")}</span>`;
+    $("#elChipNote").innerHTML = "";
     $("#elChipSub").textContent = `Share of the top 100 (line-ups export after R${top.round}) playing each chip, by round.` + (Lu ? ` Outlined: when ${tm.name} played it.` : " Unlock your leagues to outline your own chip rounds.");
     const rounds = Array.from({ length: top.round }, (_, i) => top.round - i);
     $("#elChips").innerHTML = `<thead><tr><th>Round</th>${order.map((k) => `<th title="${esc(chipDef(k)[2])}">${chipDef(k)[1]}</th>`).join("")}</tr></thead><tbody>` +
@@ -1264,13 +1265,13 @@ function renderElite() {
     (lastSn ? `Line-ups recorded ${sn.length} time${sn.length > 1 ? "s" : ""}; last change first seen ${fmtT(lastSn.firstSeen)}.` : "");
 
   // ownership vs your teams
-  const act = A().team;
+  const act = elTeam().team;
   // change since the previous round's snapshot (the ± columns); needs two rounds of snapshots
   const pv = El.ownPrev, dOwn = (id, t) => (pv ? o(id, t) - (pv[id] ? pv[id][t] : 0) : null);
   const dCell = (v) => (v == null ? "" : `<td class="${v > 0.005 ? "good" : v < -0.005 ? "bad" : "muted"}" style="font-size:12px">${Math.abs(v) < 0.005 ? "0" : (v > 0 ? "+" : "−") + Math.round(Math.abs(v) * 100)}</td>`);
   const rows = DATA.assets.filter((a) => (a.active || a.kind === "C") && (own[a.id] || S.teams.some((t) => t.team.includes(a.id))))
     .sort((x, y) => o(y.id, 1) - o(x.id, 1) || o(y.id, 2) - o(x.id, 2));
-  $("#elOwn").innerHTML = `<thead><tr><th>Asset</th><th>Top 10</th><th>Top 100</th>${pv ? `<th title="Change in top-100 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th>Top 500</th>${pv ? `<th title="Change in top-500 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th title="All players">All</th>${top ? `<th title="Share of the top 100 boosting this driver in R${top.round}">Boost</th>` : ""}<th style="text-align:left">Your teams</th><th style="text-align:left">For ${esc(A().name)}</th></tr></thead><tbody>` +
+  $("#elOwn").innerHTML = `<thead><tr><th>Asset</th><th>Top 10</th><th>Top 100</th>${pv ? `<th title="Change in top-100 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th>Top 500</th>${pv ? `<th title="Change in top-500 ownership since R${El.prevGd}, percentage points">±</th>` : ""}<th title="All players">All</th>${top ? `<th title="Share of the top 100 boosting this driver in R${top.round}">Boost</th>` : ""}<th style="text-align:left">Your teams</th><th style="text-align:left">For ${esc(elTeam().name)}</th></tr></thead><tbody>` +
     rows.map((a) => {
       const p100 = o(a.id, 1), has = act.includes(a.id);
       const tag = has && p100 < 0.3 ? '<span class="good">Differential</span>' : !has && p100 >= 0.7 ? '<span class="bad">Missing staple</span>' : has ? '<span class="muted">Owned</span>' : "";
@@ -1291,7 +1292,7 @@ function renderEliteSeason(El) {
   $$("#elMode button").forEach((b) => b.setAttribute("aria-pressed", String((b.dataset.em === "gap") === gap)));
   const cuts = ["1", "10", "100", "500"].filter((k) => Hs.some((h) => h.cut && h.cut[k] != null))
     .map((k) => ({ name: "#" + k, dash: true, pts: rel(gds.map((gd) => ({ v: byGd[gd]?.cut?.[k] ?? null, r: null }))) }));
-  lineChart($("#elSeasonChart"), gds, cuts.concat(mine.map(({ t, h }) => ({ name: t.name, me: t === A(), color: "#D4D4D8", pts: rel(cumPts(h, gds)), marks: chipMarks(t.name, gds) }))),
+  lineChart($("#elSeasonChart"), gds, cuts.concat(mine.map(({ t, h }) => ({ name: t.name, me: t === elTeam(), color: "#D4D4D8", pts: rel(cumPts(h, gds)), marks: chipMarks(t.name, gds) }))),
     gap ? "Points above or below the global top-100 cut-off, by round" : "Cumulative points: your teams against global cut-offs");
   $("#elSeasonNote").textContent = (gap ? "Points above or below the global top-100 cut-off after each round. " : "Cumulative points after each round. ") +
     (mine.length ? "" : "Unlock your leagues on the League tab to add your teams.");
@@ -1392,10 +1393,13 @@ function hdFF(t, gd, cap, cat = "R") {
 }
 const withFF = (t, gd, cap) => { if (!t) return t; const f = hdFF(t, gd, cap); return f ? Object.assign({}, t, { score: t.score + f.gain, ff: f }) : t; };
 const hdOwn = (r, gd) => { const b = hdRun(gd, { cap: hdBudget(r, gd), start: r.start, free: r.free, chip: r.chip })[0] || null; return r.chip === "finalfix" ? withFF(b, gd, hdBudget(r, gd)) : b; };
+// budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
+// fair comparison). Older saved settings say just "team": the team last picked in the Calculator.
+const hdCapMode = () => { const m = S.hdCap || "team"; return m === "team" ? `team:${S.active}` : m; };
 function hdCap(gd) {
-  const mode = S.hdCap || "team"; // default: the active team's budget that round, the fair comparison
+  const mode = hdCapMode();
   if (mode === "none") return null;
-  if (mode === "team") { const r = (lineups(A().name) || {})[gd]; return r ? hdBudget(r, gd) : 100; }
+  if (mode.startsWith("team:")) { const T = S.teams[+mode.slice(5)] || A(), r = (lineups(T.name) || {})[gd]; return r ? hdBudget(r, gd) : 100; }
   return 100;
 }
 const hdMarks = (to) => Object.keys(S.hdMarks || {}).filter((k) => S.hdMarks[k] === to);
@@ -1450,7 +1454,9 @@ function renderHind() {
   const gd = done.includes(S.hdGd) ? S.hdGd : done[done.length - 1], cap = hdCap(gd), chipK = S.hdChip || "";
   const name = (g) => DATA.schedule.find((x) => x.gd === g)?.name || "";
   $("#hdRound").innerHTML = done.map((g) => `<button data-hg="${g}" aria-pressed="${g === gd}" title="${esc(name(g))}">R${g}</button>`).join("");
-  $$("#hdCap button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.hc === (S.hdCap || "team"))));
+  const capM = hdCapMode();
+  $("#hdCap").innerHTML = [["100", "$100m"], ...S.teams.map((t, i) => [`team:${i}`, t.name]), ["none", "No cap"]]
+    .map(([k, n]) => `<button data-hc="${k}" aria-pressed="${k === capM}"${k.startsWith("team:") ? ' title="This team\'s budget that round"' : ""}>${esc(n)}</button>`).join("");
   $$("#hdChip button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.hch === chipK)));
   $("#hdFilters").innerHTML = filterUI("hd");
 
@@ -1686,7 +1692,7 @@ function renderLive() {
 }
 // Live feed: the Supabase function "live" reads F1's feeds for the page (they have no CORS), cached for a minute
 // there, so F1 sees one request a minute however many pages are open. Falls back to the build's DATA.live.
-const LIVE_FN = SB_URL + "/functions/v1/live";
+const LIVE_FN = SB_URL + "/functions/v1/smooth-action"; // the "live" function; its URL slug is the name it was first deployed under
 const LV = { at: null, err: "", busy: false };
 const liveGd = () => Math.max(0, ...DATA.schedule.filter((g) => Date.parse(g.lock) <= Date.now()).map((g) => g.gd)) || null;
 function evIdx(s, n, c) {
@@ -1740,11 +1746,6 @@ function renderHeader() {
   if (ms <= 0) { $("#lock").innerHTML = `Team locked · ${esc(when)}${fresh}${sprint}`; return; }
   const d = Math.floor(ms / 864e5), h = Math.floor((ms % 864e5) / 36e5), m = Math.floor((ms % 36e5) / 6e4);
   $("#lock").innerHTML = `Lock in <b>${d ? d + "d " : ""}${h}h ${String(m).padStart(2, "0")}m</b> · ${esc(when)}${fresh}${sprint}`;
-}
-function renderSwitch() {
-  $$(".teamswitch").forEach((el) => {
-    el.innerHTML = S.teams.map((t, i) => `<button data-team="${i}" aria-pressed="${i === S.active}">${esc(t.name)}${t.example ? ' <span class="dim">·ex</span>' : ""}</button>`).join("");
-  });
 }
 
 /* ---------- team calculator: edit team (dialog) ---------- */
@@ -2179,7 +2180,7 @@ function showPane(p, instant) {
   save();
 }
 function renderAll() {
-  renderHeader(); renderSwitch(); renderSettings(); runOptimiser(); renderAssetPanels();
+  renderHeader(); renderSettings(); runOptimiser(); renderAssetPanels();
   renderLive(); renderCompare(); renderLeague(); renderElite(); renderHind(); renderStats(); renderAssets(); renderPractice(); renderGrid(); renderPrices(); renderCal(); renderModel();
 }
 let timer = null;
@@ -2210,10 +2211,10 @@ document.addEventListener("click", (e) => {
   const d = t.dataset;
   if (d.view) return showView(d.view);
   if (d.paneBtn) return showPane(d.paneBtn);
+  if (d.import) return $("#importFile").click();
   if (d.signin) return signIn();
   if (d.signout) return signOut();
   if (d.sync) return d.sync === "ask" ? askWhich() : syncChoose(d.sync);
-  if (d.team) { S.active = +d.team; S.chip = ""; S.calcStart = null; return rerender(); }
   if (d.boost) { const T = ST(); T.boost = T.boost === d.boost ? "auto" : d.boost; return rerender(); }
   if (d.pop) { const el = $("#pop-" + d.pop), was = el.hidden; $$(".pop").forEach((x) => (x.hidden = true)); el.hidden = !was; return; }
   if (d.menu) { if (!$("#rowMenu").hidden && menuRow === d.menu) { $("#rowMenu").hidden = true; return; } return openMenu(t); }
@@ -2341,7 +2342,7 @@ document.addEventListener("change", (e) => {
 });
 document.addEventListener("input", (e) => {
   const t = e.target;
-  if (t.id === "tname") { const T = ST(); T.name = t.value.trim() || (startKind() === "draft" ? "Manual" : "Team " + (S.active + 1)); renderSwitch(); $("#startBtn").lastChild.textContent = T.name; save(); return; }
+  if (t.id === "tname") { const T = ST(); T.name = t.value.trim() || (startKind() === "draft" ? "Manual" : "Team " + (S.active + 1)); $("#startBtn").lastChild.textContent = T.name; save(); return; }
   if (t.id === "valW") { S.valW = +t.value; $("#valWv").textContent = (+S.valW).toFixed(1) + " pts"; clearTimeout(timer); timer = setTimeout(rerender, 250); return; }
   if (t.id === "drvSearch" || t.id === "conSearch") return renderAssetPanels();
   if (t.dataset.dname != null) { S.drafts[+t.dataset.dname].name = t.value.trim() || "Manual"; save(); return; }
