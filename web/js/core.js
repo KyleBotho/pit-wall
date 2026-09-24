@@ -58,7 +58,7 @@ function alignTable(t) {
     for (const [k, c] of at(r)) {
       if (c.colSpan > 1) continue;
       c.classList.remove("al-l", "al-c", "al-r");
-      c.classList.add("al-" + (kind[k] || "r"));
+      c.classList.add("al-" + (kind[k] || (k ? "r" : "l"))); // no data yet: the first column is the label column
     }
 }
 const teamCode = (team) => (TEAMS[team] && TEAMS[team].code) || team;

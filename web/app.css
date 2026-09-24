@@ -1123,6 +1123,63 @@ tbody tr:hover td {
   text-align: center;
   padding: 4px;
 }
+/* colour key under a heat-shaded table */
+.hkey {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.hkey:empty {
+  display: none;
+}
+.hkey .ramp {
+  width: 96px;
+  height: 10px;
+  border-radius: 3px;
+  outline: 1px solid var(--line);
+}
+.hkey .sw {
+  width: 12px;
+  height: 10px;
+  margin-left: 8px;
+  border-radius: 3px;
+}
+/* charts: the page's font; sizes are real pixels (league.js lineChart draws at the box's width) */
+.chart text {
+  font-family: var(--ui);
+}
+/* while the simulations re-run: a tag in the header, and the visible tables dim */
+.busytag {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--fg);
+  font-size: 12px;
+  font-weight: 500;
+}
+.busytag::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+body.busy main:not([hidden]) table {
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
 .heat.stat td {
   padding: 7px 9px;
   min-width: 44px;
@@ -2223,6 +2280,9 @@ td.chl {
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .busytag::before {
+    animation: none;
+  }
   * {
     transition: none !important;
   }

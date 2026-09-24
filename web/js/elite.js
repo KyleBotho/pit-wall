@@ -34,17 +34,27 @@ function renderElite() {
       : p >= c
         ? '<span class="good">in</span>'
         : `<span class="bad">−${Math.round(c - p).toLocaleString()}</span>`;
+  const ptsOf = (tm) => {
+    const a = auto.find((m) => m.team === tm.name);
+    return a ? +a.pts : (tm.ovPts ?? null);
+  };
+  const anyPts = state.teams.some((tm) => ptsOf(tm) != null);
   $("#elMine").innerHTML =
     `<thead><tr><th>Your team</th><th>Points</th><th title="From your last import">Global rank</th><th>To top 500</th><th>To top 100</th><th>To #1</th></tr></thead><tbody>` +
+    (!anyPts
+      ? `<tr><td colspan="6" style="text-align:left"><span class="muted">Sign in or import a data export to see where your teams stand.</span> <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button> <button class="btn ghost sm" data-import="1">Import a data export</button></td></tr>`
+      : "") +
     state.teams
+      .filter(() => anyPts)
       .map((tm) => {
         const a = auto.find((m) => m.team === tm.name),
           p = a ? +a.pts : (tm.ovPts ?? null);
-        return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">import</span>' : Math.round(p).toLocaleString()}</td><td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>
+        return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">—</span>' : Math.round(p).toLocaleString()}</td><td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>
         <td>${gap(p, El.cut["500"])}</td><td>${gap(p, El.cut["100"])}</td><td>${gap(p, El.cut["1"])}</td></tr>`;
       })
       .join("") +
     "</tbody>";
+  needSync();
 
   renderEliteSeason(El);
 
@@ -170,6 +180,7 @@ function renderEliteSeason(El) {
     .map((k) => ({
       name: "#" + k,
       dash: true,
+      color: { 1: "#D4D4D8", 10: "#A1A1AA", 100: "#71717A", 500: "#52525B" }[k],
       pts: rel(gds.map((gd) => ({ v: byGd[gd]?.cut?.[k] ?? null, r: null }))),
     }));
   lineChart(
@@ -179,7 +190,7 @@ function renderEliteSeason(El) {
       mine.map(({ t, h }) => ({
         name: t.name,
         me: t === elTeam(),
-        color: "#D4D4D8",
+        color: "#E4E4E7",
         pts: rel(cumPts(h, gds)),
         marks: chipMarks(t.name, gds),
       })),

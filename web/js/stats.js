@@ -135,6 +135,12 @@ function renderStats() {
       )
       .join("") +
     `</tbody><tfoot><tr><td>AVG</td><td>${stFmt(avg(rows.map((r) => r.avg)), m)}</td>${done.map((g, i) => `<td>${stFmt(avg(rows.map((r) => r.v[i])), m)}</td>`).join("")}</tr></tfoot>`;
+  $("#stKey").innerHTML =
+    m === "price"
+      ? ""
+      : m === "qpos" || m === "rpos"
+        ? heatKey("further back", "further up")
+        : heatKey("lower", "higher");
   $("#stNote").textContent =
     `${ST_METRICS.find(([k]) => k === m)[1]} by round. Click a cell for that round's scoring lines; click a header to sort.` +
     (off.size && ["pts", "ppm"].includes(m)

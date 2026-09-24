@@ -256,6 +256,12 @@ const DUP_TLA = new Set(
 );
 const who = (a, label) =>
   `<span class="who">${codeBox(a)}<span>${esc(label ?? (a.kind === "D" ? a.short : a.team))}${label == null && a.kind === "D" && DUP_TLA.has(a.tla) ? ` <span class="dim">${esc(teamCode(a.team))}</span>` : ""}</span></span>`;
+// the key under a heat-shaded table: red = lower, green = higher, deeper = further from the middle; none when the
+// heatmap colours are off (Settings)
+function heatKey(lo = "lower", hi = "higher") {
+  if (!state.heat) return "";
+  return `<span class="muted">${esc(lo)}</span><span class="ramp" style="background:linear-gradient(90deg,rgba(239,68,68,.34),rgba(239,68,68,0) 45%,rgba(34,197,94,0) 55%,rgba(34,197,94,.34))"></span><span class="muted">${esc(hi)}</span>`;
+}
 function heat(v, lo, hi) {
   if (!state.heat || v == null || isNaN(v)) return "";
   const t = Math.max(-1, Math.min(1, v >= 0 ? (hi > 0 ? v / hi : 0) : lo < 0 ? -(v / lo) : 0));

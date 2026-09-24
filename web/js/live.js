@@ -186,6 +186,7 @@ function renderLive() {
       )
       .join("") +
     "</tbody>";
+  $("#lvKey").innerHTML = heatKey("fewer points", "more points");
   $("#lvTNote").textContent =
     "Click a total for its scoring lines. xPts is our projection for the whole weekend, frozen at lock; " +
     (over ? "Δ is the final total minus it." : "To go is what's still needed to reach it (✓ = already there).");

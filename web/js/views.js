@@ -98,6 +98,7 @@ function spark(a) {
   return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="#27272A"/>${bars}</svg>`;
 }
 function renderAssets() {
+  $("#assetKey").innerHTML = heatKey("fewer xPts", "more xPts");
   const pre = $("#simPreset").selectedOptions[0];
   $("#assetPreset").hidden = state.simPreset === "sim";
   $("#assetPreset").textContent =
@@ -211,6 +212,9 @@ function renderPractice() {
 function renderGrid() {
   $$("#gridKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gridmode === state.grid)));
   const q = state.grid === "q";
+  $("#gridKey").innerHTML = state.heat
+    ? `<span class="muted">less likely</span><span class="ramp" style="background:linear-gradient(90deg,rgba(168,85,247,.04),rgba(168,85,247,.85))"></span><span class="muted">more likely</span>${q ? "" : '<span class="sw" style="background:rgba(239,68,68,.6)"></span><span class="muted">not classified</span>'}`
+    : "";
   $("#gridNote").textContent =
     `${q ? "Qualifying" : "Race"} position probabilities (%) for ${NEXT.name}, from ${state.sims.toLocaleString()} simulated weekends${q ? "" : "; last column = not classified"}.`;
   const sim = forecast.sims[0];
@@ -273,6 +277,7 @@ function renderPrices() {
     .sort((x, y) => forecast.price[y.id].ev - forecast.price[x.id].ev);
   const hi = (k) => act.filter((a) => a.kind === k && a.price >= 18.5),
     lo = (k) => act.filter((a) => a.kind === k && a.price < 18.5);
+  $("#priceKey").innerHTML = heatKey("price falls", "price rises");
   $("#priceTable").innerHTML =
     `<thead><tr><th>Asset</th><th>$</th><th title="Points in the last two races">Last 2</th><th>xPts</th><th title="Points needed to avoid the big drop">≥0.605</th><th title="Points needed for a rise">≥0.9</th><th title="Points needed for the big rise">≥1.195</th><th>P(rise)</th><th>P(drop)</th><th title="Distribution from −0.6 to +0.6">Spread</th><th>xΔ$</th></tr></thead><tbody>` +
     group("Drivers · $18.5m+", hi("D")) +

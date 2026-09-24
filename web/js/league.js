@@ -228,12 +228,25 @@ function lineChart(box, gds, series, label, opt = {}) {
     box.innerHTML = '<p class="note">No round history yet.</p>';
     return;
   }
-  const W = 640,
-    H = 260,
-    ml = 44,
-    mr = 120,
-    mt = 10,
-    mb = 26;
+  // drawn at the box's real width so text and lines keep their size (a 640-unit drawing stretched to a wide card
+  // doubled them); redrawn when the box is resized, e.g. when a hidden view is first shown
+  box._chart = [gds, series, label, opt];
+  if (!box._ro) {
+    let last = box.clientWidth;
+    box._ro = new ResizeObserver(() => {
+      const wNow = box.clientWidth;
+      if (!wNow || Math.abs(wNow - last) < 8) return;
+      last = wNow;
+      lineChart(box, ...box._chart);
+    });
+    box._ro.observe(box);
+  }
+  const W = Math.max(320, Math.round(box.clientWidth || 640)),
+    H = Math.round(Math.min(340, Math.max(240, W * 0.4))),
+    ml = 52,
+    mr = 128,
+    mt = 12,
+    mb = 28;
   const vs = series.flatMap((s) => s.pts.map((p) => p.v).filter((v) => v != null));
   const inv = !!opt.invert,
     fmt = opt.fmt || ((v) => (v < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString());
@@ -252,11 +265,11 @@ function lineChart(box, gds, series, label, opt = {}) {
   const lastI = (s) => s.pts.reduce((k, p, i) => (p.v != null ? i : k), -1);
   let g = "";
   for (let v = lo; v <= top; v += step)
-    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 && lo < 0 ? "#52525B" : "#27272A"}" stroke-width="1"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="11" text-anchor="end">${esc(fmt(v))}</text>`;
+    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 && lo < 0 ? "#52525B" : "#27272A"}" stroke-width="1"/><text x="${ml - 10}" y="${y(v) + 4}" fill="#A1A1AA" font-size="12" text-anchor="end">${esc(fmt(v))}</text>`;
   const every = Math.ceil(gds.length / 12);
   gds.forEach((gd, i) => {
     if (i % every === 0 || i === gds.length - 1)
-      g += `<text x="${x(i)}" y="${H - 6}" fill="#A1A1AA" font-size="11" text-anchor="middle">R${gd}</text>`;
+      g += `<text x="${x(i)}" y="${H - 8}" fill="#A1A1AA" font-size="12" text-anchor="middle">R${gd}</text>`;
   });
   const labels = series.map((s) => ({ s, y: y(s.pts[lastI(s)].v) })).sort((a, b) => a.y - b.y);
   for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13; // keep end labels apart
@@ -286,8 +299,8 @@ function lineChart(box, gds, series, label, opt = {}) {
       g += `<g><rect x="${cx - w / 2}" y="${cy - 8}" width="${w}" height="15" rx="4" fill="${col(s)}"/><text x="${cx}" y="${cy + 3}" fill="#0A0A0A" font-size="10" font-weight="700" text-anchor="middle">${esc(m)}</text><title>${esc(s.name)}: ${esc(m)} in R${gds[i]}</title></g>`;
     });
   for (const l of labels)
-    g += `<text x="${W - mr + 10}" y="${l.y + 4}" fill="${l.s.me ? "#FAFAFA" : "#A1A1AA"}" font-size="11" font-weight="${l.s.me ? 600 : 400}">${esc(l.s.name.length > 16 ? l.s.name.slice(0, 15) + "…" : l.s.name)}</text>`;
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">${g}<line class="cx" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
+    g += `<text x="${W - mr + 10}" y="${l.y + 4}" fill="${l.s.me ? "#FAFAFA" : "#A1A1AA"}" font-size="12" font-weight="${l.s.me ? 600 : 400}">${esc(l.s.name.length > 16 ? l.s.name.slice(0, 15) + "…" : l.s.name)}</text>`;
+  box.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">${g}<line class="cx" x1="0" x2="0" y1="${mt}" y2="${H - mb}" stroke="#A1A1AA" stroke-width="1" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${H - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
   const svg = box.querySelector("svg"),
     tip = box.querySelector(".lgtip"),
     cross = box.querySelector(".cx");

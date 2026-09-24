@@ -358,5 +358,11 @@ User-approved order: 1–5, then the rest.
     changes, so new tables need no alignment CSS. Found with it: tables with class "stat" also matched the tile rule
     `.stat` (display:flex), so Live/Statistics/league headers didn't line up with their columns; that rule is now
     `.stat:not(table)`. Checked in the browser: 16 tables, every header over its column, one alignment per column.
+- [x] 2026-09-24 Last polish (review 8.5/10): `lineChart` (league.js) draws at the box's real width (text 12px;
+    before, a 640-unit SVG stretched to ~1300px doubled every label), redrawn by a ResizeObserver; Elite cut-off tiers
+    get neutral steps (#1 lightest .. #500 darkest). Global cut-offs: one sign-in/import row until a team has points.
+    Heat keys (`heatKey()` in forecast.js; `#…Key` under Points, Budget, Positions (purple ramp), Live, Statistics),
+    hidden when heatmap colours are off. `recompute()` shows the header's "Updating…" tag and dims visible tables
+    (`busy()`, at least 30 ms so it paints before the synchronous work).
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst
 presets/scenario versions, light theme, log rank scale, treemaps/gauges.

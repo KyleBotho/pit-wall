@@ -83,6 +83,7 @@
       <span class="eyebrow">Next race</span>
       <h1 id="raceName">—</h1>
       <span class="lock" id="lock"></span>
+      <span class="busytag" id="busyTag" hidden>Updating…</span>
     </div>
   </header>
   <nav class="subtabs" id="subTabs" hidden aria-label="Sections"></nav>
@@ -353,6 +354,7 @@
           <span class="seg" id="lvKind"><button data-livekind="D">Drivers</button><button data-livekind="C">Constructors</button></span>
           <span class="seg" id="lvBy"><button data-lvby="sess">By session</button><button data-lvby="cat">By category</button></span>
         </h3>
+        <div class="hkey" id="lvKey"></div>
         <div class="tw"><table class="heat stat" id="lvTable"></table></div>
       </section>
     </div>
@@ -569,6 +571,7 @@
           </details>
         </div>
       </div>
+      <div class="hkey" id="stKey"></div>
       <div class="tw"><table class="heat stat" id="stTable"></table></div>
     </section>
   </main>
@@ -589,6 +592,7 @@
       </h3>
       <div class="seg" id="assetRace" style="align-self: flex-start"></div>
       <p class="note warn" id="assetPreset" hidden></p>
+      <div class="hkey" id="assetKey"></div>
       <div class="tw"><table id="assetTable"></table></div>
     </section>
   </main>
@@ -608,6 +612,7 @@
         </details>
       </h3>
 
+      <div class="hkey" id="priceKey"></div>
       <div class="tw"><table id="priceTable"></table></div>
     </section>
   </main>
@@ -639,6 +644,7 @@
         Positions <span class="seg" id="gridKind"><button data-gridmode="q">Qualifying</button><button data-gridmode="r">Race</button></span>
       </h3>
       <p class="note" id="gridNote"></p>
+      <div class="hkey" id="gridKey"></div>
       <div class="tw"><table class="heat" id="heat"></table></div>
     </section>
   </main>

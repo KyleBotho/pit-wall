@@ -39,13 +39,24 @@ function renderAll() {
   refreshViews();
 }
 let recomputeTimer = null;
+// the header's "Updating…" tag and dimmed tables while the simulations re-run
+const busy = (on) => {
+  $("#busyTag").hidden = !on;
+  document.body.classList.toggle("busy", on);
+};
 function recompute(delay = 120) {
   clearTimeout(recomputeTimer);
-  recomputeTimer = setTimeout(() => {
-    compute();
-    renderAll();
-    save();
-  }, delay);
+  busy(true);
+  // at least 30ms: the tag gets painted before the work (synchronous) holds up the page
+  recomputeTimer = setTimeout(
+    () => {
+      compute();
+      renderAll();
+      save();
+      busy(false);
+    },
+    Math.max(delay, 30),
+  );
 }
 function rerender() {
   renderAll();
