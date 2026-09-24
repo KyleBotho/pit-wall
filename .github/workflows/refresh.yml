@@ -34,6 +34,13 @@ jobs:
           restore-keys: f1-cache-
       # data/league.sealed.json is pushed here by the private pit-wall-private workflow
       - run: python refresh.py
+      # Free Supabase projects (Google sign-in, synced settings) pause after ~1 week idle: a tiny query each run.
+      # The key is the public publishable one (it's in the page too). Never fails the build.
+      - name: Keep the sign-in database awake
+        run: |
+          curl -sf -X POST "https://tfljgylwpkpammzsapin.supabase.co/rest/v1/rpc/ping" \
+            -H "apikey: sb_publishable_5XxT7rr5X-XS1HyduNK1qQ_TfoP2PLV" -H "Content-Type: application/json" -d '{}' \
+            || echo "::warning::Supabase ping failed"
       # Save the season as it happens. Pushes made with GITHUB_TOKEN don't trigger another run.
       - name: Commit season history
         run: |

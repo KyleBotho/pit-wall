@@ -27,6 +27,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   latest per-asset scoring events, `projections/gdNN.json` our default-settings projection, rewritten until lock and
   then frozen (embedded as `DATA.projHist` for projected-vs-actual).
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
+- `supabase/setup.sql` — the sign-in/sync database (item 12). Re-runnable in Supabase's SQL Editor.
 - `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it.
   Used by the private repo's workflow, which checks this repo out.
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
@@ -178,7 +179,17 @@ User-approved order: 1–5, then the rest.
     under it). The header's team switch is hidden there (Settings has the picker).
 11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
     your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
-12. [ ] PLAN (agreed 2026-09-24, not started): sign in with Google so a new browser shows your teams and leagues.
+12. [x] 2026-09-24 built; [ ] confirm a real Google sign-in on the live site (the user must do it). Supabase project
+    `tfljgylwpkpammzsapin` (URL + publishable key are public, in app.html and refresh.yml); SQL in
+    `supabase/setup.sql` (table, RLS, grants, server-set `updated_at`, `ping()`). Google provider on, Email off,
+    sign-ups on (the Google test-user list is the gate). Page: `SY` + `syncInit/pull/push/applyRemote` after `save()`;
+    synced = all of `S` except `NOSYNC` (view, pane, showN) plus `lk` (LEAGUE_KEY); `pitwall.sync` = {uid, at, dirty}.
+    Rules: a row changed since this browser's mark wins; else unsent local edits are pushed; a browser with its own
+    teams and no mark asks which to keep (nothing syncs until it chooses). Re-pulls on tab focus. `fillFromLineups`
+    fills an all-example browser from the sealed export line-ups after unlock. Tested against a mocked table
+    (first sign-in, debounced push, other-device pull, ask-on-conflict, sign-out flush, Final Fix line-up fill).
+    Keep-alive: refresh.yml calls `rpc/ping`; still to confirm Supabase counts that as activity.
+    Original plan (agreed 2026-09-24): sign in with Google so a new browser shows your teams and leagues.
     Goal: open the site anywhere, sign in once, see teams, settings and leagues with no Import.
     - Supabase only (free tier): Supabase Auth with the Google provider + one table `configs(user_id uuid pk ->
       auth.users, data jsonb, updated_at timestamptz)` with RLS `auth.uid() = user_id` for select/insert/update.
