@@ -172,6 +172,10 @@ User-approved order: 1–5, then the rest.
     floating bottom tab bar (icon, label on the active one); Best Teams rows fit a 375px phone (constructors stacked,
     drivers 2×2, xPts + xΔ$ (or xSPts + xPts) stacked in `td.mv`, ⋯ under the rank; desktop-only cells carry
     `data-vc`). Elite "Chip usage by round" grid (top-100 export) with T1/T2/T3 outlines of your chip rounds.
+    Calculator on a phone is a full-screen app: the panes form a horizontal scroll-snap strip (swipe between Best
+    Teams / Settings+Simulation / Drivers / Constructors; tabs follow via a debounced scroll listener, tapping a tab
+    scrolls there), each pane scrolls vertically, and the tab bar is docked in normal flow at the bottom (nothing
+    under it). The header's team switch is hidden there (Settings has the picker).
 11. [ ] Option (not started): a Live Scoring view like theirs (per-asset category breakdown for the current weekend,
     your teams' running totals). Only as fresh as the last build (every 30 min Thu–Sun): F1's feeds have no CORS.
 Not doing (agreed): paywall/subscriber data, suggestions box, curve styles, view toggles, "+" search, analyst

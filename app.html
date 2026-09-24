@@ -241,7 +241,11 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   .nav button[aria-current="page"] svg{color:var(--accent)}
   .nav .lbl{position:static;transform:none;opacity:1;background:none;outline:0;padding:0;font-size:10px;color:inherit}
   .shell{padding-block:0 calc(24px + env(safe-area-inset-bottom,0px))}
-  body:has(#view-calc:not([hidden])) .shell{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  body:has(#view-calc:not([hidden])){overflow:hidden}
+  body:has(#view-calc:not([hidden])) .shell{height:100dvh;display:flex;flex-direction:column;padding-bottom:0}
+  body:has(#view-calc:not([hidden])) .bar{flex:none;margin-bottom:10px}
+  body:has(#view-calc:not([hidden])) .bar > div:last-child{display:none!important} /* the team is picked in Settings */
+  #view-calc:not([hidden]){flex:1;min-height:0;display:flex;flex-direction:column}
   .appbar{display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:45;background:rgba(5,5,5,.94);backdrop-filter:blur(8px);margin:0 -16px 12px;padding:calc(8px + env(safe-area-inset-top,0px)) 16px 8px;border-bottom:1px solid var(--line)}
   .appbar #appTitle{font-family:var(--display);font-size:17px;flex:1}
   .appmenu:not([hidden]){display:flex;position:fixed;inset:0;z-index:80;background:var(--bg);flex-direction:column;padding:calc(12px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));overflow:auto}
@@ -251,9 +255,12 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   .appmenu .mlist button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
   .appmenu .mlist button[aria-current="page"]{color:var(--fg)}
   .appmenu .mlist button[aria-current="page"] span{text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:2px}
-  .calc{grid-template-columns:1fr}
-  .calc .col-c{display:flex}
-  .panel-tabs{display:flex;position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:40;background:rgba(10,10,10,.96);border-radius:14px;outline:1px solid var(--line);padding:6px;backdrop-filter:blur(8px)}
+  #view-calc .calc{flex:1;min-height:0;display:flex;align-items:stretch;gap:16px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none}
+  #view-calc .calc::-webkit-scrollbar{display:none}
+  #view-calc .calc > .col{flex:0 0 100%;min-width:0;height:100%;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;gap:12px;padding-bottom:12px}
+  #view-calc .calc > .col-c{display:contents}
+  #view-calc .calc > .col-c > .panel{flex:0 0 100%;min-width:0;height:100%;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-align:start;scroll-snap-stop:always}
+  .panel-tabs{display:flex;order:2;flex:none;margin:0 -16px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
   .panel-tabs .seg{width:100%;justify-content:space-between;flex-wrap:nowrap;background:none;outline:0;padding:0}
   .panel-tabs .seg button{flex:0 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:14px}
   .panel-tabs .seg button .t{display:none}
@@ -278,9 +285,9 @@ td.chl{outline:2px solid var(--fg);outline-offset:-3px;border-radius:6px}
   .xin{width:54px}
   .race h1{font-size:18px}
   .race .lock{font-size:12px}
-  .calc [data-pane]:not(.on){display:none}
-  .calc .col:not(:has(.on)){display:none}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .panel-tabs .seg button{background:var(--card)}
+  .panel-tabs .seg button[aria-pressed="true"]{background:var(--tile)}
 }
 /* Calculator on wide screens: fits the window; each pane scrolls on its own, the page doesn't */
 @media (min-width:1281px){
@@ -1851,14 +1858,26 @@ function showView(v) {
   $("#appTitle").textContent = nb ? nb.textContent : "Pit Wall";
   $$("#menuList button").forEach((b) => (b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
   $("#appMenu").hidden = true; $("#menuBtn").setAttribute("aria-expanded", "false");
+  if (v === "calc" && isPhone()) requestAnimationFrame(() => showPane(S.pane && PANES.includes(S.pane) ? S.pane : "best", true));
   $$("#nav button").forEach((b) => (b.dataset.view === v ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
   $$("[data-v]").forEach((m) => (m.hidden = m.id !== "view-" + v));
   save();
 }
-function showPane(p) {
+const PANES = ["best", "settings", "drivers", "cons"];
+const isPhone = () => matchMedia("(max-width:900px)").matches;
+// the page a pane lives on in the phone's swipe strip: Best Teams and Settings (+ Simulation) are whole columns
+const paneEl = (p) => { const el = document.querySelector(`#view-calc [data-pane="${p}"]`); return el && (p === "best" || p === "settings") ? el.closest(".col") : el; };
+function markPane(p) {
   S.pane = p;
   $$("[data-pane]").forEach((el) => el.classList.toggle("on", el.dataset.pane === p));
   $$("[data-pane-btn]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.paneBtn === p)));
+}
+function showPane(p, instant) {
+  markPane(p);
+  if (isPhone() && !$("#view-calc").hidden) {
+    const strip = $("#view-calc .calc"), el = paneEl(p);
+    if (el) strip.scrollTo({ left: el.offsetLeft - strip.offsetLeft, behavior: instant ? "auto" : "smooth" });
+  }
   save();
 }
 function renderAll() {
@@ -2037,6 +2056,20 @@ document.addEventListener("submit", (e) => {
   const v = $("#lgKey").value; if (v) tryUnseal(v, false);
 });
 
+// phone: swiping the Calculator's panes moves the tab bar with you
+{
+  const strip = $("#view-calc .calc");
+  let t = null;
+  strip.addEventListener("scroll", () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      if (!isPhone()) return;
+      const x = strip.scrollLeft;
+      const best = PANES.reduce((b, p) => { const el = paneEl(p), d = Math.abs(el.offsetLeft - strip.offsetLeft - x); return !b || d < b.d ? { p, d } : b; }, null);
+      if (best && best.p !== S.pane) { markPane(best.p); save(); }
+    }, 60);
+  }, { passive: true });
+}
 // phone menu: the same tools as the rail, as a full-screen list
 $("#menuList").innerHTML = $$("#nav button").map((b) => `<button data-view="${b.dataset.view}">${b.querySelector("svg").outerHTML}<span>${esc(b.querySelector(".lbl").textContent)}</span></button>`).join("");
 $("#menuBtn").addEventListener("click", () => { $("#appMenu").hidden = false; $("#menuBtn").setAttribute("aria-expanded", "true"); $("#menuClose").focus(); });
