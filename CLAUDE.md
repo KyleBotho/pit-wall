@@ -425,8 +425,17 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         Ideas not tried: fit lapStart / lap1 / followMin to places gained & lost (section 5 targets, not the gate);
         tyre strategy offsets; fit the kernel on model pace rather than realised laps; stage 4 (race pace) is the
         bigger ceiling (−0.44) and may matter more than the race mechanics.
-      - [ ] 4. g-g-V envelopes per car on the next track's geometry -> per-team pace shift (mainly race pace). Check:
-        section 9, especially without practice.
+      - [x] 4. (2026-09-25) STOPPED AT THE FEASIBILITY CHECK: no signal, so no engine work. Simplified envelope =
+        time lost per speed band (<140 / 140-200 / 200-260 / >260 km/h, by the fastest lap's speed at each point of
+        the distance-normalised lap) on each team's best stall-free qualifying lap vs the session's fastest (scratch
+        script, not kept; 12 rounds usable, China/Japan too stalled). Band time shares look right (Monaco 42% < 140,
+        Monza 53% > 260). Walk-forward R4+ (95 team-rounds): predicted team swing at the track (track band mix x the
+        team's band profile relative to its overall gap over earlier rounds) vs actual: qualifying r 0.03, race pace
+        r 0.10. Split-half stability of team band profiles across teams: fast corners 200-260 km/h 0.77, slow 0.09,
+        140-200 −0.16, straights −0.28 (2026 straight-line speed follows each track's energy budget, not the car).
+        Fast-corner band alone: qualifying r 0.17, race r 0.01. Race pace (the −0.44 ceiling) shows nothing; like
+        the hand-set track tags before (~0%), track-type fit doesn't predict team pace in 2026. The ceiling looks
+        like weekend-specific variation. Re-test with ~20 rounds (fast-corner band for qualifying only).
       - [ ] 5. Minisector ideal laps (two disjoint sets) for short-run practice pace. Sections 4 + 9; low expectations.
       - [ ] 6. Ship: build-time runs in CI, Calculator reads them, Sim lab tab, tests, frozen projection.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
