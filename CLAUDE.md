@@ -233,7 +233,13 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       Price changes > "What is more budget worth?": gain per race vs your budget from −$2m to +$5m, from your team
       (free transfers, −10 extras) and with a free rebuild, against the flat xΔ$Pts rate; step chart + table with
       what the extra money buys. Baku, fresh pick: $99.8m → $101.4m = +13.3 (ANT), nothing in between.
-- [ ] Value of an extra transfer (nobody models it).
+- [x] 2026-09-25 What a transfer is worth (nobody models it): Calculator > Plan & chip > "What is a transfer worth?".
+      `planHorizon` over every simulated race (3), once per number of transfers made now (`firstMaxT` caps the first
+      race only; unused free ones carry, extras −10) and once with one more free transfer: spend now vs bank, whether
+      a hit pays, and what an extra free transfer is worth. Beam 6, ~2 s (shows "Working it out…" first). The plans
+      end at the last simulated race, so a transfer still banked then counts for nothing: banking is undervalued a
+      little. Planner stages shared with the race-by-race plan (`planStages`). Example (Team 1, Baku): 3 now with a
+      −10 hit beats 2 by 9.6 over R15-R17, so an extra free transfer is worth exactly the 10 it saves.
 - [ ] 9. The big one, once the rest is done (user wants time spent to get it right): a lap-by-lap race model built on
       sub-lap segments (rhter's own limitation: one time per lap can't produce DRS trains), car-performance envelopes
       (g-g-V from telemetry, projected onto the next track's geometry for pre-practice pace), minisector ideal laps

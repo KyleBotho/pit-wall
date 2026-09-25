@@ -148,7 +148,7 @@ function showBmode() {
 let modalKind = null; // "editor" while the team editor is open (it re-renders as the team changes)
 function openModal(kind = null) {
   modalKind = kind;
-  $("#modal .mbox").classList.toggle("wide", kind === "budget");
+  $("#modal .mbox").classList.toggle("wide", kind === "budget" || kind === "transfer");
   $("#modal").hidden = false;
 }
 function closeModal() {
@@ -593,6 +593,7 @@ const CLICK_ID = {
   planBtn: () => openPlan(),
   chipValBtn: () => openChipValues(),
   budgetValBtn: () => openBudgetValue(),
+  transferValBtn: () => openTransferValue(),
   xoReset: () => {
     state.xo = {};
     recompute(0);

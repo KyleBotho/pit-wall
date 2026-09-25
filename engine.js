@@ -1897,8 +1897,9 @@
   /** Best sequence of teams race by race: transfers can wait for a later race, free transfers carry over (2 a race,
    * at most one unused carries: 3 max), and the budget grows or shrinks with the price changes of the team held.
    * Beam search: `beam` teams for the first race (best by that race and by keeping them for the whole horizon), the
-   * best few moves from each for the next race, and so on. The chip plays in the first race only.
-   * @param {Stage[]} stages @param {string[]} team @param {OptOpts & { beam?: number, bank?: number, perFree?: number, carryMax?: number }} o
+   * best few moves from each for the next race, and so on. The chip plays in the first race only. `firstMaxT` caps the
+   * first race's transfers only (what banking transfers is worth: plan with at most k now, the rest carried over).
+   * @param {Stage[]} stages @param {string[]} team @param {OptOpts & { beam?: number, bank?: number, perFree?: number, carryMax?: number, firstMaxT?: number }} o
    * @returns {Plan[]} best plans first */
   function planHorizon(stages, team, o) {
     const beam = o.beam || 12,
@@ -1919,10 +1920,8 @@
       }
       return { ...c, e, boostE: c.kind === "D" ? b : 0 };
     });
-    const firsts = [
-      ...optimise(stages[0].cand, team, { ...o, top: beam }),
-      ...optimise(whole, team, { ...o, top: beam }),
-    ];
+    const o1 = { ...o, maxT: Math.min(o.maxT, o.firstMaxT ?? 7), top: beam };
+    const firsts = [...optimise(stages[0].cand, team, o1), ...optimise(whole, team, o1)];
     const seen = new Set();
     /** @type {Plan[]} */
     let plans = [];

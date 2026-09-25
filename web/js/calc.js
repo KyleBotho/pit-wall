@@ -848,9 +848,10 @@ function renderAssetPanels() {
 /* ---------- race-by-race plan (horizon 2-3) ---------- */
 // The best sequence of teams over the horizon from the starting team (Engine.planHorizon): per race, that race's
 // expected points and Boost; the next race's price changes move the budget for the one after.
-function openPlan() {
-  const C = calcCtx(),
-    { chipK, H, T, pk, vp } = C;
+// the planner's races: each race's candidates (xΔ$Pts on the next race's price changes, as in Best Teams) and the
+// next race's simulated price changes, which move the budget for the one after
+function planStages(C, H) {
+  const { pk, vp } = C;
   const stages = [];
   for (let k = 0; k < H; k++) {
     const cand = DATA.assets
@@ -866,6 +867,12 @@ function openPlan() {
     // price changes: the simulated next race's; later races' aren't simulated per sample, so they count as none
     stages.push({ cand, dPrice: k === 0 ? Object.fromEntries(cand.map((c) => [c.id, priceEv(c.id)])) : {} });
   }
+  return stages;
+}
+function openPlan() {
+  const C = calcCtx(),
+    { chipK, H, T, pk } = C;
+  const stages = planStages(C, H);
   const locks = new Set(Object.keys(state.marks).filter((k) => state.marks[k] === "lock"));
   const bans = new Set(Object.keys(state.marks).filter((k) => state.marks[k] === "ban"));
   const plans = Engine.planHorizon(stages, T.team, {
@@ -1160,4 +1167,81 @@ function bvChart(box, ds, series, flat) {
     tip.hidden = true;
     cross.setAttribute("visibility", "hidden");
   });
+}
+
+/* ---------- what a transfer is worth (the starting team, every simulated race) ---------- */
+// Engine.planHorizon over every simulated race, once per number of transfers made now (0, 1, 2 ...; unused free
+// ones carry over, extras cost −10), and once with one more free transfer. Spend now or bank, and whether a hit pays.
+// The plans stop at the last simulated race, so a transfer still banked then counts for nothing: that edge
+// undervalues banking a little.
+function openTransferValue() {
+  const T = startTeam(),
+    chipK = activeChip();
+  const title = `<h3>What is a transfer worth? <small>${esc(T.none ? "no starting team" : T.name)}</small></h3>`;
+  if (T.none) {
+    $("#modalBody").innerHTML = title + `<p class="note">Pick a starting team first.</p>`;
+    return openModal("transfer");
+  }
+  if (chipK === "wildcard" || chipK === "limitless") {
+    $("#modalBody").innerHTML =
+      title +
+      `<p class="note">With ${esc(chipName(chipK))} every transfer this race is free. Clear the chip to see what a transfer is worth.</p>`;
+    return openModal("transfer");
+  }
+  $("#modalBody").innerHTML = title + `<p class="note">Working it out…</p>`;
+  openModal("transfer");
+  setTimeout(() => {
+    if (modalKind !== "transfer") return;
+    const C = calcCtx(),
+      n = forecast.races.length,
+      stages = planStages(C, n),
+      free = Math.max(0, +T.free || 0);
+    const marks = (to) => new Set(Object.keys(state.marks).filter((k) => state.marks[k] === to));
+    const o = { cap: cap(), free, maxT: 7, chip: chipK, locks: marks("lock"), bans: marks("ban"), beam: 6 };
+    const plan = (x) => Engine.planHorizon(stages, T.team, { ...o, ...x })[0] || null;
+    const rows = [];
+    // one row per number actually used: a cap of k that still uses fewer repeats the row above
+    for (let k = 0; k <= Math.min(7, free + 2); k++) {
+      const p = plan({ firstMaxT: k });
+      if (!p || p.steps[0].transfers === k) rows.push({ k, p });
+    }
+    const ok = rows.filter((r) => r.p);
+    const best = ok.reduce((a, r) => (!a || r.p.total > a.p.total + 1e-9 ? r : a), null);
+    const extra = plan({ free: free + 1 });
+    const races = forecast.races.map((g) => `R${g.gd}`).join("–");
+    const moves = (p) => {
+      const st = p.steps[0],
+        outs = T.team.filter((id) => !st.team.includes(id)),
+        ins = st.team.filter((id) => !T.team.includes(id));
+      return ins.length
+        ? `${outs.map((id) => code(byId[id])).join(", ")} → ${ins.map((id) => code(byId[id])).join(", ")}`
+        : "keep";
+    };
+    const used = (p) => p.steps[0].transfers;
+    const gainExtra = extra && best ? extra.total - best.p.total : null;
+    const bank = best && used(best.p) < free;
+    let html =
+      title +
+      `<p class="note">${free} free transfer${free === 1 ? "" : "s"} now; each race adds 2 and one unused carries (3 at most); extras cost −10. Plans run over the ${n} simulated races (${races}), with the xΔ$Pts setting on the next race's price changes as in the planner.</p>` +
+      (best
+        ? `<p>Best: <b>${used(best.p)} transfer${used(best.p) === 1 ? "" : "s"} now</b>${bank ? `, banking ${free - used(best.p)}` : used(best.p) > free ? `, taking a −${10 * (used(best.p) - free)} hit` : ""}. ` +
+          `One more free transfer now would be worth <b class="${gainExtra > 0.05 ? "good" : "muted"}">${sgn(gainExtra ?? 0, 1)}</b> over ${races}.</p>`
+        : `<p class="note">No legal plan within the budget.</p>`);
+    html +=
+      `<div class="tw"><table class="stat"><thead><tr><th title="Transfers made in the first race">Transfers now</th><th>Penalty now</th><th title="Expected points over the simulated races, penalties included">Plan total</th><th>vs best</th><th style="text-align:left">Now</th><th title="Transfers in the later races of the plan">Later</th></tr></thead><tbody>` +
+      rows
+        .map(({ k, p }) => {
+          if (!p) return `<tr><td>${k}</td><td colspan="5" class="dim">no legal plan</td></tr>`;
+          const d = p.total - best.p.total,
+            me = p === best.p;
+          return `<tr${me ? ' style="background:var(--accent-soft)"' : ""}><td>${k}</td><td class="${p.steps[0].penalty ? "bad" : "muted"}">${p.steps[0].penalty ? "−" + p.steps[0].penalty : "0"}</td><td><b>${f1(p.total)}</b></td><td class="${me ? "muted" : "bad"}">${me ? "best" : sgn(d, 1)}</td><td style="text-align:left" class="muted">${esc(moves(p))}</td><td class="muted">${p.steps
+            .slice(1)
+            .map((s) => s.transfers)
+            .join(", ")}</td></tr>`;
+        })
+        .join("") +
+      "</tbody></table></div>" +
+      `<p class="note dim">Beam search, like the race-by-race plan. A transfer still banked after ${forecast.races[n - 1] ? "R" + forecast.races[n - 1].gd : "the last race"} counts for nothing here, so banking looks slightly worse than it is. Incl / Excl marks apply; the maximum penalty setting doesn't (every hit is shown).</p>`;
+    $("#modalBody").innerHTML = html;
+  }, 30);
 }

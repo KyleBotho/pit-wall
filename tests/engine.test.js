@@ -494,6 +494,29 @@ test("planHorizon: waiting to transfer can beat transferring now, and matches a 
   assert.equal(best.steps[1].penalty, 0);
 });
 
+test("planHorizon: firstMaxT caps the first race's transfers only", () => {
+  const mk = (vals) =>
+    Object.entries(vals).map(([id, e]) => ({
+      id,
+      kind: id[0] === "K" ? "C" : "D",
+      price: 10,
+      e,
+      boostE: id[0] === "K" ? 0 : e,
+      active: true,
+    }));
+  // f is great in both races: with 1 free transfer the best plan takes it now
+  const r = { a: 20, b: 20, c: 20, d: 20, e: 5, f: 40, KA: 10, KB: 10, KC: 5 };
+  const team = ["a", "b", "c", "d", "e", "KA", "KB"];
+  const o = { cap: 100, free: 1, maxT: 7, chip: "", locks: new Set(), bans: new Set() };
+  const stages = [{ cand: mk(r) }, { cand: mk(r) }];
+  const [now] = E.planHorizon(stages, team, o);
+  const [wait] = E.planHorizon(stages, team, { ...o, firstMaxT: 0 });
+  assert.equal(now.steps[0].transfers, 1);
+  assert.equal(wait.steps[0].transfers, 0);
+  assert.equal(wait.steps[1].transfers, 1); // it still makes the move, one race later
+  assert.equal(Math.round(now.total - wait.total), 55); // race 1 with f in (+35) and as the Boost (+20)
+});
+
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {
   const m = toyModel(),
     keep = E.SIM.qualiNoTime;
