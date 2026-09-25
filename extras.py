@@ -24,6 +24,7 @@ KALSHI_SERIES = {
     "podium": ("KXF1RACEPODIUM", 3),
     "top10": ("KXF1TOP10", 10),
     "pole": ("KXF1POLE", 1),
+    "fl": ("KXF1FASTLAP", 1),  # race fastest lap (KXF1FASTESTLAP stopped after 2025)
 }
 
 

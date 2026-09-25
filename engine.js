@@ -42,6 +42,10 @@
     pitRecent: 8, // hand-set: races of pit-stop points used per constructor
     dotdShrink: 2, // hand-set: pseudo-votes "as expected" behind each driver's Driver of the Day popularity
     pitDotd: 0.9, // measured: Driver of the Day points per race that the pit residual leaves out (fallback model)
+    mate: "blend", // backtested (section 9, 2026-09-25: a tie): "blend" = each driver's pace mixed with prior races of
+    // the team average; "car" = the car's pace (both cars, recency-weighted) plus the driver's offset to it
+    offPrior: 3, // "car" only: pseudo-races of zero offset behind each driver's offset to his car (1.5-6 all tie)
+    offHalfLife: Infinity, // "car" only: recency half-life of the offset (8 was slightly worse)
   };
   const SIM = {
     qualiNoTime: 0.012, // hand-set: chance a driver sets no qualifying time (-5, starts last)
@@ -67,6 +71,9 @@
     oddsW: 0.5, // backtested (R5-R14 Kalshi at lock): market weight; 0.25-0.5 tie on CRPS, 0.5 best on MAE
     ovModel: 1, // backtested: 1 = overtakes from the grid / places-moved regression, 0 = each driver's season rate
     pitStops: 1, // backtested: 1 = resample the team's real pit scoring lines, 0 = its leftover race points
+    qSkew: 0, // backtested (section 9, 2026-09-25): skew-normal shape of the qualifying noise; 2-5 tie with 0
+    rSkew: 0, // backtested: the same for the race; 5 slightly worse. (Noise in 1/t² space skews by only ~0.02: a no-op)
+    flOddsW: 0, // backtested: share of races whose fastest lap is drawn from Kalshi's market; worse at every weight
   };
   // Constructor pit-stop points (2026 rules), from the team's fastest stop of the race: under 2.0 s 20, 2.0-2.19 10,
   // 2.2-2.49 5, 2.5-2.99 2, slower 0; the fastest stop of the race +5. Only used to check OpenF1's stop times
@@ -88,7 +95,7 @@
   /** @typedef {{ circuits?: { list: [string, number[], string][] }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number> }} RaceBlock */
-  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, gd?: number }} Odds */
+  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number }>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
@@ -203,6 +210,14 @@
     let u = 0;
     while (u === 0) u = r();
     return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r());
+  }
+  /** Standard (mean 0, sd 1) skew-normal draw with shape a; a = 0 is gauss(r) itself (same random stream).
+   * @param {Rng} r @param {number} a */
+  function skewNoise(r, a) {
+    if (!a) return gauss(r);
+    const d = a / Math.sqrt(1 + a * a);
+    const x = d * Math.abs(gauss(r)) + Math.sqrt(1 - d * d) * gauss(r);
+    return (x - d * Math.sqrt(2 / Math.PI)) / Math.sqrt(1 - (2 * d * d) / Math.PI);
   }
   /** @param {number} l @param {Rng} r */
   function poisson(l, r) {
@@ -662,7 +677,7 @@
   }
 
   /* ---------- model: pace, reliability, overtaking, pit stops from this season's results ---------- */
-  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number }} DriverModel */
+  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number }} DriverModel */
   /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
   /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
@@ -775,6 +790,13 @@
       const t = team[d.a.team];
       return (d.rs + P * (t.rw ? t.rs / t.rw : M.defaultGap)) / (d.rw + P);
     });
+    if (M.mate === "car") {
+      const car = carPlusOffset(data, drivers, rounds, last, decay, M, cap, F);
+      drivers.forEach((a, i) => {
+        paceQ[i] = car.q[i];
+        paceR[i] = car.r[i];
+      });
+    }
     // regression to the mean: past gaps overstate how far apart cars will be (luck in the average), so each is
     // pulled towards the field's median by paceShrink
     for (const arr of [paceQ, paceR]) {
@@ -939,6 +961,59 @@
       slopeR,
     };
   }
+  /** Pace as the car's plus the driver's offset to it (MODEL.mate "car"). The car: the mean gap of the team's cars
+   * each round, recency-weighted like the blend. The offset: the driver's gap minus that mean in rounds where the
+   * team had two cars with a time, with its own half-life and offPrior pseudo-rounds of zero (a rookie drives at
+   * the car's pace). Uses every driver who raced for the team, so a replaced team-mate still informs the car.
+   * @param {Data} data @param {Asset[]} drivers @param {number[]} rounds @param {number} last @param {number} decay
+   * @param {typeof MODEL} M @param {(v: number) => number} cap @param {number} F */
+  function carPlusOffset(data, drivers, rounds, last, decay, M, cap, F) {
+    const offDecay = Math.pow(0.5, 1 / M.offHalfLife);
+    /** @type {Record<string, { s: number, w: number }>[]} */
+    const carAcc = [{}, {}];
+    /** @type {Record<string, { s: number, w: number }>[]} */
+    const offAcc = [{}, {}];
+    for (const r of rounds) {
+      const w = Math.pow(decay, last - r),
+        wo = Math.pow(offDecay, last - r);
+      const rows = data.results.race[r] || [],
+        ncls = rows.filter((x) => x.cls).length || F;
+      const lapPace = (data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race && data.raceInfo[r].race.pace) || {};
+      /** @type {Record<string, [string, number][]>[]} team -> [tla, gap] for qualifying [0] and race [1] */
+      const by = [{}, {}];
+      for (const q of data.results.quali[r] || []) {
+        const g = q.gap != null ? cap(q.gap) : q.gap === undefined ? cap((q.pos - 1) * M.rankSlope) : null;
+        if (g != null) (by[0][q.team] = by[0][q.team] || []).push([q.tla, g]);
+      }
+      for (const row of rows) {
+        const lap = lapPace[row.tla];
+        const g = lap != null ? cap(lap) : row.cls ? cap((((row.pos - 0.5) / ncls) * F - 0.5) * M.rankSlope) : null;
+        if (g != null) (by[1][row.team] = by[1][row.team] || []).push([row.tla, g]);
+      }
+      for (let k = 0; k < 2; k++)
+        for (const [team, xs] of Object.entries(by[k])) {
+          const mean = xs.reduce((s, x) => s + x[1], 0) / xs.length;
+          const c = carAcc[k][team] || (carAcc[k][team] = { s: 0, w: 0 });
+          c.s += w * mean;
+          c.w += w;
+          if (xs.length < 2) continue;
+          for (const [tla, g] of xs) {
+            const key = tla + "|" + team,
+              o = offAcc[k][key] || (offAcc[k][key] = { s: 0, w: 0 });
+            o.s += wo * (g - mean);
+            o.w += wo;
+          }
+        }
+    }
+    const pace = (/** @type {number} */ k) =>
+      drivers.map((a) => {
+        const c = carAcc[k][a.team],
+          o = offAcc[k][a.tla + "|" + a.team];
+        return (c && c.w ? c.s / c.w : M.defaultGap) + (o ? o.s / (o.w + M.offPrior) : 0);
+      });
+    return { q: pace(0), r: pace(1) };
+  }
+
   /** The mean of a normal whose rounded, floored-at-0 draws average `target` (the old pit model's floor pushed the
    * average up by ~0.6 pts). @param {number} target @param {number} sd */
   function floorMean(target, sd) {
@@ -1193,6 +1268,7 @@
     const tOf = D.map((d) => teamIdx[d.team]),
       nt = Object.keys(teamIdx).length;
     const unc = opt.unc ?? SIM.unc;
+    const flOddsW = D.some((d) => d.flMk != null) ? SIM.flOddsW : 0;
     const known = opt.known || {};
     const pen = opt.pen || {};
     const tlaIdx = Object.fromEntries(D.map((d, i) => [d.tla, i]));
@@ -1278,7 +1354,11 @@
         const sd = SIM.qSd * (wet ? SIM.rainNoise : 1);
         for (let i = 0; i < nd; i++) {
           const noTime = r() < SIM.qualiNoTime * (wet ? 1.5 : 1);
-          arr.push({ i, s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + gauss(r) * sd, noTime });
+          arr.push({
+            i,
+            s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.qSkew) * sd,
+            noTime,
+          });
         }
       }
       arr.sort((a, b) => a.s - b.s);
@@ -1358,7 +1438,7 @@
         }
         const s = fixed
           ? fixed.indexOf(D[i].tla)
-          : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + gauss(r) * sd;
+          : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd;
         fin.push({ i, s });
       }
       fin.sort((a, b) => a.s - b.s);
@@ -1400,7 +1480,9 @@
         dW.push(dotdW(pos, g) * (D[i].dotdPop ?? 1));
       });
       if (fin.length) {
-        const f = fin[pick(flW, r)].i;
+        // a share of races take the fastest lap from the market (among the finishers), the rest from the model
+        const mkFl = !isSprint && flOddsW > 0 && r() < flOddsW ? fin.map((x) => D[x.i].flMk ?? 0) : null;
+        const f = fin[mkFl && mkFl.some((v) => v > 0) ? pick(mkFl, r) : pick(flW, r)].i;
         pts[f] += isSprint ? 5 : 10;
         addCat(f, isSprint ? "sprint" : "fl", isSprint ? 5 : 10);
         if (!isSprint) {
@@ -1942,6 +2024,8 @@
     });
     const odds = data.odds && data.odds.gd === g.gd ? data.odds : null;
     if (next && odds) model = applyOdds(model, c, odds, { w: o.oddsW ?? SIM.oddsW, seed: g.gd * 31 + 7 });
+    const fl = next && odds && odds.fl;
+    if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
     const wk = data.weekend && data.weekend.gd === g.gd ? data.weekend : null;
     /** @type {SimOpts} */
     const simOpt = { pen: { ...((wk && wk.penalties) || {}), ...(o.pen || {}) }, known: next && wk ? wk.grid : {} };

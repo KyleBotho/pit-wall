@@ -66,7 +66,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `backtest/run.js` (`npm run backtest [section numbers]`) — 1 price rule, 2 track model (leave-one-round-out, circuit
   history weight alpha), 3 retirements, 4 practice weights, 5 calibration by scoring category, 6 THE GATE:
   walk-forward projected points vs actual (CRPS, MAE, coverage, team pick; variants without market/practice/...),
-  7 frozen projections vs results, 8 pit-stop rule vs scoring lines. `backtest/walk.js` = the shared walk-forward
+  7 frozen projections vs results, 8 pit-stop rule vs scoring lines, 9 (only on request, minutes) experiments paired
+  against the shipped model. `backtest/walk.js` = the shared walk-forward
   harness (`asOf(r)` rebuilds the data as it stood before round r; exact CRPS). `backtest/fit.js` (`npm run fit`) =
   coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
@@ -175,6 +176,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   circuits: position changes x0.95, retirements x1.52, SC x1.14, grid-finish corr +0.04. Re-run section 2 each
   season: the new-regs effect may fade.
 - Unchanged: price rule (390/392), DNF team rate shrink k=16 no recency (log loss 0.4608), official scoring.
+- Tried and rejected 2026-09-25 (section 9): skewed session noise, car + driver-offset team-mates, the fastest-lap
+  market. All ties or worse; see the to-do list.
 - Known gaps (section 5): overtakes run low at a neutral track (4.05 vs 4.78), places lost too few (−0.22 vs −0.56),
   fastest lap / DotD slightly too spread (88% / 94% to the top seven vs 100%).
 - Default 10,000 sims per race × next 3 races (~1 s in the browser). Optimiser enumerates all teams; `planHorizon`
@@ -209,10 +212,15 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       Panel "Model team" under Season: per round line-up, transfers, free, budget, xPts, pts, your teams' official
       points, top-100 average; the gaps count only rounds both have. Test: on perfect projections it scores exactly
       what it projected, and follows the transfer rules.
-- [ ] Try in the backtest before adopting: lap-time noise in 1/t² space (skewed like real mistakes); a car-level +
-      driver-offset team-mate model; fastest-lap / DNF odds if Kalshi (or another free source) runs per-race markets
-      in 2026 (only 2025 fastest-lap events seen; KXF1RETIRE is season-long). rhter blends FL odds 50/50 and takes DNF%
-      from bookmakers; his users showed that misses chronic cases (Stroll), so test, don't switch.
+- [x] 2026-09-25 Tried in the backtest (section 9, `npm run backtest 9`: paired vs the shipped model, 5 seeds x 10,000
+      sims, ± = SE over the 10 rounds). None adopted; the switches stay in engine.js, off:
+      - Skewed noise (`SIM.qSkew` / `rSkew`, skew-normal shape): 2-5 all tie on CRPS (±0.01) and positions. Taken
+        literally, 1/t² space skews the noise by only ~0.02 at our 0.15-0.3% sd, so it's a no-op.
+      - Car + driver offset (`MODEL.mate "car"`, `offPrior`, `offHalfLife`): a tie (best MAE −0.03 ± 0.02 at prior 6).
+      - Fastest-lap market (`SIM.flOddsW`): the 2026 series is KXF1FASTLAP (KXF1FASTESTLAP stopped after 2025), one
+        event every round; now fetched live, archived at lock, and in `odds_by_round.json` (R5-R14). Worse at every
+        weight (log FL −0.04 at 25%, −0.20 at 100%; CRPS +0.03 at 100%): thin books (Gasly 25% at Spain). Re-test
+        with ~20 rounds. No per-race DNF market exists (KXF1RETIRE = Verstappen retiring from F1).
 - [ ] One-click overtake scenarios (low / base / high) on top of the circuit Overtaking slider.
 - [ ] Budget value slope per constructor pair (rhter: ~1.2 MCL+FER to ~1.7 with one A-tier constructor; leave
       sprints out of the slope). Low priority: he's moving away from hard budget optimisation himself.

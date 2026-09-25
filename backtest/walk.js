@@ -100,6 +100,8 @@ function evaluate(o = {}) {
     lsR: [],
     team: [],
     best: [],
+    lsFL: [],
+    byRound: [],
   };
   for (const r of rounds) {
     const Dr = asOf(r);
@@ -150,6 +152,15 @@ function evaluate(o = {}) {
       }
     });
     out.rho.push(spearman(xs, ys));
+    // log score of the fastest lap: the simulated chance of whoever set it
+    const flRow = (D.results.race[r] || []).find((x) => x.fl);
+    const flI = flRow ? sim.ids.findIndex((id) => D.assets.find((a) => a.id === id).tla === flRow.tla) : -1;
+    if (flI >= 0) out.lsFL.push(Math.log((sim.stats[flI].fl || 0) + 1e-3));
+    // per-round means (for paired comparisons: rounds are the independent units, assets within one aren't)
+    const k0 = out.byRound.reduce((s, x) => s + x.n, 0);
+    const cr = out.crps.slice(k0),
+      er = out.err.slice(k0);
+    out.byRound.push({ gd: r, n: cr.length, crps: mean(cr), mae: mean(er) });
     if (o.decision) {
       const actual = Object.fromEntries(D.assets.map((a) => [a.id, actualPts(a, r) ?? -20]));
       const pickTeam = (vals) => {
@@ -185,6 +196,8 @@ function evaluate(o = {}) {
     best: out.best.reduce((a, b) => a + b, 0),
     perRound: out.team,
     rounds: rounds.length,
+    lsFL: mean(out.lsFL),
+    byRound: out.byRound,
   };
 }
 

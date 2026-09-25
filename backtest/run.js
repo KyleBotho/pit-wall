@@ -349,6 +349,106 @@ function pits() {
   );
 }
 
+/* ---------- 9. experiments: candidate model changes, paired against the model as shipped ---------- */
+// Each variant runs on the same rounds and seeds as the shipped model (common random numbers). Rounds are the
+// independent units (assets within a round share its weekend), so ± is the standard error over rounds of the
+// per-round difference, averaged over the seeds. Adopt a variant only if it beats the shipped model clearly.
+function experiments() {
+  const N = +(process.env.EXP_N || 10000),
+    seeds = [1, 2, 3, 4, 5].slice(0, +(process.env.EXP_SEEDS || 5));
+  console.log(`
+9. Experiments vs the model as shipped (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS/MAE,`);
+  console.log("   > 0 better for the log scores of qualifying / race positions and of the fastest lap)");
+  const runAll = () => seeds.map((seed) => W.evaluate({ N, seed }));
+  const base = runAll();
+  const avg = (rs, f) => mean(rs.map(f));
+  const VARIANTS = [
+    ["qualifying noise skewed, shape 2", [[E.SIM, "qSkew", 2]]],
+    ["qualifying noise skewed, shape 5", [[E.SIM, "qSkew", 5]]],
+    ["race noise skewed, shape 2", [[E.SIM, "rSkew", 2]]],
+    ["race noise skewed, shape 5", [[E.SIM, "rSkew", 5]]],
+    [
+      "both skewed, shape 3",
+      [
+        [E.SIM, "qSkew", 3],
+        [E.SIM, "rSkew", 3],
+      ],
+    ],
+    [
+      "car + driver offset, offset prior 1.5",
+      [
+        [E.MODEL, "mate", "car"],
+        [E.MODEL, "offPrior", 1.5],
+      ],
+    ],
+    [
+      "car + driver offset, offset prior 3",
+      [
+        [E.MODEL, "mate", "car"],
+        [E.MODEL, "offPrior", 3],
+      ],
+    ],
+    [
+      "car + driver offset, offset prior 6",
+      [
+        [E.MODEL, "mate", "car"],
+        [E.MODEL, "offPrior", 6],
+      ],
+    ],
+    [
+      "car + offset, prior 3, offset half-life 8",
+      [
+        [E.MODEL, "mate", "car"],
+        [E.MODEL, "offPrior", 3],
+        [E.MODEL, "offHalfLife", 8],
+      ],
+    ],
+    ["fastest lap from the market, 25%", [[E.SIM, "flOddsW", 0.25]]],
+    ["fastest lap from the market, 50%", [[E.SIM, "flOddsW", 0.5]]],
+    ["fastest lap from the market, 100%", [[E.SIM, "flOddsW", 1]]],
+  ];
+  const nFl = Object.values(W.ODDS).filter((o) => o.fl && D.done.includes(+o.gd) && +o.gd >= 5).length;
+  const rows = [
+    {
+      variant: "model as shipped",
+      CRPS: +avg(base, (r) => r.crps).toFixed(3),
+      MAE: +avg(base, (r) => r.mae).toFixed(3),
+      "log Q": +avg(base, (r) => r.lsQ).toFixed(3),
+      "log R": +avg(base, (r) => r.lsR).toFixed(3),
+      "log FL": +avg(base, (r) => r.lsFL).toFixed(3),
+    },
+  ];
+  const pm = (d) => {
+    const m = mean(d),
+      se = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / (d.length - 1) / d.length);
+    return `${m >= 0 ? "+" : ""}${m.toFixed(3)} ± ${se.toFixed(3)}`;
+  };
+  for (const [label, set] of VARIANTS) {
+    const keep = set.map(([o, k]) => o[k]);
+    set.forEach(([o, k, v]) => (o[k] = v));
+    const v = runAll();
+    set.forEach(([o, k], i) => (o[k] = keep[i]));
+    const per = (f) =>
+      base[0].byRound.map((_, k) => mean(seeds.map((_, j) => f(v[j].byRound[k]) - f(base[j].byRound[k]))));
+    const d = (f) => {
+      const x = avg(v, f) - avg(base, f);
+      return `${x >= 0 ? "+" : ""}${x.toFixed(3)}`;
+    };
+    rows.push({
+      variant: label,
+      CRPS: pm(per((x) => x.crps)),
+      MAE: pm(per((x) => x.mae)),
+      "log Q": d((r) => r.lsQ),
+      "log R": d((r) => r.lsR),
+      "log FL": d((r) => r.lsFL),
+    });
+  }
+  table(rows);
+  console.log(
+    `   fastest-lap odds at lock for ${nFl} of the rounds (history/<season>/odds, backtest/odds_by_round.json)`,
+  );
+}
+
 if (want(1)) prices();
 if (want(2)) track();
 if (want(3)) retirements();
@@ -357,3 +457,4 @@ if (want(5)) calibration();
 if (want(6)) walkForward();
 if (want(7)) frozen();
 if (want(8)) pits();
+if (only.includes(9)) experiments(); // slow (minutes): only on request, npm run backtest 9
