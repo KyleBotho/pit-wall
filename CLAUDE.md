@@ -228,7 +228,12 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 - [ ] Check on real data after Baku: the R15 snapshot's line-ups explain R15 (the user's leagues; his team-tracking league was
       still 403 on 2026-09-25). Rounds that come out "not worked out" mean the feed's line-up isn't the scoring team.
 - [ ] Decide (user): a dedicated "Pit Wall" F1 account whose session reads every opted-in team's rounds exactly
-      (discussed 2026-09-25; not built). See the session notes in memory.
+      (discussed 2026-09-25; not built). He made the account on 2026-09-25; the private repo's daily
+      `session_check.py` (workflow "Pit Wall session check") logs whether its session still works to
+      `history/session-check.csv`. First run 2026-09-25: HTTP 200, team returned.
+- [ ] TO DO (set 2026-09-25): around 2026-10-09 (or as soon as a check run fails) read that log in
+      `../pit-wall-private` (`git pull` first). The first failing day = the session's lifetime; then decide with the
+      user whether account-based tracking can run unattended or needs a manual cookie refresh every N days.
 
 ### To do (agreed 2026-09-25, in this order)
 - [x] 2026-09-25 Mechanical "model team" in Hindsight (rhter's public "stats team" ranked 1,166–4,105 globally in
