@@ -99,3 +99,20 @@ test("assets that no longer exist are dropped", opt, () => {
   assert.deepEqual(s.pins, []);
   assert.deepEqual(s.drafts, []);
 });
+
+test("teams saved before tracking are taken as set up for the next race", opt, () => {
+  const run = page();
+  const next = D.schedule.find((g) => !D.done.includes(g.gd));
+  const s = run(
+    `loadState(${JSON.stringify({
+      v: D.season,
+      schema: 4,
+      teams: [
+        { name: "A", team: lineup(), example: false },
+        { name: "B", team: lineup(), example: true },
+      ],
+    })})`,
+  );
+  assert.equal(s.teams[0].asOf, next ? next.gd : 1e9);
+  assert.equal(s.teams[1].asOf, undefined);
+});

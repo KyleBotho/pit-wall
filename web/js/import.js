@@ -32,6 +32,42 @@ function chipsFrom(u) {
     noneg: on(u.nonigativetakengd),
   };
 }
+// One played round from an export team record: the same fields the private repo's backfill.py keeps, so Hind.track
+// reads imported and sealed rounds alike. A Final Fix lists both drivers: the qualifying team is kept as ids and the
+// swap separately.
+function roundRecord(u, gd, start) {
+  const chip = Object.keys(CHIP_GD).find((k) => CHIP_GD[k].some((f) => +u[f] === gd)) || null;
+  const ffIn = String(u.finalfxnewplayerid || ""),
+    ffOut = String(u.finalfxoldplayerid || "");
+  const ff = ffIn && ffOut ? { out: ffOut, in: ffIn, cat: u.finalfxracecat || "R" } : null;
+  return {
+    ids: (u.playerid || []).map((p) => String(p.id)).filter((id) => !ff || id !== ffIn),
+    ff,
+    start,
+    boost: u.capplayerid,
+    x3: u.mgcapplayerid,
+    budget: u.maxteambal || (u.team_info && u.team_info.maxTeambal),
+    bank: u.teambal,
+    free: u.subsallowed,
+    subs: u.usersubs,
+    chip,
+  };
+}
+// a member's played rounds; the team going into each is the previous round's (the one before a Limitless round)
+function memberRounds(m) {
+  const out = {};
+  let held = [];
+  for (const g of Object.keys(m.teams || {})
+    .map(Number)
+    .sort((a, b) => a - b)) {
+    const u = m.teams[g]?.Data?.Value?.userTeam?.[0];
+    if (!u || u.gdpoints == null) continue;
+    const r = roundRecord(u, g, held);
+    out[g] = r;
+    if (r.chip !== "limitless") held = r.ids;
+  }
+  return out;
+}
 function lineup(u) {
   const ids = (u.playerid || []).map((p) => String(p.id)).filter((id) => byId[id]);
   const drs = ids.filter((id) => byId[id].kind === "D"),
@@ -69,6 +105,7 @@ function importOfficial(d) {
       example: false,
       ovPts: +u.ovpoints || null,
       ovRank: +u.ovrank || null,
+      asOf: latest, // set up for this race: tracking only takes over once it's been run
     });
     res.teams++;
   }
@@ -98,6 +135,7 @@ function importOfficial(d) {
           bank: +u.teambal || 0,
           chips: chipsFrom(u),
           chipGd: chipRounds(u),
+          rounds: memberRounds(m),
           hist,
           mine: mine.has(name),
         };

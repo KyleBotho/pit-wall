@@ -3,7 +3,7 @@
    turns a version-n object into version n+1. Everything read from localStorage or the account goes through
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 const KEY = "pitwall.v1";
-const SCHEMA = 4;
+const SCHEMA = 5;
 const VIEWS = ["calc", "live", "league", "elite", "hind", "stats", "assets", "prices", "practice", "grid", "settings"];
 
 // the example team a new browser starts with (config/season.json defaultTeam)
@@ -104,6 +104,12 @@ const MIGRATIONS = [
   (s) => {
     s.blend = 0;
     s.circuits = {};
+  },
+  // 4 -> 5: teams now follow F1's data after each race (applyTracked). A team saved before this is taken as set up
+  // for the next race, so it's only replaced once that race has been scored.
+  (s) => {
+    const next = DATA.schedule.find((g) => !DATA.done.includes(g.gd));
+    for (const t of s.teams || []) if (t && !t.example && t.asOf == null) t.asOf = next ? next.gd : 1e9;
   },
 ];
 

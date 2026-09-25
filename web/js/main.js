@@ -351,7 +351,7 @@ const CLICK = [
     "used",
     (d) => {
       const T = editStart();
-      if (T.none) return;
+      if (T.none || lockedChips(startTeam())[d.used]) return;
       T.chipsUsed[d.used] = !T.chipsUsed[d.used];
       if (T.chipsUsed[d.used] && state.chip === d.used) state.chip = "";
       rerender();
@@ -680,6 +680,7 @@ function importFile(t) {
   fr.onload = () => {
     try {
       const r = importOfficial(JSON.parse(fr.result));
+      applyTracked(); // chips a later round shows as played
       rerender();
       if (r.league) showView("league");
       toast(
@@ -743,6 +744,10 @@ const CHANGE_ID = {
   },
   lgChips: (t) => {
     state.lgChips = t.checked;
+    saveAnd(renderLeague);
+  },
+  lgRoundPick: (t) => {
+    state.lgRound = +t.value;
     saveAnd(renderLeague);
   },
   stMetric: (t) => {

@@ -137,6 +137,7 @@ function rivalTeams() {
         league: L.name,
         ids: m.ids,
         bank: m.bank,
+        free: m.free,
         boost: m.boost,
         chips: m.chips,
       });
@@ -146,7 +147,12 @@ function rivalTeams() {
 // older saves identify a rival by name only
 const findRival = (c) =>
   rivalTeams().find((x) => x.key === c.key) || rivalTeams().find((x) => !c.key && x.name === c.name);
-const rivalDefaults = (r) => ({ bank: r.bank ?? 0, free: 2, chipsUsed: r.chips || {}, boost: r.boost || "auto" });
+const rivalDefaults = (r) => ({
+  bank: r.bank ?? 0,
+  free: r.free ?? 2,
+  chipsUsed: r.chips || {},
+  boost: r.boost || "auto",
+});
 const NO_TEAM = Object.freeze({
   name: "No starting team",
   team: [],
@@ -164,14 +170,17 @@ function startTeam() {
   if (c && c.type === "rival") {
     const r = findRival(c);
     // settings you enter for a rival are kept per rival; the line-up follows the latest standings
-    if (r)
+    if (r) {
+      const cfg = state.rivalCfg[r.key] || state.rivalCfg[r.name] || rivalDefaults(r);
       return {
-        ...(state.rivalCfg[r.key] || state.rivalCfg[r.name] || rivalDefaults(r)),
+        ...cfg,
+        chipsUsed: { ...cfg.chipsUsed, ...r.chips }, // chips F1's data shows as played always count
         name: r.name,
         team: r.ids.slice(),
         ro: true,
         rivalKey: r.key,
       };
+    }
   }
   return activeTeam();
 }
@@ -190,6 +199,9 @@ const startKind = () => {
   const c = state.calcStart;
   return c && ["none", "draft", "rival"].includes(c.type) && startTeam() !== activeTeam() ? c.type : "team";
 };
+// chips F1's data shows the starting team has played ({chip: gameday}); the Calculator won't un-mark them
+const lockedChips = (T) =>
+  T.none || !(T.rivalKey || state.teams.includes(T)) ? {} : (tracked(T.name) || { used: {} }).used;
 // the chip the Calculator plays: the one picked, unless the starting team has already used it
 const activeChip = () => (state.chip && !startTeam().chipsUsed[state.chip] ? state.chip : "");
 const teamValue = () => startTeam().team.reduce((s, id) => s + byId[id].price, 0);

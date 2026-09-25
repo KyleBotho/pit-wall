@@ -11,7 +11,7 @@
   /** @type {Record<string, number>} */
   const ORDER = SESS_ORDER;
 
-  /** @typedef {{ ids: string[], start: string[], boost?: string | number | null, x3?: string | number | null, budget?: number | null, free?: number | null, subs?: number | null, chip?: string | null, ff?: { out: string, in: string, cat: string } | null }} Lineup */
+  /** @typedef {{ ids: string[], start: string[], boost?: string | number | null, x3?: string | number | null, budget?: number | null, bank?: number | null, free?: number | null, subs?: number | null, chip?: string | null, ff?: { out: string, in: string, cat: string } | null }} Lineup */
 
   /** @param {any} data the page's DATA @param {any} engine window.Engine / require("./engine.js") */
   function create(data, engine) {
@@ -168,7 +168,14 @@
         } else s += pts(id, gd, chip) * mult(id);
       }
       const unlimited = chip === "wildcard" || chip === "limitless" || fresh(gd, r.start);
-      return s - (unlimited ? 0 : 10 * Math.max(0, (r.subs || 0) - (r.free || 0)));
+      // an asset no longer in the game (a driver who moved team keeps his old asset, inactive): −25 each, −35 on a
+      // sprint weekend (F1's inactive_driver_penality_points; seen on league rivals R12–R14)
+      const inactive = r.ids.filter((id) => {
+        const h = at(String(id), gd);
+        return h && !h.active;
+      }).length;
+      const sprint = data.schedule.find((/** @type {any} */ x) => x.gd === gd)?.sprint;
+      return s - (unlimited ? 0 : 10 * Math.max(0, (r.subs || 0) - (r.free || 0))) - inactive * (sprint ? 35 : 25);
     }
 
     /** The model team: a hands-off follower of the projections. A fresh $100m pick in the first projected round,
@@ -247,7 +254,226 @@
       return out;
     }
 
-    return { SESS_ORDER, byId, at, delta, pts, budget, fresh, cand, run, sess, ff, withFF, own, score, modelTeam };
+    const round1 = (/** @type {number} */ x) => Math.round(x * 10) / 10;
+    const costAt = (/** @type {string[]} */ ids, /** @type {number} */ gd) =>
+      round1(ids.reduce((s, id) => s + (at(id, gd)?.price || 0), 0));
+    // chips tried when working a round out, fewest-assumption first: a chip is only credited when no plainer
+    // explanation rebuilds the official score
+    const TRY = ["", "noneg", "x3", "autopilot", "wildcard", "limitless", "finalfix"];
+
+    /** Every (Boost, x3, chip, Final Fix) that rebuilds a round's official score from the line-up seen after it.
+     * @param {string[]} ids the 7 assets that scored (after any Final Fix) @param {number} gd
+     * @param {{ start: string[] | null, free: number | null, budget: number | null, used: Set<string>, pts: number }} o
+     *   start null = the team going in is unknown (first seen mid-season): transfers unknown, up to 4 hits tried */
+    function explain(ids, gd, o) {
+      const drivers = ids.filter((id) => byId[id]?.kind === "D"),
+        isFresh = gd === data.schedule[0].gd,
+        start = o.start || ["?"], // score() treats an empty start as a fresh pick (no penalty)
+        top = drivers.slice().sort((a, b) => pts(b, gd, "") - pts(a, gd, ""))[0];
+      const subsOf = (/** @type {string[]} */ team) =>
+        isFresh || !o.start ? 0 : team.filter((id) => !start.includes(id)).length;
+      /** @type {any[]} */
+      const hits = [];
+      for (const chip of TRY) {
+        if (chip && o.used.has(chip)) continue;
+        /** @type {{ ids: string[], ff: any }[]} */
+        const teams = [{ ids, ff: null }];
+        if (chip === "finalfix") {
+          // the seen team may be the qualifying team again (the swap lasts one race; the incoming driver is any driver
+          // not in it) or hold the incoming driver (the one it replaced is any driver not in it). The swap is made
+          // after qualifying (cat R), or on a sprint weekend also after sprint qualifying (cat S).
+          teams.splice(0, 1);
+          const sprint = data.schedule.find((/** @type {any} */ x) => x.gd === gd)?.sprint;
+          for (const qualSeen of [true, false])
+            for (const d of drivers)
+              for (const a of data.assets) {
+                if (a.kind !== "D" || ids.includes(a.id) || !at(a.id, gd)) continue;
+                for (const cat of sprint ? ["R", "S"] : ["R"])
+                  teams.push(
+                    qualSeen
+                      ? { ids, ff: { out: d, in: a.id, cat } }
+                      : { ids: ids.map((id) => (id === d ? a.id : id)), ff: { out: a.id, in: d, cat } },
+                  );
+              }
+        }
+        for (const t of teams) {
+          const subs = subsOf(t.ids);
+          // a team over the budget can only be Limitless (and Limitless is only credited then); a Wildcard only when
+          // it's needed (more transfers than free)
+          const over = o.budget != null && costAt(t.ids, gd) > o.budget + 0.05;
+          if (over !== (chip === "limitless")) continue;
+          if (chip === "wildcard" && (o.free == null || subs <= o.free)) continue;
+          const boosts = chip === "autopilot" ? [top] : drivers;
+          const x3s = chip === "x3" ? drivers : [""];
+          // free transfers unknown (no record to carry from): any number of −10 hits
+          const unl = isFresh || chip === "wildcard" || chip === "limitless";
+          const pens = unl ? 0 : !o.start ? 4 : o.free == null ? subs : 0;
+          for (const x3 of x3s)
+            for (const boost of boosts) {
+              if (x3 && x3 === boost) continue;
+              const r = { ids: t.ids, start, boost, x3, chip, ff: t.ff, subs, free: o.free ?? subs };
+              const base = score(o.free == null ? { ...r, free: subs } : r, gd);
+              for (let k = 0; k <= pens; k++)
+                if (Math.abs(base - 10 * k - o.pts) < 0.5)
+                  hits.push({
+                    chip,
+                    boost: t.ff && boost === t.ff.out ? t.ff.in : boost, // the slot's Boost, named as F1 does
+                    x3: x3 || null,
+                    ff: t.ff,
+                    qual: t.ids,
+                    subs: o.start ? subs : null,
+                    free: o.free ?? (o.start ? subs - k : null),
+                  });
+            }
+        }
+        if (hits.length) break; // the plainest chip that explains it
+      }
+      return hits;
+    }
+
+    /** A team's season rebuilt from what's known: full records (an export) where they exist, else the line-up seen
+     * after the race plus the official round points. For a seen round: transfers = assets not in the team held going
+     * in; free transfers and budget carry on from the round before (2 free a race, one unused carries, none out of a
+     * Wildcard or Limitless round; the budget moves with the price changes of the team held; a Limitless round
+     * reverts to the team before it); Boost, x3 and chip = the plainest combination, among chips not yet used, that
+     * rebuilds the official score exactly. Several Boosts can fit when two drivers scored the same (`sure` false).
+     * No fit (a line-up changed after the race, or data missing) leaves the round unexplained.
+     * @param {Record<string, Lineup>} known per gameday, from exports
+     * @param {Record<string, string[]>} seen per gameday, the line-up that scored it
+     * @param {Record<string, number>} official per gameday, official round points */
+    function track(known, seen, official) {
+      /** @type {any[]} */
+      const rounds = [];
+      /** @type {Record<string, number>} */
+      const used = {};
+      let held = /** @type {string[] | null} */ (null),
+        budget = /** @type {number | null} */ (null),
+        free = /** @type {number | null} */ (null);
+      for (const gd of data.done) {
+        const k = known[gd],
+          ids = k ? k.ids.map(String) : (seen[gd] || []).map(String),
+          p = official[gd];
+        if (!k && (ids.length !== 7 || p == null)) {
+          held = budget = free = null; // a gap: nothing carries across it
+          continue;
+        }
+        // an export's Limitless round has an empty start too; only round 1 is a real fresh pick
+        const start = k ? (k.start || []).map(String) : held,
+          isFresh = gd === data.schedule[0].gd;
+        if (isFresh) {
+          budget = budget ?? 100;
+          free = 0;
+        }
+        /** @type {any} */
+        let r;
+        if (k) {
+          r = { ...k, ids, start, src: "export", sure: true, pts: p ?? null };
+          if (k.budget != null) budget = +k.budget;
+        } else {
+          const usedNow = new Set(Object.keys(used));
+          let hits = explain(ids, gd, { start, free, budget, used: usedNow, pts: p });
+          // Final Fix options that leave different teams going into the next round: keep those that also explain it
+          const nx = data.done[data.done.indexOf(gd) + 1];
+          if (new Set(hits.map((x) => x.qual.join())).size > 1 && !known[nx] && seen[nx] && official[nx] != null) {
+            const ok = hits.filter(
+              (x) =>
+                explain(seen[nx].map(String), nx, {
+                  start: x.qual,
+                  free: x.free == null ? null : 2 + Math.min(1, Math.max(0, x.free - (x.subs || 0))),
+                  budget: null,
+                  used: new Set([...usedNow, x.chip]),
+                  pts: official[nx],
+                }).length,
+            );
+            if (ok.length) hits = ok;
+          }
+          const h = hits[0];
+          r = h
+            ? {
+                ids: h.qual,
+                ff: h.ff,
+                start,
+                boost: h.boost,
+                x3: h.x3,
+                chip: h.chip || null,
+                subs: h.subs,
+                free: free ?? (hits.every((x) => x.free === h.free) ? h.free : null),
+                src: "seen",
+                sure: hits.every(
+                  (x) => x.chip === h.chip && x.boost === h.boost && JSON.stringify(x.ff) === JSON.stringify(h.ff),
+                ),
+                pts: p,
+              }
+            : {
+                ids,
+                ff: null,
+                start,
+                boost: null,
+                x3: null,
+                chip: null,
+                subs: isFresh ? 0 : start ? ids.filter((id) => !start.includes(id)).length : null,
+                free,
+                src: "seen",
+                sure: false,
+                unexplained: true,
+                pts: p,
+              };
+        }
+        r.gd = gd;
+        r.budget = budget;
+        r.cost = costAt(r.ids, gd);
+        // a Limitless round keeps the bank of the team it reverts to
+        const banked = r.chip === "limitless" ? held && costAt(held, gd) : r.cost;
+        r.bank = k && k.bank != null ? +k.bank : budget != null && banked != null ? round1(budget - banked) : null;
+        if (r.chip) used[r.chip] = gd;
+        rounds.push(r);
+        // into the next round: a Limitless round reverts to the team held before it, a Final Fix to the qualifying
+        // team (checked on MaxPeet R6 -> R7: the next start and budget follow the qualifying team)
+        /** @type {string[]} */
+        const nextHeld = r.chip === "limitless" && held ? held : r.ids.map(String);
+        if (budget != null) budget = round1(budget + nextHeld.reduce((s, id) => s + delta(id, gd), 0));
+        free =
+          r.chip === "wildcard" || r.chip === "limitless" || isFresh
+            ? 2
+            : r.free == null
+              ? null
+              : 2 + Math.min(1, Math.max(0, r.free - (r.subs || 0)));
+        held = nextHeld;
+      }
+      // the team going into the round after the last one known (asOf); older than the latest race if the data stops
+      const last = rounds[rounds.length - 1];
+      const next =
+        held && last
+          ? {
+              ids: held,
+              budget,
+              free,
+              bank: budget == null ? null : round1(budget - held.reduce((s, id) => s + (byId[id]?.price || 0), 0)),
+              asOf: last.gd,
+            }
+          : null;
+      return { rounds, used, next };
+    }
+
+    return {
+      SESS_ORDER,
+      byId,
+      at,
+      delta,
+      pts,
+      budget,
+      fresh,
+      cand,
+      run,
+      sess,
+      ff,
+      withFF,
+      own,
+      score,
+      modelTeam,
+      track,
+      explain,
+    };
   }
 
   const api = { create, SESS_ORDER };

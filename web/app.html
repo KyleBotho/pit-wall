@@ -257,6 +257,7 @@
               <details class="edit sub">
                 <summary>Chips this team has used</summary>
                 <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
+                <p class="note" id="chipsNote"></p>
               </details>
             </div>
           </details>
@@ -410,6 +411,22 @@
         <div class="seg" id="lgPick" style="align-self: flex-start"></div>
         <h3><span id="lgTitle">League</span> <small id="lgStamp"></small></h3>
         <div class="tw"><table id="lgTable"></table></div>
+      </section>
+      <section class="panel" id="lgRoundsBox" style="grid-column: 1/-1" hidden>
+        <h3>
+          Round by round
+          <select id="lgRoundPick" class="inp" style="width: auto"></select>
+          <details class="info">
+            <summary aria-label="About this">i</summary>
+            <div class="infobox">
+              Each team's line-up for a finished round with the points every asset scored (Boost 2×, x3 3×), the chip played, the bank and the transfers. Rounds
+              from a data export are exact. Later rounds are worked out from the line-up F1 shows after the race and the official round points: the Boost and
+              chip are whichever combination rebuilds the score, and budget and free transfers carry on from the round before. Autopilot looks like a Boost on
+              the top scorer and No Negative is invisible when nothing scored negative, so those two can go unnoticed.
+            </div>
+          </details>
+        </h3>
+        <div id="lgRounds" class="rcards"></div>
       </section>
       <section class="panel">
         <h3>

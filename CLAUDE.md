@@ -25,8 +25,11 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   carry-over and price-driven budget), `project`. Settings in `MODEL`, `SIM`, `TRACK`, each marked fitted /
   backtested / measured / hand-set.
 - `hindsight.js` — pure, `// @ts-check`: `Hindsight.create(DATA, Engine)` -> best teams on actual points (`run`,
-  `own`, Final Fix `ff`), `score(lineup, gd)`, which rebuilds F1's official round score (42/42 team-rounds), and
-  `modelTeam(proj)` (a hands-off follower of the projections, see Open items).
+  `own`, Final Fix `ff`), `score(lineup, gd)`, which rebuilds F1's official round score (42/42 own team-rounds
+  + every rival round in the export), `modelTeam(proj)` (a hands-off follower of the projections, see Open items)
+  and `track(known, seen, official)`: a team's season from export records where they exist, else the line-up seen
+  after each race + the official points (Boost/x3/chip = the plainest combination that rebuilds the score; budget,
+  bank, free transfers carried on; see "Round tracking" under Open items).
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
   fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
   refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
@@ -79,9 +82,11 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it
   (`tests/seal.test.js`). Used by the private repo's workflow, which checks this repo out.
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
-- `data/league.sealed.json` — encrypted `{leagues, rounds, lineups}`, written ONLY by the private repo's workflow.
-  `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per round
-  (ids, start line-up, boost, x3, budget, free, subs, chip) for Hindsight. Don't hand-edit.
+- `data/league.sealed.json` — encrypted `{leagues, rounds, lineups, rivals, seen}`, written ONLY by the private repo's
+  workflow. `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per
+  round (ids, start line-up, boost, x3, budget, bank, free, subs, chip) for Hindsight; `rivals` = the same for league
+  rivals (from exports); `seen` = {team: {gd: 7 ids}}, the line-up in each round's last league-feed snapshot (the
+  team that scored it), which `Hind.track` works the rest out from. Don't hand-edit.
 - `data/elite_history.json` — real global cut-offs/means per gameday, written by the private workflow (plaintext,
   numbers only). `refresh.py` merges it over the estimated R1–R14 paths in `data/elite_top100.json` `history`.
 - Private repo `KyleBotho/pit-wall-private` (local clone `../pit-wall-private`): `leagues.py` + `leagues.yml`
@@ -117,8 +122,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `git pull --rebase` first: both workflows push to main (history, sealed files).
 - After a fresh F1 Fantasy export (Claude for Chrome -> `Downloads/f1fantasy_official_data_<date>.json`): in
   `../pit-wall-private` run `python backfill.py "<that file>"` and push. It rewrites `history/backfill.json` (round
-  points R1+ and the user's per-round line-ups), and the push triggers a reseal. Own line-ups need login, so they
-  only advance with exports; everything else is saved automatically.
+  points R1+ and every team's per-round records: yours and league rivals'), and the push triggers a reseal. Between
+  exports the page works rounds out from the league feeds (Round tracking).
 - Check a CI run without auth: `https://api.github.com/repos/KyleBotho/pit-wall/actions/runs?per_page=3`.
 
 ## Data sources (all public, no login)
@@ -138,8 +143,10 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
   for it: one attempt, cached copy on failure, never aborts the build (seen 2026-09-24 during Baku FP1).
 - The old `fantasy-api.formula1.com` API (Postman doc, dlthub, skelmis package) is dead since 2023 — don't use.
-- Private-league standings come from the private repo (above), sealed. Chips, bank and round history are
-  logged-in data and are NOT fetched by code. The user collects an
+- Private-league standings come from the private repo (above), sealed. Chips, bank and free transfers are
+  logged-in data and are NOT fetched by code (checked 2026-09-25: `services/user/opponentteam/...` and
+  `services/user/gameplay/.../getteam` answer 401 without a session). Exports give them exactly; after the last
+  export `Hind.track` works them out from the public feeds (Round tracking). The user collects an
   export with Claude for Chrome; the page's Import button reads it in the browser only (localStorage).
   Never put league or personal data into the repo/site, and never handle the user's F1 login or tokens.
 
@@ -200,6 +207,28 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       (`dotdPopularity`: votes won vs what his finishes would earn, 2 pseudo-votes; 2026: VER ×2.2, RUS ×0.5). The
       "−20 only below 90% distance" rule is already how classification works (a car past 90% is classified).
       Gate after these: CRPS 8.854 / MAE 12.18 (unchanged within noise).
+
+### Round tracking (2026-09-25, user asked: "what do we get from a league member's page, and can't we get the rest?")
+- [x] `backfill.py` keeps every league member's per-round record (`rivals`), `leagues.py` seals `seen` line-ups and
+      rivals; `Hind.track` fills the rest. Validated (`tests/hindsight.test.js`): all 6 export teams given ONLY their
+      R1 record rebuild R2–R14 chips, Boost, budget, bank and transfers exactly, whichever way the feed shows a Final
+      Fix round. Budget = last budget + price changes of the team held (after Limitless: the team before it; after
+      Final Fix: the qualifying team). Free = 2 + one carried, none out of Wildcard/Limitless.
+- Findings: (1) inactive assets (a driver's old asset after a team move, e.g. LAW 114, HAD 11032 from R12) cost −25
+      each per round, −35 on a sprint weekend (`inactive_driver_penality_points`); now in `score()`. (2) F1's own
+      `subsallowed` goes stale for a team that doesn't save (an idle rival shows 2 free for 11 rounds); the rule gives 3,
+      which matches whenever the team is active. (3) Not detectable from scores: Autopilot (= a Boost on the top
+      scorer) and a No Negative that floored nothing; they can be marked by hand. (4) Several Final Fix swaps can fit
+      one score; the one that also explains the next round wins.
+- Page: League "Round by round" (a card per member per round, like F1's league view), Chips left / Bank / Free
+      columns without an import; `applyTracked()` updates your teams after each race (line-up, bank, free, chips) unless
+      `t.asOf` (the race a team is set up for; schema 5 sets it to the next race for older saves) is later; chips F1's
+      data shows are locked in the Calculator (`lockedChips`), others stay markable. Rivals as starting team get the
+      same bank/free/chips.
+- [ ] Check on real data after Baku: the R15 snapshot's line-ups explain R15 (the user's leagues; his team-tracking league was
+      still 403 on 2026-09-25). Rounds that come out "not worked out" mean the feed's line-up isn't the scoring team.
+- [ ] Decide (user): a dedicated "Pit Wall" F1 account whose session reads every opted-in team's rounds exactly
+      (discussed 2026-09-25; not built). See the session notes in memory.
 
 ### To do (agreed 2026-09-25, in this order)
 - [x] 2026-09-25 Mechanical "model team" in Hindsight (rhter's public "stats team" ranked 1,166–4,105 globally in
@@ -298,6 +327,8 @@ R. Code review (2026-09-24, user asked for a critique then "implement all"): spl
       across rounds could go in Hindsight once a few exist.
 - [x] Final Fix (2026-09-24): the outgoing driver keeps the sessions before the swap (`ff.cat`, R = before the
       race; order Sprint, Qualifying, Race), the incoming one scores from it on, and the slot keeps its Boost.
+      The swap lasts ONE race (found 2026-09-25): MaxPeet's R7 start line-up and R7 budget follow the R6
+      qualifying team, not the swapped one (`fillFromLineups` assumed it stayed; fixed).
       Reproduces MaxPeet R6 (203) exactly; with it all 42 team-rounds R1–R14 match official scores. `backfill.py`
       stores the qualifying line-up as `ids` plus `ff: {out, in, cat}` (the export lists 8 ids). Hindsight finds the
       best single swap on top of a team (`hdFF`, within budget) and has an FF chip option. Only one example seen:

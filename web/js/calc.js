@@ -145,16 +145,22 @@ function renderSettings() {
         )
         .join("")
     : `<option value="">No rivals yet (unlock or import a league)</option>`;
+  // chips F1's data shows as played are locked; the rest can still be marked by hand (Autopilot, or a No Negative that
+  // changed nothing, can't be seen in the data)
+  const locked = lockedChips(T),
+    playedIn = (k) => (locked[k] ? ` (played in R${locked[k]}, from F1's data)` : " (used)");
   $("#chipBar").innerHTML = CHIPS.filter(([k]) => k !== "finalfix")
     .map(([k, sh, n]) => {
-      const used = T.chipsUsed[k];
-      return `<button class="tbtn" data-chip="${k}" aria-pressed="${chipK === k}" ${used ? "disabled" : ""} title="${n}${used ? " (used)" : ""}">${sh}</button>`;
+      const used = T.chipsUsed[k] || locked[k];
+      return `<button class="tbtn" data-chip="${k}" aria-pressed="${chipK === k}" ${used ? "disabled" : ""} title="${n}${used ? playedIn(k) : ""}">${sh}</button>`;
     })
     .join("");
   $("#chipsUsed").innerHTML = CHIPS.map(
     ([k, sh, n]) =>
-      `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!T.chipsUsed[k]}" title="${n}">${sh}</button>`,
+      `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!(T.chipsUsed[k] || locked[k])}" ${locked[k] ? "disabled" : ""} title="${n}${locked[k] ? playedIn(k) : ""}">${sh}</button>`,
   ).join("");
+  const upTo = Object.keys(locked).length && tracked(T.name)?.next?.asOf;
+  $("#chipsNote").textContent = upTo ? `Locked chips come from F1's data up to R${upTo}. Mark any others by hand.` : "";
   const rem = Math.max(0, upcoming.length - 1);
   $("#xdp").checked = !!state.xdp;
   $("#xdpBox").hidden = !state.xdp;

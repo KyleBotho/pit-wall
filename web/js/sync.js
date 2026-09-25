@@ -25,48 +25,83 @@ async function tryUnseal(pass, quiet) {
     } catch (e) {}
     if (!quiet) toast(`Unlocked ${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}.`);
     queuePush(); // the key travels with the account (unless that's switched off)
-    if (forecast) fillFromLineups();
+    if (forecast) {
+      fillFromLineups();
+      applyTracked();
+    }
   } catch (e) {
     SEALED = null;
     if (!quiet) toast(e.message && e.message.includes("https") ? e.message : "That passphrase didn't work.");
   }
   if (forecast) refreshViews(LEAGUE_VIEWS);
 }
-// A browser with only example teams takes the line-ups from the last data export (sealed with the leagues).
+// A browser with only example teams takes your teams from the sealed data: the line-up, bank, free transfers and
+// chips going into the round after the last one known (an export, then the line-ups seen after each race).
 function fillFromLineups() {
   const L = SEALED && SEALED.lineups;
   if (!L || !state.teams.every((t) => t.example)) return;
-  let n = 0;
-  for (const [name, rounds] of Object.entries(L)) {
+  let n = 0,
+    latest = 0;
+  for (const name of Object.keys(L)) {
     if (n > 2) break;
-    const gds = Object.keys(rounds)
-        .map(Number)
-        .sort((a, b) => a - b),
-      gd = gds[gds.length - 1],
-      r = rounds[gd];
-    // a Final Fix swap stays in the team after that race
-    const got = (r.ids || []).map((id) => (r.ff && id === r.ff.out ? r.ff.in : String(id))).filter((id) => byId[id]);
+    const nx = (tracked(name) || {}).next;
+    if (!nx) continue;
+    const got = nx.ids.map(String).filter((id) => byId[id]);
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
     if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) continue;
-    const paid = ids.reduce((s, id) => s + (Hind.at(id, gd)?.price ?? byId[id].price), 0);
-    const chipsUsed = {};
-    for (const g of gds) if (rounds[g].chip) chipsUsed[rounds[g].chip] = true;
     Object.assign(state.teams[n], {
       name,
       team: ids,
-      bank: r.budget ? Math.max(0, Math.round((r.budget - paid) * 10) / 10) : state.teams[n].bank,
+      bank: nx.bank ?? state.teams[n].bank,
+      free: nx.free ?? 2,
       boost: "auto",
-      chipsUsed,
+      chipsUsed: usedChips(tracked(name)),
+      asOf: nx.asOf + 1,
       example: false,
     });
+    latest = Math.max(latest, nx.asOf);
     n++;
   }
   if (!n) return;
   rerender();
-  const latest = Math.max(...Object.values(L).flatMap((r) => Object.keys(r).map(Number)));
-  toast(
-    `Loaded ${n} team${n === 1 ? "" : "s"} from your last data export (R${latest}). Check free transfers and bank.`,
-  );
+  toast(`Loaded ${n} team${n === 1 ? "" : "s"} as they stood after R${latest}.`);
+}
+// Your teams follow F1's data: once a race is over and its line-ups are in, each team's current line-up, bank, free
+// transfers and chips played update by themselves. A team already set up for a later race (t.asOf: an import taken
+// before the lock, or an earlier update) is left alone; chips played are always added (and locked in the Calculator).
+function applyTracked() {
+  const news = [];
+  let changed = false;
+  for (const t of state.teams) {
+    if (t.example) continue;
+    const tr = tracked(t.name);
+    if (!tr) continue;
+    const used = usedChips(tr);
+    if (Object.keys(used).some((k) => !t.chipsUsed[k])) {
+      Object.assign(t.chipsUsed, used);
+      changed = true;
+    }
+    const nx = tr.next;
+    if (!nx || nx.asOf + 1 <= (t.asOf || 0)) continue;
+    const got = nx.ids.map(String).filter((id) => byId[id]);
+    const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
+    if (ids.length !== 7) continue;
+    const moved = ids.filter((id) => !t.team.includes(id)).length;
+    Object.assign(t, { team: ids, boost: "auto", asOf: nx.asOf + 1 });
+    if (nx.bank != null) t.bank = nx.bank;
+    if (nx.free != null) t.free = nx.free;
+    changed = true;
+    news.push(
+      `${t.name}${moved ? ` (${moved} change${moved === 1 ? "" : "s"})` : ""}: ${nx.bank != null ? money(nx.bank) + " bank, " : ""}${nx.free ?? "?"} free`,
+    );
+  }
+  if (!changed) return;
+  save();
+  rerender();
+  if (news.length) {
+    const r = Math.max(...state.teams.map((t) => (t.asOf || 1) - 1));
+    toast(`Teams updated after R${r}: ${news.join("; ")}.`);
+  }
 }
 function save() {
   try {

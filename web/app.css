@@ -937,6 +937,60 @@ details.edit[open] summary::before {
   border-color: transparent;
   color: var(--bad);
 }
+/* a chip already played can't be picked; one known from F1's data can't be un-marked either */
+.tbtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+.tbtn:disabled:hover {
+  color: var(--muted);
+  background: var(--card);
+}
+.tbtn.ban[aria-pressed="true"]:disabled {
+  opacity: 1;
+  text-decoration: none;
+}
+
+/* ---------- league: round by round ---------- */
+.rcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+.rcard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raise);
+  min-width: 0;
+}
+.rcard.mine {
+  border-color: var(--accent);
+}
+.rch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.rch b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rcp {
+  margin-left: auto;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rcard .note {
+  margin: 0;
+}
 
 /* ---------- settings ---------- */
 .fields {
