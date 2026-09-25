@@ -42,6 +42,13 @@
     pitRecent: 8, // hand-set: races of pit-stop points used per constructor
     dotdShrink: 2, // hand-set: pseudo-votes "as expected" behind each driver's Driver of the Day popularity
     pitDotd: 0.9, // measured: Driver of the Day points per race that the pit residual leaves out (fallback model)
+    // item 9 stage 4 (off: telemetry.py bands): a team's fast-corner loss (200-260 km/h, the only speed band stable
+    // across rounds) x how much more of the next track's practice lap is fast corners than the season's average, as a
+    // pace shift (%), weighted into qualifying (bandQ) and race pace (bandR); bandShrink pseudo-rounds of no loss
+    bandQ: 0,
+    bandR: 0,
+    bandShrink: 3,
+    bandMin: 3, // rounds with a practice band share before the shift applies
     mate: "blend", // backtested (section 9, 2026-09-25: a tie): "blend" = each driver's pace mixed with prior races of
     // the team average; "car" = the car's pace (both cars, recency-weighted) plus the driver's offset to it
     offPrior: 3, // "car" only: pseudo-races of zero offset behind each driver's offset to his car (1.5-6 all tie)
@@ -119,11 +126,12 @@
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
   /** @typedef {{ name: string, done: boolean, ref?: number | null, drivers: Record<string, { q: number | null, r: number | null, laps: number }> }} PracticeSession */
   /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string }} Gameday */
+  /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -762,7 +770,7 @@
   /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
-   * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
+   * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
    *   opt.model overrides MODEL settings (the backtests use it to try other values)
    * @returns {Model}
    */
@@ -913,8 +921,8 @@
         id: d.a.id,
         tla: d.a.tla,
         team: d.a.team,
-        qPace: paceQ[i] - nudge * slopeQ,
-        rPace: paceR[i] - nudge * slopeR,
+        qPace: paceQ[i] - nudge * slopeQ + M.bandQ * ((o.paceShift || {})[d.a.team] || 0),
+        rPace: paceR[i] - nudge * slopeR + M.bandR * ((o.paceShift || {})[d.a.team] || 0),
         qSe: sdQ / Math.sqrt(nq + P),
         rSe: sdR / Math.sqrt(nr + P),
         qMu: 0,
@@ -1326,7 +1334,7 @@
    * a car that fails is held SIM.lapFollow s behind. Stops reorder without passes. A retiring car drops out on a
    * random lap (its passes before that count); a safety car bunches the field at a random lap and freezes passing
    * for 3 laps. Returns the running cars in finishing order; passes[i] = passes made.
-   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number }} o
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
    * @param {Rng} r @param {Float64Array} passes @returns {number[]}
    */
   function raceLaps(o, r, passes) {
@@ -1405,16 +1413,29 @@
       }
       order = res;
       for (const i of order) cum[i] = nxt[i];
+      if (o.trace) traceLap(o.trace, order, cum, l, laps);
       if (frozen) frozen--;
     }
     return order;
+  }
+  /** @typedef {{ pos: Float64Array, gap: Float64Array, cnt: Float64Array }} LapTrace */
+  /** Add one lap's running order (positions and gaps to the leader, s) to a trace (per driver x lap sums).
+   * @param {LapTrace} t @param {number[]} order @param {Float64Array} cum @param {number} l @param {number} laps */
+  function traceLap(t, order, cum, l, laps) {
+    const lead = cum[order[0]];
+    order.forEach((i, k) => {
+      const j = i * laps + l - 1;
+      t.pos[j] += k + 1;
+      t.gap[j] += cum[i] - lead;
+      t.cnt[j]++;
+    });
   }
   /**
    * One race in timing segments (SIM.raceModel "segments", item 9 stage 3b): as raceLaps, with three segments a
    * lap, the segment pass curve SIM.segKernel (a car just passed by the car ahead tries less), held-up gaps drawn
    * from SIM.followMin + exponential(SIM.followMean), and the yo-yo: each segment two cars run < 0.3 s apart, both
    * make a pass-and-repass with chance SIM.yoyo (counted as overtakes, the order unchanged).
-   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number }} o
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
    * @param {Rng} r @param {Float64Array} passes @returns {number[]}
    */
   function raceSegs(o, r, passes) {
@@ -1513,12 +1534,13 @@
       }
       order = res;
       for (const i of order) cum[i] = nxt[i];
+      if (o.trace && k % S === 0) traceLap(o.trace, order, cum, k / S, o.laps);
       if (frozen) frozen--;
     }
     return order;
   }
-  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, wet: number }} Sim */
-  /** @typedef {{ known?: Record<string, string[]>, pen?: Record<string, number>, unc?: number }} SimOpts */
+  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, wet: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
+  /** @typedef {{ known?: Record<string, string[]>, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
   /**
    * Simulate one weekend N times, scored with the official rules. tot/nn hold every sample per asset
    * (asset a, sample s at a * N + s); nn is the No Negative score (negative events floored at 0).
@@ -1666,6 +1688,11 @@
     const lapT = circuit.lapT || 90,
       lapN = circuit.laps || 57,
       lapNs = Math.max(5, Math.round((lapN * 100) / 305));
+    // lap race only: each driver's position and gap to the leader at every lap end, summed over the races (opt.trace)
+    const trace =
+      opt.trace && lapMode
+        ? { pos: new Float64Array(nd * lapN), gap: new Float64Array(nd * lapN), cnt: new Float64Array(nd * lapN) }
+        : null;
     const lapPass = new Float64Array(nd),
       lapBase = new Float64Array(nd),
       ovUs = D.map((d) => d.ovU || 0);
@@ -1804,6 +1831,7 @@
             wet,
             sprint: isSprint,
             theta: isSprint ? calS.th : calR.th,
+            trace: isSprint ? undefined : trace || undefined,
             kappa: calR.ka,
           },
           r,
@@ -1991,7 +2019,21 @@
       } else st.pit = pitSum[a - nd] / N;
       return st;
     });
-    return { ids, N, field: F, tot, nn, stats, sc: scN / N, wet: wetN / N };
+    /** @param {Float64Array} v @param {number} i */
+    const perLap = (v, i) =>
+      Array.from({ length: lapN }, (_, l) => {
+        const c = /** @type {LapTrace} */ (trace).cnt[i * lapN + l];
+        return c ? v[i * lapN + l] / c : NaN;
+      });
+    const laps = trace
+      ? {
+          n: lapN,
+          pos: D.map((_, i) => perLap(trace.pos, i)),
+          gap: D.map((_, i) => perLap(trace.gap, i)),
+          run: D.map((_, i) => Array.from({ length: lapN }, (_, l) => trace.cnt[i * lapN + l] / N)),
+        }
+      : null;
+    return { ids, N, field: F, tot, nn, stats, sc: scN / N, wet: wetN / N, laps };
   }
 
   /* ---------- the betting market (next race) ---------- */
@@ -2426,6 +2468,32 @@
   }
   /** @param {{ mean: number }} st @param {number | null} form @param {number} blend */
   const blendMean = (st, form, blend) => (form == null ? st.mean : (1 - blend) * st.mean + blend * form);
+  /** Stage 4: each team's pace shift (%, + = slower) at the next track from its fast-corner band (see MODEL.bandQ).
+   * Needs the track's practice band shares (data.bands[gd].FP) and MODEL.bandMin earlier rounds with them.
+   * @param {Data} data @param {Gameday} g @returns {Record<string, number> | null} */
+  function bandShift(data, g) {
+    const B = data.bands || {},
+      fp = B[g.gd] && B[g.gd].FP;
+    if (!fp) return null;
+    const prior = Object.keys(B)
+      .map(Number)
+      .filter((x) => x < g.gd && (data.done || []).includes(x));
+    const shares = prior.map((x) => B[x].FP && B[x].FP.share[2]).filter((v) => v != null);
+    if (shares.length < MODEL.bandMin) return null;
+    const ds = fp.share[2] - shares.reduce((a, b) => a + /** @type {number} */ (b), 0) / shares.length;
+    /** @type {Record<string, { s: number, n: number }>} */
+    const rel = {};
+    for (const x of prior) {
+      const q = B[x].Q;
+      if (!q) continue;
+      for (const [tm, v] of Object.entries(q.teams)) {
+        const e = (rel[tm] = rel[tm] || { s: 0, n: 0 });
+        e.s += v.band[2] - v.gap;
+        e.n++;
+      }
+    }
+    return Object.fromEntries(Object.entries(rel).map(([tm, e]) => [tm, (ds * e.s) / (e.n + MODEL.bandShrink)]));
+  }
   /** Everything one race's simulation needs, at default settings unless overridden: the circuit (with this
    * weekend's rain forecast), the model (with practice and the market for the next race) and the sim options
    * (grid penalties, orders already known). @param {Data} data @param {Gameday} g
@@ -2441,6 +2509,7 @@
       teamShift: c.teamShift || {},
       practice: next ? data.practice || [] : [],
       practiceWeight: o.pw ?? DEFAULTS.pw,
+      paceShift: next && (MODEL.bandQ || MODEL.bandR) ? bandShift(data, g) || {} : {},
     });
     const odds = data.odds && data.odds.gd === g.gd ? data.odds : null;
     if (next && odds) model = applyOdds(model, c, odds, { w: o.oddsW ?? SIM.oddsW, seed: g.gd * 31 + 7 });
@@ -2630,6 +2699,7 @@
     circuitFor,
     trackModel,
     practiceRef,
+    bandShift,
     ovScenarios,
     withWeather,
     seasonRounds,

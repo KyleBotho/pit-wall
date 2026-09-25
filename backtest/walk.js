@@ -10,6 +10,26 @@ const D = loadData();
 const read = (f) =>
   fs.existsSync(path.join(__dirname, f)) ? JSON.parse(fs.readFileSync(path.join(__dirname, f), "utf8")) : {};
 const PRACTICE = read("practice_by_round.json");
+// item 9 stage 5: practice short-run pace from minisector ideal laps (telemetry.py minisectors), per round
+const MINI = {};
+if (D) {
+  const dir = path.join(__dirname, "..", "history", String(D.season || ""), "telemetry", "minisectors");
+  if (fs.existsSync(dir))
+    for (const f of fs.readdirSync(dir)) MINI[+f.slice(2, 4)] = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+}
+/** Round r's practice sessions with each driver's short-run gap taken from the minisector ideal laps where there is
+ * one (sessions and drivers without keep the lap-based gap). */
+function practiceMini(r) {
+  const m = MINI[r] || {};
+  return (PRACTICE[r] || []).map((s) => {
+    const g = m[s.name];
+    if (!g) return s;
+    const drivers = Object.fromEntries(
+      Object.entries(s.drivers).map(([t, d]) => [t, g[t] != null ? { ...d, q: g[t] } : d]),
+    );
+    return { ...s, drivers };
+  });
+}
 const ODDS = read("odds_by_round.json");
 // frozen live-site odds (history/<season>/odds) take precedence over the rebuilt ones
 if (D) {
@@ -53,6 +73,12 @@ function asOf(r, drop = []) {
     done: D.done.filter(keep),
     results: { race: cut(D.results.race), quali: cut(D.results.quali), sprint: cut(D.results.sprint) },
     trackStats: cut(D.trackStats),
+    // speed bands: earlier rounds whole, this round's practice shares only (known at lock)
+    bands: Object.fromEntries(
+      Object.entries(D.bands || {})
+        .filter(([g]) => keep(+g) || +g === r)
+        .map(([g, v]) => [g, +g === r ? { FP: v.FP } : v]),
+    ),
     raceInfo: cut(D.raceInfo),
     practice: PRACTICE[r] || [],
     weather: {},
@@ -155,6 +181,7 @@ function evaluate(o = {}) {
   for (const r of rounds) {
     const Dr = asOf(r);
     if (o.practice === false) Dr.practice = [];
+    else if (o.practiceMini) Dr.practice = practiceMini(r);
     if (o.odds === false) Dr.odds = null;
     const g = D.schedule.find((x) => x.gd === r);
     let setup = E.raceSetup(Dr, g, {
@@ -298,4 +325,4 @@ function baselines(from = 5) {
   return Object.fromEntries(Object.entries(e).map(([k, v]) => [k, mean(v)]));
 }
 
-module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, mean };
+module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, MINI, mean };

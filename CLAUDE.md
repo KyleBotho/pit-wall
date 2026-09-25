@@ -437,7 +437,26 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         Fast-corner band alone: qualifying r 0.17, race r 0.01. Race pace (the −0.44 ceiling) shows nothing; like
         the hand-set track tags before (~0%), track-type fit doesn't predict team pace in 2026. The ceiling looks
         like weekend-specific variation. Re-test with ~20 rounds (fast-corner band for qualifying only).
-      - [ ] 5. Minisector ideal laps (two disjoint sets) for short-run practice pace. Sections 4 + 9; low expectations.
+        2026-09-26, user asked for 4 and 5 built anyway and all of 2-5 run together: stage 4 now exists as a switch,
+        off (MODEL.bandQ / bandR = weight on the shift (%) = (next track's practice fast-corner share − the average
+        of earlier rounds' practice shares) x the team's fast-corner loss relative to its gap (qualifying, earlier
+        rounds, shrunk bandShrink 3), from bandMin 3 rounds with practice shares; `bandShift`). Data:
+        `telemetry.py bands` -> `history/2026/telemetry/bands/gdNN.json` (Q: shares + per-team loss per band; FP:
+        the fastest practice lap's shares), embedded as DATA.bands; walk.js gives round r only earlier rounds + its
+        own FP. Shifts are small (0-0.15% of a lap, midfield/back only).
+      - [x] 5. (2026-09-26) Built for the backtest only (not in the live pipeline): `telemetry.py minisectors` ->
+        `history/2026/telemetry/minisectors/gdNN.json`: per practice session and driver, push laps (104%, no
+        in/out laps, stall-free) split into two disjoint sets (odd/even), each set's ideal lap over 24 equal-
+        distance minisectors, averaged; % off the session's best. walk.js `practiceMini` swaps it in for the
+        short-run gap (evaluate option `practiceMini`). vs the lap-based gap: r 0.80 over 298 driver-sessions.
+        Practice telemetry fetched 2026-09-26 for this: FP2/FP3 of the normal weekends R6-R14 and FP1 of the
+        sprints R5/R9/R12 (17 sessions, 51-105 MB each, no blocks); R1-R4 and normal-weekend FP1 not fetched.
+        ALL OF 2-5 TOGETHER (section 9 group `combo`, 5 x 10,000, R5-R14, vs shipped, which includes 2):
+        without 2 +0.214 ± 0.122 CRPS (so stage 2 = −0.214); +3 −0.008 ± 0.103 (places +0.056); +4 −0.007 ±
+        0.010; +5 −0.029 ± 0.032 (log Q −0.057, places +0.094); 2+3+4+5 −0.010 ± 0.117, MAE +0.092, places
+        +0.191 ± 0.052, log Q −0.059. Parts 3+4+5 sum to −0.044; together −0.010: NO synergy, the combination is
+        worse on places and qualifying positions. Stage 2 carries all the gain. 4 and 5 stay off (5 isn't wired
+        into refresh.py / practice.py at all; it would need practice telemetry in CI).
       - [x] 6. (2026-09-25) Sim lab tab built (`web/js/lab.js`, view "lab", rail button `#labNav`). DESIGN CHANGE vs
         the plan above: runs happen IN THE BROWSER on demand, not in CI. The plan assumed the lap model would take
         minutes; it takes 1-3 s per 10,000 races (segments 2.9 s at Baku), so there is no GitHub token, edge function
@@ -453,8 +472,10 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         the run only (`withLab`) and restored, so no other view changes; settings in localStorage `pitwall.lab` (not
         synced). Panels: asset table (Q/R pace, DNF, FL, DotD, xOV, p25/xPts/p75, xPPM, P(rise)/P(drop), Δ vs
         shipped), qualifying/race position matrices with average position, points-vs-price scatter, the starting
-        team's points distribution (shipped model dashed), per-asset points histograms. Not yet: position/gap by
-        lap (needs lap traces out of raceLaps/raceSegs), price-step matrices beyond P(rise/drop), violins.
+        team's points distribution (shipped model dashed), per-asset points histograms, and (2026-09-26) average
+        position / gap to the leader by lap (lap races only: `simulate(..., { trace: true })` returns
+        `sim.laps` {n, pos, gap, run} from raceLaps/raceSegs; your starting team bold). Not yet: price-step matrices
+        beyond P(rise/drop), violins.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
       `npm run fit` again; with ~20 rounds the ±0.1 differences may become readable. `python backtest/odds_rounds.py`
       is only needed for rounds before the live odds archive (history/2026/odds, from R15).

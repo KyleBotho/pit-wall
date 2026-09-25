@@ -355,6 +355,17 @@ def load_practice(g):
     return prac
 
 
+def load_bands():
+    """Speed-band shares and each team's loss per band per round (telemetry.py bands; item 9 stage 4), as
+    DATA.bands. Written on a machine with the FastF1 cache; the build only reads them."""
+    d = os.path.join(ARCHIVE, "telemetry", "bands")
+    out = {}
+    for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        rec = read_json(os.path.join(d, f))
+        out[str(rec["gd"])] = {k: rec[k] for k in ("Q", "FP") if k in rec}
+    return out
+
+
 def add_lap_refs(track_stats):
     """Each finished round's practice reference lap (fastest session's `ref`, seconds) from the practice archive, as
     trackStats[gd].lap: with the circuit length it gives the track's average speed (engine.js TRACK.speed)."""
@@ -680,6 +691,7 @@ def collect():
         "evNames": [{"s": EV_SESSION.get(st, "?"), "n": n, "c": ev_code(st, n)} for st, n in ev_names],
         "practice": prac,
         "trackStats": track_stats,
+        "bands": load_bands(),
         "elite": elite,
         "leagueSealed": sealed,
         "live": live,
@@ -704,6 +716,7 @@ def main():
         data = read_json(args.data)
         data["cfg"] = CFG  # the page and engine always use the current config
         data["trackStats"] = add_lap_refs({str(k): v for k, v in data.get("trackStats", {}).items()})
+        data["bands"] = load_bands()
         data["projRebuilt"] = load_projections("rebuilt")
     else:
         try:

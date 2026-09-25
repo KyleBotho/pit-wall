@@ -39,6 +39,8 @@ const LAB_SWITCHES = [
   { g: "Track", o: "TRACK", k: "teamPace", l: "Team pace by track type", bool: true },
   { g: "Market", o: "SIM", k: "oddsW", l: "Betting-market weight", range: [0, 1, 0.05] },
   { g: "Market", o: "SIM", k: "flOddsW", l: "Fastest lap from the market", range: [0, 1, 0.05] },
+  { g: "Pace", o: "MODEL", k: "bandQ", l: "Fast-corner band shift into qualifying (4)", range: [0, 2, 0.1] },
+  { g: "Pace", o: "MODEL", k: "bandR", l: "Fast-corner band shift into race pace (4)", range: [0, 2, 0.1] },
   { g: "Pace", o: "MODEL", k: "practiceQ", l: "Practice short runs into qualifying pace", range: [0, 1, 0.05] },
   { g: "Pace", o: "MODEL", k: "practiceR", l: "Practice long runs into race pace", range: [0, 1, 0.05] },
   {
@@ -65,7 +67,7 @@ const labRead = () => {
     return {};
   }
 };
-const lab = { set: {}, race: 0, N: 10000, compare: true, pos: "r", ...labRead() };
+const lab = { set: {}, race: 0, N: 10000, compare: true, pos: "r", lapv: "pos", ...labRead() };
 const labSave = () => {
   try {
     localStorage.setItem(LAB_KEY, JSON.stringify(lab));
@@ -98,7 +100,8 @@ function labSetOwner(ok) {
       `<button data-view="lab">${$("#labNav svg").outerHTML}<span>Sim lab</span></button>`,
     );
   if (!labOwner && m) m.remove();
-  if (!labOwner && state.view === "lab") showView("calc");
+  // before start-up has computed anything, showView() itself keeps a non-owner out of the lab
+  if (!labOwner && state.view === "lab" && forecast) showView("calc");
 }
 
 /* ---------- a run ---------- */
@@ -131,14 +134,10 @@ function labSim(set, g, k, N) {
       circuit: state.circuits[g.gd] || {},
     });
     const t0 = performance.now();
-    const sim = Engine.simulate(
-      setup.model,
-      setup.circuit,
-      k === 0 ? sprintNext() : g.sprint,
-      N,
-      g.gd * 7919 + 13,
-      setup.simOpt,
-    );
+    const sim = Engine.simulate(setup.model, setup.circuit, k === 0 ? sprintNext() : g.sprint, N, g.gd * 7919 + 13, {
+      ...setup.simOpt,
+      trace: true,
+    });
     return { setup, sim, ms: performance.now() - t0 };
   });
 }
@@ -369,6 +368,57 @@ function labTeam(run) {
   );
 }
 
+// average position (or gap to the leader) at each lap end, per driver, from the lap races' traces
+function labLaps(run) {
+  const L = run.sim.laps;
+  if (!L)
+    return `<p class="note">Only the lap races record laps: set Race model to "Lap by lap" or "Timing segments" and Rerun.</p>`;
+  const gapMode = lab.lapv === "gap",
+    D = run.setup.model.drivers;
+  const T = startTeam(),
+    mine = new Set((T && T.team) || []);
+  const W = 720,
+    H = 340,
+    PL = 34,
+    PR = 44,
+    PT = 8,
+    PB = 22;
+  const vals = gapMode ? L.gap : L.pos;
+  let ymax = gapMode ? 0 : D.length;
+  if (gapMode) for (const v of vals) for (const x of v) if (x > ymax && isFinite(x)) ymax = x;
+  ymax = gapMode ? Math.ceil(ymax / 10) * 10 : ymax;
+  const X = (l) => PL + (l / Math.max(1, L.n - 1)) * (W - PL - PR),
+    Y = (v) => PT + ((gapMode ? v : v - 1) / Math.max(1, gapMode ? ymax : ymax - 1)) * (H - PT - PB);
+  let s = `<svg viewBox="0 0 ${W} ${H}" class="labsvg" role="img" aria-label="${gapMode ? "Gap to the leader" : "Average position"} by lap">`;
+  const step = gapMode ? Math.max(10, Math.round(ymax / 60) * 10) : 5;
+  for (let v = gapMode ? 0 : 1; v <= ymax; v += step)
+    s += `<line x1="${PL}" x2="${W - PR}" y1="${Y(v)}" y2="${Y(v)}" class="gl"/><text x="${PL - 6}" y="${Y(v) + 4}" text-anchor="end">${gapMode ? v + "s" : "P" + v}</text>`;
+  for (let l = 0; l < L.n; l += Math.max(5, Math.round(L.n / 60) * 10))
+    s += `<text x="${X(l)}" y="${H - 6}" text-anchor="middle">L${l + 1}</text>`;
+  // your team drawn last (on top), bolder
+  const order = D.map((d, i) => i).sort((a, b) => (mine.has(D[a].id) ? 1 : 0) - (mine.has(D[b].id) ? 1 : 0));
+  for (const i of order) {
+    const a = byId[D[i].id];
+    if (!a) continue;
+    let dPath = "",
+      last = null;
+    vals[i].forEach((v, l) => {
+      if (!isFinite(v)) return;
+      dPath += `${dPath ? "L" : "M"}${X(l).toFixed(1)},${Y(v).toFixed(1)}`;
+      last = [l, v];
+    });
+    if (!last) continue;
+    const bold = mine.has(a.id);
+    s += `<path d="${dPath}" fill="none" stroke="${col(a)}" stroke-width="${bold ? 2.5 : 1.2}" opacity="${bold ? 1 : 0.55}"><title>${esc(code(a))}</title></path>`;
+    s += `<text x="${X(last[0]) + 4}" y="${Y(last[1]) + 4}"${bold ? ' style="fill:var(--fg);font-weight:600"' : ""}>${esc(code(a))}</text>`;
+  }
+  s += "</svg>";
+  return (
+    `<p class="note">${gapMode ? "Average gap to the leader at each lap end (cars still running)" : "Average position at each lap end among cars still running"} over ${run.N.toLocaleString()} races; your starting team in bold. Pit stops show as the dip in the middle of the race.</p>` +
+    s
+  );
+}
+
 function labControls() {
   const groups = [...new Set(LAB_SWITCHES.map((s) => s.g))];
   const ctl = (s) => {
@@ -429,6 +479,8 @@ function renderLab() {
   $("#labScatter").innerHTML = labScatter(rows);
   $("#labStrips").innerHTML = labStrips(rows, r.sim);
   $("#labTeam").innerHTML = labTeam(r);
+  $$("#labLapv button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lablapv === lab.lapv)));
+  $("#labLaps").innerHTML = labLaps(r);
 }
 // a switch changed: keep it (the shipped value clears the entry)
 function labSet(t) {

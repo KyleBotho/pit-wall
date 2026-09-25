@@ -434,6 +434,29 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 const EXPERIMENTS = {
   // item 9 stage 3a: the race run lap by lap (SIM.raceModel)
   laps: [["lap-by-lap race", [[E.SIM, "raceModel", "laps"]]]],
+  // item 9 stages 2-5 together vs each alone ("is the sum more than its parts"; stage 2 is in the shipped model,
+  // so its own part is minus the "without stage 2" row)
+  combo: [
+    ["without stage 2 (flat overtake level)", [[E.TRACK, "speed", false]]],
+    ["+ stage 3 (timing segments + yo-yo)", [[E.SIM, "raceModel", "segments"]]],
+    [
+      "+ stage 4 (fast-corner band shift)",
+      [
+        [E.MODEL, "bandQ", 1],
+        [E.MODEL, "bandR", 1],
+      ],
+    ],
+    ["+ stage 5 (minisector practice pace)", [], { practiceMini: true }],
+    [
+      "stages 2+3+4+5 together",
+      [
+        [E.SIM, "raceModel", "segments"],
+        [E.MODEL, "bandQ", 1],
+        [E.MODEL, "bandR", 1],
+      ],
+      { practiceMini: true },
+    ],
+  ],
   // item 9 stage 3b: timing segments, the segment pass curve and the between-line yo-yo (SIM.raceModel "segments")
   segs: [["race in timing segments with the yo-yo", [[E.SIM, "raceModel", "segments"]]]],
   lapsreg: [

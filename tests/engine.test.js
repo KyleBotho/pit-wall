@@ -631,6 +631,29 @@ test("raceLaps: order changes on track only by passes; a fast car from the back 
   );
 });
 
+test("bandShift: a team that loses time in fast corners is slower where the practice lap has more of them", () => {
+  const Q = (a, b) => ({
+    share: [0.2, 0.2, 0.2, 0.4],
+    teams: { A: { gap: 1, band: [1, 1, 1 + a, 1] }, B: { gap: 1, band: [1, 1, 1 + b, 1] } },
+  });
+  const bands = {
+    1: { Q: Q(1, -1), FP: { share: [0.2, 0.2, 0.2, 0.4] } },
+    2: { Q: Q(1, -1), FP: { share: [0.2, 0.2, 0.2, 0.4] } },
+    3: { Q: Q(1, -1), FP: { share: [0.2, 0.2, 0.2, 0.4] } },
+    4: { FP: { share: [0.1, 0.1, 0.4, 0.4] } }, // next: twice the fast-corner share
+  };
+  const data = { schedule: [], done: [1, 2, 3], assets: [], results: { race: {}, quali: {}, sprint: {} }, bands };
+  const sh = E.bandShift(data, { gd: 4, name: "x", sprint: false, lock: "" });
+  // +0.2 share x (3 rounds of +1 / (3 + 3 pseudo-rounds)) = +0.1% for A (slower), -0.1% for B
+  assert.ok(Math.abs(sh.A - 0.1) < 1e-9 && Math.abs(sh.B + 0.1) < 1e-9, JSON.stringify(sh));
+  // no practice shares for the next track, or too few earlier rounds with them: no shift
+  assert.equal(
+    E.bandShift({ ...data, bands: { ...bands, 4: {} } }, { gd: 4, name: "x", sprint: false, lock: "" }),
+    null,
+  );
+  assert.equal(E.bandShift({ ...data, done: [1, 2] }, { gd: 3, name: "x", sprint: false, lock: "" }), null);
+});
+
 test("raceSegs: the yo-yo credits both cars and never changes the order", () => {
   const n = 8;
   let x = 11;

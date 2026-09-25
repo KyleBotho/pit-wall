@@ -99,6 +99,26 @@ class Practice(unittest.TestCase):
         self.assertIsNone(practice.ref_lap(laps[:4]))  # too few drivers to say
 
 
+class Minisectors(unittest.TestCase):
+    def test_ideal_lap_takes_each_minisectors_best(self):
+        import numpy as np
+
+        # two 60 s laps: one 2 s faster in the first half, the other 2 s faster in the second half
+        x = np.linspace(0, 1, 1001)
+        a = np.where(x < 0.5, x * 56, 28 + (x - 0.5) * 64)
+        b = np.where(x < 0.5, x * 64, 32 + (x - 0.5) * 56)
+        self.assertAlmostEqual(telemetry.ideal_lap([(a, 60.0), (b, 60.0)], mini=2), 56.0, places=6)
+        self.assertAlmostEqual(telemetry.ideal_lap([(a, 60.0)], mini=2), 60.0, places=6)
+
+    def test_a_stalled_trace_is_rejected(self):
+        import numpy as np
+
+        t = np.arange(0, 60, 0.25)
+        v = np.full(len(t), 200.0)  # the same speed for a minute: a frozen feed
+        self.assertTrue(telemetry.stalled(t, v))
+        self.assertFalse(telemetry.stalled(t, 200 + 50 * np.sin(t)))
+
+
 class LapRefs(unittest.TestCase):
     def test_a_round_gets_its_fastest_practice_session(self):
         with tempfile.TemporaryDirectory() as d, mock.patch.object(refresh, "ARCHIVE", d):
