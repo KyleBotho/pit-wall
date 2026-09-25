@@ -48,7 +48,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   2014+: position changes, grid-finish correlation, retirements; OpenF1 2023+: SC, VSC, red, rain, overtakes).
 - `web/app.html` + `web/app.css` + `web/js/*.js` — the page. Plain scripts sharing one global scope, loaded in
   the order app.html lists them (core, state, sync, forecast, import, league, elite, filters, hindsight-view, stats,
-  live, calc, views, main). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  live, calc, views, lab, main). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key globals: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `SEALED`, `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
@@ -83,7 +83,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
-- `supabase/setup.sql` — the sign-in/sync database (item 12). Re-runnable in Supabase's SQL Editor.
+- `supabase/setup.sql` — the sign-in/sync database (item 12) and the Sim lab's `owners` gate. Re-runnable in
+  Supabase's SQL Editor.
 - `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it
   (`tests/seal.test.js`). Used by the private repo's workflow, which checks this repo out.
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
@@ -437,7 +438,23 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         the hand-set track tags before (~0%), track-type fit doesn't predict team pace in 2026. The ceiling looks
         like weekend-specific variation. Re-test with ~20 rounds (fast-corner band for qualifying only).
       - [ ] 5. Minisector ideal laps (two disjoint sets) for short-run practice pace. Sections 4 + 9; low expectations.
-      - [ ] 6. Ship: build-time runs in CI, Calculator reads them, Sim lab tab, tests, frozen projection.
+      - [x] 6. (2026-09-25) Sim lab tab built (`web/js/lab.js`, view "lab", rail button `#labNav`). DESIGN CHANGE vs
+        the plan above: runs happen IN THE BROWSER on demand, not in CI. The plan assumed the lap model would take
+        minutes; it takes 1-3 s per 10,000 races (segments 2.9 s at Baku), so there is no GitHub token, edge function
+        or results table: fewer secrets and moving parts (the least-upkeep rule). Lock (1) stays: the tab shows only
+        for accounts in the Supabase `owners` table (RLS: each user reads only their own row; `supabase/setup.sql`,
+        plus an `insert ... where email = ...` the user runs once), or on localhost with `?lab=1`. Everything shown
+        comes from the public build anyway. Since every shipped switch keeps the fast rank model, the Calculator
+        needs no build-time runs; add a CI run only if a slow model is ever adopted.
+        Controls: race (next 3), weekends (2k-20k), "compare with the shipped model" (same seed), Rerun, Reset;
+        20 switches from SIM / TRACK / MODEL incl. ones kept off (race model rank/laps/segments, lapOv, lapGrid,
+        yoyo, ovModel, pitStops, incident, TRACK.speed + ridge, teamPace, oddsW, flOddsW, practiceQ/R, mate, qSd,
+        rSd, qSkew, rSkew, unc); shipped value on hover, changed ones highlighted. Switches are applied to Engine.* for
+        the run only (`withLab`) and restored, so no other view changes; settings in localStorage `pitwall.lab` (not
+        synced). Panels: asset table (Q/R pace, DNF, FL, DotD, xOV, p25/xPts/p75, xPPM, P(rise)/P(drop), Δ vs
+        shipped), qualifying/race position matrices with average position, points-vs-price scatter, the starting
+        team's points distribution (shipped model dashed), per-asset points histograms. Not yet: position/gap by
+        lap (needs lap traces out of raceLaps/raceSegs), price-step matrices beyond P(rise/drop), violins.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
       `npm run fit` again; with ~20 rounds the ±0.1 differences may become readable. `python backtest/odds_rounds.py`
       is only needed for rounds before the live odds archive (history/2026/odds, from R15).

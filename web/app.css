@@ -2359,3 +2359,82 @@ td.chl {
     transition: none !important;
   }
 }
+
+/* ---------- Sim lab (web/js/lab.js) ---------- */
+.labbar {
+  align-items: center;
+  gap: 12px;
+}
+.labsel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+.labctl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+.labgrp {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.labgrp legend {
+  font-size: 12px;
+  color: var(--dim);
+  padding: 0 4px;
+}
+.labgrp .slider,
+.labgrp .labsel {
+  justify-content: space-between;
+}
+.labgrp .changed > span {
+  color: var(--accent);
+  font-weight: 600;
+}
+.labgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 12px;
+}
+.labsvg {
+  width: 100%;
+  height: auto;
+  font-size: 11px;
+  fill: var(--dim);
+}
+.labsvg .gl {
+  stroke: var(--line);
+}
+.labstrips {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: 4px 16px;
+}
+.labstrip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.labstrip svg {
+  flex: none;
+  max-width: 60vw;
+}
+.labstrip .band {
+  fill: var(--accent-soft);
+}
+.labstrip .mk {
+  stroke: var(--fg);
+  stroke-width: 1.5;
+}
+.labgrp .slider {
+  grid-template-columns: 1fr 110px 38px;
+}

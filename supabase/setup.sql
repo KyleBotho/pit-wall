@@ -50,3 +50,17 @@ create table if not exists public.live_cache (
 );
 alter table public.live_cache enable row level security;
 revoke all on public.live_cache from anon, authenticated;
+
+-- Sim lab gate (web/js/lab.js): accounts listed here see the owner-only Sim lab tab. Each signed-in user can read
+-- only their own row, so the page learns "am I an owner" and nothing about anyone else. No inserts from the page:
+-- add an owner here, in the SQL Editor:
+--   insert into public.owners (user_id) select id from auth.users where email = '<your sign-in email>'
+--   on conflict do nothing;
+create table if not exists public.owners (
+  user_id uuid primary key references auth.users (id) on delete cascade
+);
+alter table public.owners enable row level security;
+revoke all on public.owners from anon, authenticated;
+grant select on public.owners to authenticated;
+drop policy if exists "owners: read own row" on public.owners;
+create policy "owners: read own row" on public.owners for select to authenticated using (auth.uid() = user_id);

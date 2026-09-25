@@ -4,7 +4,20 @@
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 const KEY = "pitwall.v1";
 const SCHEMA = 5;
-const VIEWS = ["calc", "live", "league", "elite", "hind", "stats", "assets", "prices", "practice", "grid", "settings"];
+const VIEWS = [
+  "calc",
+  "live",
+  "league",
+  "elite",
+  "hind",
+  "stats",
+  "assets",
+  "prices",
+  "practice",
+  "grid",
+  "lab",
+  "settings",
+];
 
 // the example team a new browser starts with (config/season.json defaultTeam)
 function defaultTeam() {

@@ -176,6 +176,7 @@ async function syncInit() {
     if ((u && u.id) === (syncState.user && syncState.user.id)) return renderSync(); // token refresh
     Object.assign(syncState, { user: u, at: null, err: "", hold: null, last: null, ready: false });
     renderSync();
+    labCheck();
     if (u) setTimeout(pull, 0); // not inside the callback: supabase-js can deadlock on calls made there
   });
 }

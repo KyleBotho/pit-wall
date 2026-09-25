@@ -17,6 +17,7 @@ const RENDER = {
   prices: () => renderPrices(),
   practice: () => renderPractice(),
   grid: () => renderGrid(),
+  lab: () => renderLab(),
   settings: () => {
     renderSync();
     renderModel();
@@ -84,6 +85,7 @@ const groupOf = (v) => Object.keys(GROUPS).find((g) => GROUPS[g].some(([x]) => x
 const groupViews = (g) => GROUPS[g].filter(([v]) => !(SEASON_OVER && FORECAST_VIEWS.includes(v)));
 
 function showView(v) {
+  if (v === "lab" && !labOwner) v = "calc"; // the Sim lab is owner-only
   if (GROUPS[v]) {
     // a group's rail button opens the view last used in it
     const vs = groupViews(v).map(([x]) => x);
@@ -231,6 +233,14 @@ const renderFilterScope = (sc) => (sc === "hd" ? saveAnd(renderHind) : rerender(
 // Clicks on a button carrying one of these data attributes; the first one present wins.
 const CLICK = [
   ["view", (d) => showView(d.view)],
+  [
+    "labpos",
+    (d) => {
+      lab.pos = d.labpos;
+      labSave();
+      renderLab();
+    },
+  ],
   ["paneBtn", (d) => showPane(d.paneBtn)],
   [
     "bmode",
@@ -590,6 +600,12 @@ const CLICK = [
 ];
 // buttons known by id
 const CLICK_ID = {
+  labRerun: () => labRerun(),
+  labReset: () => {
+    lab.set = {};
+    labSave();
+    renderLab();
+  },
   planBtn: () => openPlan(),
   chipValBtn: () => openChipValues(),
   budgetValBtn: () => openBudgetValue(),
@@ -702,6 +718,18 @@ function setSlot(team, k, id) {
   return prev;
 }
 const CHANGE_ID = {
+  labRace: (t) => {
+    lab.race = +t.value;
+    labSave();
+  },
+  labN: (t) => {
+    lab.N = +t.value;
+    labSave();
+  },
+  labCompare: (t) => {
+    lab.compare = t.checked;
+    labSave();
+  },
   goal: (t) => {
     state.goal = t.value;
     saveAnd(() => (renderSettings(), runOptimiser()));
@@ -818,6 +846,7 @@ const CHANGE = [
 document.addEventListener("change", (e) => {
   const t = e.target;
   if (CHANGE_ID[t.id]) return CHANGE_ID[t.id](t);
+  if (t.dataset.labset) return labSet(t);
   for (const [k, fn] of CHANGE) if (k in t.dataset) return fn(t.dataset, t);
 });
 
@@ -871,6 +900,7 @@ const INPUT_ID = {
 document.addEventListener("input", (e) => {
   const t = e.target;
   if (INPUT_ID[t.id]) return INPUT_ID[t.id](t);
+  if (t.dataset.labset && t.type === "range") return labSet(t);
   if (t.dataset.simw) {
     state.simW[t.dataset.simw] = +t.value;
     t.closest("tr").querySelector(".simwv").textContent = Math.round(+t.value * 100) + "%";
@@ -1008,6 +1038,7 @@ $("#menuList").innerHTML = $$("#nav button")
       `<button data-view="${b.dataset.view}">${b.querySelector("svg").outerHTML}<span>${esc(b.querySelector(".lbl").textContent)}</span></button>`,
   )
   .join("");
+labCheck(); // ?lab=1 on this machine; signed-in owners are checked again once the account loads
 compute();
 renderHeader();
 showView(state.view);
