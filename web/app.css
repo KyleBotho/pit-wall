@@ -2438,3 +2438,45 @@ td.chl {
 .labgrp .slider {
   grid-template-columns: 1fr 110px 38px;
 }
+.labtabs {
+  margin: 4px 0 12px;
+  flex-wrap: wrap;
+}
+.labh {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 12px 0 6px;
+  color: var(--dim);
+}
+.labsvg .vt {
+  stroke: var(--fg);
+  stroke-width: 1;
+  opacity: 0.7;
+}
+.labsvg .vl {
+  font-size: 9px;
+}
+.labsvg .hi {
+  fill: var(--fg);
+}
+.labsvg .mine {
+  fill: var(--accent-soft);
+}
+.labteams,
+.tw > .labsvg[width] {
+  width: auto;
+  max-width: none;
+}
+.labcanvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.labscroll {
+  max-height: 360px;
+  overflow-y: auto;
+}
+.labmini td,
+.labmini th {
+  padding: 2px 8px;
+}

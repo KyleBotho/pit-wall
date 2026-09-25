@@ -234,6 +234,14 @@ const renderFilterScope = (sc) => (sc === "hd" ? saveAnd(renderHind) : rerender(
 const CLICK = [
   ["view", (d) => showView(d.view)],
   [
+    "labtab",
+    (d) => {
+      lab.tab = d.labtab;
+      labSave();
+      renderLab();
+    },
+  ],
+  [
     "lablapv",
     (d) => {
       lab.lapv = d.lablapv;

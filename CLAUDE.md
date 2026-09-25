@@ -523,6 +523,12 @@ R. Code review (2026-09-24, user asked for a critique then "implement all"): spl
    private league `feeds/leaderboard/privateleague/list_1_{leagueId}_0_1.json` (403 until first published). Rows:
    `cur_rank, cur_points, team_name (URL-encoded), team_no, user_team` (7 PlayerIds) plus `user_name, user_guid,
    social_id` (personal: never publish). Boost and chips are NOT in these feeds; that's what the top-100 CSV adds.
+- [ ] TO DO after the Baku race (set 2026-09-26, user's ask): score rhter's post-FP3 sims AND ours against the actual
+      result. His numbers + ours (same state: post-FP3, qualifying held back, 20,000 sims, commit 0ac57e8) are in the
+      PRIVATE clone `../pit-wall-private/research/rhter-r15-baku-post-fp3.md` (his output stays out of this public
+      repo; calibration only). Fill in the actual table there, then compare: xPts MAE / rank corr, race overtakes per
+      driver (his ~5.2 vs our ~2.8: the stage 2 speed level x0.70 on its first unseen round), Hadjar / Red Bull (his
+      FP3 ideal lap has RED 2nd; ours HAD ~P9), retirement rates, win / pole shares. Keep doing it for rounds he posts.
 - [ ] After Baku: compare projections with results and rhter; re-check the practice weights with R15 added. R15 is
       the first round with a frozen projection (`history/2026/projections/gd15.json`); a projected-vs-actual view
       across rounds could go in Hindsight once a few exist.

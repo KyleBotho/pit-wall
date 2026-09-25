@@ -730,36 +730,81 @@
       <p class="note" id="labStatus"></p>
     </section>
     <div id="labOut" hidden>
-      <section class="panel">
-        <h3>Assets</h3>
-        <div class="tw"><table class="stat" id="labAssets"></table></div>
-      </section>
-      <section class="panel">
-        <h3>
-          Positions <span class="seg" id="labPos"><button data-labpos="q">Qualifying</button><button data-labpos="r">Race</button></span>
-        </h3>
-        <div class="tw"><table class="heat" id="labMatrix"></table></div>
-      </section>
-      <div class="labgrid">
+      <div class="seg labtabs" id="labTabs" role="group" aria-label="Sim lab panels">
+        <button data-labtab="assets">Assets</button><button data-labtab="teams">Teams</button><button data-labtab="value">Value</button
+        ><button data-labtab="prices">Prices</button><button data-labtab="pos">Positions</button><button data-labtab="laps">By lap</button
+        ><button data-labtab="practice">Practice</button>
+      </div>
+      <div data-labpanel="assets">
+        <section class="panel">
+          <h3>Assets</h3>
+          <div class="tw"><table class="stat" id="labAssets"></table></div>
+        </section>
+        <section class="panel">
+          <h3>Constructors</h3>
+          <div class="tw" id="labCons"></div>
+        </section>
+        <section class="panel">
+          <h3>Distributions <span class="muted">violins sorted by xPts per $1m; ticks 5 / 25 / 50 / 75 / 95%</span></h3>
+          <div id="labViolins"></div>
+        </section>
+        <section class="panel">
+          <h3>Points histograms <span class="muted">p10 · mean · p90, shaded p25–p75, scale −30 to 90</span></h3>
+          <div class="labstrips" id="labStrips"></div>
+        </section>
+      </div>
+      <div data-labpanel="teams">
+        <section class="panel">
+          <h3>Your starting team</h3>
+          <div id="labTeam"></div>
+        </section>
+        <section class="panel">
+          <h3>Best teams within your budget</h3>
+          <div id="labTeams"></div>
+        </section>
+      </div>
+      <div data-labpanel="value">
         <section class="panel">
           <h3>Points against price</h3>
           <div id="labScatter"></div>
         </section>
         <section class="panel">
-          <h3>Your starting team</h3>
-          <div id="labTeam"></div>
+          <h3>Points per million: combinations</h3>
+          <div id="labCombosBox"></div>
         </section>
       </div>
-      <section class="panel">
-        <h3>
-          By lap <span class="seg" id="labLapv"><button data-lablapv="pos">Position</button><button data-lablapv="gap">Gap to leader</button></span>
-        </h3>
-        <div id="labLaps"></div>
-      </section>
-      <section class="panel">
-        <h3>Points distributions <span class="muted">p10 · mean · p90, shaded p25–p75, scale −30 to 90</span></h3>
-        <div class="labstrips" id="labStrips"></div>
-      </section>
+      <div data-labpanel="prices">
+        <section class="panel">
+          <h3>Price change after the race <span class="muted">% of simulated weekends per step, and the average ($m)</span></h3>
+          <div id="labPrices"></div>
+        </section>
+      </div>
+      <div data-labpanel="pos">
+        <section class="panel">
+          <h3>
+            Positions <span class="seg" id="labPos"><button data-labpos="q">Qualifying</button><button data-labpos="r">Race</button></span>
+          </h3>
+          <div class="tw"><table class="heat" id="labMatrix"></table></div>
+        </section>
+      </div>
+      <div data-labpanel="laps">
+        <section class="panel">
+          <h3>
+            By lap
+            <span class="seg" id="labLapv"
+              ><button data-lablapv="pos">Position</button><button data-lablapv="gap">Gap to leader</button
+              ><button data-lablapv="field">Vs field average</button></span
+            >
+          </h3>
+          <div id="labLaps"></div>
+        </section>
+      </div>
+      <div data-labpanel="practice">
+        <section class="panel">
+          <h3>Practice pace by team</h3>
+          <div id="labPractice"></div>
+        </section>
+      </div>
     </div>
   </main>
 
