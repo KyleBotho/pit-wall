@@ -573,6 +573,19 @@ const CLICK = [
     },
   ],
   ["copy", (d) => copyText(d.copy)],
+  [
+    "ovsc",
+    (d) => {
+      const [gd, k] = d.ovsc.split(":"),
+        g = DATA.schedule.find((x) => x.gd === +gd);
+      const { ov, ...rest } = state.circuits[gd] || {};
+      if (k === "base") {
+        if (Object.keys(rest).length) state.circuits[gd] = rest;
+        else delete state.circuits[gd];
+      } else state.circuits[gd] = { ...rest, ov: ovFor(g, k) };
+      recompute(0);
+    },
+  ],
 ];
 // buttons known by id
 const CLICK_ID = {

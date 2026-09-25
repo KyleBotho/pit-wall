@@ -486,3 +486,13 @@ test("simulate: Driver of the Day follows each driver's popularity", () => {
   const low = E.simulate(m, circuit, false, 4000, 5).stats[0].dotd;
   assert.ok(low < base * 0.6, `DotD ${base} -> ${low}`);
 });
+
+test("ovScenarios: low / high weekends from the spread of this season's rounds", () => {
+  const data = {
+    done: [1, 2, 3, 4, 5],
+    trackStats: { 1: { ovt: 2 }, 2: { ovt: 4 }, 3: { ovt: 4 }, 4: { ovt: 4 }, 5: { ovt: 6 } },
+  };
+  const s = E.ovScenarios(data);
+  assert.deepEqual(s, { low: 0.9, high: 1.1, n: 5 }); // ratios 0.5, 1, 1, 1, 1.5: 20th / 80th percentiles
+  assert.equal(E.ovScenarios({ ...data, done: [1, 2, 3] }), null); // too few rounds
+});

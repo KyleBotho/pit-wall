@@ -309,6 +309,31 @@ function histUse() {
       : ".")
   );
 }
+// one-click overtaking scenarios (Engine.ovScenarios): the fitted value, or a low / high weekend on top of it
+const OV_SC = Engine.ovScenarios(DATA);
+const ovBase = (g) => trackFit.forCircuit(g).ov ?? 1;
+// rounded to the Overtaking slider's 0.05 step, so the slider shows exactly the scenario
+const ovFor = (g, k) => (k === "base" ? ovBase(g) : Math.round(ovBase(g) * OV_SC[k] * 20) / 20);
+function ovScenarioUI(g, now) {
+  if (!OV_SC) return "";
+  const set = (state.circuits[g.gd] || {}).ov;
+  const on = (k) => (k === "base" ? set == null : set != null && Math.abs(set - ovFor(g, k)) < 0.005);
+  const tip = {
+    low: `A weekend like this season's low-overtaking fifth: ×${OV_SC.low.toFixed(2)} (${OV_SC.n} rounds)`,
+    base: "The fitted value for this circuit",
+    high: `A weekend like this season's high-overtaking fifth: ×${OV_SC.high.toFixed(2)} (${OV_SC.n} rounds)`,
+  };
+  return (
+    `<div class="seg ovsc" role="group" aria-label="Overtaking scenario" title="Current: ${now.toFixed(2)}">` +
+    ["low", "base", "high"]
+      .map(
+        (k) =>
+          `<button data-ovsc="${g.gd}:${k}" aria-pressed="${on(k)}" title="${tip[k]}">${k === "low" ? "Low" : k === "high" ? "High" : "Base"} ${ovFor(g, k).toFixed(2)}</button>`,
+      )
+      .join("") +
+    "</div>"
+  );
+}
 const PEN_OPTS = [
   [0, "none"],
   [3, "+3"],
@@ -375,7 +400,7 @@ function renderCal() {
       <div class="chipbar">${(c.feat || []).map((v, i) => `<span class="chiptok" title="0 = none, 1 = maximum">${Engine.FEAT_NAMES[i]} ${v.toFixed(2)}</span>`).join("")}</div>
       ${hist}
       <div class="note" style="font-size:12px">${fit ? `Fitted from this season's ${trackFit.rounds} rounds and this circuit's history (see above). Rain from the ${rainSrc}.` : "Custom values set here."}</div>
-      ${sl("ov", "Overtaking", 0.2, 2.5, 0.05, c.ov, f2)}${sl("grid", "Grid decides", 0.25, 0.95, 0.01, c.grid, f2)}${sl("chaos", "Retirements", 0.5, 1.8, 0.05, c.chaos, f2)}
+      ${sl("ov", "Overtaking", 0.2, 2.5, 0.05, c.ov, f2)}${ovScenarioUI(g, c.ov ?? 1)}${sl("grid", "Grid decides", 0.25, 0.95, 0.01, c.grid, f2)}${sl("chaos", "Retirements", 0.5, 1.8, 0.05, c.chaos, f2)}
       ${sl("sc", "Safety car", 0.05, 0.95, 0.05, c.sc ?? 0.5, pct0)}${sl("rainR", "Rain (race)", 0, 1, 0.05, (c.rain || {}).r ?? 0, pct0)}
       ${extra}</section>`;
     })

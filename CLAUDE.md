@@ -221,7 +221,11 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         event every round; now fetched live, archived at lock, and in `odds_by_round.json` (R5-R14). Worse at every
         weight (log FL −0.04 at 25%, −0.20 at 100%; CRPS +0.03 at 100%): thin books (Gasly 25% at Spain). Re-test
         with ~20 rounds. No per-race DNF market exists (KXF1RETIRE = Verstappen retiring from F1).
-- [ ] One-click overtake scenarios (low / base / high) on top of the circuit Overtaking slider.
+- [x] 2026-09-25 One-click overtake scenarios: Low / Base / High buttons under each circuit's Overtaking slider
+      (Settings > Circuits). `Engine.ovScenarios(DATA)` = the 20th / 80th percentile of each finished round's overtakes
+      per starter over the season mean (2026 after R14: ×0.70 / ×1.24; the sim has no round-level overtaking shock,
+      so this is the swing one weekend can land in), times the circuit's fitted value, rounded to the slider's 0.05.
+      Base clears the override (`state.circuits[gd].ov`). Hidden before 4 rounds. At Baku: VER xOV 3.2 / 4.5 / 5.7.
 - [ ] Budget value slope per constructor pair (rhter: ~1.2 MCL+FER to ~1.7 with one A-tier constructor; leave
       sprints out of the slope). Low priority: he's moving away from hard budget optimisation himself.
 - [ ] Value of an extra transfer (nobody models it).

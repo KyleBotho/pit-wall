@@ -2174,6 +2174,27 @@
     return out;
   }
 
+  /** One-click overtaking scenarios for a circuit: how much a weekend's overtaking level swings around the season
+   * average. Low / high = the q / 1-q quantile of each finished round's overtakes per starter over the season mean
+   * (the sim draws no round-level overtaking shock, so this is the spread a single weekend can land in). Multipliers
+   * on the circuit's fitted Overtaking; null with fewer than `minRounds` rounds.
+   * @param {Data} data @param {{ q?: number, minRounds?: number }} [o]
+   * @returns {{ low: number, high: number, n: number } | null} */
+  function ovScenarios(data, o = {}) {
+    const q = o.q ?? 0.2;
+    /** @type {number[]} */
+    const xs = [];
+    for (const gd of data.done) {
+      const v = data.trackStats && data.trackStats[gd] ? data.trackStats[gd].ovt : null;
+      if (v != null && v > 0) xs.push(v);
+    }
+    if (xs.length < (o.minRounds ?? 4)) return null;
+    const m = xs.reduce((a, b) => a + b, 0) / xs.length;
+    const r = xs.map((v) => v / m);
+    const round2 = (/** @type {number} */ v) => Math.round(v * 100) / 100;
+    return { low: round2(quantile(r, q)), high: round2(quantile(r, 1 - q)), n: xs.length };
+  }
+
   const api = {
     QPTS,
     RPTS,
@@ -2188,6 +2209,7 @@
     DEFAULTS,
     circuitFor,
     trackModel,
+    ovScenarios,
     withWeather,
     seasonRounds,
     gridFromOv,
