@@ -1,35 +1,21 @@
 // Backtests behind the model settings in engine.js (MODEL, SIM, TRACK). Run:  npm run backtest
-// Needs cache/data.json (python refresh.py) and, for the practice section, backtest/practice_by_round.json
-// (python backtest/practice_rounds.py). Every section walks through the season using only what was known before
-// each round (except the season-total overtake points and constructor pit history, a small look-ahead).
+// Needs cache/data.json (python refresh.py) and, for some sections, backtest/practice_by_round.json
+// (python backtest/practice_rounds.py) and backtest/odds_by_round.json (python backtest/odds_rounds.py). Every section
+// walks through the season using only what was known before each round (backtest/walk.js). Section 6 is the gate:
+// a model change should not make the walk-forward CRPS / MAE of projected points worse.
 const fs = require("node:fs");
 const path = require("node:path");
-const E = require("../engine.js");
-const { loadData } = require("../tests/helpers.js");
+const W = require("./walk.js");
+const { D, E, asOf, mean } = W;
 
-const D = loadData();
 if (!D) throw new Error("no cache/data.json: run python refresh.py first");
-const PRACTICE_FILE = path.join(__dirname, "practice_by_round.json");
-const PRACTICE = fs.existsSync(PRACTICE_FILE) ? JSON.parse(fs.readFileSync(PRACTICE_FILE, "utf8")) : {};
-const nameOf = Object.fromEntries(D.schedule.map((g) => [g.gd, g.name]));
-const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : NaN);
+const nameOf = Object.fromEntries(D.schedule.map((g) => [g.gd, g]));
 const pct = (a, b) => `${(100 * (1 - a / b)).toFixed(1)}%`;
 const table = (rows) => console.table(rows);
-
-// the data as it stood before round r
-function asOf(r, drop = []) {
-  const keep = (g) => g < r && !drop.includes(g);
-  const cut = (obj) => Object.fromEntries(Object.entries(obj).filter(([g]) => keep(+g)));
-  return {
-    ...D,
-    done: D.done.filter(keep),
-    results: { race: cut(D.results.race), quali: cut(D.results.quali), sprint: cut(D.results.sprint) },
-    trackStats: cut(D.trackStats || {}),
-    practice: [],
-  };
-}
 const rounds = D.done.slice();
 const last = rounds[rounds.length - 1] + 1;
+const only = process.argv.slice(2).map(Number);
+const want = (n) => !only.length || only.includes(n);
 
 /* ---------- 1. price rule ---------- */
 function prices() {
@@ -54,44 +40,53 @@ function prices() {
 /* ---------- 2. track model: leave one round out ---------- */
 function track() {
   console.log(
-    "\n2. Track model, leave-one-round-out (mean absolute error; better = vs a flat average of the other rounds)",
+    "\n2. Track model, leave-one-round-out: mean absolute error per race (flat = this season's average of the other rounds)",
   );
-  const withStats = rounds.filter((g) => D.trackStats && D.trackStats[g]);
-  const dnfCount = (g) => (D.results.race[g] || []).filter((x) => !x.cls).length;
+  const season = E.seasonRounds(D);
+  const withStats = rounds.filter((g) => season[g] && season[g].ov != null);
+  // alpha = weight of each circuit's past profile (0 = this season's average everywhere, 1 = the full profile)
+  const variants = { "features only (old)": (Dm) => E.trackModel(Dm, { noPriors: true }) };
+  for (const al of [0, 0.25, 0.5, 0.75, 1])
+    variants[`priors, alpha ${al}`] = (Dm) => E.trackModel(Dm, { alpha: { ov: al, dnf: al, sc: al, corr: al } });
+  variants["priors, alpha as set"] = (Dm) => E.trackModel(Dm);
   const out = [];
-  for (const lam of [0.25, 0.5, 1, 2, 4, 8]) {
-    const e = { ov: [], ovFlat: [], dnf: [], dnfFlat: [], team: [], teamFlat: [] };
+  for (const [label, mk] of Object.entries(variants)) {
+    const e = { ov: [], ovF: [], dnf: [], dnfF: [], corr: [], corrF: [], sc: [], scF: [] };
     for (const r of withStats) {
       const Dm = asOf(last, [r]);
-      const tm = E.trackModel(Dm, { ovLambda: lam, dnfLambda: lam, teamLambda: lam, teamPace: true });
-      if (!tm.fitted) continue;
+      const tm = mk(Dm);
       const c = tm.forCircuit(nameOf[r]);
-      e.ov.push(Math.abs(c.ov * tm.ovMean - D.trackStats[r].ovt));
-      e.ovFlat.push(Math.abs(tm.ovMean - D.trackStats[r].ovt));
-      e.dnf.push(Math.abs(c.chaos * tm.dnfMean - dnfCount(r)));
-      e.dnfFlat.push(Math.abs(tm.dnfMean - dnfCount(r)));
-      // team pace: a team's average qualifying slot vs its average over the other rounds, shifted by the track
-      for (const [team, shift] of Object.entries(c.teamShift)) {
-        const other = Object.entries(Dm.results.quali).flatMap(([, rows]) =>
-          rows.filter((x) => x.team === team).map((x) => x.pos),
-        );
-        const here = (D.results.quali[r] || []).filter((x) => x.team === team).map((x) => x.pos);
-        if (!other.length || !here.length) continue;
-        e.team.push(Math.abs(mean(other) + shift - mean(here)));
-        e.teamFlat.push(Math.abs(mean(other) - mean(here)));
+      const s = season[r];
+      e.ov.push(Math.abs(c.ov * tm.ovMean - s.ov));
+      e.ovF.push(Math.abs(tm.ovMean - s.ov));
+      e.dnf.push(Math.abs(c.chaos * tm.dnfMean - s.dnf));
+      e.dnfF.push(Math.abs(tm.dnfMean - s.dnf));
+      if (s.corr != null) {
+        e.corr.push(Math.abs(c.grid - s.corr));
+        e.corrF.push(Math.abs(tm.corrMean - s.corr));
+      }
+      if (s.sc != null && c.sc != null) {
+        const others = withStats.filter((g) => g !== r && season[g].sc != null).map((g) => season[g].sc);
+        e.sc.push((c.sc - s.sc) ** 2);
+        e.scF.push((mean(others) - s.sc) ** 2);
       }
     }
     out.push({
-      lambda: lam,
-      "overtakes: better": pct(mean(e.ov), mean(e.ovFlat)),
-      "retirements: better": pct(mean(e.dnf), mean(e.dnfFlat)),
-      "team pace: better": pct(mean(e.team), mean(e.teamFlat)),
+      model: label,
+      "overtakes: better than flat": pct(mean(e.ov), mean(e.ovF)),
+      "retirements: better": pct(mean(e.dnf), mean(e.dnfF)),
+      "grid-finish corr: better": e.corr.length ? pct(mean(e.corr), mean(e.corrF)) : "-",
+      "safety car (Brier): better": e.sc.length ? pct(mean(e.sc), mean(e.scF)) : "-",
     });
   }
   table(out);
-  console.log(
-    `   in use: overtakes λ=${E.TRACK.ovLambda}, retirements λ=${E.TRACK.dnfLambda}, team pace ${E.TRACK.teamPace ? "λ=" + E.TRACK.teamLambda : "off"}`,
-  );
+  const tm = E.trackModel(D);
+  console.log(`   alpha in use: ${JSON.stringify(E.TRACK.alpha)}`);
+  if (tm.priors)
+    console.log(
+      `   this season vs the same circuits' history: position changes x${tm.trend.move.toFixed(2)}, retirements x${tm.trend.dnf.toFixed(2)}, safety cars x${tm.trend.sc.toFixed(2)}, grid-finish correlation ${tm.trend.corr >= 0 ? "+" : ""}${tm.trend.corr.toFixed(3)} (${tm.trendN.move} rounds)`,
+    );
+  else console.log("   no data/circuit_priors.json (python priors.py): features-only fit in use");
 }
 
 /* ---------- 3. retirements: recency and shrinkage ---------- */
@@ -100,7 +95,7 @@ function retirements() {
   const from = rounds.filter((g) => g >= 4);
   const out = [];
   for (const hl of [2, 4, 6, 10, 1000])
-    for (const k of [0, 2, 4, 8, 16]) {
+    for (const k of [0, 2, 4, 8, 16, 32]) {
       let loss = 0,
         n = 0;
       for (const r of from) {
@@ -116,7 +111,7 @@ function retirements() {
       out.push({ "half-life": hl === 1000 ? "none" : hl, shrink: k, "log loss": +(loss / n).toFixed(4) });
     }
   out.sort((a, b) => a["log loss"] - b["log loss"]);
-  table(out.slice(0, 8));
+  table(out.slice(0, 6));
   console.log(
     `   in use: half-life ${Number.isFinite(E.MODEL.dnfHalfLife) ? E.MODEL.dnfHalfLife : "none"}, shrink ${E.MODEL.dnfShrink}`,
   );
@@ -124,20 +119,20 @@ function retirements() {
 
 /* ---------- 4. practice weights ---------- */
 function practiceWeights() {
-  const rs = rounds.filter((g) => g >= 4 && PRACTICE[g] && PRACTICE[g].some((s) => s.done));
+  const rs = rounds.filter((g) => g >= 4 && W.PRACTICE[g] && W.PRACTICE[g].some((s) => s.done));
   if (!rs.length)
     return console.log(
       "\n4. Practice weights: no backtest/practice_by_round.json (python backtest/practice_rounds.py)",
     );
   console.log(
-    `\n4. Practice weights, walk-forward on R${rs[0]}-R${rs[rs.length - 1]} (${rs.length} rounds; mean absolute error in places)`,
+    `\n4. Practice weights, walk-forward on R${rs[0]}-R${rs[rs.length - 1]} (${rs.length} rounds; mean absolute error of expected position)`,
   );
   const run = (model, pick, actual) => {
     const err = [];
     for (const r of rs) {
       const Dr = asOf(r),
         c = E.trackModel(Dr).forCircuit(nameOf[r]);
-      const m = E.buildModel(Dr, { practice: PRACTICE[r], teamShift: c.teamShift, model });
+      const m = E.buildModel(Dr, { practice: W.PRACTICE[r], teamShift: c.teamShift, model });
       for (const [tla, pos] of actual(r)) {
         const d = m.drivers.find((x) => x.tla === tla);
         if (d) err.push(Math.abs(pick(d) - pos));
@@ -146,27 +141,29 @@ function practiceWeights() {
     return mean(err);
   };
   const quali = (r) => (D.results.quali[r] || []).map((x) => [x.tla, x.pos]);
-  // classified finishers, rank rescaled to a full field like the model's race pace
   const race = (r) => {
     const rows = (D.results.race[r] || []).filter((x) => x.cls);
     return rows.map((x) => [x.tla, ((x.pos - 0.5) / rows.length) * (D.cfg.field || 22) + 0.5]);
   };
-  const q = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.7].map((w) => ({
-    "short-run weight": w,
-    "quali MAE": +run({ practiceQ: w }, (d) => d.qMu, quali).toFixed(3),
-  }));
-  table(q);
-  const rr = [0, 0.05, 0.1, 0.2, 0.3].map((w) => ({
-    "long-run weight": w,
-    "race MAE": +run({ practiceR: w }, (d) => d.rMu, race).toFixed(3),
-  }));
-  table(rr);
-  const cap = [2, 4, 6, 10, 99].map((c) => ({
-    "pull cap": c === 99 ? "none" : c,
-    "quali MAE": +run({ practicePull: c }, (d) => d.qMu, quali).toFixed(3),
-  }));
-  table(cap);
-  console.log(`   in use: short-run ${E.MODEL.practiceQ}, long-run ${E.MODEL.practiceR}, cap ${E.MODEL.practicePull}`);
+  table(
+    [0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8].map((w) => ({
+      "short-run weight": w,
+      "quali MAE": +run({ practiceQ: w }, (d) => d.qMu, quali).toFixed(3),
+    })),
+  );
+  table(
+    [0, 0.05, 0.1, 0.2, 0.3].map((w) => ({
+      "long-run weight": w,
+      "race MAE": +run({ practiceR: w }, (d) => d.rMu, race).toFixed(3),
+    })),
+  );
+  table(
+    [0.2, 0.4, 0.8, 1.2, 99].map((c) => ({
+      "pull cap (%)": c === 99 ? "none" : c,
+      "quali MAE": +run({ practicePull: c }, (d) => d.qMu, quali).toFixed(3),
+    })),
+  );
+  console.log(`   in use: short-run ${E.MODEL.practiceQ}, long-run ${E.MODEL.practiceR}, cap ${E.MODEL.practicePull}%`);
 }
 
 /* ---------- 5. calibration: simulated points by category vs this season ---------- */
@@ -185,6 +182,7 @@ function calibration() {
     "R DOTD": "Driver of the Day",
     "R NC": "not classified",
   };
+  const ovDone = [];
   for (const a of D.assets) {
     if (a.kind !== "D") continue;
     for (const h of a.hist) {
@@ -196,8 +194,9 @@ function calibration() {
       }
     }
   }
+  for (const g of rounds) if (D.trackStats[g]) ovDone.push(D.trackStats[g].ovt);
   const tm = E.trackModel(D),
-    c = { ...tm.forCircuit("neutral"), ov: 1, chaos: 1, grid: E.gridFromOv(1) };
+    c = { ...tm.forCircuit("neutral"), ov: 1, chaos: 1, grid: tm.corrMean || 0.62, rain: { q: 0.1, s: 0.1, r: 0.1 } };
   const m = E.buildModel(D, {});
   const sim = E.simulate(m, c, false, 20000, 1);
   const nd = m.drivers.length,
@@ -220,20 +219,141 @@ function calibration() {
       actual: +((actual[k] || 0) / n.races).toFixed(2),
     })),
   );
-  // who gets fastest lap and DotD: share going to the seven fastest cars
+  // who gets fastest lap and DotD: share going to the seven fastest cars, simulated vs actual
   const top7 = m.drivers
-    .map((d, i) => [d.rMu, i])
+    .map((d, i) => [d.rPace, i])
     .sort((a, b) => a[0] - b[0])
     .slice(0, 7)
     .map(([, i]) => i);
   const share = (k) => top7.reduce((s, i) => s + sim.stats[i][k], 0);
+  const top7Tla = new Set(top7.map((i) => m.drivers[i].tla));
+  let fl = 0,
+    fl7 = 0,
+    dd = 0,
+    dd7 = 0;
+  const flI = new Set(D.evNames.map((e, i) => (e.c === "R FL" ? i : -1)));
+  const ddI = new Set(D.evNames.map((e, i) => (e.c === "R DOTD" ? i : -1)));
+  for (const a of D.assets)
+    if (a.kind === "D")
+      for (const h of a.hist)
+        if (h && h.ev)
+          for (const [i] of h.ev) {
+            if (flI.has(i)) (fl++, top7Tla.has(a.tla) && fl7++);
+            if (ddI.has(i)) (dd++, top7Tla.has(a.tla) && dd7++);
+          }
   console.log(
-    `   fastest lap to the 7 fastest cars: ${(100 * share("fl")).toFixed(0)}%, Driver of the Day: ${(100 * share("dotd")).toFixed(0)}%`,
+    `   to the 7 fastest cars: fastest lap ${(100 * share("fl")).toFixed(0)}% simulated vs ${((100 * fl7) / (fl || 1)).toFixed(0)}% actual, Driver of the Day ${(100 * share("dotd")).toFixed(0)}% vs ${((100 * dd7) / (dd || 1)).toFixed(0)}%`,
+  );
+  console.log(
+    `   safety car in ${(100 * sim.sc).toFixed(0)}% of simulated races, rain in ${(100 * sim.wet).toFixed(0)}%`,
   );
 }
 
-prices();
-track();
-retirements();
-practiceWeights();
-calibration();
+/* ---------- 6. walk-forward: projected points vs what happened (the gate) ---------- */
+function walkForward() {
+  console.log("\n6. Walk-forward, projected points vs actual (rounds 5+; lower CRPS / MAE is better)");
+  const row = (label, o) => {
+    const r = W.evaluate({ N: 3000, decision: true, ...o });
+    return {
+      variant: label,
+      CRPS: +r.crps.toFixed(3),
+      MAE: +r.mae.toFixed(3),
+      "MAE drv": +r.maeD.toFixed(2),
+      "MAE con": +r.maeC.toFixed(2),
+      bias: +r.bias.toFixed(2),
+      rho: +r.rho.toFixed(3),
+      "in 10-90%": (100 * r.cover80).toFixed(0) + "%",
+      "in 25-75%": (100 * r.cover50).toFixed(0) + "%",
+      "team pts": r.team,
+    };
+  };
+  const rows = [
+    row("model (as shipped)", {}),
+    row("without the market", { odds: false }),
+    row("without practice", { practice: false }),
+    row("+30% recent form (old default)", { blend: 0.3 }),
+    row("no pace/reliability uncertainty", { unc: 0 }),
+  ];
+  table(rows);
+  const b = W.baselines();
+  const best = W.evaluate({ N: 1000, decision: true }).best;
+  console.log(
+    `   baselines, MAE: season average ${b.seasonAvg.toFixed(2)}, recent form ${b.form.toFixed(2)}, last three ${b.last3.toFixed(2)}; best possible fresh team ${best} pts`,
+  );
+}
+
+/* ---------- 7. the frozen projections (what the site said at lock) vs results ---------- */
+function frozen() {
+  const dir = path.join(__dirname, "..", "history", String(D.season), "projections");
+  const files = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
+  const rows = [];
+  for (const f of files) {
+    const p = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+    if (!D.done.includes(p.gd)) continue;
+    const xs = [],
+      ys = [];
+    for (const [id, v] of Object.entries(p.assets)) {
+      const a = D.assets.find((x) => x.id === id);
+      const h = a && a.hist.find((x) => x && x.gd === p.gd);
+      if (!h || !h.active) continue;
+      xs.push(v.x);
+      ys.push(h.pts);
+    }
+    rows.push({
+      round: p.gd,
+      MAE: +mean(xs.map((x, i) => Math.abs(x - ys[i]))).toFixed(2),
+      rho: +(E.spearman(xs, ys) ?? NaN).toFixed(3),
+      assets: xs.length,
+    });
+  }
+  console.log("\n7. Frozen projections (saved at lock) vs results");
+  if (rows.length) table(rows);
+  else console.log("   none finished yet (the first is R15)");
+}
+
+/* ---------- 8. pit-stop scoring rule vs the constructors' scoring lines ---------- */
+function pits() {
+  const ri = D.raceInfo || {};
+  const fpI = new Set(D.evNames.map((e, i) => (e.c === "R FP" ? i : -1)));
+  const fp2I = new Set(D.evNames.map((e, i) => (e.c === "R FP2" ? i : -1)));
+  let n = 0,
+    band = 0,
+    fast = 0,
+    nf = 0;
+  for (const g of rounds) {
+    const info = ri[g] && ri[g].race;
+    if (!info || !Object.keys(info.pits || {}).length) continue;
+    const bestOf = Object.fromEntries(Object.entries(info.pits).map(([t, s]) => [t, s[0]]));
+    const fastest = Object.entries(bestOf).sort((a, b) => a[1] - b[1])[0][0];
+    for (const c of D.assets.filter((a) => a.kind === "C")) {
+      const h = c.hist.find((x) => x && x.gd === g);
+      if (!h || !h.ev || bestOf[c.team] == null) continue;
+      const got = h.ev.filter(([i]) => fpI.has(i)).reduce((s, x) => s + x[1], 0);
+      const bonus = h.ev.filter(([i]) => fp2I.has(i)).reduce((s, x) => s + x[1], 0);
+      let want = 0;
+      for (const [lim, v] of E.PIT_BANDS)
+        if (bestOf[c.team] < lim) {
+          want = v;
+          break;
+        }
+      n++;
+      if (got === want) band++;
+      if (c.team === fastest) {
+        nf++;
+        if (bonus === E.PIT_FASTEST || got === want + E.PIT_FASTEST) fast++;
+      }
+    }
+  }
+  console.log(
+    `\n8. Pit-stop rule vs scoring lines: band points match ${band}/${n} team-races; fastest-stop bonus found ${fast}/${nf}`,
+  );
+}
+
+if (want(1)) prices();
+if (want(2)) track();
+if (want(3)) retirements();
+if (want(4)) practiceWeights();
+if (want(5)) calibration();
+if (want(6)) walkForward();
+if (want(7)) frozen();
+if (want(8)) pits();

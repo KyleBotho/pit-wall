@@ -2,28 +2,41 @@
 let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 const trackFit = Engine.trackModel(DATA);
-// circuit settings: fitted track-type values, overridden by anything set in Settings
-const circ = (g) => Object.assign(trackFit.forCircuit(g.name), state.circuits[g.gd] || {});
+// circuit settings: fitted track values (past seasons x this season's trend) with this weekend's rain forecast,
+// overridden by anything set in Settings
+const circ = (g) =>
+  Object.assign(Engine.withWeather(trackFit.forCircuit(g), (DATA.weather || {})[g.gd]), state.circuits[g.gd] || {});
 function compute() {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
     forecast = { model: null, races: [], sims: [], idx: {}, form, proj: [], price: {} };
     return;
   }
-  // the next three races; each gets its own model: its track's team-pace shift, and practice pace only for the
-  // coming weekend (later races use season form alone)
+  // the next three races; each gets its own model: practice pace, the betting market, grid penalties and any
+  // result already known (qualifying) only for the coming weekend (later races use season form alone)
   const races = upcoming.slice(0, 3);
-  const models = races.map((g, k) =>
-    Engine.buildModel(DATA, {
+  const setups = races.map((g, k) =>
+    Engine.raceSetup(DATA, g, {
+      next: k === 0,
+      track: trackFit,
       halfLife: state.halfLife,
       adj: state.adj,
-      teamShift: circ(g).teamShift || {},
-      practice: k === 0 ? DATA.practice || [] : [],
-      practiceWeight: state.pw,
+      pw: state.pw,
+      oddsW: state.oddsW,
+      pen: k === 0 ? state.pen : {},
+      circuit: state.circuits[g.gd] || {},
     }),
   );
+  const models = setups.map((x) => x.model);
   const sims = races.map((g, k) =>
-    Engine.simulate(models[k], circ(g), k === 0 ? sprintNext() : g.sprint, state.sims, g.gd * 7919 + 13),
+    Engine.simulate(
+      models[k],
+      setups[k].circuit,
+      k === 0 ? sprintNext() : g.sprint,
+      state.sims,
+      g.gd * 7919 + 13,
+      setups[k].simOpt,
+    ),
   );
   const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
   const proj = sims.map((sim) => {
@@ -64,7 +77,7 @@ function compute() {
     p.shift += dlt;
     p.nn += dlt;
   }
-  forecast = { model: models[0], races, sims, idx, form, proj, price: {} };
+  forecast = { model: models[0], setup: setups[0], races, sims, idx, form, proj, price: {} };
   forecast.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
 }
 // the next race as a sprint weekend: as the Simulation panel's toggle says for that race, else the calendar
@@ -76,13 +89,16 @@ const simWeights = () => ({
   ...state.simW,
 });
 const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
-// price change after the next race, from the simulated weekends (the game's rule: Engine.priceStep)
+// price change after the next race, from the simulated weekends (the game's rule: Engine.priceStep). The average
+// is over the last three races, or only the races run so far early on (2026: no "imaginary zero" races; confirmed
+// by the community against the game), so after round 1 the next race counts half.
 function priceInfo(a) {
   const h = a.hist.filter(Boolean);
   const p1 = h.length ? h[h.length - 1].pts : 0,
     p2 = h.length > 1 ? h[h.length - 2].pts : 0;
-  const sum2 = p1 + p2;
-  const need = Engine.PRICE_BANDS.map((t) => t * 3 * a.price - sum2);
+  const sum2 = p1 + p2,
+    n = Math.min(3, h.length + 1); // races in the average, the next one included
+  const need = Engine.PRICE_BANDS.map((t) => t * n * a.price - sum2);
   const i = forecast.idx[a.id];
   if (i == null || !a.active) return { sum2, p1, p2, need, dist: null, ev: 0, up: 0, down: 0 };
   const sim = forecast.sims[0],
@@ -93,7 +109,7 @@ function priceInfo(a) {
     up = 0,
     down = 0;
   for (let s = 0; s < N; s++) {
-    const d = Math.round(Engine.priceStep(a.price, (sum2 + sim.tot[i * N + s] + sh) / 3) * 10) / 10;
+    const d = Math.round(Engine.priceStep(a.price, (sum2 + sim.tot[i * N + s] + sh) / n) * 10) / 10;
     ev += d;
     if (d > 0) up++;
     if (d < 0) down++;

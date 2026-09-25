@@ -47,25 +47,50 @@ function toyModel(nTeams = 11) {
   const drivers = [],
     cons = [];
   for (let t = 0; t < nTeams; t++) {
-    cons.push({ id: "C" + t, team: "T" + t, pitMu: 3, pitSd: 2 });
+    cons.push({ id: "C" + t, team: "T" + t, pitMu: 3, pitSd: 2, stops: [] });
     for (let k = 0; k < 2; k++)
       drivers.push({
         id: `D${t}${k}`,
         tla: `D${t}${k}`,
         team: "T" + t,
+        qPace: 0.12 * (2 * t + k),
+        rPace: 0.12 * (2 * t + k),
+        qSe: 0.05,
+        rSe: 0.05,
         qMu: 1 + 2 * t + k,
         rMu: 1 + 2 * t + k,
         dnf: 0.08,
+        dnfN: 30,
         ov: 3,
+        ovU: 0,
         practiceQ: null,
         practiceR: null,
         formQ: 0,
         formR: 0,
       });
   }
-  return { drivers, cons, gRate: 0.08, field: nTeams * 2 };
+  return {
+    drivers,
+    cons,
+    gRate: 0.08,
+    field: nTeams * 2,
+    ovB: [0, 0.1, 0.1],
+    ovSprint: 0.4,
+    slopeQ: 0.12,
+    slopeR: 0.12,
+  };
 }
-const circuit = { ov: 1, grid: 0.5, chaos: 1, note: "", feat: [0.5, 0.2, 0.5] };
+const circuit = {
+  ov: 1,
+  ovMean: 4,
+  grid: 0.62,
+  chaos: 1,
+  sc: 0.5,
+  scOv: 1.2,
+  rain: { q: 0.1, s: 0.1, r: 0.1 },
+  note: "",
+  feat: [0.5, 0.2, 0.5],
+};
 
 test("simulate is repeatable for a seed and its probabilities add up", () => {
   const m = toyModel();
@@ -265,4 +290,199 @@ test("pastPoints: weighted averages, sprint lines, left-out categories and PPM t
   const ppm = E.pastPoints(data, { preset: "ppm", weights: { 1: 1, 2: 1, 3: 1 } });
   assert.ok(Math.abs(ppm.A.base - (10 * 61) / 42) < 1e-9);
   assert.ok(Math.abs(ppm.B.base - (12 * 61) / 42) < 1e-9);
+});
+
+/* ---------- new model pieces ---------- */
+test("poissonGlm recovers known coefficients with an offset", () => {
+  const r = E.mulberry32(5);
+  const X = [],
+    y = [],
+    off = [];
+  for (let n = 0; n < 4000; n++) {
+    const x1 = r() * 2,
+      x2 = r();
+    const o = Math.log(2 + 3 * r());
+    X.push([1, x1, x2]);
+    off.push(o);
+    const mu = Math.exp(o + 0.2 + 0.5 * x1 - 0.7 * x2);
+    // Poisson draw
+    let k = 0,
+      p = 1;
+    const L = Math.exp(-mu);
+    do {
+      k++;
+      p *= r();
+    } while (p > L);
+    y.push(k - 1);
+  }
+  const b = E.poissonGlm(X, y, off, 1e-6);
+  [0.2, 0.5, -0.7].forEach((v, i) => assert.ok(Math.abs(b[i] - v) < 0.06, `coef ${i}: ${b[i]}`));
+});
+
+test("simulate: a known qualifying order is used as is; grid penalties drop a driver down the race grid", () => {
+  const m = toyModel(),
+    N = 400;
+  const order = m.drivers.map((d) => d.tla).reverse(); // slowest on pole
+  const sim = E.simulate(m, circuit, false, N, 3, { known: { q: order } });
+  const last = m.drivers.length - 1;
+  assert.equal(sim.stats[last].q[0], 1, "the known pole-sitter qualifies first every time");
+  // back of the grid: the car finishes lower (it still gains places, which fantasy pays for)
+  const base = E.simulate(m, circuit, false, 3000, 9);
+  const pen = E.simulate(m, circuit, false, 3000, 9, { pen: { D00: 99 } });
+  const top3 = (st) => st.r[0] + st.r[1] + st.r[2];
+  assert.ok(
+    top3(pen.stats[0]) < top3(base.stats[0]) - 0.1,
+    `podium odds ${top3(base.stats[0])} -> ${top3(pen.stats[0])}`,
+  );
+});
+
+test("simulate: team-mates share their weekend form (it widens a constructor's range)", () => {
+  const m = toyModel(),
+    keep = E.SIM.teamSd,
+    c = m.drivers.length + 5; // a midfield constructor
+  try {
+    E.SIM.teamSd = 0;
+    const flat = E.simulate(m, circuit, false, 6000, 4).stats[c].sd;
+    E.SIM.teamSd = 0.4;
+    const shared = E.simulate(m, circuit, false, 6000, 4).stats[c].sd;
+    assert.ok(shared > flat * 1.1, `constructor spread ${flat.toFixed(2)} -> ${shared.toFixed(2)}`);
+  } finally {
+    E.SIM.teamSd = keep;
+  }
+});
+
+test("simulate: pit points are resampled from the team's recent races", () => {
+  const m = toyModel(2);
+  m.cons[0].stops = [25, 25, 20, 20]; // a fast crew: band points plus the fastest-stop bonus
+  m.cons[1].stops = [2, 0, 2, 0];
+  const sim = E.simulate(m, circuit, false, 4000, 1);
+  const pit = sim.stats.slice(m.drivers.length).map((st) => st.pit);
+  assert.ok(Math.abs(pit[0] - 22.5) < 0.5, `fast crew ${pit[0]}`);
+  assert.ok(Math.abs(pit[1] - 1) < 0.2, `slow crew ${pit[1]}`);
+});
+
+test("applyOdds moves the simulated win chances towards the market", () => {
+  const m = toyModel();
+  const favourite = "D30"; // a midfielder the market loves
+  const odds = { win: { [favourite]: 0.3, D00: 0.3 }, top10: { [favourite]: 0.9 } };
+  const before = E.simulate(m, circuit, false, 3000, 2);
+  const m2 = E.applyOdds(m, circuit, odds, { w: 1, n: 1500 });
+  const after = E.simulate(m2, circuit, false, 3000, 2);
+  const i = m.drivers.findIndex((d) => d.tla === favourite);
+  assert.ok(after.stats[i].r[0] > before.stats[i].r[0] + 0.05, `win ${before.stats[i].r[0]} -> ${after.stats[i].r[0]}`);
+  const m0 = E.applyOdds(m, circuit, odds, { w: 0 });
+  assert.equal(m0, m, "weight 0 leaves the model alone");
+});
+
+test("trackModel: circuit priors scaled by this season's trend", () => {
+  const cfg = { circuits: { list: [] }, field: 20 };
+  const priors = { races: [] };
+  // two circuits with history: A calm (2 overtakes per starter), B busy (6)
+  for (const season of [2023, 2024, 2025])
+    for (const [c, ovt] of [
+      ["a", 2],
+      ["b", 6],
+    ])
+      priors.races.push({
+        season,
+        round: 1,
+        circuit: c,
+        name: c.toUpperCase() + " GP",
+        starters: 20,
+        dnf: 2,
+        move: 2,
+        gain: 1,
+        gridCorr: 0.7,
+        sc: 1,
+        rain: 0,
+        ovt,
+      });
+  // this season: both circuits raced with twice the overtakes
+  const results = { race: {}, quali: {}, sprint: {} };
+  const schedule = [];
+  const trackStats = {};
+  for (let gd = 1; gd <= 8; gd++) {
+    const c = gd % 2 ? "a" : "b";
+    schedule.push({ gd, name: c.toUpperCase() + " GP", sprint: false, lock: "", circuit: c });
+    results.race[gd] = Array.from({ length: 20 }, (_, i) => ({
+      tla: "T" + i,
+      team: "X" + (i >> 1),
+      pos: i + 1,
+      grid: i + 1,
+      cls: i < 18,
+    }));
+    trackStats[gd] = { ovt: c === "a" ? 4 : 12 };
+  }
+  schedule.push({ gd: 9, name: "B GP", sprint: false, lock: "", circuit: "b" });
+  const full = { alpha: { ov: 1, dnf: 1, sc: 1, corr: 1 } }; // the circuits' own profiles at full weight
+  const tm = E.trackModel(
+    { schedule, done: [1, 2, 3, 4, 5, 6, 7, 8], assets: [], results, trackStats, cfg, priors },
+    full,
+  );
+  // alpha 0: every circuit gets this season's average
+  const flat = E.trackModel(
+    { schedule, done: [1, 2, 3, 4, 5, 6, 7, 8], assets: [], results, trackStats, cfg, priors },
+    { alpha: { ov: 0, dnf: 0, sc: 0, corr: 0 } },
+  );
+  assert.equal(flat.forCircuit(schedule[8]).ov, 1);
+  const b = tm.forCircuit(schedule[8]);
+  const a = tm.forCircuit(schedule[0]);
+  // the busy circuit well above its past (6, shrunk towards the average) and still twice the calm one
+  assert.ok(b.ov * tm.ovMean > 9 && b.ov * tm.ovMean < 13, `busy circuit forecast ${b.ov * tm.ovMean}`);
+  assert.ok(b.ov > 1.6 * a.ov, `busy ${b.ov} vs calm ${a.ov}`);
+  const fresh = E.trackModel({
+    schedule,
+    done: [],
+    assets: [],
+    results: { race: {}, quali: {}, sprint: {} },
+    trackStats: {},
+    cfg,
+    priors,
+  });
+  assert.equal(fresh.trend.move, 1, "a new season starts with no trend");
+});
+
+test("planHorizon: waiting to transfer can beat transferring now, and matches a brute force", () => {
+  // race 1: keep the team; race 2: driver f (not owned) is great. Free transfers: 0 now, 2 next race.
+  const mk = (vals) =>
+    Object.entries(vals).map(([id, e]) => ({
+      id,
+      kind: id[0] === "K" ? "C" : "D",
+      price: 10,
+      e,
+      boostE: id[0] === "K" ? 0 : e,
+      active: true,
+    }));
+  const r1 = { a: 20, b: 20, c: 20, d: 20, e: 20, f: 5, KA: 10, KB: 10, KC: 5 };
+  const r2 = { a: 20, b: 20, c: 20, d: 20, e: 5, f: 40, KA: 10, KB: 10, KC: 5 };
+  const team = ["a", "b", "c", "d", "e", "KA", "KB"];
+  const o = { cap: 100, free: 0, maxT: 7, chip: "", locks: new Set(), bans: new Set() };
+  const [best] = E.planHorizon([{ cand: mk(r1) }, { cand: mk(r2) }], team, o);
+  // keep for race 1 (20*5 + 20 boost + 20 = 140), then e -> f for free (20*4 + 40 + 40 boost + 20 = 180)
+  assert.equal(Math.round(best.total), 320);
+  assert.equal(best.steps[0].transfers, 0);
+  assert.equal(best.steps[1].transfers, 1);
+  assert.equal(best.steps[1].penalty, 0);
+});
+
+test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {
+  const m = toyModel(),
+    keep = E.SIM.qualiNoTime;
+  try {
+    E.SIM.qualiNoTime = 1; // nobody sets a time
+    const dry = E.simulate(m, { ...circuit, rain: { q: 0, s: 0, r: 0 } }, false, 200, 1);
+    const wet = E.simulate(m, { ...circuit, rain: { q: 1, s: 0, r: 0 } }, false, 200, 1);
+    assert.equal(dry.stats[0].cat.q, -5);
+    assert.equal(wet.stats[0].cat.q, 0);
+  } finally {
+    E.SIM.qualiNoTime = keep;
+  }
+});
+
+test("simulate: Driver of the Day follows each driver's popularity", () => {
+  const m = toyModel();
+  const base = E.simulate(m, circuit, false, 4000, 5).stats[0].dotd;
+  m.drivers[0].dotdPop = 0.3; // a winner the fans don't vote for
+  const low = E.simulate(m, circuit, false, 4000, 5).stats[0].dotd;
+  assert.ok(low < base * 0.6, `DotD ${base} -> ${low}`);
 });

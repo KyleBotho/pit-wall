@@ -26,6 +26,9 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          cache: pip
+      # FastF1: practice laps from F1's live-timing archive when OpenF1 is closed (it locks during live sessions)
+      - run: pip install -r requirements.txt
       # finished gamedays / sessions are cached so each run makes only a handful of requests
       - uses: actions/cache@v6
         with:

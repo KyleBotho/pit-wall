@@ -234,10 +234,25 @@
                   <button data-horizon="1">Next race</button><button data-horizon="2">2 races</button><button data-horizon="3">3 races</button>
                 </div>
               </div>
+              <div class="field" id="planField" hidden>
+                <button class="btn ghost sm" id="planBtn" style="align-self: flex-start">Plan transfers race by race</button>
+                <span class="note">Best sequence of teams over the races: transfers can wait, free ones carry over, prices move the budget.</span>
+              </div>
+              <div class="field">
+                Goal
+                <select id="goal">
+                  <option value="pts">Most expected points</option>
+                  <option value="rival">Beat a league rival</option>
+                  <option value="template">Beat the top-100 template</option>
+                  <option value="template500">Beat the top-500 template</option>
+                </select>
+                <select id="goalRival" hidden></select>
+              </div>
               <div class="field">
                 Select a chip
                 <div class="chipbar" id="chipBar"></div>
               </div>
+              <button class="btn ghost sm" id="chipValBtn" style="align-self: flex-start">Value my chips and Final Fix</button>
               <details class="edit sub">
                 <summary>Chips this team has used</summary>
                 <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
@@ -584,8 +599,8 @@
         <details class="info">
           <summary aria-label="About this">i</summary>
           <div class="infobox">
-            xPts blends the simulated weekends with recent form; 25–75 is the middle half of outcomes. <b>Pace</b> nudges a driver faster or slower (grid
-            places). <b>Incl / Excl</b> forces an asset into or out of Best Teams.
+            xPts is the average of the simulated weekends (optionally blended with recent form in Model settings); 25–75 is the middle half of outcomes.
+            <b>Pace</b> nudges a driver faster or slower (grid places). <b>Incl / Excl</b> forces an asset into or out of Best Teams.
           </div>
         </details>
         <span class="seg" id="assetKind"><button data-kind="D">Drivers</button><button data-kind="C">Constructors</button></span>
@@ -661,6 +676,7 @@
           <h3>Model settings</h3>
           <div class="slider"><span>Form half-life</span><input id="halfLife" type="range" min="2" max="10" step="1" /><output id="halfLifeV"></output></div>
           <div class="slider"><span>Practice weight</span><input id="pw" type="range" min="0" max="2" step="0.25" /><output id="pwV"></output></div>
+          <div class="slider"><span>Market weight</span><input id="oddsW" type="range" min="0" max="1" step="0.05" /><output id="oddsWV"></output></div>
           <div class="slider"><span>Form blend</span><input id="blend" type="range" min="0" max="0.6" step="0.05" /><output id="blendV"></output></div>
           <div class="field">
             Simulations per race
@@ -672,15 +688,26 @@
             Heatmap colours
             <div class="seg" id="heatOpt"><button data-heat="1">On</button><button data-heat="0">Off</button></div>
           </div>
-          <button class="btn ghost" id="resetAll" style="align-self: flex-start">Reset pace nudges, Incl/Excl and circuits</button>
+          <button class="btn ghost" id="resetAll" style="align-self: flex-start">Reset pace nudges, Incl/Excl, circuits and grid penalties</button>
         </section>
       </div>
       <section class="panel prose">
         <h3>How it works</h3>
         <p>
-          Each weekend is simulated thousands of times. Qualifying order comes from recent qualifying positions (blended with practice pace when available) plus
-          random variation. The race blends the grid with recent race pace by the circuit's grid weight, then adds retirements (team's recent rate), overtakes
-          (2026 rate), fastest lap, Driver of the Day and pit-stop points.
+          Each weekend is simulated thousands of times. Pace is measured as % off the fastest car: qualifying from every session's lap times, race pace from
+          each driver's median clean race lap, recent races counting more, mixed with the team-mate's. Practice nudges this weekend's pace and, for the next
+          race, the betting market (Kalshi win / podium / top-10 / pole odds) pulls it towards what the market expects (<b>Market weight</b>).
+        </p>
+        <p>
+          Every simulated weekend draws a form swing per team and per driver that carries through qualifying, sprint and race, redraws each driver's pace and
+          each team's reliability within how sure the model is about them, and rolls for rain (forecast when in range), multi-car crashes and a safety car
+          (likelier after a crash; it shuffles the order). The finishing order is race pace plus a cost for each grid slot, bigger where passing is hard.
+          Overtakes depend on the grid slot and how much a driver moves through the field; pit-stop points come from each team's real stop times.
+        </p>
+        <p>
+          Circuits start from past seasons there (2014 on: overtaking, retirements, how much the grid decides; 2023 on: safety cars, rain) and are scaled by
+          this season's trend against those same circuits, so a new rule set that brings more overtakes shows up after a few rounds. The trend restarts every
+          season. Every setting is tested walk-forward on this season (only what was known before each round).
         </p>
         <p>
           Every weekend is scored with the official 2026 rules: qualifying 10–1, race 25–1, sprint 8–1, ±1 per place (sprint losses capped at −10), −20 race /
@@ -702,14 +729,16 @@
         <details class="info">
           <summary aria-label="About this">i</summary>
           <div class="infobox">
-            Each circuit is typed by <b>Power</b>, <b>Street</b> and <b>Fast corners</b>. From this season's results, the model learns how those change
-            <b>Overtaking</b> (overtake points) and <b>Chaos</b> (retirements); <b>Grid weight</b> follows overtaking. Move a slider to override a race; the
-            reset button in Model settings restores the fitted values.
+            Each circuit starts from its past seasons (overtaking, retirements, how much the grid decides, safety cars, rain), scaled by how this season
+            compares with past seasons at the circuits raced so far. A new circuit borrows from tracks of the same type (<b>Power</b>, <b>Street</b>,
+            <b>Fast corners</b>). <b>Overtaking</b> is relative to this season's average, <b>Grid decides</b> is the expected grid-to-finish rank correlation.
+            Move a slider to override a race; the reset button in Model settings restores the fitted values.
           </div>
         </details>
         <small>remaining races</small>
       </h2>
     </div>
+    <p class="note" id="calTrend"></p>
     <div class="grid-cards" id="cal"></div>
   </main>
 </div>

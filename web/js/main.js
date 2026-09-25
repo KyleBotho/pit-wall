@@ -576,6 +576,8 @@ const CLICK = [
 ];
 // buttons known by id
 const CLICK_ID = {
+  planBtn: () => openPlan(),
+  chipValBtn: () => openChipValues(),
   xoReset: () => {
     state.xo = {};
     recompute(0);
@@ -597,6 +599,7 @@ const CLICK_ID = {
     state.adj = {};
     state.marks = {};
     state.circuits = {};
+    state.pen = {};
     recompute(0);
   },
   menuBtn: () => {
@@ -628,7 +631,7 @@ document.addEventListener("click", (e) => {
       cur = bestSort();
     // ascending first for cost and retirements, descending for the rest (negative points are negative numbers);
     // points columns only rank highest first: the optimiser's Boost and penalties assume you want the best team
-    const pts = k === "x" || k === "xsp";
+    const pts = k === "x" || k === "xsp" || GOAL_COLS.includes(k);
     state.bsort = { k, d: pts ? -1 : cur.k === k ? -cur.d : k === "cost" || k === "dnf" ? 1 : -1 };
     state.showN = 20;
     return rerender();
@@ -682,6 +685,14 @@ function setSlot(team, k, id) {
   return prev;
 }
 const CHANGE_ID = {
+  goal: (t) => {
+    state.goal = t.value;
+    saveAnd(() => (renderSettings(), runOptimiser()));
+  },
+  goalRival: (t) => {
+    state.goalRival = t.value || null;
+    saveAnd(runOptimiser);
+  },
   importFile,
   simPreset: (t) => {
     state.simPreset = t.value;
@@ -763,6 +774,14 @@ const CHANGE = [
     },
   ],
   [
+    "pen",
+    (d, t) => {
+      // stored even when "none", so it can override a penalty race control announced
+      state.pen = { ...state.pen, [d.pen]: +t.value };
+      recompute(0);
+    },
+  ],
+  [
     "synckey",
     (d, t) => {
       state.syncKey = t.checked;
@@ -826,6 +845,7 @@ const INPUT_ID = {
   halfLife: slider("#halfLifeV", "halfLife", (v) => v + " races"),
   pw: slider("#pwV", "pw", (v) => Math.round(v * 100) + "%"),
   blend: slider("#blendV", "blend", (v) => Math.round(v * 100) + "%"),
+  oddsW: slider("#oddsWV", "oddsW", (v) => Math.round(v * 100) + "%"),
 };
 document.addEventListener("input", (e) => {
   const t = e.target;
@@ -836,9 +856,12 @@ document.addEventListener("input", (e) => {
     return recompute(300);
   }
   if (t.dataset.circ) {
-    const g = t.dataset.circ;
-    state.circuits[g] = { ...state.circuits[g], [t.dataset.key]: +t.value };
-    t.nextElementSibling.textContent = (+t.value).toFixed(2);
+    const g = t.dataset.circ,
+      k = t.dataset.key,
+      v = +t.value;
+    // rain is one probability for qualifying, sprint and race here
+    state.circuits[g] = { ...state.circuits[g], ...(k === "rainR" ? { rain: { q: v, s: v, r: v } } : { [k]: v }) };
+    t.nextElementSibling.textContent = k === "sc" || k === "rainR" ? Math.round(v * 100) + "%" : v.toFixed(2);
     recompute(300);
   }
 });

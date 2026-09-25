@@ -519,6 +519,20 @@ details.grp[open] > summary small {
 details.grp > summary:hover {
   color: var(--fg);
 }
+/* the next race's grid penalty pickers (Settings, Circuits) */
+.pengrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 6px 12px;
+  padding-bottom: 8px;
+  font-size: 13px;
+}
+.pengrid label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
 .grpbody {
   display: flex;
   flex-direction: column;

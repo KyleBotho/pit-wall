@@ -30,6 +30,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 
+import extras
 import practice
 from f1feeds import EV_SESSION, FeedError, ev_code, feed_time, get, get_optional, get_soft, load_config
 
@@ -204,9 +205,39 @@ def load_results(done):
                         row["grid"] = int(r["grid"])
                         row["cls"] = r["positionText"].isdigit()
                         row["fl"] = (r.get("FastestLap") or {}).get("rank") == "1"
+                        row["num"] = int(r["number"])
+                    else:
+                        row["qt"] = [lap_secs(r.get(k)) for k in ("Q1", "Q2", "Q3")]
                     rows.append(row)
             off += 100
+    for rows in results["quali"].values():
+        quali_gaps(rows)
     return results
+
+
+def lap_secs(t):
+    """ "1:23.456" -> 83.456 (None for no time)."""
+    try:
+        m, s = (t or "").split(":") if ":" in (t or "") else ("0", t)
+        return round(int(m) * 60 + float(s), 3)
+    except (TypeError, ValueError):
+        return None
+
+
+def quali_gaps(rows):
+    """Each driver's qualifying pace as % off the fastest: per session (Q1, Q2, Q3) against that session's fastest
+    time, averaged over the sessions they ran. Times over 107% (a scrappy lap, a problem) don't count."""
+    for k in range(3):
+        best = min((r["qt"][k] for r in rows if r["qt"][k]), default=None)
+        for r in rows:
+            t = r["qt"][k]
+            r.setdefault("_g", [])
+            if best and t and t / best < 1.07:
+                r["_g"].append((t / best - 1) * 100)
+    for r in rows:
+        g = r.pop("_g")
+        r["gap"] = round(sum(g) / len(g), 3) if g else None
+        del r["qt"]
 
 
 # ---------------------------------------------------------------- per-asset scoring events
@@ -321,6 +352,57 @@ def load_practice(g):
     if any(p["done"] for p in prac) and prac != saved:
         write_json(path, prac, indent=1, sort_keys=True)
     return prac
+
+
+# ---------------------------------------------------------------- extras (extras.py)
+
+
+def load_priors():
+    path = os.path.join(HERE, "data", "circuit_priors.json")
+    return read_json(path) if os.path.exists(path) else None
+
+
+def load_extras(now, schedule, done, nxt_g, results, assets):
+    """Circuit ids/coordinates on the schedule, and DATA's priors, raceInfo, weather, odds and weekend. Each piece
+    fails soft: the model falls back to what it had before."""
+    out = {"priors": load_priors(), "raceInfo": {}, "weather": {}, "odds": None, "weekend": None}
+    try:
+        cal = extras.calendar(get, cached, SEASON)
+        for g in schedule:
+            c = extras.match_round(cal, g["raceStart"])
+            if c:
+                g.update(circuit=c["circuit"], lat=c["lat"], lon=c["lon"])
+    except FeedError as e:
+        print(f"  ! Jolpica calendar: {e}")
+    num = {gd: {r["num"]: (r["tla"], r["team"]) for r in rows if "num" in r} for gd, rows in results["race"].items()}
+    out["raceInfo"] = {
+        str(k): v
+        for k, v in extras.race_info(
+            get_soft, cached, archived, read_json, write_json, SEASON, schedule, done, num
+        ).items()
+    }
+    print(f"  OpenF1 race data: {len(out['raceInfo'])}/{len(done)} rounds")
+    coming = [g for g in schedule if g["gd"] not in done][:3]
+    out["weather"] = {str(k): v for k, v in extras.weather(get_soft, cached, coming, now).items()}
+    print(f"  rain forecasts: {', '.join(f'R{k}' for k in out['weather']) or 'none in range'}")
+    if nxt_g:
+        tlas = {a["tla"] for a in assets if a["kind"] == "D"}
+        out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas)
+        if out["odds"]:
+            out["odds"]["gd"] = nxt_g["gd"]
+            out["odds"]["at"] = now.isoformat(timespec="minutes")
+            # frozen at lock like the projections: what the market said going in
+            if now < iso(nxt_g["lock"]):
+                write_json(archived("odds", f"gd{nxt_g['gd']:02d}.json"), out["odds"], indent=1, sort_keys=True)
+        print(
+            "  market odds: "
+            + (", ".join(k for k in out["odds"] if k in extras.KALSHI_SERIES) if out["odds"] else "none")
+        )
+        out["weekend"] = extras.weekend(get_soft, cached, SEASON, nxt_g, now)
+        out["weekend"]["gd"] = nxt_g["gd"]
+        w = out["weekend"]
+        print(f"  weekend: {len(w['penalties'])} grid penalties, known orders: {', '.join(w['grid']) or 'none'}")
+    return out
 
 
 # ---------------------------------------------------------------- global leaderboard (anonymous aggregates)
@@ -563,6 +645,9 @@ def collect():
             )
         )
 
+    print("Race extras (calendar, OpenF1 race data, weather, market odds)…")
+    ext = load_extras(now, schedule, done, nxt_g, results, assets)
+
     print("Leaderboards…")
     elite = build_elite(assets, schedule)
     print("  global top 500: " + (f"{elite['n']} teams" if elite else "unavailable"))
@@ -584,6 +669,7 @@ def collect():
         "leagueSealed": sealed,
         "live": live,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
+        **ext,
     }
     if nxt_g:
         freeze_projection(data, nxt_g)

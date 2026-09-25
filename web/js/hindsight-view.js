@@ -326,7 +326,9 @@ function renderHind() {
   // every asset's round, with this model's pre-lock projection where it was saved
   const proj = (DATA.projHist || {})[gd];
   $("#hdAssetsNote").textContent =
-    `R${gd}` + (proj ? " · projection frozen at lock" : "") + " · Incl / Excl apply to the best teams above";
+    `R${gd}` +
+    (proj ? ` · projection frozen at lock (${modelAccuracy(gd)})` : "") +
+    " · Incl / Excl apply to the best teams above";
   const bestIds = list[0] ? list[0].drivers.concat(list[0].cons) : [];
   const alist = DATA.assets
     .map((a) => ({ a, h: Hind.at(a.id, gd) }))
@@ -344,4 +346,35 @@ function renderHind() {
       })
       .join("") +
     "</tbody>";
+}
+
+// How far the frozen projection was from what happened: this round's mean absolute error and rank correlation,
+// and the average error over every round with a frozen projection (the model's live track record).
+function modelAccuracy(gd) {
+  const one = (g) => {
+    const proj = (DATA.projHist || {})[g] || {},
+      xs = [],
+      ys = [];
+    for (const [id, x] of Object.entries(proj)) {
+      const h = Hind.at(id, g);
+      if (!h || !h.active || x == null) continue;
+      xs.push(x);
+      ys.push(h.pts);
+    }
+    return xs.length
+      ? { mae: xs.reduce((s, x, i) => s + Math.abs(x - ys[i]), 0) / xs.length, rho: Engine.spearman(xs, ys) }
+      : null;
+  };
+  const now = one(gd);
+  if (!now) return "no result yet";
+  const all = Object.keys(DATA.projHist || {})
+    .map(Number)
+    .filter((g) => DATA.done.includes(g))
+    .map(one)
+    .filter(Boolean);
+  const avg = all.reduce((s, x) => s + x.mae, 0) / all.length;
+  return (
+    `off by ${f1(now.mae)} pts per asset, rank correlation ${now.rho.toFixed(2)}` +
+    (all.length > 1 ? `; ${all.length} rounds average ${f1(avg)}` : "")
+  );
 }

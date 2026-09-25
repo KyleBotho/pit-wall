@@ -131,7 +131,7 @@ function renderAssets() {
         dotd: st.dotd,
         form: forecast.form[a.id],
         neg: p.nn != null ? p.mean - p.nn : null,
-        pit: isD ? null : (forecast.model.cons.find((c) => c.id === a.id) || {}).pitMu,
+        pit: isD ? null : st.pit,
       };
     });
   const { k: sk, d: sd } = state.sort;
@@ -183,6 +183,12 @@ function renderPractice() {
     ms.map((d) => d.tla),
   );
   const rows = ms.slice().sort((a, b) => a.qMu - b.qMu);
+  // the market's pull on race pace, in grid places (+ = faster)
+  const mkt = (d) => {
+    if (!d.oddsR) return '<td class="dim">—</td>';
+    const v = -d.oddsR / (forecast.model.slopeR || 0.1);
+    return `<td class="${v > 0.5 ? "good" : v < -0.5 ? "bad" : ""}">${sgn(v, 1)}</td>`;
+  };
   const g = (v) => (v == null ? "—" : "+" + v.toFixed(2) + "%");
   const perSess = (t) =>
     done
@@ -195,14 +201,14 @@ function renderPractice() {
     (done.length
       ? ""
       : `<caption style="caption-side:top;text-align:left;padding:4px 0 10px;color:var(--muted)">No practice laps yet, so the model uses season form. Once practice runs, green in Practice Q means a driver looks faster than their form.</caption>`) +
-    `<thead><tr><th>DR</th>${done.map((p) => `<th>${esc(p.name.replace("Practice ", "FP"))}</th>`).join("")}<th>Short run</th><th>Long run</th><th title="Grid position implied by practice alone">Practice Q</th><th title="From season form">Form Q</th><th title="What the simulation uses">Model Q</th><th>Form R</th><th>Model R</th></tr></thead><tbody>` +
+    `<thead><tr><th>DR</th>${done.map((p) => `<th>${esc(p.name.replace("Practice ", "FP"))}</th>`).join("")}<th>Short run</th><th>Long run</th><th title="Grid position implied by practice alone">Practice Q</th><th title="From season form">Form Q</th><th title="What the simulation uses (practice and the market included)">Model Q</th><th>Form R</th><th title="Places the betting market moves race pace (+ = the market rates the driver higher than the model)">Market</th><th>Model R</th></tr></thead><tbody>` +
     rows
       .map((d) => {
         const a = byId[d.id],
           diff = d.practiceQ == null ? 0 : d.formQ - d.practiceQ;
         return `<tr><td>${who(a)}</td>${perSess(d.tla)}<td>${g(pr.gapQ[d.tla])}</td><td>${g(pr.gapR[d.tla])}</td>
         <td class="${diff > 1.5 ? "good" : diff < -1.5 ? "bad" : ""}">${d.practiceQ == null ? "—" : f1(d.practiceQ)}</td>
-        <td class="muted">${f1(d.formQ)}</td><td><b>${f1(d.qMu)}</b></td><td class="muted">${f1(d.formR)}</td><td><b>${f1(d.rMu)}</b></td></tr>`;
+        <td class="muted">${f1(d.formQ)}</td><td><b>${f1(d.qMu)}</b></td><td class="muted">${f1(d.formR)}</td>${mkt(d)}<td><b>${f1(d.rMu)}</b></td></tr>`;
       })
       .join("") +
     "</tbody>";
@@ -288,9 +294,40 @@ function renderPrices() {
 }
 
 /* ---------- calendar ---------- */
+// which measures follow each circuit's own history (Engine.TRACK.alpha, set by the leave-one-round-out backtest)
+function histUse() {
+  const names = { ov: "overtaking", dnf: "retirements", sc: "safety cars", corr: "grid influence" };
+  const al = Engine.TRACK.alpha,
+    used = Object.keys(names).filter((k) => al[k] > 0),
+    not = Object.keys(names).filter((k) => !(al[k] > 0));
+  return (
+    (used.length
+      ? `Each circuit's own history shapes ${used.map((k) => names[k]).join(", ")}`
+      : "No circuit's own history is used") +
+    (not.length
+      ? `; ${not.map((k) => names[k]).join(", ")} use this season's average everywhere (circuit history didn't predict them this season).`
+      : ".")
+  );
+}
+const PEN_OPTS = [
+  [0, "none"],
+  [3, "+3"],
+  [5, "+5"],
+  [10, "+10"],
+  [99, "back"],
+];
+// the next race's grid penalties: race control's (DATA.weekend) with yours on top
+const penFor = (tla) =>
+  (state.pen || {})[tla] ?? ((DATA.weekend && NEXT && DATA.weekend.gd === NEXT.gd && DATA.weekend.penalties[tla]) || 0);
 function renderCal() {
+  const tr = trackFit.trend || {},
+    pct0 = (v) => (v == null || isNaN(v) ? "—" : Math.round(v * 100) + "%");
+  const trendTxt = trackFit.priors
+    ? `This season vs the same circuits in past seasons (${trackFit.trendN.move} rounds): position changes ×${tr.move.toFixed(2)}, retirements ×${tr.dnf.toFixed(2)}, safety cars ×${tr.sc.toFixed(2)}, grid-finish correlation ${tr.corr >= 0 ? "+" : ""}${tr.corr.toFixed(2)}. Overtake points: ${trackFit.ovMean.toFixed(1)} per car per race this season. ${histUse()}`
+    : "No past-season circuit history loaded: circuits are fitted from this season's track types only.";
+  $("#calTrend").textContent = trendTxt;
   $("#cal").innerHTML = upcoming
-    .map((g) => {
+    .map((g, k) => {
       const c = circ(g);
       const when = new Date(g.raceStart).toLocaleString(undefined, {
         weekday: "short",
@@ -299,29 +336,48 @@ function renderCal() {
         hour: "2-digit",
         minute: "2-digit",
       });
-      const sl = (key, label, min, max, step) =>
-        `<label class="slider"><span>${label}</span><input type="range" id="c-${g.gd}-${key}" data-circ="${g.gd}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${c[key]}"><output>${(+c[key]).toFixed(2)}</output></label>`;
-      const shifts = Object.entries(c.teamShift || {})
-        .filter(([, v]) => Math.abs(v) >= 0.15)
-        .sort((a, b) => a[1] - b[1]);
-      const shiftTxt = shifts.length
-        ? shifts
-            .map(
-              ([t, v]) =>
-                `<span class="${v < 0 ? "good" : "bad"}">${esc(teamCode(t))} ${v < 0 ? "▲" : "▼"}${Math.abs(v).toFixed(1)}</span>`,
-            )
-            .join(" ")
-        : Engine.TRACK.teamPace
-          ? '<span class="dim">none worth noting</span>'
-          : '<span class="dim">not used (it didn\'t improve the backtest; practice pace covers it)</span>';
+      const sl = (key, label, min, max, step, val, fmt) =>
+        `<label class="slider"><span>${label}</span><input type="range" id="c-${g.gd}-${key}" data-circ="${g.gd}" data-key="${key}" min="${min}" max="${max}" step="${step}" value="${val}"><output>${fmt(+val)}</output></label>`;
+      const f2 = (v) => v.toFixed(2);
+      const wx = (DATA.weather || {})[g.gd];
+      const rainSrc = wx && wx.r != null && !(state.circuits[g.gd] || {}).rain ? "forecast" : "past seasons here";
+      const pr = c.prior;
+      const hist = pr
+        ? `<div class="note" style="font-size:12px">Past seasons here${pr.n ? ` (${pr.n} races)` : " (new circuit: similar tracks)"}: ${pr.ov != null ? `overtaking ${(c.ov || 1).toFixed(2)}× this season's average` : ""} · safety car ${pct0(c.sc)} · rain ${pct0(pr.rain)}</div>`
+        : "";
       const fit = trackFit.fitted && !state.circuits[g.gd];
+      let extra = "";
+      if (k === 0) {
+        const o = DATA.odds && DATA.odds.gd === g.gd ? DATA.odds : null;
+        const wk = DATA.weekend && DATA.weekend.gd === g.gd ? DATA.weekend : null;
+        const known = wk ? Object.keys(wk.grid || {}) : [];
+        const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint" };
+        extra =
+          `<div class="note" style="font-size:12px">Market: ${o ? `${["win", "podium", "top10", "pole"].filter((m) => o[m]).join(", ")} odds from Kalshi (${new Date(o.at).toLocaleString(undefined, shortDate)}), weight ${Math.round(state.oddsW * 100)}%` : "no odds yet"}.` +
+          (known.length
+            ? ` <b>Known: ${known.map((x) => names[x] || x).join(", ")}</b> (simulated from the actual order).`
+            : "") +
+          `</div><div><details class="grp"><summary>Grid penalties${Object.values(state.pen || {}).some(Boolean) || (wk && Object.keys(wk.penalties).length) ? " · set" : ""}</summary>` +
+          `<p class="note" style="font-size:12px">Places added to the qualifying position for the race. Race control's announcements load automatically; set any others here.</p><div class="pengrid">` +
+          DATA.assets
+            .filter((a) => a.kind === "D" && a.active)
+            .sort((a, b) => a.tla.localeCompare(b.tla))
+            .map(
+              (a) =>
+                `<label>${esc(a.tla)} <select data-pen="${a.tla}">${PEN_OPTS.map(([v, n]) => `<option value="${v}" ${penFor(a.tla) === v ? "selected" : ""}>${n}</option>`).join("")}</select></label>`,
+            )
+            .join("") +
+          `</div></details></div>`;
+      }
       return `<section class="panel"><h3>${esc(g.name.replace(" Grand Prix", " GP"))} <small>R${g.gd}</small></h3>
       <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>
       <p class="note">${esc(c.note || "")}</p>
       <div class="chipbar">${(c.feat || []).map((v, i) => `<span class="chiptok" title="0 = none, 1 = maximum">${Engine.FEAT_NAMES[i]} ${v.toFixed(2)}</span>`).join("")}</div>
-      <div class="note" style="font-size:12px">Track-type pace (grid places): ${shiftTxt}</div>
-      <div class="note" style="font-size:12px">${fit ? `Overtaking, grid weight and chaos are fitted from ${trackFit.rounds} completed rounds of this season's track types.` : "Custom values set here."}</div>
-      ${sl("ov", "Overtaking", 0.2, 1.6, 0.05)}${sl("grid", "Grid weight", 0.2, 0.9, 0.05)}${sl("chaos", "Chaos", 0.6, 1.6, 0.05)}</section>`;
+      ${hist}
+      <div class="note" style="font-size:12px">${fit ? `Fitted from this season's ${trackFit.rounds} rounds and this circuit's history (see above). Rain from the ${rainSrc}.` : "Custom values set here."}</div>
+      ${sl("ov", "Overtaking", 0.2, 2.5, 0.05, c.ov, f2)}${sl("grid", "Grid decides", 0.25, 0.95, 0.01, c.grid, f2)}${sl("chaos", "Retirements", 0.5, 1.8, 0.05, c.chaos, f2)}
+      ${sl("sc", "Safety car", 0.05, 0.95, 0.05, c.sc ?? 0.5, pct0)}${sl("rainR", "Rain (race)", 0, 1, 0.05, (c.rain || {}).r ?? 0, pct0)}
+      ${extra}</section>`;
     })
     .join("");
 }
@@ -334,9 +390,11 @@ function renderModel() {
   $("#pwV").textContent = Math.round(state.pw * 100) + "%";
   $("#blend").value = state.blend;
   $("#blendV").textContent = Math.round(state.blend * 100) + "%";
+  $("#oddsW").value = state.oddsW;
+  $("#oddsWV").textContent = Math.round(state.oddsW * 100) + "%";
   $$("#sims button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.sims === state.sims)));
   $$("#heatOpt button").forEach((b) => b.setAttribute("aria-pressed", String(!!+b.dataset.heat === state.heat)));
   const gen = new Date(DATA.generated);
   $("#dataStamp").textContent =
-    `Data: F1 Fantasy prices and points after round ${DATA.done[DATA.done.length - 1]}; ${DATA.season} results from Jolpica; practice from OpenF1. Pulled ${gen.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`;
+    `Data: F1 Fantasy prices and points after round ${DATA.done[DATA.done.length - 1]}; ${DATA.season} results and past seasons from Jolpica; practice, race pace, pit stops and safety cars from OpenF1; odds from Kalshi; rain forecasts from Open-Meteo. Pulled ${gen.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.`;
 }

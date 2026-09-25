@@ -22,7 +22,7 @@
     "Cadillac": { "code": "CAD", "color": "#9CA3AF", "jolpica": ["cadillac"] }
   },
   "circuits": {
-    "_comment": "Meeting-name fragment -> [power (straight-line emphasis), street (walls, low grip), fast corners (aero)], 0-1, and a note. Claude's classification; the effects are fitted in engine.js trackModel().",
+    "_comment": "Jolpica circuit id or meeting-name fragment (first match wins, ids are checked with the name) -> [power (straight-line emphasis), street (walls, low grip), fast corners (aero)], 0-1, and a note. Claude's classification; the effects are fitted in engine.js trackModel().",
     "list": [
       ["australia", [0.5, 0.5, 0.5], "Albert Park: fast semi-street lap, early-season chaos"],
       ["chin", [0.55, 0, 0.5], "Shanghai: long back straight, front-limited corners"],
@@ -39,6 +39,11 @@
       ["ital", [1, 0, 0.2], "Monza: low downforce, slipstream battles"],
       ["spanish", [0.4, 0.7, 0.3], "Madrid street-style layout"],
       ["azerbaijan", [0.85, 1, 0.1], "Street circuit, 2 km flat-out run; walls punish mistakes"],
+      [
+        "sepang",
+        [0.65, 0, 0.6],
+        "Sepang (2026's Bahrain GP, moved to Malaysia): two long straights, fast sweepers, heat and tropical rain"
+      ],
       ["bahrain", [0.55, 0, 0.4], "Heavy braking zones, high tyre wear, easy passing"],
       ["singapore", [0.2, 1, 0.1], "Tight street circuit; qualifying is everything, safety cars likely"],
       ["united states", [0.45, 0, 0.6], "Long back straight into turn 12; plenty of passing"],

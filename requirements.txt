@@ -1,0 +1,2 @@
+# Optional: practice laps from F1 live timing when OpenF1 is closed during a live session (practice.py)
+fastf1

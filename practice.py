@@ -125,10 +125,15 @@ def practice_for(get, cache_path, lock_iso, now):
             if not isinstance(laps, list) or not laps:
                 raise ValueError("no laps yet")
             stints, drivers = fetch("stints"), fetch("drivers")
-        except Exception as e:  # one session unavailable (OpenF1 closed during live sessions): keep the others
+        except Exception as e:  # one session unavailable (OpenF1 closed during live sessions): try F1's own timing
             print(f"  ! {s['session_name']}: {e}")
-            out.append({"name": s["session_name"], "start": s["date_start"], "done": False, "drivers": {}})
-            continue
+            try:
+                laps, stints, drivers = fastf1_session(s, cache_path)
+                print(f"    {s['session_name']}: loaded from F1 live timing (FastF1) instead")
+            except Exception as e2:  # noqa: BLE001 - FastF1 missing or the session not published yet
+                print(f"    FastF1 fallback: {e2}")
+                out.append({"name": s["session_name"], "start": s["date_start"], "done": False, "drivers": {}})
+                continue
         out.append(
             {
                 "name": s["session_name"],
@@ -140,3 +145,55 @@ def practice_for(get, cache_path, lock_iso, now):
             }
         )
     return out
+
+
+FASTF1_NAMES = {"Practice 1": "FP1", "Practice 2": "FP2", "Practice 3": "FP3"}
+
+
+def fastf1_session(s, cache_path):
+    """The same laps / stints / drivers records as OpenF1, read with FastF1 from F1's live-timing archive (public,
+    published shortly after each session). Used when OpenF1 refuses us (it locks while any session is live)."""
+    import os
+
+    import fastf1  # optional dependency: pip install fastf1
+
+    folder = os.path.dirname(cache_path("fastf1/x"))
+    os.makedirs(folder, exist_ok=True)
+    fastf1.Cache.enable_cache(folder)
+    year = int(s["date_start"][:4])
+    ses = fastf1.get_session(year, s.get("location") or s.get("country_name"), FASTF1_NAMES[s["session_name"]])
+    ses.load(laps=True, telemetry=False, weather=False, messages=False)
+    secs = lambda v: None if v is None or v != v else v.total_seconds()  # noqa: E731 - NaT != NaT
+    laps, stints, drivers = [], {}, {}
+    for _, r in ses.laps.iterrows():
+        num = int(r["DriverNumber"])
+        drivers[num] = r["Driver"]
+        n = int(r["LapNumber"])
+        laps.append(
+            {
+                "driver_number": num,
+                "lap_number": n,
+                "lap_duration": secs(r["LapTime"]),
+                "is_pit_out_lap": r["PitOutTime"] == r["PitOutTime"],  # not NaT
+                "duration_sector_1": secs(r["Sector1Time"]),
+                "duration_sector_2": secs(r["Sector2Time"]),
+                "duration_sector_3": secs(r["Sector3Time"]),
+            }
+        )
+        if r["Stint"] != r["Stint"]:
+            continue
+        st = stints.setdefault(
+            (num, int(r["Stint"])),
+            {
+                "driver_number": num,
+                "stint_number": int(r["Stint"]),
+                "lap_start": n,
+                "lap_end": n,
+                "compound": r["Compound"] if isinstance(r["Compound"], str) else None,
+                "tyre_age_at_start": max(0, int(r["TyreLife"]) - 1) if r["TyreLife"] == r["TyreLife"] else 0,
+            },
+        )
+        st["lap_end"] = max(st["lap_end"], n)
+    if not laps:
+        raise ValueError("no laps in the live-timing archive yet")
+    return laps, list(stints.values()), [{"driver_number": k, "name_acronym": v} for k, v in drivers.items()]

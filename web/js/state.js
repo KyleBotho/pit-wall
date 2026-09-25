@@ -3,7 +3,7 @@
    turns a version-n object into version n+1. Everything read from localStorage or the account goes through
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 const KEY = "pitwall.v1";
-const SCHEMA = 3;
+const SCHEMA = 4;
 const VIEWS = ["calc", "live", "league", "elite", "hind", "stats", "assets", "prices", "practice", "grid", "settings"];
 
 // the example team a new browser starts with (config/season.json defaultTeam)
@@ -29,6 +29,10 @@ const defaults = () => ({
   blend: Engine.DEFAULTS.blend,
   sims: Engine.DEFAULTS.sims,
   pw: Engine.DEFAULTS.pw,
+  oddsW: Engine.DEFAULTS.oddsW, // weight of the betting market in the next race's pace (0 = model only)
+  pen: {}, // grid penalties you set for the next race: TLA -> places (99 = back of the grid)
+  goal: "pts", // the Calculator's goal: "pts" (expected points), "field" (gain on the field) or "rival"
+  goalRival: null, // rival key for goal "rival"
   adj: {},
   marks: {},
   circuits: {},
@@ -95,6 +99,12 @@ const MIGRATIONS = [
     if (s.hdCap === "team") s.hdCap = "team:" + (s.active | 0);
     if (s.pane === "team") s.pane = "best";
   },
+  // 3 -> 4: model rework (2026-09-24): the recent-form blend made projections worse in the walk-forward test, so
+  // it's off by default; circuit "grid" now means the expected grid-finish correlation, so old overrides go
+  (s) => {
+    s.blend = 0;
+    s.circuits = {};
+  },
 ];
 
 // Settings that mean the same in any season. The rest (teams, marks, nudges, pins, filters on points...) refer to
@@ -104,6 +114,8 @@ const CARRY = [
   "blend",
   "sims",
   "pw",
+  "oddsW",
+  "goal",
   "heat",
   "horizon",
   "valW",

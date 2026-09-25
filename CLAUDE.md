@@ -15,15 +15,29 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
   example team. Embedded as `DATA.cfg`; update it before a new season. `config/feeds.json` — user agent, pacing,
   scoring-event codes (shared by Python, the page data and the Supabase function).
-- `engine.js` — pure JS, no DOM, `// @ts-check`: `buildModel` (pace, DNF, overtakes, pit stops, practice blend,
-  track-type shift; `opt.model` overrides `MODEL` for backtests), `simulate` (Monte Carlo weekend scored with the
-  official rules), `trackModel`, `priceStep`, `optimise` (`boostE` may be one value per race of the horizon: the
-  Boost goes to each race's best driver, chips play in the first), `project`. Settings are named in `MODEL`, `SIM`,
-  `TRACK`, each marked backtested or hand-set.
+- `engine.js` — pure JS, no DOM, `// @ts-check` (model rework 2026-09-24, see Model decisions): `buildModel` (pace
+  as % off the fastest from qualifying lap times and median clean race laps, DNF, overtake regression, pit points,
+  practice blend, parameter uncertainty; `opt.model` overrides `MODEL`), `trackModel` (circuit priors from past
+  seasons x this season's level), `withWeather`, `applyOdds` (Kalshi market), `raceSetup` (everything one race's sim
+  needs: circuit + forecast rain, model + practice + market, grid penalties, orders already known), `simulate`
+  (Monte Carlo weekend: team/driver weekend form, pace/reliability redraws, rain, multi-car incidents, safety car,
+  official scoring; `opt.known` / `opt.pen`), `priceStep`, `optimise`, `planHorizon` (race-by-race transfers with
+  carry-over and price-driven budget), `project`. Settings in `MODEL`, `SIM`, `TRACK`, each marked fitted /
+  backtested / measured / hand-set.
 - `hindsight.js` — pure, `// @ts-check`: `Hindsight.create(DATA, Engine)` -> best teams on actual points (`run`,
   `own`, Final Fix `ff`) and `score(lineup, gd)`, which rebuilds F1's official round score (42/42 team-rounds).
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
-  fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap.
+  fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
+  refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
+  dependency, `requirements.txt`; checked 2026-09-24: Baku FP2 short-run gaps identical to OpenF1's).
+- `extras.py` — this season's extra inputs, all fail-soft: `calendar` (Jolpica circuit id, coordinates; 2026's
+  "Bahrain GP" is at Sepang, so circuit features match on the id first), `race_info` (OpenF1 per finished round:
+  SC/VSC/red flag, rain, stop times, median clean-lap race pace; archived in `history/2026/races/`), `weather`
+  (Open-Meteo rain probability for qualifying/sprint/race, 16-day range), `odds` (Kalshi winner/podium/top-10/pole
+  for the next race, de-vigged; archived at lock in `history/2026/odds/`), `weekend` (race-control grid penalties
+  and, once run, the actual qualifying/sprint order from OpenF1).
+- `priors.py` — run once per season (before round 1): `data/circuit_priors.json`, one row per past race (Jolpica
+  2014+: position changes, grid-finish correlation, retirements; OpenF1 2023+: SC, VSC, red, rain, overtakes).
 - `web/app.html` + `web/app.css` + `web/js/*.js` — the page. Plain scripts sharing one global scope, loaded in
   the order app.html lists them (core, state, sync, forecast, import, league, elite, filters, hindsight-view, stats,
   live, calc, views, main). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
@@ -46,8 +60,14 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tests/` — `node --test` (engine vs brute force, price rule vs real changes, scoring lines, state migrations,
   seal round-trip, shared tables, Hindsight vs official scores when the private clone is next door) and
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
-- `backtest/run.js` (`npm run backtest`) — price rule, track-model lambdas, retirement recency/shrinkage, practice
-  weights, calibration. `backtest/practice_rounds.py` rebuilds `practice_by_round.json` from OpenF1 (cached).
+- `backtest/run.js` (`npm run backtest [section numbers]`) — 1 price rule, 2 track model (leave-one-round-out, circuit
+  history weight alpha), 3 retirements, 4 practice weights, 5 calibration by scoring category, 6 THE GATE:
+  walk-forward projected points vs actual (CRPS, MAE, coverage, team pick; variants without market/practice/...),
+  7 frozen projections vs results, 8 pit-stop rule vs scoring lines. `backtest/walk.js` = the shared walk-forward
+  harness (`asOf(r)` rebuilds the data as it stood before round r; exact CRPS). `backtest/fit.js` (`npm run fit`) =
+  coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
+  `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
+  settled events need the `historical/` API, one request per driver).
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
@@ -82,6 +102,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   local instead. `web/js/core.js` keeps the `/*__DATA__*/ null` placeholder (refresh.py matches it with a regex).
 
 ## Commands
+- New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`.
+- Local preview: `.claude/launch.json` "pit-wall-build" serves `build/` on :8765.
 - Rebuild locally: `python refresh.py` (run from this folder; `PYTHONIOENCODING=utf-8` on Windows bash);
   `python refresh.py --offline` rebuilds the page from the last fetch (page/CSS/JS edits).
 - Checks: `npm run check` (ESLint, Prettier, tsc on engine/hindsight, node tests; `npm install` once),
@@ -98,7 +120,16 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 ## Data sources (all public, no login)
 - `fantasy.formula1.com/feeds/...`: `schedule/raceday_en.json`, `drivers/{gameday}_en.json` (prices, points, ownership),
   `popup/playerstats_{PlayerId}.json` (per-race scoring events). No CORS — only server-side fetches work.
-- Jolpica `api.jolpi.ca/ergast/f1/2026/{results,qualifying,sprint}.json`.
+- Jolpica `api.jolpi.ca/ergast/f1/2026/{results,qualifying,sprint}.json` (qualifying Q1-Q3 times -> `gap` % per
+  driver), `/2026.json` (circuit ids, coordinates) and past seasons (priors.py).
+- OpenF1 per race: `race_control` (SC/VSC/red, grid penalties), `weather` (rain), `pit` (`stop_duration`), `laps`
+  (race pace), `session_result` (qualifying order once run). `overtakes` exists for 2023-2025 only.
+- Kalshi `api.elections.kalshi.com/trade-api/v2` (public reads, no key): series KXF1RACE (winner), KXF1RACEPODIUM,
+  KXF1TOP10, KXF1POLE; events `<series>-<AZEGP26>`. Settled markets move to `/historical/markets` (plain price fields).
+- Open-Meteo `api.open-meteo.com/v1/forecast` (no key): hourly precipitation probability.
+- FastF1 (pip) reads `livetiming.formula1.com/static` — the fallback for practice when OpenF1 is locked.
+- Not automated: FIA stewards' PDFs (grid penalties come from race control messages plus the manual picker in
+  Settings > Circuits).
 - OpenF1 `api.openf1.org/v1/{sessions,laps,stints,drivers}` (practice; free data lands shortly after sessions).
   While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
   for it: one attempt, cached copy on failure, never aborts the build (seen 2026-09-24 during Baku FP1).
@@ -109,25 +140,81 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   Never put league or personal data into the repo/site, and never handle the user's F1 login or tokens.
 
 ## Model decisions (backtested — keep unless new evidence; `npm run backtest` reproduces the evidence)
-- Scoring = official 2026 rules (sprint DNF −10, sprint losses capped −10, constructor Q2/Q3 bonus, pit bands).
-- Price change: 3-race avg pts / price, rounded to 3 dp; bands 0.605 / 0.9 / 1.195; ≥$18.5m ±0.1/0.3, else ±0.2/0.6;
-  clamp $3–34m. Fitted on 2026 history and matches f1fantasytools. Backtest 2026-09-24: 390/392 real changes.
-- Practice: short-run rank blended 50% into quali pace, long-run 10% into race pace, pull capped ±6 places. Only
-  applied to the next race. Changed 2026-09-24 (user approved) from 30% after the reproducible walk-forward on R4–R14:
-  quali MAE 1.735 at 0.5 vs 1.804 at 0.3 (0.7 is worse again); long-run 0.1 still best; at 0.5 the ±6 cap ties "none".
-- Race pace from finish rank rescaled to a full field; DNF = team rate, no recency weighting, shrunk toward the
-  grid-wide rate with k=16. Changed 2026-09-24 (user approved) from half-life 6 / k=4: walk-forward log loss (R4–R14)
-  0.4638 vs 0.4696; grid-wide rate alone 0.4828.
-- Track type: circuits tagged [power, street, fast corners] in `config/season.json`. Leave-one-out on R1–R14
-  (reproducible run 2026-09-24; overtakes now per car that started, not /22): overtaking ~6% better at λ=0.5 (used;
-  λ=0.25 gives 7.8%), DNF ~1% at λ=2 (mild). Team-specific pace was slightly worse than none at every λ, so it is OFF
-  since 2026-09-24 (`TRACK.teamPace: false`; the backtest still measures it). The earlier notes said 13% / 4% / 0%.
-- Neutral-track sim matches actual 2026 per-category points (backtest section 5; overtakes run low, 4.15 vs 4.78
-  per driver-race; retirements −3.63 vs −3.90); FL/DOTD go to the top seven ~89% / 87% of the time.
-- Default 10,000 sims per race × next 3 races. Optimiser enumerates all 5-driver × 2-constructor teams.
-- vs rhter's Baku sim (f1fantasytools): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
+Model rework 2026-09-24/25 (user asked for a sim review, scored 7/10, then "implement all the improvements, including
+the additional data sources", plus his own idea: circuit priors carry a SEASON TREND, restarted every season).
+- The gate is backtest section 6: walk-forward R5-R14, exact CRPS of projected points (plus MAE, coverage, team pick).
+  Paired against the previous engine (git 8c14f43) at 10,000 sims: ΔCRPS +0.02 ± 0.11, ΔMAE +0.08 ± 0.16 — a TIE on
+  points within noise; better on race positions (race MAE 2.91 vs 3.05 places, from lap-time pace); qualifying about
+  the same (1.737 vs 1.735). The rework's value is structure (correlated team form, SC, rain, market, uncertainty,
+  penalties, known grid) and features, not a measured points gain yet. 10 rounds can't separate ±0.1.
+- Section 6 now: CRPS 8.85, MAE 12.17 (drivers 10.7, constructors 15.2), bias +0.03, rank corr 0.74, 85% inside the
+  10-90% range (a bit wide), baselines: season average 13.17, recent form 13.65.
+- Recent-form blend: default 0 (was 0.3; +30% form is worse on every metric). State schema 4 resets it.
+- Pace: % off the fastest. Qualifying from Jolpica Q1-Q3 times (per-session gap to that session's fastest, averaged);
+  race from OpenF1 median clean race lap (fallback: finishing rank x 0.1%). Team-mate prior 1.5 races, gaps capped at
+  4%, then shrunk 0.8 towards the field median (fitted). Nudges in places convert with the field's %/place.
+- Sim (fitted by `npm run fit`, exact CRPS, one pass): qualifying noise 0.2%, race 0.15%, team weekend form 0.1%,
+  driver weekend form 0.08%, grid slot cost 0.07% (scaled by the circuit's grid-finish correlation), pace/reliability
+  redraw x1, incidents 15% of retirements, SC noise x1.35. Hand-set: rain noise x1.6 / retirements x1.4, SC per
+  retirement 0.15, sprint scalings. Many of these sit on a flat optimum (differences < noise).
+- Market (Kalshi win/podium/top-10/pole, next race only): pace moved in log-odds towards the market at weight 0.5
+  (0.25-0.5 tie on CRPS; 0.5 best MAE; 0 best CRPS by 0.05 in one run — noise level). R5-R14 odds at lock rebuilt.
+- Practice: short-run 50% into qualifying pace (0.6 ties), pull cap 0.8%; long-run 0 (race pace from laps beats it).
+- Overtakes: Poisson regression on log(1 + |places moved|) and grid slot with the round's level as offset, plus each
+  driver's skill (shrunk, 12 pseudo-overtakes). In 2026 overtakes track places MOVED, not net places gained (swaps).
+  Sprint share of race overtakes swings 0.17-0.92 between sprints: measured, shrunk to 0.4 with 3 pseudo-sprints.
+- Pit points: resample the team's own pit scoring lines (R FP/FP2) over the last 8 races. OpenF1 stop times match
+  the official bands only 42/62 team-races (rounded, not DHL timing), so they're archived but not used.
+- Track (section 2, leave-one-round-out): circuit history is barely predictive in 2026 (rank corr −0.2..0.2 with this
+  season's per-circuit overtakes, grid influence, SC). Fitted weights of each circuit's own history (TRACK.alpha):
+  retirements 1 (+7% vs flat), overtakes/SC/grid influence 0 (history made them worse). History still sets the level
+  before a season has rounds (trend shrink 3 pseudo-rounds) and the rain climatology. Trend this season vs the same
+  circuits: position changes x0.95, retirements x1.52, SC x1.14, grid-finish corr +0.04. Re-run section 2 each
+  season: the new-regs effect may fade.
+- Unchanged: price rule (390/392), DNF team rate shrink k=16 no recency (log loss 0.4608), official scoring.
+- Known gaps (section 5): overtakes run low at a neutral track (4.05 vs 4.78), places lost too few (−0.22 vs −0.56),
+  fastest lap / DotD slightly too spread (88% / 94% to the top seven vs 100%).
+- Default 10,000 sims per race × next 3 races (~1 s in the browser). Optimiser enumerates all teams; `planHorizon`
+  beam-searches race-by-race plans (~0.5 s); goals "beat a rival / the top-100 template" re-rank by P(beat).
+- vs rhter's Baku sim (f1fantasytools, old engine): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
 
 ## Open items — next session starts here
+- [x] 2026-09-25, from the F1 Fantasy Tools Discord findings (user's agent scraped #analyst-simulations and
+      #analysis-chat, files in Downloads `F1_Fantasy_Sim_Findings_*.md`; ideas only, never rhter's sims or output):
+      1. Scoring vs a team to beat on the same simulated weekends: goals rival / top-100 template / top-500 template;
+         Best Teams columns P(beat), P(+25) (`GOAL_K`, the gain that moves rank), xGap (E[D]) and Gap 10–90%;
+         sortable, and the ranking follows the sorted goal column (default P(beat)).
+      2. Price average over the races so far (2026 rule, no "imaginary zeros"): `priceInfo` divides by 1-3, not 3.
+      3. Final Fix: "Value my chips and Final Fix" (Plan & chip) shows, once qualifying is known, the best single driver
+         swap on points still to be scored (total − known qualifying/sprint points; Boost stays on the slot), with the
+         community's ~+20 threshold. 4. Same pop-up: X3, No Negative, Autopilot (+ how often it moves the Boost),
+         Wildcard and Limitless gains for the starting team next race. 5. Chalky vs flat: the optimiser keeps 400 teams
+         and the note says how many are within 5% of the best.
+      Scoring details: no −5 for no qualifying time in a wet session; Driver of the Day popularity per driver
+      (`dotdPopularity`: votes won vs what his finishes would earn, 2 pseudo-votes; 2026: VER ×2.2, RUS ×0.5). The
+      "−20 only below 90% distance" rule is already how classification works (a car past 90% is classified).
+      Gate after these: CRPS 8.854 / MAE 12.18 (unchanged within noise).
+
+### To do (agreed 2026-09-25, in this order)
+- [ ] Mechanical "model team" in Hindsight: what a hands-off follower of the frozen projections would have scored each
+      round (rhter's public "stats team" ranked 1,166–4,105 globally in 2023–25; a benchmark for ours).
+- [ ] Try in the backtest before adopting: lap-time noise in 1/t² space (skewed like real mistakes); a car-level +
+      driver-offset team-mate model; fastest-lap / DNF odds if Kalshi (or another free source) runs per-race markets
+      in 2026 (only 2025 fastest-lap events seen; KXF1RETIRE is season-long). rhter blends FL odds 50/50 and takes DNF%
+      from bookmakers; his users showed that misses chronic cases (Stroll), so test, don't switch.
+- [ ] One-click overtake scenarios (low / base / high) on top of the circuit Overtaking slider.
+- [ ] Budget value slope per constructor pair (rhter: ~1.2 MCL+FER to ~1.7 with one A-tier constructor; leave
+      sprints out of the slope). Low priority: he's moving away from hard budget optimisation himself.
+- [ ] Value of an extra transfer (nobody models it).
+- [ ] 9. The big one, once the rest is done (user wants time spent to get it right): a lap-by-lap race model built on
+      sub-lap segments (rhter's own limitation: one time per lap can't produce DRS trains), car-performance envelopes
+      (g-g-V from telemetry, projected onto the next track's geometry for pre-practice pace), minisector ideal laps
+      (two disjoint sets, less sensitive to one perfect sector), and an energy-deployment model (2026 overtakes come
+      from charge differences on energy-starved tracks: the "yo-yo"). Data: FastF1 / OpenF1 telemetry (car_data,
+      location). Judge it with the section 6 gate: it has to beat the current model, not just look more realistic.
+- [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
+      `npm run fit` again; with ~20 rounds the ±0.1 differences may become readable. `python backtest/odds_rounds.py`
+      is only needed for rounds before the live odds archive (history/2026/odds, from R15).
 Private league IDs are never written into this public repo: anyone holding one can read that league's feed,
 manager names included. They live in the `LEAGUE_IDS` secret (and, after 0b, the private repo).
 
@@ -204,6 +291,9 @@ User-approved order: 1–5, then the rest.
    line-ups change (`firstSeen` = when we first saw it); the page shows ± vs the previous round's snapshot (from R15).
    [ ] After Baku: read the `firstSeen` times to learn whether the feed's line-ups change at lock or only after the
    race (their site snapshots after the qualifying lock). If only after, the ± compares post-race line-ups.
+   The user says (2026-09-24) the feed's line-ups update only AFTER the race; confirm with the Baku `firstSeen` times.
+   If so, rivals' picks for a round can't be seen before the race; mid-weekend League live uses last round's
+   line-ups (the page already warns when line-ups are older than the lock).
 7. [x] League chart (Total / Relative to a chosen team / Race points / Rank, chip badges; rivals' chips need an
    import, which now keeps each chip's round as `chipGd`): "relative to you" and race-points modes, chip markers.
 8. [x] Direct xPts override per asset (alongside pace nudges).
