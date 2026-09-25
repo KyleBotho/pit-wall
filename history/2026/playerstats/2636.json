@@ -718,9 +718,25 @@
         "GamedayId": 15,
         "PlayerValue": 14.7,
         "OldPlayerValue": 14.1,
-        "IsPlayed": 0,
+        "IsPlayed": 1,
         "IsActive": 1,
-        "StatsWise": []
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 3
+          },
+          {
+            "Frequency": "-",
+            "Event": "Both Driver Q2",
+            "Value": 3
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 0
+          }
+        ]
       }
     ],
     "TourWiseStats": [
@@ -734,12 +750,12 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 418
+            "Value": 421
           },
           {
             "Frequency": "-",
             "Event": "Both Driver Q2",
-            "Value": 6
+            "Value": 9
           },
           {
             "Frequency": "1",
@@ -1607,7 +1623,7 @@
             "RaceDayId": 7388,
             "TeamId": 2636,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -1628,7 +1644,7 @@
             "RaceDayId": 7389,
             "TeamId": 2636,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "0",
+            "MatchStatus": "1",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -3113,7 +3129,7 @@
             "OldPlayerValue": 14.1,
             "RaceDayId": 7388,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -3125,6 +3141,42 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-09-25T16:00:00+04:00",
             "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 3
+              },
+              {
+                "Frequency": "-",
+                "Event": "Both Driver Q2",
+                "Value": 3
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 14.7,
+            "OldPlayerValue": 14.1,
+            "RaceDayId": 7389,
+            "DateTime": "09/24/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Baku",
+            "MeetingNumber": 15,
+            "MeetingName": "Azerbaijan Grand Prix",
+            "CountryId": 31,
+            "CountryName": "Azerbaijan",
+            "CircuitOfficialName": "Baku City Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-09-26T15:00:00+04:00",
+            "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
           }
@@ -3133,8 +3185,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/25/2026 10:57:06 AM",
-    "ISTTime": "9/25/2026 4:27:06 PM",
-    "CESTTime": "9/25/2026 12:57:06 PM"
+    "UTCTime": "9/25/2026 2:32:46 PM",
+    "ISTTime": "9/25/2026 8:02:46 PM",
+    "CESTTime": "9/25/2026 4:32:46 PM"
   }
 }
