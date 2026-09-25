@@ -471,6 +471,65 @@ test("trackModel: circuit priors scaled by this season's trend", () => {
   assert.equal(fresh.trend.move, 1, "a new season starts with no trend");
 });
 
+test("trackModel: the next race's overtake level follows its practice average speed", () => {
+  // six rounds: overtakes per starter rise with average speed (length / reference lap)
+  const km = { slow: 3.3, mid: 5, fast: 5.8 };
+  const laps = { slow: 74, mid: 90, fast: 82 }; // 160, 200 and 255 km/h
+  const ovt = { slow: 1.5, mid: 4, fast: 10 };
+  const order = ["slow", "mid", "fast", "slow", "mid", "fast"];
+  const schedule = order.map((c, i) => ({ gd: i + 1, name: c + " GP", sprint: false, lock: "", circuit: c }));
+  schedule.push({ gd: 7, name: "next GP", sprint: false, lock: "", circuit: "fast" });
+  schedule.push({ gd: 8, name: "later GP", sprint: false, lock: "", circuit: "fast" });
+  const results = { race: {}, quali: {}, sprint: {} };
+  const trackStats = {};
+  order.forEach((c, i) => {
+    results.race[i + 1] = Array.from({ length: 20 }, (_, k) => ({
+      tla: "T" + k,
+      team: "X",
+      pos: k + 1,
+      grid: k + 1,
+      cls: true,
+    }));
+    trackStats[i + 1] = { ovt: ovt[c], lap: laps[c] };
+  });
+  const data = {
+    schedule,
+    done: [1, 2, 3, 4, 5, 6],
+    assets: [],
+    results,
+    trackStats,
+    cfg: { circuits: { list: [], km } },
+    practice: [{ name: "Practice 1", done: true, ref: 82, drivers: {} }],
+  };
+  const tm = E.trackModel(data, { speed: true, speedLambda: 0 });
+  assert.equal(tm.speed.n, 6);
+  const next = tm.forCircuit(schedule[6]);
+  assert.ok(Math.abs(next.kmh - 254.6) < 0.1, `speed ${next.kmh}`);
+  assert.ok(next.ov * tm.ovMean > 8 && next.ov * tm.ovMean < 12, `fast track level ${next.ov * tm.ovMean}`);
+  // a slow practice at the same track: fewer overtakes
+  const slow = E.trackModel(
+    { ...data, practice: [{ name: "Practice 1", done: true, ref: 120, drivers: {} }] },
+    { speed: true },
+  );
+  assert.ok(slow.forCircuit(schedule[6]).ov < next.ov);
+  // no practice yet, a race after the next, a circuit without a length, or the switch off: the flat level
+  assert.equal(E.trackModel({ ...data, practice: [] }, { speed: true }).forCircuit(schedule[6]).ov, 1);
+  assert.equal(tm.forCircuit(schedule[7]).ov, 1);
+  assert.equal(
+    E.trackModel({ ...data, cfg: { circuits: { list: [], km: {} } } }, { speed: true }).forCircuit(schedule[6]).ov,
+    1,
+  );
+  assert.equal(E.trackModel(data, { speed: false }).forCircuit(schedule[6]).ov, 1);
+  assert.equal(
+    E.practiceRef([
+      { name: "a", done: true, ref: 90, drivers: {} },
+      { name: "b", done: true, ref: 89, drivers: {} },
+      { name: "c", done: false, drivers: {} },
+    ]),
+    89,
+  );
+});
+
 test("planHorizon: waiting to transfer can beat transferring now, and matches a brute force", () => {
   // race 1: keep the team; race 2: driver f (not owned) is great. Free transfers: 0 now, 2 next race.
   const mk = (vals) =>

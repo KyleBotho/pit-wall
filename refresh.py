@@ -355,6 +355,17 @@ def load_practice(g):
     return prac
 
 
+def add_lap_refs(track_stats):
+    """Each finished round's practice reference lap (fastest session's `ref`, seconds) from the practice archive, as
+    trackStats[gd].lap: with the circuit length it gives the track's average speed (engine.js TRACK.speed)."""
+    for g, ts in track_stats.items():
+        path = os.path.join(ARCHIVE, "practice", f"gd{int(g):02d}.json")
+        refs = [p["ref"] for p in (read_json(path) if os.path.exists(path) else []) if p.get("done") and p.get("ref")]
+        if refs:
+            ts["lap"] = min(refs)
+    return track_stats
+
+
 # ---------------------------------------------------------------- extras (extras.py)
 
 
@@ -635,6 +646,7 @@ def collect():
 
     print("Player stats (per-round scoring events)…")
     ev_names, track_stats, live = load_playerstats(assets, done, feeds, feed_times, live_gd, results)
+    add_lap_refs(track_stats)
 
     nxt_g = next((g for g in schedule if g["gd"] == nxt), None)
     prac = []
@@ -691,6 +703,7 @@ def main():
     if args.offline:
         data = read_json(args.data)
         data["cfg"] = CFG  # the page and engine always use the current config
+        data["trackStats"] = add_lap_refs({str(k): v for k, v in data.get("trackStats", {}).items()})
         data["projRebuilt"] = load_projections("rebuilt")
     else:
         try:

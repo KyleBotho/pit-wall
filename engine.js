@@ -86,17 +86,17 @@
   ];
   const PIT_FASTEST = 5;
 
-  /** @typedef {{ ov: number, ovMean?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
+  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
   /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
-  /** @typedef {{ name: string, done: boolean, drivers: Record<string, { q: number | null, r: number | null, laps: number }> }} PracticeSession */
+  /** @typedef {{ name: string, done: boolean, ref?: number | null, drivers: Record<string, { q: number | null, r: number | null, laps: number }> }} PracticeSession */
   /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string }} Gameday */
-  /** @typedef {{ circuits?: { list: [string, number[], string][] }, field?: number }} SeasonCfg */
+  /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number }>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -355,6 +355,15 @@
     // backtested (leave-one-round-out, backtest section 2): weight of each circuit's own past profile against this
     // season's average (0 = every circuit the same, 1 = the full past profile)
     alpha: { ov: 0, dnf: 1, sc: 0, corr: 0 },
+    // the round's overtake level from the track's average speed (circuit length / practice reference lap): log
+    // overtakes per starter regressed on it over this season's rounds (ridge on the standardised speed), applied to
+    // the next race once its practice has run. Needs speedMin rounds with a reference lap.
+    // Backtested 2026-09-25 (section 9 paired, R5-R14): CRPS -0.21 +/- 0.12, MAE -0.34, round overtake level error
+    // -0.31 (item 9 stage 2). A track with no practice yet (races after the next) keeps the flat season level.
+    speed: true,
+    speedLambda: 2, // backtested: 2 best CRPS; 5 ties (-0.19); 0 worse in leave-one-out
+    speedMin: 5,
+    speedVar: 0, // 0: the fitted median level; 1: the mean (adds half the residual variance on the log scale)
   };
   /** @param {Data} data @param {Partial<typeof TRACK> & { noPriors?: boolean }} [opt] */
   function trackModel(data, opt) {
@@ -622,6 +631,33 @@
     }
     const dot = (/** @type {number[]} */ b, /** @type {number[]} */ x) => b[0] * x[0] + b[1] * x[1] + b[2] * x[2];
 
+    // average speed (km/h) -> the round's overtake level
+    const km = (data.cfg && data.cfg.circuits && data.cfg.circuits.km) || {};
+    const kmh = (/** @type {string | undefined} */ id, /** @type {number | null | undefined} */ lap) =>
+      id && km[id] && lap ? (km[id] * 3600) / lap : null;
+    const nextGd = (data.schedule.find((x) => !(data.done || []).includes(x.gd)) || {}).gd;
+    const sp = (() => {
+      const pts = [];
+      for (const gd of rounds) {
+        const v = kmh(cid(gd), data.trackStats && data.trackStats[gd] && data.trackStats[gd].lap);
+        const ob = season[gd].ov;
+        if (v != null && ob != null && ob > 0) pts.push([v, Math.log(ob)]);
+      }
+      if (pts.length < o.speedMin) return null;
+      const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length,
+        my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+      const sx = Math.sqrt(pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0) / pts.length) || 1;
+      let sxy = 0,
+        szz = 0;
+      for (const [x, y] of pts) {
+        sxy += ((x - mx) / sx) * (y - my);
+        szz += ((x - mx) / sx) ** 2;
+      }
+      const b = sxy / (szz + o.speedLambda);
+      const res = pts.reduce((a, [x, y]) => a + (y - my - (b * (x - mx)) / sx) ** 2, 0) / Math.max(1, pts.length - 2);
+      return { b, mx, sx, my, res, n: pts.length };
+    })();
+
     return {
       fitted: fitted || !!P,
       priors: !!P,
@@ -631,6 +667,7 @@
       corrMean,
       trend,
       trendN,
+      speed: sp,
       /** @param {Gameday | string} g the gameday (with its circuit id) or just a meeting name @returns {Circuit} */
       forCircuit(g) {
         const name = typeof g === "string" ? g : g.name,
@@ -655,6 +692,12 @@
           if (fitted) c.chaos = clamp(Math.exp(dot(bDnf, x)), 0.6, 1.6);
           c.grid = Number.isFinite(corrMean) ? clamp(corrMean, 0.25, 0.95) : gridFromOv(c.ov);
         }
+        // the next race, once practice has run: overtake level from the track's average speed
+        const lap = typeof g !== "string" && g.gd === nextGd ? practiceRef(data.practice) : null;
+        const v = kmh(id, lap);
+        if (v != null) c.kmh = Math.round(v * 10) / 10;
+        if (o.speed && sp && v != null && Number.isFinite(ovMean) && ovMean > 0)
+          c.ov = clamp(Math.exp(sp.my + (sp.b * (v - sp.mx)) / sp.sx + (o.speedVar * sp.res) / 2) / ovMean, 0.25, 2.5);
         c.rain = { r: pr && pr.rain != null ? clamp(pr.rain, 0.02, 0.8) : 0.1 };
         c.rain.q = c.rain.r;
         c.rain.s = c.rain.r;
@@ -665,6 +708,12 @@
         return c;
       },
     };
+  }
+  /** A weekend's practice reference lap (s): the fastest finished session's `ref` (practice.py ref_lap), else null.
+   * @param {PracticeSession[] | undefined} sessions */
+  function practiceRef(sessions) {
+    const refs = (sessions || []).filter((p) => p.done && p.ref).map((p) => /** @type {number} */ (p.ref));
+    return refs.length ? Math.min(...refs) : null;
   }
   /** A circuit with this weekend's forecast rain on top of its climatology (the forecast wins where it exists).
    * @param {Circuit} c @param {{ q?: number | null, s?: number | null, r?: number | null } | undefined} wx @returns {Circuit} */
@@ -2250,6 +2299,7 @@
     DEFAULTS,
     circuitFor,
     trackModel,
+    practiceRef,
     ovScenarios,
     withWeather,
     seasonRounds,

@@ -52,6 +52,35 @@
       ["vegas", [0.9, 0.9, 0.1], "Cold, low-grip street circuit with huge straights"],
       ["qatar", [0.4, 0, 1], "Fast, flowing; tyre limits and stint caps shape strategy"],
       ["abu dhabi", [0.45, 0, 0.4], "Season finale; processional unless strategy splits"]
-    ]
+    ],
+    "_kmComment": "Lap length in km by Jolpica circuit id (official figures). With practice lap times it gives each track's average speed, which sets the round's overtake level (engine.js TRACK.speed). Add any new circuit before its first race; telemetry laps measure ~1% shorter.",
+    "km": {
+      "albert_park": 5.278,
+      "shanghai": 5.451,
+      "suzuka": 5.807,
+      "miami": 5.412,
+      "villeneuve": 4.361,
+      "monaco": 3.337,
+      "catalunya": 4.657,
+      "red_bull_ring": 4.318,
+      "silverstone": 5.891,
+      "spa": 7.004,
+      "hungaroring": 4.381,
+      "zandvoort": 4.259,
+      "monza": 5.793,
+      "madring": 5.416,
+      "baku": 6.003,
+      "sepang": 5.543,
+      "bahrain": 5.412,
+      "marina_bay": 4.94,
+      "americas": 5.513,
+      "rodriguez": 4.304,
+      "interlagos": 4.309,
+      "vegas": 6.201,
+      "losail": 5.419,
+      "yas_marina": 5.281,
+      "jeddah": 6.174,
+      "imola": 4.909
+    }
   }
 }

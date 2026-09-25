@@ -35,7 +35,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   after each race + the official points (Boost/x3/chip = the plainest combination that rebuilds the score; budget,
   bank, free transfers carried on; see "Round tracking" under Open items).
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
-  fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
+  fuel/tyre/compound-corrected) gaps, plus each session's reference lap `ref` (s; the track's average speed). A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
   refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
   dependency, `requirements.txt`; checked 2026-09-24: Baku FP2 short-run gaps identical to OpenF1's).
 - `extras.py` — this season's extra inputs, all fail-soft: `calendar` (Jolpica circuit id, coordinates; 2026's
@@ -163,7 +163,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   points within noise; better on race positions (race MAE 2.91 vs 3.05 places, from lap-time pace); qualifying about
   the same (1.737 vs 1.735). The rework's value is structure (correlated team form, SC, rain, market, uncertainty,
   penalties, known grid) and features, not a measured points gain yet. 10 rounds can't separate ±0.1.
-- Section 6 now: CRPS 8.85, MAE 12.17 (drivers 10.7, constructors 15.2), bias +0.03, rank corr 0.74, 85% inside the
+- Section 6 now (2026-09-25, after item 9 stage 2): CRPS 8.62, MAE 11.84 (drivers 10.4, constructors 14.7). Before
+  it: CRPS 8.85, MAE 12.17 (drivers 10.7, constructors 15.2), bias +0.03, rank corr 0.74, 85% inside the
   10-90% range (a bit wide), baselines: season average 13.17, recent form 13.65.
 - Recent-form blend: default 0 (was 0.3; +30% form is worse on every metric). State schema 4 resets it.
 - Pace: % off the fastest. Qualifying from Jolpica Q1-Q3 times (per-session gap to that session's fastest, averaged);
@@ -187,6 +188,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   before a season has rounds (trend shrink 3 pseudo-rounds) and the rain climatology. Trend this season vs the same
   circuits: position changes x0.95, retirements x1.52, SC x1.14, grid-finish corr +0.04. Re-run section 2 each
   season: the new-regs effect may fade.
+- Overtake level of the next race (2026-09-25, item 9 stage 2): from its practice average speed (TRACK.speed, see
+  the to-do list); a flat season level for races without practice yet.
 - Unchanged: price rule (390/392), DNF team rate shrink k=16 no recency (log loss 0.4608), official scoring.
 - Tried and rejected 2026-09-25 (section 9): skewed session noise, car + driver-offset team-mates, the fastest-lap
   market. All ties or worse; see the to-do list.
@@ -365,8 +368,31 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         Done: lap records for all 70 sessions R1-R14 (FP/SQ/S/Q/R, 3.4 MB); race, sprint and qualifying telemetry
         cached (33 sessions, 2.6 GB). Still to fetch: practice telemetry (for stage 2's index at lock; after Baku)
         and Baku itself. Track segments moved to stage 2, where the energy index first uses them.
-      - [ ] 2. Track energy index -> the round's overtake level (`circuit.ov`), walk-forward. Check: leave-one-round-out
-        on round overtakes, then section 9 (ceiling −0.41; "err OV level" is the direct measure).
+      - [x] 2. (2026-09-25) Track index -> the round's overtake level (`circuit.ov`), walk-forward. ADOPTED, but the
+        winning index is the track's AVERAGE SPEED, not a telemetry energy measure. Per-session features from the
+        cached telemetry (scratch script, not kept; stall-free laps only): full-throttle share, "super-clipping",
+        braking zones, longest full-throttle run, top speed, lap length, average speed. Correlation with log race
+        overtakes per starter (R1-R14, qualifying laps): average speed r 0.75, full throttle 0.62, full throttle /
+        braking zones 0.61, clipping 0.40. Single-feature fits, |error| of the round level per driver: flat 1.81 LOO /
+        2.10 walk-forward; average speed 1.50 / 1.83; full throttle 1.77 / 2.16; braking zones 1.74 / 2.17; the
+        hand-set power/street/fast tags 1.77-1.98 / 2.02-3.16. So no telemetry is needed: speed = circuit length
+        (`config/season.json` circuits.km, official figures; telemetry laps measure ~1% shorter, checked on all 14)
+        / the practice reference lap (`practice.py ref_lap`: median of the 10 fastest drivers' best clean laps; a
+        weekend takes its fastest session's). `engine.js` TRACK.speed: log overtakes per starter regressed on the
+        standardised speed over this season's rounds (ridge 2, needs 5 rounds), applied only to the NEXT race once
+        its practice has run (sprint weekends: FP1 only, as at lock); later races keep the flat level.
+        Past rounds' laps: `trackStats[gd].lap` from `history/2026/practice/gdNN.json` (R1-R14 backfilled from
+        `practice_by_round.json`, which now carries `ref`). Settings > Circuits shows the speed and the multiplier.
+        Evidence: section 2 LOO overtakes better than flat 11% (ridge 0) / 14% (2) / 17% (5). Section 9 paired
+        (5 x 10,000, R5-R14) ridge 2: CRPS −0.214 ± 0.122, MAE −0.342 ± 0.195, real grid −0.227 ± 0.119, err OV
+        −0.349 ± 0.172, err OV level −0.311 ± 0.304, log Q −0.002, log R −0.003 (noise: Q doesn't depend on it).
+        Mean level (speedVar 1) −0.195 / −0.410; ridge 5 −0.187 ± 0.099 / −0.250. Passes the adoption rule; ridge 2
+        (best CRPS). Section 6 after: CRPS 8.62, MAE 11.84 (was 8.85 / 12.17); "without practice" is now 8.84, i.e.
+        practice's value is mostly this input. About half the ceiling (−0.41) captured.
+        TO CHECK (first round never used for fitting): Baku R15 forecast 206.6 km/h -> ×0.70 = 3.3 race overtakes
+        per starter (season 4.78). Baku is slow on average but has a 2 km flat-out run, a likely miss; compare after
+        the race, and each round's forecast vs actual as they come. Telemetry energy features may still help as a
+        second feature once ~20 rounds exist (full throttle / braking zones were next best).
       - [ ] 3a. `raceLaps()`: segments, Overtake Mode trains, dirty air, fitted pass model, DNF on its lap, SC timing,
         pit windows. Check: section 5 (overtakes 4.05 -> 4.78, places lost −0.22 -> −0.56), section 9 incl. real grid,
         runtime (build time only, so seconds are fine). 3b. Charge state + Overtake Mode inside it (the yo-yo).

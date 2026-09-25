@@ -91,6 +91,24 @@ class Practice(unittest.TestCase):
         self.assertIsNotNone(res["AAA"]["r"], "the stint without a lap_end still gives a long-run pace")
         self.assertGreater(res["AAA"]["rl"], 0)
 
+    def test_reference_lap_is_the_median_of_the_ten_fastest_best_laps(self):
+        laps = [{"driver_number": d, "lap_duration": 80 + d, "is_pit_out_lap": False} for d in range(1, 16)]
+        laps += [{"driver_number": 1, "lap_duration": 70, "is_pit_out_lap": True}]  # out-lap: not a lap time
+        laps += [{"driver_number": 2, "lap_duration": None, "is_pit_out_lap": False}]
+        self.assertEqual(practice.ref_lap(laps), 85.5)  # drivers 1-10: 81..90
+        self.assertIsNone(practice.ref_lap(laps[:4]))  # too few drivers to say
+
+
+class LapRefs(unittest.TestCase):
+    def test_a_round_gets_its_fastest_practice_session(self):
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(refresh, "ARCHIVE", d):
+            os.makedirs(os.path.join(d, "practice"))
+            sessions = [{"done": True, "ref": 90.5}, {"done": True, "ref": 89.9}, {"done": False, "ref": 80}]
+            with open(os.path.join(d, "practice", "gd03.json"), "w", encoding="utf-8") as f:
+                json.dump(sessions, f)
+            ts = refresh.add_lap_refs({"3": {"ovt": 4}, "4": {"ovt": 5}})
+        self.assertEqual(ts, {"3": {"ovt": 4, "lap": 89.9}, "4": {"ovt": 5}})
+
 
 class Passes(unittest.TestCase):
     """telemetry.count_passes: race-order changes between timing lines, pit stops and lapping excluded."""

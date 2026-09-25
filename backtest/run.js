@@ -50,11 +50,14 @@ function track() {
   for (const al of [0, 0.25, 0.5, 0.75, 1])
     variants[`priors, alpha ${al}`] = (Dm) => E.trackModel(Dm, { alpha: { ov: al, dnf: al, sc: al, corr: al } });
   variants["priors, alpha as set"] = (Dm) => E.trackModel(Dm);
+  // the round's overtake level from the track's average speed (practice reference lap, TRACK.speed)
+  for (const lam of [0, 2, 5])
+    variants[`+ speed, ridge ${lam}`] = (Dm) => E.trackModel(Dm, { speed: true, speedLambda: lam });
   const out = [];
   for (const [label, mk] of Object.entries(variants)) {
     const e = { ov: [], ovF: [], dnf: [], dnfF: [], corr: [], corrF: [], sc: [], scF: [] };
     for (const r of withStats) {
-      const Dm = asOf(last, [r]);
+      const Dm = { ...asOf(last, [r]), practice: W.PRACTICE[r] || [] };
       const tm = mk(Dm);
       const c = tm.forCircuit(nameOf[r]);
       const s = season[r];
@@ -429,6 +432,24 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // item 9 stage 2: the round's overtake level from the track's average speed (TRACK.speed)
+  speed: [
+    ["overtake level from average speed", [[E.TRACK, "speed", true]]],
+    [
+      "average speed, mean level",
+      [
+        [E.TRACK, "speed", true],
+        [E.TRACK, "speedVar", 1],
+      ],
+    ],
+    [
+      "average speed, ridge 5",
+      [
+        [E.TRACK, "speed", true],
+        [E.TRACK, "speedLambda", 5],
+      ],
+    ],
+  ],
   // 2026-09-25, none adopted (see CLAUDE.md)
   skew: [
     ["qualifying noise skewed, shape 2", [[E.SIM, "qSkew", 2]]],

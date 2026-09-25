@@ -106,6 +106,22 @@ def analyse_session(laps, stints, drivers):
     return res
 
 
+REF_DRIVERS = 10
+
+
+def ref_lap(laps):
+    """The session's reference lap (s): median of the REF_DRIVERS fastest drivers' best clean laps (actual laps, not
+    sector sums). With the circuit length it gives the track's average speed, which sets the round's overtake level
+    (engine.js TRACK.speed)."""
+    best = {}
+    for lap in laps:
+        t = lap.get("lap_duration")
+        if t and not lap.get("is_pit_out_lap"):
+            best[lap["driver_number"]] = min(best.get(lap["driver_number"], t), t)
+    top = sorted(best.values())[:REF_DRIVERS]
+    return round(statistics.median(top), 3) if len(top) >= 5 else None
+
+
 def practice_for(get, cache_path, lock_iso, now):
     out = []
     for s in sessions_for(get, cache_path, lock_iso):
@@ -139,6 +155,7 @@ def practice_for(get, cache_path, lock_iso, now):
                 "name": s["session_name"],
                 "start": s["date_start"],
                 "done": True,
+                "ref": ref_lap(laps),
                 "drivers": analyse_session(
                     laps, stints if isinstance(stints, list) else [], drivers if isinstance(drivers, list) else []
                 ),

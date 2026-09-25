@@ -367,8 +367,13 @@ function renderCal() {
       const wx = (DATA.weather || {})[g.gd];
       const rainSrc = wx && wx.r != null && !(state.circuits[g.gd] || {}).rain ? "forecast" : "past seasons here";
       const pr = c.prior;
+      // the overtake level from practice average speed (Engine.TRACK.speed), once this weekend's practice has run
+      const sp = Engine.TRACK.speed && trackFit.speed && c.kmh != null ? trackFit.speed : null;
+      const speedTxt = sp
+        ? `<div class="note" style="font-size:12px">Average speed in practice ${c.kmh.toFixed(0)} km/h (season ${sp.mx.toFixed(0)}): overtaking ${ovBase(g).toFixed(2)}× this season's average. Faster tracks see more passing (fitted on ${sp.n} rounds).</div>`
+        : "";
       const hist = pr
-        ? `<div class="note" style="font-size:12px">Past seasons here${pr.n ? ` (${pr.n} races)` : " (new circuit: similar tracks)"}: ${pr.ov != null ? `overtaking ${(c.ov || 1).toFixed(2)}× this season's average` : ""} · safety car ${pct0(c.sc)} · rain ${pct0(pr.rain)}</div>`
+        ? `<div class="note" style="font-size:12px">Past seasons here${pr.n ? ` (${pr.n} races)` : " (new circuit: similar tracks)"}: ${pr.ov != null && !sp ? `overtaking ${ovBase(g).toFixed(2)}× this season's average · ` : ""}safety car ${pct0(c.sc)} · rain ${pct0(pr.rain)}</div>`
         : "";
       const fit = trackFit.fitted && !state.circuits[g.gd];
       let extra = "";
@@ -398,7 +403,7 @@ function renderCal() {
       <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>
       <p class="note">${esc(c.note || "")}</p>
       <div class="chipbar">${(c.feat || []).map((v, i) => `<span class="chiptok" title="0 = none, 1 = maximum">${Engine.FEAT_NAMES[i]} ${v.toFixed(2)}</span>`).join("")}</div>
-      ${hist}
+      ${hist}${speedTxt}
       <div class="note" style="font-size:12px">${fit ? `Fitted from this season's ${trackFit.rounds} rounds and this circuit's history (see above). Rain from the ${rainSrc}.` : "Custom values set here."}</div>
       ${sl("ov", "Overtaking", 0.2, 2.5, 0.05, c.ov, f2)}${ovScenarioUI(g, c.ov ?? 1)}${sl("grid", "Grid decides", 0.25, 0.95, 0.01, c.grid, f2)}${sl("chaos", "Retirements", 0.5, 1.8, 0.05, c.chaos, f2)}
       ${sl("sc", "Safety car", 0.05, 0.95, 0.05, c.sc ?? 0.5, pct0)}${sl("rainR", "Rain (race)", 0, 1, 0.05, (c.rain || {}).r ?? 0, pct0)}
