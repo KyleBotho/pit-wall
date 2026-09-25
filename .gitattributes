@@ -1,0 +1,6 @@
+# LF everywhere: Prettier and ruff expect it, and core.autocrlf on Windows would check files out as CRLF
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
