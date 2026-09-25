@@ -226,8 +226,13 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       per starter over the season mean (2026 after R14: ×0.70 / ×1.24; the sim has no round-level overtaking shock,
       so this is the swing one weekend can land in), times the circuit's fitted value, rounded to the slider's 0.05.
       Base clears the override (`state.circuits[gd].ov`). Hidden before 4 rounds. At Baku: VER xOV 3.2 / 4.5 / 5.7.
-- [ ] Budget value slope per constructor pair (rhter: ~1.2 MCL+FER to ~1.7 with one A-tier constructor; leave
-      sprints out of the slope). Low priority: he's moving away from hard budget optimisation himself.
+- [x] 2026-09-25 What more budget is worth (replaces rhter's per-constructor-pair slope, ~1.2 MCL+FER to ~1.7 with
+      one A-tier constructor, after the user agreed: the payoff is a step function and he's backing off budget
+      building since Monza). `Engine.budgetCurve(cand, team, o)`: the best team at every budget in $0.1m steps in one
+      pass (~30 ms; `teamSpace` now shared with `optimise`; tested against a brute force at each cap). Calculator >
+      Price changes > "What is more budget worth?": gain per race vs your budget from −$2m to +$5m, from your team
+      (free transfers, −10 extras) and with a free rebuild, against the flat xΔ$Pts rate; step chart + table with
+      what the extra money buys. Baku, fresh pick: $99.8m → $101.4m = +13.3 (ANT), nothing in between.
 - [ ] Value of an extra transfer (nobody models it).
 - [ ] 9. The big one, once the rest is done (user wants time spent to get it right): a lap-by-lap race model built on
       sub-lap segments (rhter's own limitation: one time per lap can't produce DRS trains), car-performance envelopes

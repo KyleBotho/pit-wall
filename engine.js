@@ -1698,9 +1698,9 @@
    * @typedef {{ cap: number, free: number, maxT: number, chip?: string, locks: Set<string>, bans: Set<string>, top?: number, filters?: Filter[], penW?: number }} OptOpts
    * @typedef {{ score: number, transfers: number, penalty: number, cost: number, drivers: string[], cons: string[], boost: string, boost2: string | null }} TeamResult
    */
-  /** Every 5-driver x 2-constructor team, best `top` by score. @param {Candidate[]} cand @param {string[]} team
-   * @param {OptOpts} o @returns {TeamResult[]} */
-  function optimise(cand, team, o) {
+  /** Every 5-driver line-up and every constructor pair, scored (value + Boost), for optimise and budgetCurve.
+   * @param {Candidate[]} cand @param {string[]} team @param {Omit<OptOpts, "cap">} o */
+  function teamSpace(cand, team, o) {
     const Fl = (o.filters || []).filter((f) => f.k && (f.min != null || f.max != null));
     const fk = [...new Set(Fl.map((f) => f.k).filter((k) => k !== "cost" && k !== "score"))];
     const fsum = (/** @type {Candidate[]} */ list) =>
@@ -1812,6 +1812,24 @@
           fs: fk.length ? fsum([Cs[a], Cs[b]]) : null,
         });
       }
+    /** @param {{ score: number, c: any, p: any, t: number, pen: number }} x @returns {TeamResult} */
+    const result = (x) => ({
+      score: x.score,
+      transfers: x.t,
+      penalty: x.pen,
+      cost: x.c.cost + x.p.cost,
+      drivers: x.c.idx.map((/** @type {number} */ k) => Ds[k].id),
+      cons: [Cs[x.p.a].id, Cs[x.p.b].id],
+      boost: Ds[x.c.i1].id,
+      boost2: o.chip === "x3" ? Ds[x.c.i2].id : null,
+    });
+    return { combos, pairs, Fl, passes, unlimited, noCap, result };
+  }
+
+  /** Every 5-driver x 2-constructor team, best `top` by score. @param {Candidate[]} cand @param {string[]} team
+   * @param {OptOpts} o @returns {TeamResult[]} */
+  function optimise(cand, team, o) {
+    const { combos, pairs, Fl, passes, unlimited, noCap, result } = teamSpace(cand, team, o);
     const top = [],
       K = o.top || 60;
     let floor = -1e9;
@@ -1832,16 +1850,40 @@
         }
       }
     top.sort((x, y) => y.score - x.score);
-    return top.slice(0, K).map((x) => ({
-      score: x.score,
-      transfers: x.t,
-      penalty: x.pen,
-      cost: x.c.cost + x.p.cost,
-      drivers: x.c.idx.map((k) => Ds[k].id),
-      cons: [Cs[x.p.a].id, Cs[x.p.b].id],
-      boost: Ds[x.c.i1].id,
-      boost2: o.chip === "x3" ? Ds[x.c.i2].id : null,
-    }));
+    return top.slice(0, K).map(result);
+  }
+
+  /** The best team at every budget from `lo` to `hi` ($m, in $0.1m steps) in one pass: what more (or less) money is
+   * worth, steps and dead zones included. Same rules as optimise (transfers, penalties, chip, locks, bans,
+   * filters); entry k is the best team costing at most lo + k/10, or null if none fits.
+   * @param {Candidate[]} cand @param {string[]} team @param {Omit<OptOpts, "cap"> & { lo: number, hi: number }} o
+   * @returns {({ cap: number } & TeamResult | { cap: number, score: null })[]} */
+  function budgetCurve(cand, team, o) {
+    const { combos, pairs, Fl, passes, unlimited, result } = teamSpace(cand, team, o);
+    const lo = Math.round(o.lo * 10),
+      n = Math.round(o.hi * 10) - lo + 1;
+    /** @type {({ score: number, c: any, p: any, t: number, pen: number } | null)[]} */
+    const best = new Array(n).fill(null);
+    for (const p of pairs)
+      for (const c of combos) {
+        const k = Math.max(0, Math.round((c.cost + p.cost) * 10) - lo);
+        if (k >= n) continue;
+        const t = 7 - c.keep - p.keep;
+        if (!unlimited && t > o.maxT) continue;
+        const pen = unlimited ? 0 : (o.penW ?? 10) * Math.max(0, t - o.free);
+        const score = c.val + p.val - pen;
+        const b = best[k];
+        if (b && score <= b.score) continue;
+        if (Fl.length && !passes(c, p, score)) continue;
+        best[k] = { score, c, p, t, pen };
+      }
+    // at most that budget: carry the best cheaper team up
+    for (let k = 1; k < n; k++) {
+      const a = best[k - 1],
+        b = best[k];
+      if (a && (!b || a.score > b.score)) best[k] = a;
+    }
+    return best.map((x, k) => (x ? { cap: (lo + k) / 10, ...result(x) } : { cap: (lo + k) / 10, score: null }));
   }
 
   /* ---------- race-by-race plan over the horizon ---------- */
@@ -2226,6 +2268,7 @@
     applyOdds,
     priceStep,
     optimise,
+    budgetCurve,
     planHorizon,
     mulberry32,
     recentForm,

@@ -209,6 +209,35 @@ test("optimise finds exactly the brute-force best teams", () => {
   }
 });
 
+test("budgetCurve: the best team at every budget matches a brute force at that cap", () => {
+  const r = mulberry(7);
+  for (let trial = 0; trial < 6; trial++) {
+    const cand = [];
+    // prices in $0.1m steps, like the game's
+    for (let i = 0; i < 9; i++) {
+      const e = 5 + 25 * r();
+      cand.push({ id: "d" + i, kind: "D", price: Math.round(50 + 200 * r()) / 10, e, boostE: e, active: true });
+    }
+    for (let i = 0; i < 5; i++)
+      cand.push({ id: "c" + i, kind: "C", price: Math.round(80 + 200 * r()) / 10, e: 10 + 40 * r(), active: true });
+    const team = ["d0", "d1", "d2", "d3", "d4", "c0", "c1"];
+    const o = {
+      free: trial % 3,
+      maxT: 2 + (trial % 4),
+      chip: ["", "x3", "wildcard"][trial % 3],
+      locks: new Set(),
+      bans: new Set(),
+    };
+    const curve = E.budgetCurve(cand, team, { ...o, lo: 60, hi: 140 });
+    assert.equal(curve.length, 801);
+    for (let k = 0; k < curve.length; k += 7) {
+      const want = brute(cand, team, { ...o, cap: curve[k].cap })[0];
+      if (want == null) assert.equal(curve[k].score, null, `trial ${trial} $${curve[k].cap}m: none fits`);
+      else assert.ok(Math.abs(curve[k].score - want) < 1e-9, `trial ${trial} $${curve[k].cap}m`);
+    }
+  }
+});
+
 test("optimise: the Boost goes to the best driver of each race", () => {
   const cand = [
     { id: "a", kind: "D", price: 10, e: 30, boostE: [20, 10], active: true },

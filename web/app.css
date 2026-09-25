@@ -1467,6 +1467,9 @@ td.al-r input[type="number"] {
   max-height: 85vh;
   overflow: auto;
 }
+.mbox.wide {
+  max-width: 760px;
+}
 .mline {
   display: flex;
   justify-content: space-between;

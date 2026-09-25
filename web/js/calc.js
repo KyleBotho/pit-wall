@@ -1008,3 +1008,156 @@ function finalFixHtml(T, boost) {
     `</p>`
   );
 }
+
+/* ---------- what more budget is worth (the starting team, the horizon's races) ---------- */
+// Engine.budgetCurve: the best team at every budget in $0.1m steps, once from your line-up (your free transfers,
+// −10 for each extra) and once with a free rebuild (what the money buys once every seat can change). The payoff
+// comes in steps: +$0.3m can be worth nothing and +$0.4m a whole upgrade. Compared with the flat rate the xΔ$Pts
+// setting uses.
+const BV_COL = { own: "#a855f7", wild: "#0891b2" }; // accent + cyan: checked for colour-blind separation on --card
+const bvMoney = (d) => (d ? sgn(d, 1).replace(/^([+−])/, "$1$") + "m" : "Your budget");
+function openBudgetValue() {
+  const { H, T, pk, rem } = calcCtx();
+  const B = Math.round(cap() * 10) / 10,
+    lo = Math.round((B - 2) * 10) / 10,
+    hi = Math.round((B + 5) * 10) / 10;
+  const cand = DATA.assets
+    .filter((a) => forecast.idx[a.id] != null)
+    .map((a) => {
+      const per = Array.from({ length: H }, (_, k) => pk(a.id, k));
+      return {
+        id: a.id,
+        kind: a.kind,
+        price: a.price,
+        active: a.kind === "C" || a.active,
+        e: per.reduce((s, v) => s + v, 0),
+        boostE: a.kind === "D" ? per : 0,
+      };
+    });
+  const marks = (to) => new Set(Object.keys(state.marks).filter((k) => state.marks[k] === to));
+  const o = { maxT: maxTransfers(T), chip: "", locks: marks("lock"), bans: marks("ban"), lo, hi };
+  const curves = {
+    own: T.none ? null : Engine.budgetCurve(cand, T.team, { ...o, free: +T.free || 0 }),
+    wild: Engine.budgetCurve(cand, [], { ...o, chip: "wildcard", free: 7, maxT: 7 }),
+  };
+  const at = (c, b) => c && c[Math.round((b - lo) * 10)];
+  // gain per race over the horizon against the best team at your budget
+  const gain = (c, d) => {
+    const x = at(c, B + d),
+      b0 = at(c, B);
+    return x && b0 && x.score != null && b0.score != null ? (x.score - b0.score) / H : null;
+  };
+  const ds = [];
+  for (let d = -2; d <= 5 + 1e-9; d += 0.1) ds.push(Math.round(d * 10) / 10);
+  const label = { own: `From ${T.none ? "your team" : T.name}`, wild: "Free rebuild" };
+  const series = ["own", "wild"]
+    .filter((k) => curves[k])
+    .map((k) => ({ k, name: label[k], col: BV_COL[k], pts: ds.map((d) => gain(curves[k], d)) }));
+  const flat = (d) => (+state.valW || 0) * d;
+  const buys = (c, d) => {
+    const a = at(c, B),
+      b = at(c, B + d);
+    if (!a || !b || a.score == null || b.score == null) return "";
+    const ia = a.drivers.concat(a.cons),
+      ib = b.drivers.concat(b.cons);
+    const ins = ib.filter((id) => !ia.includes(id)),
+      outs = ia.filter((id) => !ib.includes(id));
+    return ins.length
+      ? `${outs.map((id) => code(byId[id])).join(", ")} → ${ins.map((id) => code(byId[id])).join(", ")}`
+      : "no change";
+  };
+  const g1 = (k) => gain(curves[k], 1);
+  const races = forecast.races
+    .slice(0, H)
+    .map((g) => `R${g.gd}`)
+    .join("–");
+  let html =
+    `<h3>What more budget is worth <small>${esc(T.none ? "no starting team" : T.name)} · ${money(B)} · ${races}</small></h3>` +
+    `<p class="note">The best team you could field at each budget, on the expected points of ${races}, per race, against the best at your budget. ` +
+    `Right now +$1m is worth <b>${g1("own") == null ? "—" : sgn(g1("own"), 1)}</b> pts a race from your team and <b>${sgn(g1("wild") ?? 0, 1)}</b> with a free rebuild. ` +
+    `The xΔ$Pts setting counts it as a flat <b>${(+state.valW).toFixed(1)}</b>${state.xdp ? "" : " (off)"} for each of the ${rem} race${rem === 1 ? "" : "s"} after this one. ` +
+    `Money only helps once it reaches the next step.</p>` +
+    `<div id="bvChart" style="position:relative"></div>`;
+  const rows = [-1, -0.5, 0.5, 1, 2, 3, 5];
+  html +=
+    `<div class="tw"><table class="stat"><thead><tr><th>Budget</th>${series.map((s) => `<th>${esc(s.name)}</th>`).join("")}<th title="The xΔ$Pts setting's flat rate">Setting</th><th style="text-align:left">Free rebuild buys</th></tr></thead><tbody>` +
+    rows
+      .map((d) => {
+        const cell = (s) => {
+          const v = gain(curves[s.k], d);
+          return `<td class="${v > 0.05 ? "good" : v < -0.05 ? "bad" : "muted"}">${v == null ? "—" : sgn(v, 1)}</td>`;
+        };
+        return `<tr><td>${bvMoney(d)} <span class="dim">(${money(B + d)})</span></td>${series.map(cell).join("")}<td class="muted">${sgn(flat(d), 1)}</td><td style="text-align:left" class="muted">${esc(buys(curves.wild, d))}</td></tr>`;
+      })
+      .join("") +
+    "</tbody></table></div>" +
+    `<p class="note dim">Points per race over ${races}. "From your team" counts −10 for each transfer beyond your free ones, spread over those races. Incl / Excl marks apply. Races after ${races} aren't simulated, so take the long-run value as a guide.</p>`;
+  $("#modalBody").innerHTML = html;
+  openModal("budget");
+  bvChart($("#bvChart"), ds, series, flat);
+}
+// Step chart of gain per race against budget change, the flat setting dashed for reference; hover shows the values.
+function bvChart(box, ds, series, flat) {
+  const W = Math.max(300, Math.round(box.clientWidth || 600)),
+    Hh = 220,
+    ml = 44,
+    mr = 16,
+    mt = 12,
+    mb = 30;
+  const vs = series.flatMap((s) => s.pts.filter((v) => v != null)).concat(ds.map(flat));
+  const step = [1, 2, 5, 10, 20].find((st) => (Math.max(...vs) - Math.min(...vs)) / st <= 6) || 50;
+  const top = Math.ceil(Math.max(0, ...vs) / step) * step,
+    bot = Math.floor(Math.min(0, ...vs) / step) * step;
+  const x = (d) => ml + ((d - ds[0]) / (ds[ds.length - 1] - ds[0])) * (W - ml - mr);
+  const y = (v) => mt + (1 - (v - bot) / Math.max(1e-9, top - bot)) * (Hh - mt - mb);
+  let g = "";
+  for (let v = bot; v <= top + 1e-9; v += step)
+    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? "#52525B" : "#27272A"}"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="12" text-anchor="end">${v === 0 ? "0" : sgn(v, 0)}</text>`;
+  for (let d = -2; d <= 5; d++)
+    g += `<text x="${x(d)}" y="${Hh - 10}" fill="#A1A1AA" font-size="12" text-anchor="middle">${d === 0 ? "yours" : sgn(d, 0)}</text>`;
+  g += `<line x1="${x(0)}" x2="${x(0)}" y1="${mt}" y2="${Hh - mb}" stroke="#52525B" stroke-dasharray="2 3"/>`;
+  g += `<path d="M${x(ds[0])},${y(flat(ds[0]))}L${x(ds[ds.length - 1])},${y(flat(ds[ds.length - 1]))}" stroke="#8b8b94" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>`;
+  for (const s of series) {
+    // a step line: flat until the budget reaches the next team
+    let d = "",
+      prev = null;
+    s.pts.forEach((v, i) => {
+      if (v == null) {
+        prev = null;
+        return;
+      }
+      d += prev == null ? `M${x(ds[i])},${y(v)}` : `H${x(ds[i])}V${y(v)}`;
+      prev = v;
+    });
+    g += `<path d="${d}" stroke="${s.col}" stroke-width="2" fill="none" stroke-linejoin="round"/>`;
+  }
+  const key = (s) =>
+    `<span><svg width="14" height="4" aria-hidden="true"><rect width="14" height="3" rx="1.5" fill="${s.col}"/></svg> ${esc(s.name)}</span>`;
+  box.innerHTML =
+    `<div class="chipbar" style="font-size:12px;margin:6px 0">${series.map(key).join("")}<span class="muted"><svg width="14" height="4" aria-hidden="true"><line x1="0" x2="14" y1="2" y2="2" stroke="#8b8b94" stroke-width="1.5" stroke-dasharray="4 3"/></svg> Your xΔ$Pts setting</span><span class="dim">x: $m more or less than yours · y: pts per race</span></div>` +
+    `<svg class="chart" viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="Points per race gained or lost at each budget">${g}<line class="cx" y1="${mt}" y2="${Hh - mb}" stroke="#A1A1AA" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${Hh - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
+  const svg = box.querySelector("svg"),
+    tip = box.querySelector(".lgtip"),
+    cross = box.querySelector(".cx");
+  svg.addEventListener("pointermove", (ev) => {
+    const r = svg.getBoundingClientRect(),
+      px = ((ev.clientX - r.left) / r.width) * W;
+    const i = Math.max(0, Math.min(ds.length - 1, Math.round(((px - ml) / (W - ml - mr)) * (ds.length - 1))));
+    cross.setAttribute("x1", x(ds[i]));
+    cross.setAttribute("x2", x(ds[i]));
+    cross.setAttribute("visibility", "visible");
+    tip.innerHTML =
+      `<b>${bvMoney(ds[i])}</b>` +
+      series
+        .map((s) => `<div><span>${esc(s.name)}</span><span>${s.pts[i] == null ? "—" : sgn(s.pts[i], 1)}</span></div>`)
+        .join("") +
+      `<div class="muted"><span>Setting</span><span>${sgn(flat(ds[i]), 1)}</span></div>`;
+    tip.hidden = false;
+    tip.style.left = Math.min(r.width - tip.offsetWidth, Math.max(0, (x(ds[i]) / W) * r.width + 12)) + "px";
+    tip.style.top = "36px";
+  });
+  svg.addEventListener("pointerleave", () => {
+    tip.hidden = true;
+    cross.setAttribute("visibility", "hidden");
+  });
+}
