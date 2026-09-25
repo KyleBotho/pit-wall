@@ -25,7 +25,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   carry-over and price-driven budget), `project`. Settings in `MODEL`, `SIM`, `TRACK`, each marked fitted /
   backtested / measured / hand-set.
 - `hindsight.js` — pure, `// @ts-check`: `Hindsight.create(DATA, Engine)` -> best teams on actual points (`run`,
-  `own`, Final Fix `ff`) and `score(lineup, gd)`, which rebuilds F1's official round score (42/42 team-rounds).
+  `own`, Final Fix `ff`), `score(lineup, gd)`, which rebuilds F1's official round score (42/42 team-rounds), and
+  `modelTeam(proj)` (a hands-off follower of the projections, see Open items).
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
   fuel/tyre/compound-corrected) gaps. A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
   refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
@@ -56,7 +57,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `history/2026/` — the season archive, saved as it happens: `players/gdNN.json` raw player feed per finished round
   (read back instead of refetched; the latest round is refetched for late corrections), `playerstats/<id>.json`
   latest per-asset scoring events, `projections/gdNN.json` our default-settings projection, rewritten until lock and
-  then frozen (embedded as `DATA.projHist` for projected-vs-actual), `practice/gdNN.json`, `elite/`.
+  then frozen (embedded as `DATA.projHist` for projected-vs-actual), `rebuilt/gdNN.json` projections rebuilt after
+  the fact for R2–R14 (`npm run rebuild`, flagged `rebuilt`; `DATA.projRebuilt`, used by the model team only),
+  `practice/gdNN.json`, `elite/`.
 - `tests/` — `node --test` (engine vs brute force, price rule vs real changes, scoring lines, state migrations,
   seal round-trip, shared tables, Hindsight vs official scores when the private clone is next door) and
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
@@ -196,8 +199,16 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       Gate after these: CRPS 8.854 / MAE 12.18 (unchanged within noise).
 
 ### To do (agreed 2026-09-25, in this order)
-- [ ] Mechanical "model team" in Hindsight: what a hands-off follower of the frozen projections would have scored each
-      round (rhter's public "stats team" ranked 1,166–4,105 globally in 2023–25; a benchmark for ours).
+- [x] 2026-09-25 Mechanical "model team" in Hindsight (rhter's public "stats team" ranked 1,166–4,105 globally in
+      2023–25; a benchmark for ours). `Hind.modelTeam(proj)`: fresh $100m pick in the first projected round, then each
+      round the best team for that race alone on projected points from last round's team (2 free, one carries, 3 max,
+      −10 extra; budget moves with the held team's price changes; Boost = top projected driver; no chips); scored with
+      `score()`. Projections: frozen (`DATA.projHist`, R15 on) else rebuilt (`DATA.projRebuilt`,
+      `history/2026/rebuilt/`, `npm run rebuild`: `asOf(r)` through today's engine, so a little flattered). Starts at R2:
+      R1 had no data (every asset projects ~28). First result: 2,705 pts over R2–R14 vs a top-100 average of 3,739.
+      Panel "Model team" under Season: per round line-up, transfers, free, budget, xPts, pts, your teams' official
+      points, top-100 average; the gaps count only rounds both have. Test: on perfect projections it scores exactly
+      what it projected, and follows the transfer rules.
 - [ ] Try in the backtest before adopting: lap-time noise in 1/t² space (skewed like real mistakes); a car-level +
       driver-offset team-mate model; fastest-lap / DNF odds if Kalshi (or another free source) runs per-race markets
       in 2026 (only 2025 fastest-lap events seen; KXF1RETIRE is season-long). rhter blends FL odds 50/50 and takes DNF%

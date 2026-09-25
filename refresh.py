@@ -14,6 +14,7 @@ Season archive (committed by the workflow, so history survives F1 changing or dr
   history/<season>/players/gdNN.json      raw player feed per finished gameday (prices, ownership, points)
   history/<season>/playerstats/<id>.json  latest per-asset scoring events (every round so far)
   history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock
+  history/<season>/rebuilt/gdNN.json      projections rebuilt for the rounds before that archive (npm run rebuild)
   history/<season>/practice/gdNN.json     analysed OpenF1 practice sessions (OpenF1 closes during live sessions)
   history/<season>/elite/<feedTime>_<hash>.json  top-10/100/500 ownership each time the global line-ups change,
                                           with the time we first saw it (when does the feed update: at lock?)
@@ -552,8 +553,10 @@ def freeze_projection(data, g):
     print(f"  projection for gameday {g['gd']} saved (practice: {', '.join(proj['practice']) or 'none'})")
 
 
-def load_projections():
-    folder = os.path.join(ARCHIVE, "projections")
+def load_projections(kind="projections"):
+    """Expected points per round per asset: frozen at lock ("projections") or rebuilt afterwards for the rounds
+    before the archive ("rebuilt", backtest/rebuild_projections.js)."""
+    folder = os.path.join(ARCHIVE, kind)
     out = {}
     for name in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
         p = read_json(os.path.join(folder, name))
@@ -674,6 +677,7 @@ def collect():
     if nxt_g:
         freeze_projection(data, nxt_g)
     data["projHist"] = load_projections()
+    data["projRebuilt"] = load_projections("rebuilt")
     return data
 
 
@@ -687,6 +691,7 @@ def main():
     if args.offline:
         data = read_json(args.data)
         data["cfg"] = CFG  # the page and engine always use the current config
+        data["projRebuilt"] = load_projections("rebuilt")
     else:
         try:
             data = collect()

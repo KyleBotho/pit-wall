@@ -44,3 +44,45 @@ test("the best reachable team never scores below what was played", opt, () => {
     [],
   );
 });
+
+test(
+  "model team: follows the transfer rules, and on perfect projections scores exactly what it projected",
+  {
+    skip: D ? false : "no cache/data.json",
+  },
+  () => {
+    const h = H.create(D, E);
+    // projections = the points each asset actually scored (from R2, like the rebuilt ones)
+    const proj = Object.fromEntries(
+      D.done
+        .filter((g) => g > D.schedule[0].gd)
+        .map((g) => [
+          g,
+          Object.fromEntries(
+            D.assets
+              .map((a) => [a.id, h.at(a.id, g)])
+              .filter(([, x]) => x && x.active)
+              .map(([id, x]) => [id, x.pts]),
+          ),
+        ]),
+    );
+    const rs = h.modelTeam(proj);
+    assert.equal(rs.length, Object.keys(proj).length);
+    assert.equal(rs[0].start.length, 0);
+    assert.ok(rs[0].cost <= 100 + 1e-6);
+    let free = null,
+      total = 0;
+    for (const r of rs) {
+      assert.equal(r.ids.length, 7);
+      assert.ok(r.cost <= r.budget + 1e-6, `R${r.gd} over budget`);
+      if (free != null) {
+        assert.equal(r.free, free);
+        assert.equal(r.penalty, 10 * Math.max(0, r.transfers - r.free));
+      }
+      assert.equal(r.pts, r.x, `R${r.gd}: scored ${r.pts}, projected ${r.x}`);
+      total += r.pts;
+      assert.equal(r.total, total);
+      free = r.start.length ? Math.min(3, 2 + Math.min(1, Math.max(0, r.free - r.transfers))) : 2;
+    }
+  },
+);

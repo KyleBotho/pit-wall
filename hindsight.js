@@ -171,7 +171,83 @@
       return s - (unlimited ? 0 : 10 * Math.max(0, (r.subs || 0) - (r.free || 0)));
     }
 
-    return { SESS_ORDER, byId, at, delta, pts, budget, fresh, cand, run, sess, ff, withFF, own, score };
+    /** The model team: a hands-off follower of the projections. A fresh $100m pick in the first projected round,
+     * then each round the best team for that race alone on projected points, from last round's team, with its
+     * budget (which moves with the price changes of the team held) and its free transfers (2 a race, one unused
+     * carries: 3 max; −10 for each extra). The Boost goes to the top projected driver. No chips. A round without a
+     * projection keeps the team. Scored on actual points with score().
+     * @param {Record<string, Record<string, number>>} proj expected points per round per asset id
+     * @param {{ cap?: number, perFree?: number, carryMax?: number }} [o] */
+    function modelTeam(proj, o = {}) {
+      const perFree = o.perFree ?? 2,
+        carryMax = o.carryMax ?? 3,
+        first = data.done.find((/** @type {number} */ g) => proj[g]);
+      /** @type {any[]} */
+      const out = [];
+      if (first == null) return out;
+      let budget = o.cap ?? 100,
+        free = 0,
+        /** @type {string[]} */ ids = [],
+        boost = "",
+        total = 0;
+      for (const gd of data.done.filter((/** @type {number} */ g) => g >= first)) {
+        const p = proj[gd],
+          start = ids;
+        let transfers = 0,
+          penalty = 0,
+          x = null;
+        if (p) {
+          const cs = data.assets
+            .map((/** @type {any} */ a) => {
+              const h = at(a.id, gd),
+                e = p[a.id];
+              if (!h || e == null) return null;
+              return { id: a.id, kind: a.kind, price: h.price, e, boostE: a.kind === "D" ? e : 0, active: h.active };
+            })
+            .filter(Boolean);
+          const isFresh = !start.length;
+          const t = engine.optimise(cs, start, {
+            cap: budget,
+            free: isFresh ? 7 : free,
+            maxT: 7,
+            chip: isFresh ? "wildcard" : "",
+            locks: new Set(),
+            bans: new Set(),
+            top: 1,
+          })[0];
+          if (t) {
+            ids = t.drivers.concat(t.cons);
+            boost = t.boost;
+            transfers = isFresh ? 0 : t.transfers;
+            penalty = t.penalty;
+            x = t.score;
+          }
+        }
+        const r = { ids, start, boost, free, subs: transfers, budget };
+        const pts = score(r, gd);
+        total += pts;
+        const cost = Math.round(ids.reduce((s, id) => s + (at(id, gd)?.price || 0), 0) * 10) / 10;
+        out.push({
+          gd,
+          ids,
+          start,
+          boost,
+          transfers,
+          penalty,
+          free: start.length ? free : null,
+          budget,
+          cost,
+          x,
+          pts,
+          total,
+        });
+        budget = Math.round((budget + ids.reduce((s, id) => s + delta(id, gd), 0)) * 10) / 10;
+        free = !start.length ? perFree : Math.min(carryMax, perFree + Math.min(1, Math.max(0, free - transfers)));
+      }
+      return out;
+    }
+
+    return { SESS_ORDER, byId, at, delta, pts, budget, fresh, cand, run, sess, ff, withFF, own, score, modelTeam };
   }
 
   const api = { create, SESS_ORDER };

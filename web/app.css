@@ -1495,7 +1495,8 @@ td.al-r input[type="number"] {
 .bestt td.tl {
   text-align: left;
 }
-.bestt td.tl .chips {
+.bestt td.tl .chips,
+#hdModel .chips {
   flex-wrap: nowrap;
 }
 .bestt tr.sec td {

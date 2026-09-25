@@ -323,6 +323,8 @@ function renderHind() {
       "</tbody>"
     : `<tbody><tr><td class="muted" style="position:static">Unlock your leagues to see your decisions.</td></tr></tbody>`;
 
+  renderModelTeam(gd);
+
   // every asset's round, with this model's pre-lock projection where it was saved
   const proj = (DATA.projHist || {})[gd];
   $("#hdAssetsNote").textContent =
@@ -377,4 +379,92 @@ function modelAccuracy(gd) {
     `off by ${f1(now.mae)} pts per asset, rank correlation ${now.rho.toFixed(2)}` +
     (all.length > 1 ? `; ${all.length} rounds average ${f1(avg)}` : "")
   );
+}
+
+// The model team (Hind.modelTeam): the frozen projection where the site saved one, else the rebuilt one. Computed
+// once per page load; it doesn't depend on any setting.
+let modelRounds = null;
+function modelTeamRounds() {
+  if (!modelRounds) {
+    const proj = { ...(DATA.projRebuilt || {}), ...(DATA.projHist || {}) };
+    modelRounds = Hind.modelTeam(proj).map((r) => ({
+      ...r,
+      src: (DATA.projHist || {})[r.gd] ? "Frozen" : (DATA.projRebuilt || {})[r.gd] ? "Rebuilt" : "Kept",
+    }));
+  }
+  return modelRounds;
+}
+function renderModelTeam(gd) {
+  const rs = modelTeamRounds();
+  if (!rs.length) {
+    $("#hdModelSum").textContent = "No projections for finished rounds yet.";
+    $("#hdModel").innerHTML = "";
+    return;
+  }
+  const gds = rs.map((r) => r.gd),
+    span = `R${gds[0]}–R${gds[gds.length - 1]}`,
+    total = rs[rs.length - 1].total;
+  // your teams' official round points and the top-100 average, over the same rounds
+  const teams = state.teams
+    .map((t, i) => ({ t, i, by: Object.fromEntries(teamHist(t.name).map((h) => [h.gd, h.pts])) }))
+    .filter((x) => gds.some((g) => x.by[g] != null));
+  const el = Object.fromEntries(((DATA.elite && DATA.elite.history) || []).map((h) => [h.gd, h]));
+  const top = (g) => el[g]?.avg?.["100"] ?? null;
+  const hasTop = gds.some((g) => top(g) != null),
+    est = gds.some((g) => el[g]?.est);
+  // the gap counts only the rounds both have
+  const byGd = Object.fromEntries(rs.map((r) => [r.gd, r.pts]));
+  const vs = (name, val) => {
+    const have = gds.filter((g) => val(g) != null),
+      v = have.reduce((s, g) => s + val(g), 0),
+      m = have.reduce((s, g) => s + byGd[g], 0);
+    return `${esc(name)} ${f0(v)}${have.length < gds.length ? ` (${have.length} of ${gds.length} rounds)` : ""} <span class="${m >= v ? "good" : "bad"}">${sgn(m - v, 0) || "0"}</span>`;
+  };
+  const cmp = teams.map(({ t, by }) => vs(t.name, (g) => by[g]));
+  if (hasTop) cmp.push(vs(`top-100 average${est ? " (partly estimated)" : ""}`, top));
+  const nReb = rs.filter((r) => r.src === "Rebuilt").length,
+    nFro = rs.filter((r) => r.src === "Frozen").length;
+  $("#hdModelNote").textContent = `${span} · ${nFro} frozen, ${nReb} rebuilt`;
+  $("#hdModelSum").innerHTML =
+    `<b>${f0(total)} pts</b> over ${span}` +
+    (cmp.length ? ` · against it: ${cmp.join(" · ")}` : " · unlock your leagues to compare your own teams");
+  const moves = (r) => {
+    if (!r.start.length) return "Fresh pick";
+    const outs = r.start.filter((id) => !r.ids.includes(id)),
+      ins = r.ids.filter((id) => !r.start.includes(id));
+    if (!ins.length) return '<span class="muted">No transfers</span>';
+    return (
+      outs.map((id) => code(byId[id])).join(", ") +
+      " → " +
+      ins.map((id) => code(byId[id])).join(", ") +
+      (r.penalty ? ` <span class="bad">(−${r.penalty})</span>` : "")
+    );
+  };
+  const rows = rs
+    .slice()
+    .reverse()
+    .map(
+      (r) =>
+        `<tr><td${r.gd === gd ? ' style="background:var(--accent-soft)"' : ""}>R${r.gd}</td><td class="muted">${r.src}</td>` +
+        `<td style="text-align:left"><div class="chips">${hdChips(r.ids, r.boost, null, r.start.length ? r.start : null, r.gd, "", null)}</div></td>` +
+        `<td style="text-align:left">${moves(r)}</td><td class="muted">${r.free ?? "∞"}</td><td class="muted">${money(r.budget)}</td>` +
+        `<td class="muted">${f0(r.x)}</td><td><b>${r.pts}</b></td><td>${f0(r.total)}</td>` +
+        teams
+          .map(({ by }) => {
+            const v = by[r.gd];
+            return v == null ? '<td class="dim">—</td>' : `<td${heat(r.pts - v, -60, 60)}>${v}</td>`;
+          })
+          .join("") +
+        (hasTop ? `<td class="muted">${f0(top(r.gd))}</td>` : "") +
+        "</tr>",
+    );
+  $("#hdModel").innerHTML =
+    `<thead><tr><th>Round</th><th title="Frozen before lock, or rebuilt afterwards from the data as it stood">Projection</th><th style="text-align:left">Line-up</th><th style="text-align:left">Transfers</th><th title="Free transfers going in">Free</th><th title="Budget going in">Budget</th><th title="Projected points of the pick, after penalties">xPts</th><th>Pts</th><th>Total</th>` +
+    teams
+      .map(({ t }) => `<th title="Official round points; green where the model team beat it">${esc(t.name)}</th>`)
+      .join("") +
+    (hasTop
+      ? `<th title="Average round score of the global top 100${est ? " (estimated from today's top 100 before R15)" : ""}">Top-100 avg</th>`
+      : "") +
+    `</tr></thead><tbody>${rows.join("")}</tbody>`;
 }
