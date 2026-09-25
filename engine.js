@@ -74,6 +74,33 @@
     qSkew: 0, // backtested (section 9, 2026-09-25): skew-normal shape of the qualifying noise; 2-5 tie with 0
     rSkew: 0, // backtested: the same for the race; 5 slightly worse. (Noise in 1/t² space skews by only ~0.02: a no-op)
     flOddsW: 0, // backtested: share of races whose fastest lap is drawn from Kalshi's market; worse at every weight
+    // Lap-by-lap race (item 9 stage 3a, raceLaps): "rank" = the finishing order from one score per driver and
+    // overtakes from the regression; "laps" = the race run lap by lap, overtakes = the passes it makes.
+    raceModel: "rank",
+    // measured (R1-R14 race lap records, lap-end pairs < 3 s apart, green laps, no pit stops; round level left free):
+    // pass logit per s/lap pace advantage of the car behind, per s of gap, and extra per s of gap below 0.5 s
+    lapKernel: [1.67, -2.63, -4.23],
+    lapSd: 0.4, // measured: lap-to-lap noise of clean laps, s
+    lapStart: 0.25, // hand-set: gap per grid slot at the start, s
+    lap1: 1, // hand-set: pass logit bonus on lap 1 (lap 1 = ~35% of lap-end passes in 2026)
+    pitLoss: 23, // measured: median time lost to a stop (in-lap + out-lap), s
+    lapFollow: 0.3, // hand-set: gap to the car ahead when held up, s
+    // calibrate the pace term of the pass curve (kappa) so the grid-finish rank correlation matches the circuit's
+    // (circuit.grid, fitted on this season's rounds), as the rank model's grid slot cost does
+    lapGrid: true,
+    // each driver's overtakes in the lap race: "passes" = the passes it made; "regression" = the rank model's
+    // regression on places moved and grid slot, applied to the lap race's result (the order still comes from laps)
+    lapOv: "passes",
+    // Stage 3b (raceModel "segments", raceSegs): three timing segments a lap. Measured on R1-R14 race timing-line
+    // pairs < 2 s apart (14,486 segment events, round level left free): pass logit per s/lap pace advantage, per s of
+    // gap, extra per s of gap below 0.3 s, and when the car behind was passed by this car in the last 3 segments
+    segKernel: [1.15, -5.21, -0.41, -0.3],
+    // measured: official overtakes minus timing-line passes per driver-race = 0.04 + 0.144 x segments spent < 0.3 s
+    // from another car (r 0.33): passes and re-passes between two timing lines (the Overtake Mode yo-yo). Each
+    // segment a pair runs < 0.3 s apart, both cars get one with this chance; the order doesn't change.
+    yoyo: 0.144,
+    followMin: 0.25, // measured: a held-up car's gap = followMin + exponential(followMean); quantiles 0.36 / 0.71 /
+    followMean: 0.45, // 1.26 s (10 / 50 / 90%) in the data
   };
   // Constructor pit-stop points (2026 rules), from the team's fastest stop of the race: under 2.0 s 20, 2.0-2.19 10,
   // 2.2-2.49 5, 2.5-2.99 2, slower 0; the fastest stop of the race +5. Only used to check OpenF1's stop times
@@ -86,7 +113,7 @@
   ];
   const PIT_FASTEST = 5;
 
-  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
+  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
   /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
@@ -696,6 +723,10 @@
         const lap = typeof g !== "string" && g.gd === nextGd ? practiceRef(data.practice) : null;
         const v = kmh(id, lap);
         if (v != null) c.kmh = Math.round(v * 10) / 10;
+        // for the lap-by-lap race: laps (305 km) and a lap time (practice, else the season's average speed)
+        const kmC = id ? km[id] : undefined;
+        if (kmC) c.laps = Math.max(10, Math.round(305 / kmC));
+        c.lapT = lap || (kmC && sp ? (kmC * 3600) / sp.mx : 90);
         if (o.speed && sp && v != null && Number.isFinite(ovMean) && ovMean > 0)
           c.ov = clamp(Math.exp(sp.my + (sp.b * (v - sp.mx)) / sp.sx + (o.speedVar * sp.res) / 2) / ovMean, 0.25, 2.5);
         c.rain = { r: pr && pr.rain != null ? clamp(pr.rain, 0.02, 0.8) : 0.1 };
@@ -1287,6 +1318,205 @@
 
   /* ---------- one race weekend, N times ---------- */
   /** @typedef {{ id: string, mean: number, nnMean: number, sd: number, p10: number, p25: number, p50: number, p75: number, p90: number, dnf?: number, fl?: number, dotd?: number, xov?: number, q?: number[], r?: number[], cat?: Record<string, number>, pit?: number }} AssetStats */
+  /**
+   * One race lap by lap (SIM.raceModel "laps"). Cars start on the grid SIM.lapStart s apart; each lap takes the
+   * lap time + the car's offset (base, s) + noise, plus SIM.pitLoss on its stop lap (one stop, in the middle half;
+   * none in a sprint). Order changes on track only through passes: each car tries the car directly ahead once a lap
+   * with logit theta + lapKernel . (pace advantage, gap, gap below 0.5 s) + its overtaking skill (+ lap1 on lap 1);
+   * a car that fails is held SIM.lapFollow s behind. Stops reorder without passes. A retiring car drops out on a
+   * random lap (its passes before that count); a safety car bunches the field at a random lap and freezes passing
+   * for 3 laps. Returns the running cars in finishing order; passes[i] = passes made.
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number }} o
+   * @param {Rng} r @param {Float64Array} passes @returns {number[]}
+   */
+  function raceLaps(o, r, passes) {
+    const n = o.grid.length,
+      K = SIM.lapKernel,
+      laps = o.laps;
+    passes.fill(0);
+    const cum = new Float64Array(n),
+      nxt = new Float64Array(n),
+      stopLap = new Int32Array(n),
+      outLap = new Int32Array(n);
+    /** @type {number[]} */
+    let order = [];
+    for (let i = 0; i < n; i++) order.push(i);
+    order.sort((a, b) => o.grid[a] - o.grid[b]);
+    order.forEach((i, k) => (cum[i] = k * SIM.lapStart));
+    for (let i = 0; i < n; i++) {
+      stopLap[i] = o.sprint ? -1 : 1 + Math.floor(laps * (0.25 + 0.5 * r()));
+      outLap[i] = o.out[i] ? 1 + Math.floor(r() * laps) : laps + 1;
+    }
+    const scLap = o.sc ? 2 + Math.floor(r() * Math.max(1, laps - 5)) : -1;
+    const sd = SIM.lapSd * (o.wet ? SIM.rainNoise : 1);
+    let frozen = 0;
+    for (let l = 1; l <= laps; l++) {
+      order = order.filter((i) => outLap[i] > l);
+      if (!order.length) break;
+      if (l === scLap) {
+        order.forEach((i, k) => (cum[i] = cum[order[0]] + k * 0.4));
+        frozen = 3;
+      }
+      for (const i of order)
+        nxt[i] = frozen
+          ? cum[i] + o.T * 1.4
+          : cum[i] + o.T + o.base[i] + gauss(r) * sd + (l === stopLap[i] ? SIM.pitLoss : 0);
+      /** @type {number[]} */
+      const res = [];
+      /** @type {number[]} */
+      const pit = [];
+      for (const b of order) {
+        if (!frozen && l === stopLap[b]) {
+          pit.push(b);
+          continue;
+        }
+        const a = res.length ? res[res.length - 1] : -1;
+        if (a >= 0 && !frozen) {
+          const g = Math.max(0, cum[b] - cum[a]);
+          if (g < 3) {
+            const d = clamp(o.base[a] - o.base[b], -2, 2);
+            const z =
+              o.theta +
+              (o.kappa ?? 1) * K[0] * d +
+              K[1] * g +
+              K[2] * Math.min(g, 0.5) +
+              (o.ovU[b] || 0) +
+              (l === 1 ? SIM.lap1 : 0);
+            if (r() < 1 / (1 + Math.exp(-z))) {
+              res.splice(res.length - 1, 0, b);
+              passes[b]++;
+              continue;
+            }
+          }
+        }
+        res.push(b);
+      }
+      // times along the new order: nobody ahead of the car in front, held cars follow SIM.lapFollow behind
+      let prev = -Infinity;
+      for (const i of res) {
+        if (nxt[i] < prev + SIM.lapFollow) nxt[i] = prev + SIM.lapFollow;
+        prev = nxt[i];
+      }
+      // cars that stopped rejoin wherever their time puts them (no passes either way)
+      for (const i of pit) {
+        let k = 0;
+        while (k < res.length && nxt[res[k]] <= nxt[i]) k++;
+        res.splice(k, 0, i);
+      }
+      order = res;
+      for (const i of order) cum[i] = nxt[i];
+      if (frozen) frozen--;
+    }
+    return order;
+  }
+  /**
+   * One race in timing segments (SIM.raceModel "segments", item 9 stage 3b): as raceLaps, with three segments a
+   * lap, the segment pass curve SIM.segKernel (a car just passed by the car ahead tries less), held-up gaps drawn
+   * from SIM.followMin + exponential(SIM.followMean), and the yo-yo: each segment two cars run < 0.3 s apart, both
+   * make a pass-and-repass with chance SIM.yoyo (counted as overtakes, the order unchanged).
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number }} o
+   * @param {Rng} r @param {Float64Array} passes @returns {number[]}
+   */
+  function raceSegs(o, r, passes) {
+    const n = o.grid.length,
+      K = SIM.segKernel,
+      S = 3,
+      segs = o.laps * S,
+      ka = o.kappa ?? 1;
+    passes.fill(0);
+    const cum = new Float64Array(n),
+      nxt = new Float64Array(n),
+      stopSeg = new Int32Array(n),
+      outSeg = new Int32Array(n),
+      passedAt = new Int32Array(n).fill(-99),
+      passedBy = new Int32Array(n).fill(-1);
+    /** @type {number[]} */
+    let order = [];
+    for (let i = 0; i < n; i++) order.push(i);
+    order.sort((a, b) => o.grid[a] - o.grid[b]);
+    order.forEach((i, k) => (cum[i] = k * SIM.lapStart));
+    for (let i = 0; i < n; i++) {
+      // the stop is taken in the lap's last segment (pit entry), rejoining in the next
+      stopSeg[i] = o.sprint ? -1 : S * Math.floor(o.laps * (0.25 + 0.5 * r())) + S;
+      outSeg[i] = o.out[i] ? 1 + Math.floor(r() * segs) : segs + 1;
+    }
+    const scSeg = o.sc ? S * (1 + Math.floor(r() * Math.max(1, o.laps - 5))) + 1 : -1;
+    const sd = (SIM.lapSd * (o.wet ? SIM.rainNoise : 1)) / Math.sqrt(S),
+      Ts = o.T / S;
+    let frozen = 0;
+    for (let k = 1; k <= segs; k++) {
+      order = order.filter((i) => outSeg[i] > k);
+      if (!order.length) break;
+      if (k === scSeg) {
+        order.forEach((i, j) => (cum[i] = cum[order[0]] + j * 0.4));
+        frozen = 3 * S;
+      }
+      for (const i of order)
+        nxt[i] = frozen
+          ? cum[i] + Ts * 1.4
+          : cum[i] + Ts + o.base[i] / S + gauss(r) * sd + (k === stopSeg[i] ? SIM.pitLoss : 0);
+      /** @type {number[]} */
+      const res = [];
+      /** @type {number[]} */
+      const pit = [];
+      for (const b of order) {
+        if (!frozen && k === stopSeg[b]) {
+          pit.push(b);
+          continue;
+        }
+        const a = res.length ? res[res.length - 1] : -1;
+        if (a >= 0 && !frozen) {
+          const g = Math.max(0, cum[b] - cum[a]);
+          if (g < 2) {
+            const d = clamp(o.base[a] - o.base[b], -2, 2);
+            const just = passedBy[b] === a && k - passedAt[b] <= 3 ? 1 : 0;
+            const z =
+              o.theta +
+              ka * K[0] * d +
+              K[1] * g +
+              K[2] * Math.min(g, 0.3) +
+              K[3] * just +
+              (o.ovU[b] || 0) +
+              (k === 1 ? SIM.lap1 : 0);
+            if (r() < 1 / (1 + Math.exp(-z))) {
+              res.splice(res.length - 1, 0, b);
+              passes[b]++;
+              passedAt[a] = k;
+              passedBy[a] = b;
+              continue;
+            }
+          }
+        }
+        res.push(b);
+      }
+      // times along the new order: a car held up sits a drawn gap behind the car in front
+      let prev = -Infinity;
+      for (const i of res) {
+        if (nxt[i] < prev + SIM.followMin) {
+          let u = r();
+          while (u === 0) u = r();
+          nxt[i] = prev + SIM.followMin - SIM.followMean * Math.log(u);
+        }
+        prev = nxt[i];
+      }
+      // the yo-yo: close pairs pass and re-pass between the timing lines
+      if (!frozen)
+        for (let j = 1; j < res.length; j++)
+          if (nxt[res[j]] - nxt[res[j - 1]] < 0.3 && r() < SIM.yoyo) {
+            passes[res[j]]++;
+            passes[res[j - 1]]++;
+          }
+      for (const i of pit) {
+        let j = 0;
+        while (j < res.length && nxt[res[j]] <= nxt[i]) j++;
+        res.splice(j, 0, i);
+      }
+      order = res;
+      for (const i of order) cum[i] = nxt[i];
+      if (frozen) frozen--;
+    }
+    return order;
+  }
   /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, wet: number }} Sim */
   /** @typedef {{ known?: Record<string, string[]>, pen?: Record<string, number>, unc?: number }} SimOpts */
   /**
@@ -1429,6 +1659,72 @@
       });
     };
 
+    // lap-by-lap race (SIM.raceModel "laps"): the pass level theta is set so that the simulated passes per starter
+    // match the circuit's overtake level (race) and its sprint share (sprint), from pilot races at the model's pace
+    const lapMode = SIM.raceModel === "laps" || SIM.raceModel === "segments";
+    const runRace = SIM.raceModel === "segments" ? raceSegs : raceLaps;
+    const lapT = circuit.lapT || 90,
+      lapN = circuit.laps || 57,
+      lapNs = Math.max(5, Math.round((lapN * 100) / 305));
+    const lapPass = new Float64Array(nd),
+      lapBase = new Float64Array(nd),
+      ovUs = D.map((d) => d.ovU || 0);
+    const lapCalib = (/** @type {boolean} */ isSprint, /** @type {number} */ target) => {
+      const rc = mulberry32(seed ^ 0x5bd1e995),
+        g = new Int32Array(nd),
+        none = new Uint8Array(nd), // retirements in the pilot races
+        ts = new Float64Array(nt),
+        M = 150,
+        rhoT = circuit.grid ?? DEFAULT_CIRCUIT.grid;
+      let th = 1,
+        ka = 1;
+      for (let it = 0; it < 8; it++) {
+        let tot = 0,
+          rho = 0;
+        for (let m = 0; m < M; m++) {
+          // a weekend like the main loop's: pace uncertainty, team and driver form, session noise
+          for (let t = 0; t < nt; t++) ts[t] = gauss(rc) * SIM.teamSd;
+          const qs = D.map((d, i) => {
+            const sh = ts[tOf[i]] + gauss(rc) * SIM.drvSd;
+            lapBase[i] = (lapT * (d.rPace + gauss(rc) * d.rSe * unc + sh + gauss(rc) * SIM.rSd)) / 100;
+            return { i, s: d.qPace + gauss(rc) * d.qSe * unc + sh + gauss(rc) * SIM.qSd };
+          });
+          qs.sort((a, b) => a.s - b.s).forEach((x, k) => (g[x.i] = k + 1));
+          const scDraw = rc() < pSc * (isSprint ? SIM.sprintSc : 1);
+          for (let i = 0; i < nd; i++)
+            none[i] = rc() < D[i].dnf * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) ? 1 : 0;
+          const ord = runRace(
+            {
+              grid: g,
+              base: lapBase,
+              out: none,
+              ovU: ovUs,
+              laps: isSprint ? lapNs : lapN,
+              T: lapT,
+              sc: scDraw,
+              wet: false,
+              sprint: isSprint,
+              theta: th,
+              kappa: ka,
+            },
+            rc,
+            lapPass,
+          );
+          for (let i = 0; i < nd; i++) tot += lapPass[i];
+          rho +=
+            spearman(
+              ord.map((i) => g[i]),
+              ord.map((_, k) => k),
+            ) ?? rhoT;
+        }
+        th += 1.2 * Math.log(Math.max(0.05, target) / Math.max(0.05, tot / (M * nd)));
+        if (SIM.lapGrid && !isSprint) ka = clamp(ka * Math.exp(4 * (rho / M - rhoT)), 0.05, 5);
+      }
+      return { th, ka };
+    };
+    const calR = lapMode ? lapCalib(false, ovLvl) : { th: 0, ka: 1 },
+      calS = lapMode && sprint ? lapCalib(true, ovLvl * (model.ovSprint || MODEL.sprintOvertakeShare)) : calR;
+
     const midW = (/** @type {number} */ g) => (g <= 3 ? 0.6 : g <= 16 ? 1.2 : 1);
     const race = (
       /** @type {Int32Array} */ grid,
@@ -1476,6 +1772,7 @@
       const fin = [];
       const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
       const tauNow = tau * (sc ? SIM.scTau : 1);
+      const laps = lapMode && !fixed;
       for (let i = 0; i < nd; i++) {
         if (out[i]) {
           const pen = isSprint ? 10 : 20;
@@ -1485,12 +1782,42 @@
           if (!isSprint) rCount[i * (F + 1) + F]++;
           continue;
         }
+        if (laps) continue;
         const s = fixed
           ? fixed.indexOf(D[i].tla)
           : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd;
         fin.push({ i, s });
       }
-      fin.sort((a, b) => a.s - b.s);
+      if (laps) {
+        // the race lap by lap: race-long form and noise as a lap-time offset; the grid costs time on track
+        for (let i = 0; i < nd; i++)
+          lapBase[i] = (lapT * (rp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.rSkew) * sd)) / 100;
+        const ord = runRace(
+          {
+            grid,
+            base: lapBase,
+            out,
+            ovU: ovUs,
+            laps: isSprint ? lapNs : lapN,
+            T: lapT,
+            sc,
+            wet,
+            sprint: isSprint,
+            theta: isSprint ? calS.th : calR.th,
+            kappa: calR.ka,
+          },
+          r,
+          lapPass,
+        );
+        ord.forEach((i, k) => fin.push({ i, s: k }));
+        // a retired car keeps the passes it made before it stopped
+        for (let i = 0; i < nd; i++)
+          if (out[i] && lapPass[i] && SIM.lapOv === "passes") {
+            pts[i] += lapPass[i];
+            ovSum[i] += lapPass[i];
+            addCat(i, isSprint ? "sprint" : "ovt", lapPass[i]);
+          }
+      } else fin.sort((a, b) => a.s - b.s);
       /** @type {number[]} */
       const flW = [];
       /** @type {number[]} */
@@ -1515,12 +1842,15 @@
           Math.exp(
             ovB[0] + ovB[1] * Math.log1p(Math.abs(grid[i] - pos)) + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU,
           );
-        const ov = poisson(
-          model.ovB && SIM.ovModel
-            ? lam
-            : D[i].ov * (circuit.ov ?? 1) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1),
-          r,
-        );
+        const ov =
+          laps && SIM.lapOv === "passes"
+            ? lapPass[i]
+            : poisson(
+                model.ovB && SIM.ovModel
+                  ? lam
+                  : D[i].ov * (circuit.ov ?? 1) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1),
+                r,
+              );
         pts[i] += ov;
         ovSum[i] += ov;
         addCat(i, isSprint ? "sprint" : "ovt", ov);
@@ -2314,6 +2644,8 @@
     fitOvertakes,
     practiceRanks,
     simulate,
+    raceLaps,
+    raceSegs,
     applyOdds,
     priceStep,
     optimise,

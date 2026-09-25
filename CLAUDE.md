@@ -192,7 +192,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   the to-do list); a flat season level for races without practice yet.
 - Unchanged: price rule (390/392), DNF team rate shrink k=16 no recency (log loss 0.4608), official scoring.
 - Tried and rejected 2026-09-25 (section 9): skewed session noise, car + driver-offset team-mates, the fastest-lap
-  market. All ties or worse; see the to-do list.
+  market. All ties or worse; see the to-do list Also the lap-by-lap and timing-segment races
+  (item 9 stages 3a/3b, SIM.raceModel): ties on points, worse on race positions.
 - Known gaps (section 5): overtakes run low at a neutral track (4.05 vs 4.78), places lost too few (−0.22 vs −0.56),
   fastest lap / DotD slightly too spread (88% / 94% to the top seven vs 100%).
 - Default 10,000 sims per race × next 3 races (~1 s in the browser). Optimiser enumerates all teams; `planHorizon`
@@ -393,9 +394,37 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
         per starter (season 4.78). Baku is slow on average but has a 2 km flat-out run, a likely miss; compare after
         the race, and each round's forecast vs actual as they come. Telemetry energy features may still help as a
         second feature once ~20 rounds exist (full throttle / braking zones were next best).
-      - [ ] 3a. `raceLaps()`: segments, Overtake Mode trains, dirty air, fitted pass model, DNF on its lap, SC timing,
-        pit windows. Check: section 5 (overtakes 4.05 -> 4.78, places lost −0.22 -> −0.56), section 9 incl. real grid,
-        runtime (build time only, so seconds are fine). 3b. Charge state + Overtake Mode inside it (the yo-yo).
+      - [x] 3a + 3b (2026-09-25): BUILT, NOT ADOPTED (switch `SIM.raceModel`, default "rank"; "laps" = 3a,
+        "segments" = 3b). Both tie on points and are worse on positions and per-driver detail, so both stay off.
+        3a `raceLaps()`: grid start (SIM.lapStart 0.25 s/slot), lap time + race-long offset + 0.40 s noise
+        (measured), one stop in the middle half (pit loss 23 s, measured median; stops reorder without passes),
+        retirement on a random lap (its passes still count), SC bunches the field and freezes passing 3 laps. Order
+        changes on track only by passes: logit theta + kappa x 1.67 x pace advantage (s/lap) − 2.63 x gap − 4.23 x
+        min(gap, 0.5) + driver skill (+1 on lap 1), measured on 5,657 lap-end pairs (R1-R14, round level free;
+        through R6 1.37 / −2.42, stable). A failed pass = held behind. Calibrated per simulate call from pilot races
+        with the main loop's weekend draws: theta so passes per starter = the circuit's level (stage 2), kappa so
+        the grid-finish rank correlation = circuit.grid (SIM.lapGrid). Data found: lap 1 = 35% of lap-end passes;
+        P(pass by the next lap) within 0.5 s: 9% slower car ... 78% > 1 s/lap faster.
+        3b `raceSegs()`: three timing segments a lap; segment pass curve [1.15, −5.21 gap, −0.41 below 0.3 s,
+        −0.30 if just passed by that car] from 14,486 segment pairs (stable R8-R14). NO yo-yo at timing-line
+        resolution (a just-passed car re-passes LESS at equal gap and pace); the yo-yo is BETWEEN the lines:
+        official − line-counted overtakes per driver-race = 0.04 + 0.144 x segments within 0.3 s of another car
+        (r(official, lines) 0.846 -> 0.864 with it). So each segment a pair runs < 0.3 s apart, both get a
+        pass-and-repass with chance 0.144 (SIM.yoyo); held-up gaps = 0.25 + exponential(0.45) s (measured quantiles
+        0.36 / 0.71 / 1.26 s).
+        Section 5 (neutral track, actual): overtakes rank 4.05 / laps 4.75 / segments 4.89 (4.78); places lost
+        −0.22 / −0.55 / −0.53 (−0.56); places gained 1.55 / 1.86 / 1.85 (1.61). The known gaps close, but gains run
+        high. Section 9 paired (5 x 10,000, R5-R14, vs shipped): laps (one-way calibration) CRPS −0.011 ± 0.091,
+        MAE +0.044, real grid +0.092, err OV +0.190 ± 0.149, err places +0.061 ± 0.030, log R −0.019; laps
+        (two-way) −0.009 ± 0.100, +0.023, +0.118, +0.181, +0.064 ± 0.031, −0.017; laps order + regression
+        overtakes (`SIM.lapOv` "regression") +0.095 ± 0.045 (worse), MAE +0.114, err OV +0.079, places +0.065;
+        segments −0.008 ± 0.103, MAE −0.006, real grid +0.099, err OV +0.168 ± 0.160, places +0.056 ± 0.032, OV
+        level +0.223, log R −0.015. Runtime 1.0 / 2.3 s per 10,000 races (rank 0.2 s).
+        Reading: the lap races' finishing ORDER is the problem (worse places and log R even with regression
+        overtakes); movement from the grid is too spread out (gains 1.85 vs 1.61 at a matched rank correlation).
+        Ideas not tried: fit lapStart / lap1 / followMin to places gained & lost (section 5 targets, not the gate);
+        tyre strategy offsets; fit the kernel on model pace rather than realised laps; stage 4 (race pace) is the
+        bigger ceiling (−0.44) and may matter more than the race mechanics.
       - [ ] 4. g-g-V envelopes per car on the next track's geometry -> per-team pace shift (mainly race pace). Check:
         section 9, especially without practice.
       - [ ] 5. Minisector ideal laps (two disjoint sets) for short-run practice pace. Sections 4 + 9; low expectations.

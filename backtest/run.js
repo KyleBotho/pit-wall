@@ -432,6 +432,19 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // item 9 stage 3a: the race run lap by lap (SIM.raceModel)
+  laps: [["lap-by-lap race", [[E.SIM, "raceModel", "laps"]]]],
+  // item 9 stage 3b: timing segments, the segment pass curve and the between-line yo-yo (SIM.raceModel "segments")
+  segs: [["race in timing segments with the yo-yo", [[E.SIM, "raceModel", "segments"]]]],
+  lapsreg: [
+    [
+      "lap race, overtakes from the regression",
+      [
+        [E.SIM, "raceModel", "laps"],
+        [E.SIM, "lapOv", "regression"],
+      ],
+    ],
+  ],
   // item 9 stage 2: the round's overtake level from the track's average speed (TRACK.speed)
   speed: [
     ["overtake level from average speed", [[E.TRACK, "speed", true]]],

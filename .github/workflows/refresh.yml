@@ -52,7 +52,8 @@ jobs:
           git add history
           if ! git diff --cached --quiet; then
             git commit -m "Season history"
-            git pull --rebase
+            # a run queued behind another starts from an older commit: on a clash keep this run's (newer) files
+            git pull --rebase -X theirs
             git push
           fi
       # The tests gate the deploy (after the history commit, so a failure never loses archived data): engine and

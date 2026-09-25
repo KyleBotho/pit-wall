@@ -598,6 +598,90 @@ test("simulate: Driver of the Day follows each driver's popularity", () => {
   assert.ok(low < base * 0.6, `DotD ${base} -> ${low}`);
 });
 
+test("raceLaps: order changes on track only by passes; a fast car from the back works through", () => {
+  const n = 10,
+    r = (() => {
+      let x = 7;
+      return () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+    })();
+  const grid = Int32Array.from({ length: n }, (_, i) => i + 1);
+  const base = new Float64Array(n),
+    out = new Uint8Array(n),
+    passes = new Float64Array(n);
+  const o = { grid, base, out, ovU: [], laps: 30, T: 90, sc: false, wet: false, sprint: true, theta: -50 };
+  // no passing, no stops (a sprint): the grid order holds whatever the pace
+  base[9] = -3;
+  assert.deepEqual(E.raceLaps(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.equal(
+    passes.reduce((a, b) => a + b, 0),
+    0,
+  );
+  // passing on: the car 3 s a lap faster from the back gains places, all of them by passes
+  const ord = E.raceLaps({ ...o, theta: 1 }, r, passes);
+  assert.ok(ord.indexOf(9) <= 2, `fast car finished P${ord.indexOf(9) + 1}`);
+  assert.ok(passes[9] >= 7, `passes ${passes[9]}`);
+  // a retired car drops out; stops (a race) reorder without passes
+  out[3] = 1;
+  const race = E.raceLaps({ ...o, sprint: false }, r, passes);
+  assert.equal(race.length, 9);
+  assert.ok(!race.includes(3));
+  assert.equal(
+    passes.reduce((a, b) => a + b, 0),
+    0,
+  );
+});
+
+test("raceSegs: the yo-yo credits both cars and never changes the order", () => {
+  const n = 8;
+  let x = 11;
+  const r = () => ((x = (x * 16807) % 2147483647) - 1) / 2147483646;
+  const grid = Int32Array.from({ length: n }, (_, i) => i + 1);
+  const o = {
+    grid,
+    base: new Float64Array(n),
+    out: new Uint8Array(n),
+    ovU: [],
+    laps: 20,
+    T: 90,
+    sc: false,
+    wet: false,
+    sprint: true,
+    theta: -50,
+  };
+  const passes = new Float64Array(n),
+    keep = E.SIM.yoyo;
+  try {
+    E.SIM.yoyo = 0;
+    assert.deepEqual(E.raceSegs(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7]);
+    assert.equal(
+      passes.reduce((a, b) => a + b, 0),
+      0,
+    );
+    E.SIM.yoyo = 1; // every close pair swaps and swaps back each segment
+    assert.deepEqual(E.raceSegs(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7]);
+    assert.ok(passes[0] > 0 && passes[7] > 0);
+    assert.equal(passes.reduce((a, b) => a + b, 0) % 2, 0); // they come in pairs
+  } finally {
+    E.SIM.yoyo = keep;
+  }
+});
+
+test("simulate: the lap-by-lap race makes the circuit's overtake level", () => {
+  const keep = E.SIM.raceModel;
+  try {
+    E.SIM.raceModel = "laps";
+    const m = toyModel();
+    for (const ov of [0.5, 1.5]) {
+      const c = { ...circuit, ov, laps: 50, lapT: 90 };
+      const sim = E.simulate(m, c, false, 1500, 3);
+      const got = sim.stats.slice(0, m.drivers.length).reduce((a, s) => a + s.cat.ovt, 0) / m.drivers.length;
+      assert.ok(Math.abs(got / (4 * ov) - 1) < 0.12, `level ${4 * ov}: simulated ${got}`);
+    }
+  } finally {
+    E.SIM.raceModel = keep;
+  }
+});
+
 test("ovScenarios: low / high weekends from the spread of this season's rounds", () => {
   const data = {
     done: [1, 2, 3, 4, 5],
