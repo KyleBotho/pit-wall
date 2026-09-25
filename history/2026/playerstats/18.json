@@ -1393,7 +1393,7 @@
             "RaceDayId": 7388,
             "TeamId": 23,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -2654,7 +2654,7 @@
             "OldPlayerValue": 12.2,
             "RaceDayId": 7388,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -2705,8 +2705,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/25/2026 2:32:44 PM",
-    "ISTTime": "9/25/2026 8:02:44 PM",
-    "CESTTime": "9/25/2026 4:32:44 PM"
+    "UTCTime": "9/25/2026 4:39:47 PM",
+    "ISTTime": "9/25/2026 10:09:47 PM",
+    "CESTTime": "9/25/2026 6:39:47 PM"
   }
 }
