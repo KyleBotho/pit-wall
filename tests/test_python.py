@@ -14,6 +14,7 @@ sys.path.insert(0, ROOT)
 import f1feeds  # noqa: E402
 import practice  # noqa: E402
 import refresh  # noqa: E402
+import telemetry  # noqa: E402
 
 
 class FeedHelpers(unittest.TestCase):
@@ -89,6 +90,50 @@ class Practice(unittest.TestCase):
         res = practice.analyse_session(laps, stints, [{"driver_number": 1, "name_acronym": "AAA"}])
         self.assertIsNotNone(res["AAA"]["r"], "the stint without a lap_end still gives a long-run pace")
         self.assertGreater(res["AAA"]["rl"], 0)
+
+
+class Passes(unittest.TestCase):
+    """telemetry.count_passes: race-order changes between timing lines, pit stops and lapping excluded."""
+
+    @staticmethod
+    def lap(n, t_end, lap_time=90.0, pit_in=0, pit_out=0):
+        # sectors at 1/3 and 2/3 of the lap
+        row = dict.fromkeys(telemetry.COLS)
+        row.update(lap=n, t1=t_end - 2 * lap_time / 3, t2=t_end - lap_time / 3, t3=t_end, pitIn=pit_in, pitOut=pit_out)
+        return [row[c] for c in telemetry.COLS]
+
+    def test_a_pass_mid_lap_counts_once(self):
+        # B starts behind A, is ahead from lap 2's second line on
+        laps = {
+            "AAA": [self.lap(1, 100), self.lap(2, 190)],
+            "BBB": [self.lap(1, 101), self.lap(2, 189, lap_time=88)],
+        }
+        # lap 2 lines: A 130/160/190, B 130.33/159.67/189 -> B ahead at line 2
+        self.assertEqual(telemetry.count_passes(laps, {"AAA": 1, "BBB": 2}), {"AAA": 0, "BBB": 1})
+
+    def test_swap_inside_a_lap_is_missed_by_lap_end_sampling_only(self):
+        # B passes A in sector 2 of lap 2 and A passes back in sector 3: two passes, same order at the line
+        a = [self.lap(1, 100), [2, None, 130, 160, 190] + [None] * 12]
+        b = [self.lap(1, 101), [2, None, 131, 159, 191] + [None] * 12]
+        full = telemetry.count_passes({"AAA": a, "BBB": b}, {"AAA": 1, "BBB": 2})
+        end = telemetry.count_passes({"AAA": a, "BBB": b}, {"AAA": 1, "BBB": 2}, lines=(3,))
+        self.assertEqual(full, {"AAA": 1, "BBB": 1})
+        self.assertEqual(end, {"AAA": 0, "BBB": 0})
+
+    def test_places_lost_in_the_pits_are_not_passes(self):
+        laps = {
+            "AAA": [self.lap(1, 100), self.lap(2, 190, pit_in=1), self.lap(3, 305, lap_time=115, pit_out=1)],
+            "BBB": [self.lap(1, 101), self.lap(2, 191), self.lap(3, 281)],
+        }
+        self.assertEqual(telemetry.count_passes(laps, {"AAA": 1, "BBB": 2}), {"AAA": 0, "BBB": 0})
+
+    def test_lapping_a_backmarker_is_not_a_pass(self):
+        # A laps B during lap 2 (B is a lap down: B's lap n ends 60 s after A's)
+        laps = {
+            "AAA": [self.lap(n, 90 * n) for n in range(1, 4)],
+            "BBB": [self.lap(n, 90 * n + 60 * n) for n in range(1, 3)],
+        }
+        self.assertEqual(telemetry.count_passes(laps, {"AAA": 1, "BBB": 2}), {"AAA": 0, "BBB": 0})
 
 
 @unittest.skipUnless(os.path.exists(os.path.join(ROOT, "cache", "data.json")), "no cache/data.json")

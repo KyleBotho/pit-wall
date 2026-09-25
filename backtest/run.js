@@ -1,4 +1,5 @@
 // Backtests behind the model settings in engine.js (MODEL, SIM, TRACK). Run:  npm run backtest
+// Sections 9 (experiments) and 10 (ceilings) run only when asked for by number.
 // Needs cache/data.json (python refresh.py) and, for some sections, backtest/practice_by_round.json
 // (python backtest/practice_rounds.py) and backtest/odds_by_round.json (python backtest/odds_rounds.py). Every section
 // walks through the season using only what was known before each round (backtest/walk.js). Section 6 is the gate:
@@ -353,16 +354,83 @@ function pits() {
 // Each variant runs on the same rounds and seeds as the shipped model (common random numbers). Rounds are the
 // independent units (assets within a round share its weekend), so ± is the standard error over rounds of the
 // per-round difference, averaged over the seeds. Adopt a variant only if it beats the shipped model clearly.
-function experiments() {
-  const N = +(process.env.EXP_N || 10000),
-    seeds = [1, 2, 3, 4, 5].slice(0, +(process.env.EXP_SEEDS || 5));
+/* Paired experiments against the shipped model: same seeds, same rounds; ± = SE over the rounds (the independent
+   units). Each variant is [label, settings to change] or [label, settings, evaluate options] (oracle runs). */
+function paired(title, variants, o = {}) {
+  const N = +(process.env.EXP_N || o.N || 10000),
+    seeds = [1, 2, 3, 4, 5].slice(0, +(process.env.EXP_SEEDS || o.seeds || 5)),
+    grid = process.env.EXP_GRID === "1";
   console.log(`
-9. Experiments vs the model as shipped (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS/MAE,`);
+${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and the category errors,`);
   console.log("   > 0 better for the log scores of qualifying / race positions and of the fastest lap)");
-  const runAll = () => seeds.map((seed) => W.evaluate({ N, seed }));
-  const base = runAll();
+  const runAll = (extra = {}) => seeds.map((seed) => W.evaluate({ N, seed, ...extra }));
+  const base = runAll(),
+    baseG = grid ? runAll({ oracle: { grid: 1 } }) : null;
   const avg = (rs, f) => mean(rs.map(f));
-  const VARIANTS = [
+  const f3 = (x) => +x.toFixed(3);
+  const rows = [
+    {
+      variant: "model as shipped",
+      CRPS: f3(avg(base, (r) => r.crps)),
+      MAE: f3(avg(base, (r) => r.mae)),
+      ...(grid ? { "CRPS, real grid": f3(avg(baseG, (r) => r.crps)) } : {}),
+      "err OV": f3(avg(base, (r) => r.ovMae)),
+      "err places": f3(avg(base, (r) => r.placesMae)),
+      "err OV level": f3(avg(base, (r) => r.ovLvl)),
+      "log Q": f3(avg(base, (r) => r.lsQ)),
+      "log R": f3(avg(base, (r) => r.lsR)),
+      "log FL": f3(avg(base, (r) => r.lsFL)),
+      "ms/race": Math.round((avg(base, (r) => r.msPerRound) / N) * 1000),
+    },
+  ];
+  const pm = (d) => {
+    const m = mean(d),
+      se = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / (d.length - 1) / d.length);
+    return `${m >= 0 ? "+" : ""}${m.toFixed(3)} ± ${se.toFixed(3)}`;
+  };
+  for (const [label, set, extra] of variants) {
+    const keep = set.map(([obj, k]) => obj[k]);
+    set.forEach(([obj, k, v]) => (obj[k] = v));
+    const v = runAll(extra),
+      vG = grid && !(extra && extra.oracle) ? runAll({ ...extra, oracle: { grid: 1 } }) : null;
+    set.forEach(([obj, k], i) => (obj[k] = keep[i]));
+    const per = (vs, bs, f) =>
+      bs[0].byRound.map((_, k) => mean(seeds.map((_, j) => f(vs[j].byRound[k]) - f(bs[j].byRound[k]))));
+    const d = (f) => {
+      const x = avg(v, f) - avg(base, f);
+      return `${x >= 0 ? "+" : ""}${x.toFixed(3)}`;
+    };
+    rows.push({
+      variant: label,
+      CRPS: pm(per(v, base, (x) => x.crps)),
+      MAE: pm(per(v, base, (x) => x.mae)),
+      ...(grid ? { "CRPS, real grid": vG ? pm(per(vG, baseG, (x) => x.crps)) : "" } : {}),
+      "err OV": pm(per(v, base, (x) => x.ov)),
+      "err places": pm(per(v, base, (x) => x.places)),
+      "err OV level": pm(per(v, base, (x) => x.ovLvl)),
+      "log Q": d((r) => r.lsQ),
+      "log R": d((r) => r.lsR),
+      "log FL": d((r) => r.lsFL),
+      "ms/race": Math.round((avg(v, (r) => r.msPerRound) / N) * 1000),
+    });
+  }
+  table(rows);
+  console.log(
+    "   err OV / err places: mean |simulated - actual| per driver-race of overtake points and of race places gained +",
+  );
+  console.log(
+    "   lost points; err OV level: |simulated - actual| race overtakes per driver, per round; ms/race: per 1,000 sims.",
+  );
+  if (grid)
+    console.log("   CRPS, real grid: the same projection given the actual qualifying order (the race model alone)");
+}
+
+/* ---------- 9. experiments (only on request: minutes) ---------- */
+// Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
+// EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
+const EXPERIMENTS = {
+  // 2026-09-25, none adopted (see CLAUDE.md)
+  skew: [
     ["qualifying noise skewed, shape 2", [[E.SIM, "qSkew", 2]]],
     ["qualifying noise skewed, shape 5", [[E.SIM, "qSkew", 5]]],
     ["race noise skewed, shape 2", [[E.SIM, "rSkew", 2]]],
@@ -374,6 +442,8 @@ function experiments() {
         [E.SIM, "rSkew", 3],
       ],
     ],
+  ],
+  car: [
     [
       "car + driver offset, offset prior 1.5",
       [
@@ -403,50 +473,49 @@ function experiments() {
         [E.MODEL, "offHalfLife", 8],
       ],
     ],
+  ],
+  fl: [
     ["fastest lap from the market, 25%", [[E.SIM, "flOddsW", 0.25]]],
     ["fastest lap from the market, 50%", [[E.SIM, "flOddsW", 0.5]]],
     ["fastest lap from the market, 100%", [[E.SIM, "flOddsW", 1]]],
-  ];
+  ],
+};
+function experiments() {
+  const want9 = (process.env.EXP || Object.keys(EXPERIMENTS).join(",")).split(",");
+  const unknown = want9.filter((g) => g !== "none" && !EXPERIMENTS[g]);
+  if (unknown.length) throw new Error(`unknown EXP group ${unknown} (have: ${Object.keys(EXPERIMENTS)}, none)`);
+  paired(
+    `9. Experiments vs the model as shipped [${want9}]`,
+    want9.flatMap((g) => EXPERIMENTS[g] || []),
+  );
   const nFl = Object.values(W.ODDS).filter((o) => o.fl && D.done.includes(+o.gd) && +o.gd >= 5).length;
-  const rows = [
-    {
-      variant: "model as shipped",
-      CRPS: +avg(base, (r) => r.crps).toFixed(3),
-      MAE: +avg(base, (r) => r.mae).toFixed(3),
-      "log Q": +avg(base, (r) => r.lsQ).toFixed(3),
-      "log R": +avg(base, (r) => r.lsR).toFixed(3),
-      "log FL": +avg(base, (r) => r.lsFL).toFixed(3),
-    },
-  ];
-  const pm = (d) => {
-    const m = mean(d),
-      se = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / (d.length - 1) / d.length);
-    return `${m >= 0 ? "+" : ""}${m.toFixed(3)} ± ${se.toFixed(3)}`;
-  };
-  for (const [label, set] of VARIANTS) {
-    const keep = set.map(([o, k]) => o[k]);
-    set.forEach(([o, k, v]) => (o[k] = v));
-    const v = runAll();
-    set.forEach(([o, k], i) => (o[k] = keep[i]));
-    const per = (f) =>
-      base[0].byRound.map((_, k) => mean(seeds.map((_, j) => f(v[j].byRound[k]) - f(base[j].byRound[k]))));
-    const d = (f) => {
-      const x = avg(v, f) - avg(base, f);
-      return `${x >= 0 ? "+" : ""}${x.toFixed(3)}`;
-    };
-    rows.push({
-      variant: label,
-      CRPS: pm(per((x) => x.crps)),
-      MAE: pm(per((x) => x.mae)),
-      "log Q": d((r) => r.lsQ),
-      "log R": d((r) => r.lsR),
-      "log FL": d((r) => r.lsFL),
-    });
-  }
-  table(rows);
   console.log(
     `   fastest-lap odds at lock for ${nFl} of the rounds (history/<season>/odds, backtest/odds_by_round.json)`,
   );
+}
+
+/* ---------- 10. ceilings (only on request): the most a better input could gain ---------- */
+// The sim is told the round's real answer for one input (walk.js withOracle). Realised pace carries that session's
+// noise too, so these are upper bounds. 2026-09-25 (3 seeds x 3,000): real race pace -0.44 ± 0.11 CRPS, real race
+// overtake level -0.41 ± 0.16, both + qualifying pace -0.75 ± 0.26; qualifying pace or the real grid ~0. Item 9's plan
+// follows these.
+function ceilings() {
+  paired(
+    "10. Ceilings: the round's real answer for one input",
+    [
+      ["real qualifying pace", [], { oracle: { q: 1 } }],
+      ["real qualifying order (grid)", [], { oracle: { grid: 1 } }],
+      ["real race pace", [], { oracle: { r: 1 } }],
+      ["real race overtake level", [], { oracle: { ov: 1 } }],
+      ["real qualifying + race pace", [], { oracle: { q: 1, r: 1 } }],
+      ["real qualifying + race pace + overtake level", [], { oracle: { q: 1, r: 1, ov: 1 } }],
+    ],
+    { N: 3000, seeds: 3 },
+  );
+  const lv = rounds
+    .filter((g) => g >= 5)
+    .map((g) => `${nameOf[g].name.replace(" Grand Prix", "")} ${W.roundOvertakes(g).toFixed(1)}`);
+  console.log(`   actual race overtake points per driver: ${lv.join(", ")}`);
 }
 
 if (want(1)) prices();
@@ -458,3 +527,4 @@ if (want(6)) walkForward();
 if (want(7)) frozen();
 if (want(8)) pits();
 if (only.includes(9)) experiments(); // slow (minutes): only on request, npm run backtest 9
+if (only.includes(10)) ceilings(); // slow (a minute): only on request, npm run backtest 10

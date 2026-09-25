@@ -20,9 +20,11 @@ if (D) {
       ODDS[o.gd] = o;
     }
 }
-const OVC = D
-  ? new Set(D.evNames.map((e, i) => (e.c === "R OV" || e.c === "S OV" ? i : -1)).filter((i) => i >= 0))
-  : new Set();
+const codes = (...cs) =>
+  D ? new Set(D.evNames.map((e, i) => (cs.includes(e.c) ? i : -1)).filter((i) => i >= 0)) : new Set();
+const OVC = codes("R OV", "S OV");
+const ROV = codes("R OV");
+const RPLACES = codes("R PG", "R PL");
 const mean = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : NaN);
 
 /** The data as it stood before round r (drop: rounds left out entirely, for leave-one-out). */
@@ -62,6 +64,48 @@ const actualPts = (a, r) => {
   const h = a.hist.find((h) => h && h.gd === r);
   return h && h.active ? h.pts : null;
 };
+/** An asset's actual points in round r from the scoring lines in `set` (null if it didn't race). */
+const actualEv = (a, r, set) => {
+  const h = a.hist.find((h) => h && h.gd === r);
+  return h && h.active ? (h.ev || []).filter(([i]) => set.has(i)).reduce((s, x) => s + x[1], 0) : null;
+};
+/** Mean race overtake points per driver who raced round r. */
+const roundOvertakes = (r) =>
+  mean(
+    D.assets
+      .filter((a) => a.kind === "D")
+      .map((a) => actualEv(a, r, ROV))
+      .filter((v) => v != null),
+  );
+
+/**
+ * Ceiling runs (backtest section 10): give the sim the round's real answer for one input, keeping everything else.
+ * or: { q: realised qualifying pace, r: realised race pace, ov: realised race overtake level, grid: actual
+ * qualifying order }. Realised pace is noisier than the underlying pace, so these are upper bounds.
+ */
+function withOracle(setup, r, or) {
+  let drivers = setup.model.drivers;
+  if (or.q) {
+    const q = Object.fromEntries((D.results.quali[r] || []).filter((x) => x.gap != null).map((x) => [x.tla, x.gap]));
+    drivers = drivers.map((d) => (q[d.tla] != null ? { ...d, qPace: q[d.tla], qSe: 0 } : d));
+  }
+  if (or.r) {
+    const p = ((D.raceInfo[r] || {}).race || {}).pace || {};
+    drivers = drivers.map((d) => (p[d.tla] != null ? { ...d, rPace: Math.min(p[d.tla], 4), rSe: 0 } : d));
+  }
+  const model = { ...setup.model, drivers };
+  let circuit = setup.circuit;
+  if (or.ov) {
+    // scale the circuit's overtake level so the simulated race overtakes per driver match what happened
+    const pilot = E.simulate(model, circuit, false, 2000, 99, setup.simOpt);
+    const simOv = mean(pilot.stats.slice(0, drivers.length).map((st) => st.cat.ovt));
+    circuit = { ...circuit, ov: (circuit.ov ?? 1) * (roundOvertakes(r) / simOv) };
+  }
+  const simOpt = or.grid
+    ? { ...setup.simOpt, known: { ...setup.simOpt.known, q: (D.results.quali[r] || []).map((x) => x.tla) } }
+    : setup.simOpt;
+  return { ...setup, model, circuit, simOpt };
+}
 /** CRPS of samples vs an outcome, O(N log N): mean |x - y| minus half the mean pairwise gap (from sorted order). */
 function crps(samples, y) {
   const x = Float64Array.from(samples).sort(),
@@ -79,9 +123,10 @@ function spearman(x, y) {
 }
 
 /**
- * Walk forward from round `from`. o: { N, blend, oddsW, practice (bool), odds (bool), seed, rounds, decision (bool) }.
- * Returns per-asset errors, rank correlation, interval coverage, CRPS, log scores of qualifying and race positions
- * and (decision) the actual points of the best fresh $100m team each round.
+ * Walk forward from round `from`. o: { N, blend, oddsW, practice (bool), odds (bool), seed, rounds, decision (bool),
+ * oracle (see withOracle) }. Returns per-asset errors, rank correlation, interval coverage, CRPS, log scores of
+ * qualifying and race positions, per-driver errors of overtake points and race places gained/lost, the error of each
+ * round's overtake level, sim time and (decision) the actual points of the best fresh $100m team each round.
  */
 function evaluate(o = {}) {
   const N = o.N || 3000;
@@ -101,6 +146,10 @@ function evaluate(o = {}) {
     team: [],
     best: [],
     lsFL: [],
+    ov: [],
+    places: [],
+    ovLvl: [],
+    ms: 0,
     byRound: [],
   };
   for (const r of rounds) {
@@ -108,16 +157,23 @@ function evaluate(o = {}) {
     if (o.practice === false) Dr.practice = [];
     if (o.odds === false) Dr.odds = null;
     const g = D.schedule.find((x) => x.gd === r);
-    const setup = E.raceSetup(Dr, g, {
+    let setup = E.raceSetup(Dr, g, {
       next: true,
       oddsW: o.oddsW,
       halfLife: o.halfLife,
       track: o.track && o.track(Dr),
     });
+    if (o.oracle) setup = withOracle(setup, r, o.oracle);
+    const t0 = performance.now();
     const sim = E.simulate(setup.model, setup.circuit, g.sprint, N, (o.seed || 1) * 7919 + r, {
       ...setup.simOpt,
       unc: o.unc,
     });
+    out.ms += performance.now() - t0;
+    const k0 = out.crps.length,
+      ko = out.ov.length;
+    let simOvR = 0,
+      nOvR = 0;
     const xs = [],
       ys = [],
       pred = {};
@@ -140,8 +196,12 @@ function evaluate(o = {}) {
       if (y >= st.p25 + sh && y <= st.p75 + sh) out.c50++;
       // CRPS over every sample (exact for the empirical distribution): E|X - y| - E|X - X'| / 2
       out.crps.push(crps(sim.tot.subarray(i * N, i * N + N), y - sh));
-      // position log scores (drivers)
+      // position log scores and per-category errors (drivers)
       if (A.kind === "D") {
+        out.ov.push(Math.abs(st.xov - actualEv(A, r, OVC)));
+        out.places.push(Math.abs(st.cat.gain + st.cat.lost - actualEv(A, r, RPLACES)));
+        simOvR += st.cat.ovt;
+        nOvR++;
         const q = (D.results.quali[r] || []).find((x) => x.tla === A.tla);
         if (q && st.q) out.lsQ.push(Math.log((st.q[Math.min(q.pos, st.q.length) - 1] || 0) + 1e-3));
         const rr = (D.results.race[r] || []).find((x) => x.tla === A.tla);
@@ -156,11 +216,21 @@ function evaluate(o = {}) {
     const flRow = (D.results.race[r] || []).find((x) => x.fl);
     const flI = flRow ? sim.ids.findIndex((id) => D.assets.find((a) => a.id === id).tla === flRow.tla) : -1;
     if (flI >= 0) out.lsFL.push(Math.log((sim.stats[flI].fl || 0) + 1e-3));
+    // the round's overtake level: simulated minus actual race overtake points per driver
+    const lvl = simOvR / nOvR - roundOvertakes(r);
+    out.ovLvl.push(lvl);
     // per-round means (for paired comparisons: rounds are the independent units, assets within one aren't)
-    const k0 = out.byRound.reduce((s, x) => s + x.n, 0);
     const cr = out.crps.slice(k0),
       er = out.err.slice(k0);
-    out.byRound.push({ gd: r, n: cr.length, crps: mean(cr), mae: mean(er) });
+    out.byRound.push({
+      gd: r,
+      n: cr.length,
+      crps: mean(cr),
+      mae: mean(er),
+      ov: mean(out.ov.slice(ko)),
+      places: mean(out.places.slice(ko)),
+      ovLvl: Math.abs(lvl),
+    });
     if (o.decision) {
       const actual = Object.fromEntries(D.assets.map((a) => [a.id, actualPts(a, r) ?? -20]));
       const pickTeam = (vals) => {
@@ -197,6 +267,11 @@ function evaluate(o = {}) {
     perRound: out.team,
     rounds: rounds.length,
     lsFL: mean(out.lsFL),
+    ovMae: mean(out.ov),
+    placesMae: mean(out.places),
+    ovLvl: mean(out.ovLvl.map(Math.abs)),
+    ovLvlBias: mean(out.ovLvl),
+    msPerRound: out.ms / rounds.length,
     byRound: out.byRound,
   };
 }
@@ -223,4 +298,4 @@ function baselines(from = 5) {
   return Object.fromEntries(Object.entries(e).map(([k, v]) => [k, mean(v)]));
 }
 
-module.exports = { D, E, asOf, evaluate, baselines, crps, PRACTICE, ODDS, mean };
+module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, mean };

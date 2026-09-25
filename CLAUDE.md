@@ -10,6 +10,10 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `load_playerstats`, `load_practice`, `build_elite`), then `build_page` inlines `web/` into `build/index.html` (GitHub
   Pages) and `build/pit-wall.html` (retired artifact copy). `--offline` rebuilds from `cache/data.json` without
   fetching. Once the season is over `next` is null and nothing is projected.
+- `telemetry.py` — item 9's session data with FastF1: `laps` (lap records per session -> `history/<season>/telemetry/
+  laps/gdNN.json`; `--telemetry` also caches car/position data), `measure`, `passes` (passes from timing-line crossings
+  vs the official overtake lines). Paced (30 s, `--max` 20 downloads a run), stops while any F1 session is live
+  (OpenF1 401) and on any failure. Cache in `%LOCALAPPDATA%\pit-wall\fastf1` (never OneDrive or the repo).
 - `f1feeds.py` — shared feed helpers: paced `get` / `get_soft` / `get_optional` raising `FeedError` (never
   `sys.exit` deep inside), `feed_time`, `ev_code`. The private repo's `leagues.py` imports it from its checkout.
 - `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
@@ -70,7 +74,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   history weight alpha), 3 retirements, 4 practice weights, 5 calibration by scoring category, 6 THE GATE:
   walk-forward projected points vs actual (CRPS, MAE, coverage, team pick; variants without market/practice/...),
   7 frozen projections vs results, 8 pit-stop rule vs scoring lines, 9 (only on request, minutes) experiments paired
-  against the shipped model. `backtest/walk.js` = the shared walk-forward
+  against the shipped model (`EXP=<group>`, `EXP_GRID=1`), 10 (only on request) ceilings: the sim told the round's
+  real answer for one input. `backtest/walk.js` = the shared walk-forward
   harness (`asOf(r)` rebuilds the data as it stood before round r; exact CRPS). `backtest/fit.js` (`npm run fit`) =
   coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
@@ -280,6 +285,95 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
       (two disjoint sets, less sensitive to one perfect sector), and an energy-deployment model (2026 overtakes come
       from charge differences on energy-starved tracks: the "yo-yo"). Data: FastF1 / OpenF1 telemetry (car_data,
       location). Judge it with the section 6 gate: it has to beat the current model, not just look more realistic.
+      PLAN AGREED 2026-09-25 (design discussion with the user):
+      - Ceilings (`npm run backtest 10`, the sim told the round's real answer; 3 seeds x 3,000): real race pace
+        −0.44 ± 0.11 CRPS, real race overtake level −0.41 ± 0.16 (race overtakes per driver ran 1.1 Monaco … 11.7
+        Monza), both + qualifying pace −0.75 ± 0.26; real qualifying pace −0.01 ± 0.13 and the real grid +0.10 ± 0.12
+        (nothing). So the targets are race pace and the round's overtake level; minisectors (qualifying pace) come last.
+      - 2026 has no DRS: the car within 1 s gets Overtake Mode (extra electrical deployment), which costs it charge ->
+        the yo-yo (pass, clip, repassed). "Trains" in the lap model = Overtake Mode trains. Battery charge isn't in the
+        public telemetry (speed/throttle/brake/gear/RPM only): energy use is inferred from clipping in the speed trace.
+      - Split: `telemetry.py` (FastF1 + numpy; cache in `%LOCALAPPDATA%\pit-wall\fastf1`, never in OneDrive/the repo)
+        writes small JSON (`history/2026/telemetry/`: track segments, laps/positions/speed traps, envelopes,
+        minisectors). engine.js stays pure JS: `simulate()` keeps weekend draws, qualifying, DNF/rain draws and
+        scoring; only its inner `race(grid, …)` gets an alternative `raceLaps()` behind `SIM.raceModel`, returning
+        the finishing order + each driver's overtakes. Small parameters (pass chance vs gap and pace difference, dirty
+        air, energy) are fitted on lap-pair events, walk-forward (`kernel_by_round.json`, like practice_by_round);
+        section 6 only judges, never tunes.
+      - Where it runs (user, 2026-09-25): at build time, NOT in the Calculator (future users must never wait). CI runs
+        it when a new session lands (after each practice session before lock, and after the race for the next race)
+        and ships the results; the Calculator reads them. Plus an owner-only "Sim lab" tab (shown only when signed in
+        as the user; a UI gate, the data is public anyway) with panels like rhter's (built from OUR sim): asset table
+        (Qpace, Rpace, DNF, FL, xOV, DotD, p25/xPts/p75, xPPM), price-step probabilities, qualifying/race position
+        matrices, average position and gap to the field by lap, points-per-$m scatter, violins, team score
+        distributions; a rerun button and toggles for every switch, including those kept but off by default. First
+        version after stage 2; lap panels with stage 3.
+        Securing it (agreed 2026-09-25): not a separate site (free Pages can't be private; a second site = second
+        sign-in, UI and split backtests). Same page, three locks: (1) the tab shows only for accounts in a Supabase
+        `owners` table (RLS); (2) CI writes the full Sim lab results to a Supabase table only owners can read (RLS);
+        the public build keeps only what the Calculator needs; (3) Rerun = a Supabase edge function that checks the
+        JWT + owners, then starts the GitHub workflow (workflow_dispatch with the toggles as inputs) with a
+        fine-grained token (Actions write, this repo only) held in Supabase secrets, never in the browser.
+        The code stays in this PUBLIC repo while item 9 is developed (user: no Actions limits); once everything runs
+        properly, consider moving the whole thing private. Only the pipeline would move; the tab and Calculator
+        keep reading Supabase.
+      - Data pacing: FastF1 first (OpenF1 car_data only as a fallback), one session at a time, ~30 s apart, ≤ ~20
+        sessions per sitting, stop and ask on any 403/429 or run of errors, never while a session is live. Measure one
+        telemetry session's size before the bulk (estimate 50–100 MB each, 3–6 GB for the season). CI may fetch each
+        weekend's practice telemetry once and archive the result (user OK'd).
+      - Adoption rule (set before any results): a stage is ON only if section 9 paired (5 seeds x 10,000, R5+) gives
+        ΔCRPS at least 1 SE below 0 and ΔMAE ≤ 0, log R not worse. A TIE (within noise) -> the option needing the
+        least manual adjustment if things change later (user's rule, 2026-09-25: fewer hand-set values, manual steps
+        and breakable feeds; refits itself from data). Log every tie decision here with where and why. Worse -> kept
+        behind a switch, off. Confirm on rounds after the freeze (Baku on) that were never used for fitting.
+      Stages (checkpoint at each):
+      - [x] 0. Harness (2026-09-25): `walk.js` `withOracle` + per-category errors (overtakes, race places, the round's
+        overtake level, sim ms); section 9 = named groups (`EXP=skew,car,fl|none`, `EXP_GRID=1` adds "CRPS, real
+        grid" = the race model alone), section 10 = ceilings. Baseline 5 x 10,000: CRPS 8.831, MAE 12.179, real grid
+        8.934, err OV 3.385, err places 2.364, err OV level 1.977, log Q −2.168, log R −2.387, 21 ms per 1,000 sims.
+      - [x] 1. (2026-09-25) Data: laps/positions/speed traps for every 2026 session (small), then telemetry; track segments per
+        circuit; 2025 qualifying geometry for the remaining circuits. Check: passes counted from laps match the
+        official overtake lines per driver-race (else the pass model can't be fitted). In progress 2026-09-25:
+        `telemetry.py` (laps / measure / passes; stops if a session is live). Race + sprint laps R1–R14 archived
+        (`history/2026/telemetry/laps/gdNN.json`, 1.5 MB; 19 sessions, ~7 MB download each, no blocks).
+        `telemetry.py passes`: passes = race-order changes between timing-line crossings (3 per lap), pit-lane
+        intervals excluded, lapping not counted (tested). vs the official overtake lines: races r 0.85 per
+        driver-race, 1227 counted vs 1472 official; sprints r 0.91, 280 vs 317. Lap-end positions only: r 0.82,
+        1010 (so sub-lap sampling matters). Too few where the yo-yo swaps happen between lines (Monza 163 vs 258,
+        65 of them with the cars < 0.3 s apart); too many where F1 evidently skips passes under SC/VSC or on slow /
+        retiring cars (Monaco 51 vs 24, Madrid 47 vs 33, Canada, Miami). Conclusion: good enough per driver, but
+        timing lines miss ~20% of passes, so passes must be counted along the lap from race telemetry (position
+        data), and race telemetry is needed in stage 1, not only in 3b.
+        TIE DECISION 1 (2026-09-25, pass counting): filtering out passes under SC/VSC and on cars >15% slower or
+        retiring within 2 laps took r 0.863 -> 0.883 but made the total worse (1507 -> 1289 vs 1789 official,
+        mean |round total error| 23 -> 27): a tie. Kept NO filters (the rule: two hand-set thresholds to maintain
+        vs none). Revisit once passes come from telemetry.
+        Telemetry sizes (measured): qualifying ~50 MB, race ~80-180 MB, sprint ~50 MB; ~6-10 s each. Race + sprint
+        telemetry R1-R14 cached (19 sessions, 1.9 GB in %LOCALAPPDATA%\pit-wall\fastf1; `laps --telemetry`).
+        Passes from position telemetry TRIED AND DROPPED (2026-09-25, not a tie: worse on most tracks). The public
+        feed repeats its last sample ~40-44% of the time (car and position data), releases backlogs late (GAS
+        frozen ~3 s at Roggia every lap, then catches up), and traced lap shapes are unreliable per track
+        (Hungary lap 3.65 km vs ~4.38 real; speed-integrated lap length 3.95-4.40 km on similar laps). With stalls
+        masked (+4 s) and a 40 m hysteresis Monza gave 242 vs 258 official (r 0.90), but across all 19 sessions
+        it over-counted badly (Suzuka crossover, Hungary geometry, ...); fixing it needs per-track patches. Decision:
+        passes from the timing lines (exact timing loops, r 0.85) with the LEVEL anchored to the official overtake
+        lines (what fantasy scores); telemetry only for one stall-free lap per session (shape, energy, envelopes).
+        Early read for stage 2 (race telemetry, in-sample, n=14): a track's full-throttle share (>= 98% throttle)
+        ranks with its race overtakes per driver at Spearman +0.60, the share of full-throttle time > 200 km/h
+        spent decelerating ("super-clipping") at +0.53 (circuit history: −0.2..0.2). Monza 48.7% full throttle ->
+        11.7 overtakes; Monaco 19.9% -> 1.1; Hungary (22%, 4.6) the outlier.
+        Done: lap records for all 70 sessions R1-R14 (FP/SQ/S/Q/R, 3.4 MB); race, sprint and qualifying telemetry
+        cached (33 sessions, 2.6 GB). Still to fetch: practice telemetry (for stage 2's index at lock; after Baku)
+        and Baku itself. Track segments moved to stage 2, where the energy index first uses them.
+      - [ ] 2. Track energy index -> the round's overtake level (`circuit.ov`), walk-forward. Check: leave-one-round-out
+        on round overtakes, then section 9 (ceiling −0.41; "err OV level" is the direct measure).
+      - [ ] 3a. `raceLaps()`: segments, Overtake Mode trains, dirty air, fitted pass model, DNF on its lap, SC timing,
+        pit windows. Check: section 5 (overtakes 4.05 -> 4.78, places lost −0.22 -> −0.56), section 9 incl. real grid,
+        runtime (build time only, so seconds are fine). 3b. Charge state + Overtake Mode inside it (the yo-yo).
+      - [ ] 4. g-g-V envelopes per car on the next track's geometry -> per-team pace shift (mainly race pace). Check:
+        section 9, especially without practice.
+      - [ ] 5. Minisector ideal laps (two disjoint sets) for short-run practice pace. Sections 4 + 9; low expectations.
+      - [ ] 6. Ship: build-time runs in CI, Calculator reads them, Sim lab tab, tests, frozen projection.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
       `npm run fit` again; with ~20 rounds the ±0.1 differences may become readable. `python backtest/odds_rounds.py`
       is only needed for rounds before the live odds archive (history/2026/odds, from R15).
