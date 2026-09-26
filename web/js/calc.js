@@ -22,7 +22,7 @@ import {
   upcoming,
 } from "./core.js";
 import { state } from "./state.js";
-import { needSync } from "./sync.js";
+import { needSync, syncState } from "./sync.js";
 import {
   activeChip,
   boostFor,
@@ -74,7 +74,7 @@ export function openTeamEditor(target = editTarget) {
     return toast(
       team.none
         ? "Pick one of your teams or a manual team first."
-        : "Rival line-ups follow the league standings. Save one as a manual team to edit it.",
+        : "A rival's line-up follows the tracking league. Save it as a manual team to edit it.",
     );
   const boost = boostFor(team.team, 0, team);
   const slot = (id, k) => {
@@ -143,11 +143,14 @@ function renderStartPicker(team, kind) {
               `rival:${i}`,
               kind === "rival" && ri === i,
               startBadge("rival", i),
-              `<span>${esc(r.name)} <span class="dim">${esc(r.league)}</span></span>`,
+              `<span>${esc(r.name)} <span class="dim">${esc(r.user)}</span></span>`,
             ),
           )
           .join("")
-      : '<p class="note" style="padding:4px 8px">Sign in or import a league to pick rivals.</p>') +
+      : "") +
+    (syncState.user
+      ? `<button class="opt" data-rivals="open">＋ Manage rivals</button>`
+      : '<p class="note" style="padding:4px 8px">Sign in to pick rivals from the tracking league.</p>') +
     `<div class="grp">Other</div>` +
     opt("none", kind === "none", startBadge("none"), "No starting team (maximum budget only)");
 }
@@ -197,16 +200,16 @@ export function renderSettings() {
   $("#planField").hidden = horizon() < 2;
   $("#goal").value = state.goal || "pts";
   const rivals = rivalTeams();
-  $("#goalRival").hidden = state.goal !== "rival";
+  $("#goalRival").hidden = $("#goalRivalMng").hidden = state.goal !== "rival";
   $("#goalRival").innerHTML = rivals.length
     ? `<option value="">Pick a rival…</option>` +
       rivals
         .map(
           (r) =>
-            `<option value="${esc(r.key)}" ${r.key === state.goalRival ? "selected" : ""}>${esc(r.name)} · ${esc(r.league)}</option>`,
+            `<option value="${esc(r.key)}" ${r.key === state.goalRival ? "selected" : ""}>${esc(r.name)} · ${esc(r.user)}</option>`,
         )
         .join("")
-    : `<option value="">No rivals yet (sign in or import a league)</option>`;
+    : `<option value="">No rivals yet: pick some with Manage rivals</option>`;
   // chips F1's data shows as played are locked; the rest can still be marked by hand (Autopilot, or a No Negative that
   // changed nothing, can't be seen in the data)
   const locked = lockedChips(team),

@@ -59,6 +59,7 @@ import {
 } from "./views.js";
 import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
+import { pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
 import { cfgSave, closeNotice, loadNotice } from "./admin.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
@@ -336,6 +337,8 @@ const CLICK = [
   ["sync", (d) => (d.sync === "ask" ? askWhich() : syncChoose(d.sync))],
   ["setup", (d) => setupAction(d.setup)],
   ["linkacct", (d) => linkAccount(d.linkacct)],
+  ["rivals", (d) => rivalsAction(d.rivals)],
+  ["rival", (d) => toggleRivalPick(d.rival)],
   ["cfgsave", (d) => cfgSave(d.cfgsave)],
   ["noticeclose", () => closeNotice()],
   [
@@ -925,6 +928,7 @@ const slider = (id, key, label) => (t) => {
 };
 const INPUT_ID = {
   acctSearch: searchInput,
+  rivalSearch: rivalSearchInput,
   simDecay: (t) => {
     state.simDecay = +t.value;
     state.simW = {};
@@ -1116,6 +1120,7 @@ document.addEventListener("visibilitychange", () => {
   if (syncState.ready) pull();
   pullLeagues();
   pullLink();
+  pullRivals();
   loadNotice();
   if (state.view === "live") pullLive();
 });

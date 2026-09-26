@@ -2591,3 +2591,36 @@ td.chl {
 .labmini th {
   padding: 2px 8px;
 }
+/* Rivals: the picked teams and the search hits (rivals.js) */
+.rivlist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+}
+.rivrow,
+.rivhit {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+}
+.rivrow {
+  align-items: center;
+  justify-content: space-between;
+}
+.rivrow span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rivrow small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.rivhit {
+  flex-direction: column;
+}

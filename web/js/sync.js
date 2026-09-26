@@ -5,20 +5,26 @@ import { KEY, defaults, loadState, setState, state } from "./state.js";
 import { compute, forecast } from "./forecast.js";
 import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
-import { accountTeams, mergeLeague } from "./tracking.js";
+import { accountTeams, mergeLeague, mergeRivals, rivalPicks } from "./tracking.js";
 import { linkHtml, pullLink, resetLink, step } from "./setup.js";
 import { loadNotice, pullAdmin, resetAdmin } from "./admin.js";
+import { pullRivals, rivalsHtml } from "./rivals.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
 // What the page reads about leagues and teams: the owner's private leagues (league_data, league readers only) merged
-// with the linked F1 Fantasy account's teams (tracked_accounts, see setup.js). Memory only.
+// with the linked F1 Fantasy account's teams (tracked_accounts, see setup.js) and the rivals you picked (rivals.js).
+// Memory only.
 export let LEAGUE_DATA = null;
 let LEAGUES = null, // league_data's payload
-  ACCOUNT = null; // the linked account's tracked_accounts row
+  ACCOUNT = null, // the linked account's tracked_accounts row
+  RIVALS = [], // the picked rivals' tracked_accounts rows
+  rivalsSig = "";
+export const rivalRows = () => RIVALS;
 export const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
 // league data goes live: your teams keyed and filled in, tracking applied (then refresh the league views)
 function useData(force = false) {
-  LEAGUE_DATA = mergeLeague(LEAGUES, ACCOUNT && ACCOUNT.body);
-  adoptKeys();
+  const own = mergeLeague(LEAGUES, ACCOUNT && ACCOUNT.body);
+  adoptKeys(own); // your own teams only: never a rival's name
+  LEAGUE_DATA = mergeRivals(own, RIVALS, state.rivals);
   if (forecast) {
     fillTeams(force);
     applyTracked();
@@ -34,6 +40,15 @@ export function setAccount(row, force = false) {
   ACCOUNT = row || null;
   useData(force);
   if (forecast) refreshViews(LEAGUE_VIEWS);
+}
+// The picked rivals' rows (rivals.js pullRivals): merged in only when they, or the picks, changed
+export function setRivals(rows) {
+  const sig = JSON.stringify([rivalPicks(state.rivals), rows.map((r) => [r.account_key, r.updated_at]).sort()]);
+  if (sig === rivalsSig) return;
+  rivalsSig = sig;
+  RIVALS = rows;
+  useData();
+  if (forecast) refreshViews(["calc"]);
 }
 // The link was deleted: the teams that came from it go back to example teams, so the Calculator starts from none.
 export function dropAccount() {
@@ -76,8 +91,8 @@ export function forgetOldKeys() {
 }
 // Teams saved before team keys (see teamKey) are matched to the league data by name, once; from then on the key
 // follows them through renames. A name two teams share stays unmatched rather than guessed.
-function adoptKeys() {
-  const names = LEAGUE_DATA && LEAGUE_DATA.names;
+function adoptKeys(data) {
+  const names = data && data.names;
   if (!names) return;
   let changed = false;
   for (const t of state.teams) {
@@ -261,6 +276,7 @@ export async function syncInit() {
         pull();
         pullLeagues();
         pullLink();
+        pullRivals();
         pullAdmin();
       }, 0);
   });
@@ -322,6 +338,7 @@ function applyRemote(row, msg) {
   Object.assign(syncState, { at: row.updated_at, last, ready: true, err: "" });
   writeMark({ uid: syncState.user.id, at: row.updated_at, dirty: false });
   renderSync();
+  pullRivals(); // the rivals picked may have changed on the other device
   if (d.v !== DATA.season) toast(`Carried your settings over from ${d.v}; teams start fresh for ${DATA.season}.`);
   else if (msg) toast(msg);
   queuePush();
@@ -409,7 +426,9 @@ export async function signOut() {
   Object.assign(syncState, { user: null, at: null, err: "", hold: null, last: null, ready: false });
   writeMark(null);
   LEAGUE_DATA = LEAGUES = ACCOUNT = null;
+  RIVALS = [];
   leaguesAt = null;
+  rivalsSig = "";
   resetLink();
   resetAdmin();
   if (saved) {
@@ -467,7 +486,8 @@ export function renderSync() {
       h =
         `<div class="em">${esc(U.email || "Signed in")}</div><p class="note${ss.err ? " bad" : ""}">${status}</p>` +
         `<div class="chipbar">${ss.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>` +
-        linkHtml();
+        linkHtml() +
+        rivalsHtml();
     }
   }
   $$(".acct").forEach((el) => {

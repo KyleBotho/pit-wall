@@ -106,3 +106,26 @@ test("teams saved before tracking are taken as set up for the next race", opt, (
   assert.equal(s.teams[0].asOf, next ? next.gd : 1e9);
   assert.equal(s.teams[1].asOf, undefined);
 });
+
+test("schema 7: rivals from the old league list go; picks are cleaned", opt, () => {
+  const run = page();
+  const s = run(
+    `loadState(${JSON.stringify({
+      v: D.season,
+      schema: 6,
+      goal: "rival",
+      goalRival: "Private / abc",
+      rivalCfg: { "Private / abc": { bank: 1 } },
+      calcStart: { type: "rival", key: "Private / abc", name: "X" },
+    })})`,
+  );
+  assert.deepEqual(s.rivals, []);
+  assert.deepEqual(s.rivalCfg, {});
+  assert.equal(s.goalRival, null);
+  assert.equal(s.calcStart, null);
+  assert.equal(s.goal, "rival"); // the goal stays; the Calculator asks for a rival
+  const picks = [{ ak: "a", tk: "t" }, { ak: "a", tk: "t" }, { tk: "u" }];
+  assert.deepEqual(run(`loadState(${JSON.stringify({ v: D.season, schema: 7, rivals: picks })}).rivals`), [
+    { ak: "a", tk: "t" },
+  ]);
+});

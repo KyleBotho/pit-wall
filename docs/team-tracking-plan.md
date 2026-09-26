@@ -126,11 +126,13 @@ page or anyone's browser. **The login itself is not automated** (see "Why not au
 
 Done when: a member who joined the league after the last race can be found and linked before the next race.
 
-## Later: rivals
+## Rivals (first step built 2026-09-26, see docs/history.md)
 
-Compare your teams with chosen rivals, mainly from the tracking league (any `tracked_accounts` row); the global
-top 500 (`data/elite_top100.json` / elite history) can add the elite template as a rival. The Calculator's "rival" start team and goal already take a rival's
-line-up; rivals would come from these sources instead of only imported/sealed leagues.
+Decisions (user, 2026-09-26): joining the tracking league never makes anyone a rival (the list would grow too long);
+rivals are only teams the user picks from the tracking league (`tracked_accounts`); other users can't add their own
+private leagues (too much manual work for now); the League views stay limited to real leagues. Built: "Manage
+rivals" (rivals.js), used by the Calculator's start team and goal "Beat a rival". Still open: where else rivals
+should show (a rivals comparison view?), and whether the top-100/500 template becomes a pickable rival.
 
 ## Why not automate the login
 

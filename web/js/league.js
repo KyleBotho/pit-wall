@@ -50,6 +50,12 @@ export function tracked(key) {
   return TRACK.by[key];
 }
 export const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) || {}).map((k) => [k, true]));
+// the line-up a tracked team goes into the next round with, drivers first; null unless it's 5 drivers + 2 constructors
+export function nextIds(tr) {
+  const got = tr && tr.next ? tr.next.ids.map(String).filter((id) => byId[id]) : [];
+  const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
+  return ids.length === 7 && ids.slice(0, 5).every(isDriver) ? ids : null;
+}
 // Leagues: auto-updated (decrypted) standings merged with anything imported (chips, bank, round history)
 export function leagueList() {
   const out = [];

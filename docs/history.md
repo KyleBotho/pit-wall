@@ -5,6 +5,17 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, Rivals, first step (user's decisions: joining the tracking league never makes anyone a rival, the
+      list would grow too long; rivals are only teams the user picks from the tracking league, no other users' private
+      leagues (too much manual work); the League views stay limited to real leagues). `rivals.js`: "Manage rivals"
+      dialog (search a username in `tracked_accounts`, tick its teams; your own teams can't be picked), opened from
+      the Calculator's start-team picker, next to goal "Beat a rival" and from Settings. Picks = `state.rivals`
+      `[{ak, tk}]` (schema 7; synced with the settings; carried into a new season, a team no longer in the league
+      shows as such). `pullRivals` loads the picked accounts' rows; `tracking.js rivalBody/mergeRivals` merge only
+      the picked teams into `LEAGUE_DATA` after your own data (which wins); `forecast.js rivalTeams()` = picked teams
+      whose next line-up `Hind.track` knows (`league.js nextIds`), keyed by team key (`rivalCfg` too). The private
+      leagues' members are no longer Calculator rivals (schema 7 drops old rival picks and `rivalCfg`); they stay in
+      the League views, head-to-head and live standings. Not checked in a browser (no data feeds in that session).
 - [x] 2026-09-26, Settings > Admin (admin.js): admins = accounts in `owners` (set in SQL only; the user expects
       no other admins for now, so no appointing from the page: that would let one stolen account add more). They
       edit only the known app_config keys (RLS allowlist `app_config_admin_key`): site notice (typed by the admin,
