@@ -1,4 +1,65 @@
 /* ---------- orchestration: views, rendering, events, start-up ---------- */
+import { $, $$, DATA, FORECAST_VIEWS, NEXT, SEASON_OVER, alignTable, byId, esc } from "./core.js";
+import { VIEWS, activeTeam, state } from "./state.js";
+import {
+  applyTracked,
+  askWhich,
+  pull,
+  renderSync,
+  save,
+  signIn,
+  signOut,
+  syncChoose,
+  syncInit,
+  syncState,
+  unlock,
+  unlockSaved,
+} from "./sync.js";
+import { compute, editStart, forecast, lockedChips, rivalTeams, startKind, startTeam } from "./forecast.js";
+import { importOfficial } from "./import.js";
+import { renderLeague } from "./league.js";
+import { renderElite, renderEliteSeason } from "./elite.js";
+import { fprops } from "./filters.js";
+import { renderHind } from "./hindsight-view.js";
+import { renderStats, stCell, stExcluded } from "./stats.js";
+import { lvCell, pullLive, renderLive } from "./live.js";
+import {
+  GOAL_COLS,
+  addDraft,
+  bestRows,
+  bestSort,
+  copyText,
+  editTarget,
+  editing,
+  menuAction,
+  menuRow,
+  openBudgetValue,
+  openChipValues,
+  openMenu,
+  openPlan,
+  openTeamEditor,
+  openTransferValue,
+  pinTeam,
+  renderAssetPanels,
+  renderSettings,
+  runOptimiser,
+  setSplit,
+  setSplitFrac,
+  resetSplit,
+  endTeamEdit,
+} from "./calc.js";
+import {
+  ovFor,
+  renderAssets,
+  renderCal,
+  renderCompare,
+  renderGrid,
+  renderHeader,
+  renderModel,
+  renderPractice,
+  renderPrices,
+} from "./views.js";
+import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
 const RENDER = {
@@ -31,11 +92,11 @@ function renderView(v) {
   stale.delete(v);
 }
 // re-render these views: now if one is showing, the others when next opened
-function refreshViews(vs = VIEWS) {
+export function refreshViews(vs = VIEWS) {
   for (const v of vs) stale.add(v);
   if (stale.has(state.view)) renderView(state.view);
 }
-function renderAll() {
+export function renderAll() {
   renderHeader();
   refreshViews();
 }
@@ -59,7 +120,7 @@ function recompute(delay = 120) {
     Math.max(delay, 30),
   );
 }
-function rerender() {
+export function rerender() {
   renderAll();
   save();
 }
@@ -84,7 +145,7 @@ const GROUPS = {
 const groupOf = (v) => Object.keys(GROUPS).find((g) => GROUPS[g].some(([x]) => x === v));
 const groupViews = (g) => GROUPS[g].filter(([v]) => !(SEASON_OVER && FORECAST_VIEWS.includes(v)));
 
-function showView(v) {
+export function showView(v) {
   if (v === "lab" && !labOwner) v = "calc"; // the Sim lab is owner-only
   if (GROUPS[v]) {
     // a group's rail button opens the view last used in it
@@ -147,17 +208,17 @@ function showBmode() {
 }
 
 /* ---------- modal, menu, toast ---------- */
-let modalKind = null; // "editor" while the team editor is open (it re-renders as the team changes)
-function openModal(kind = null) {
+export let modalKind = null; // "editor" while the team editor is open (it re-renders as the team changes)
+export function openModal(kind = null) {
   modalKind = kind;
   $("#modal .mbox").classList.toggle("wide", kind === "budget" || kind === "transfer");
   $("#modal").hidden = false;
 }
-function closeModal() {
+export function closeModal() {
   const draft = editTarget != null; // a manual team edited from Compare: show its new name there
   $("#modal").hidden = true;
   modalKind = null;
-  editTarget = null;
+  endTeamEdit();
   if (draft) rerender();
 }
 function closeMenu() {
@@ -166,7 +227,11 @@ function closeMenu() {
 }
 let undoTeam = null,
   toastTimer = null;
-function toast(msg, undo) {
+// the team as it was before a one-click change, for the toast's Undo
+export function keepUndo(T) {
+  undoTeam = { ref: T, team: T.team.slice(), bank: T.bank, boost: T.boost, example: T.example };
+}
+export function toast(msg, undo) {
   $("#toastMsg").textContent = msg;
   $("#toastUndo").hidden = !undo;
   $("#toast").hidden = false;
@@ -205,7 +270,7 @@ function toggleMark(marks, id, to) {
 function draftToTeam(i, j) {
   const tgt = state.teams[j],
     oldCap = tgt.team.reduce((s, id) => s + byId[id].price, 0) + (+tgt.bank || 0);
-  undoTeam = { ref: tgt, team: tgt.team.slice(), bank: tgt.bank, boost: tgt.boost, example: tgt.example };
+  keepUndo(tgt);
   const cost = state.drafts[i].team.reduce((s, id) => s + byId[id].price, 0);
   Object.assign(tgt, {
     team: state.drafts[i].team.slice(),
@@ -444,7 +509,7 @@ const CLICK = [
   [
     "deldraft",
     (d) => {
-      editTarget = null;
+      endTeamEdit();
       closeModal();
       state.drafts.splice(+d.deldraft, 1);
       if (state.calcStart && state.calcStart.type === "draft") state.calcStart = null;
@@ -982,10 +1047,7 @@ document.addEventListener("keydown", (e) => {
     sp.addEventListener("pointerup", end);
     sp.addEventListener("pointercancel", end);
   });
-  sp.addEventListener("dblclick", () => {
-    setSplit = null;
-    applySplit();
-  });
+  sp.addEventListener("dblclick", resetSplit);
   sp.addEventListener("keydown", (e) => {
     if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
     e.preventDefault();

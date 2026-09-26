@@ -1,4 +1,12 @@
 /* ---------- live scoring: the weekend in progress (or the last one), as fresh as the last build ---------- */
+import { $, $$, CHIPS, DATA, NEXT, byId, code, esc, f0, f1, sgn } from "./core.js";
+import { state } from "./state.js";
+import { SB_URL, needSync } from "./sync.js";
+import { chip, heat, heatKey, who } from "./forecast.js";
+import { leagueList, mkey, teamKey } from "./league.js";
+import { SESSN } from "./filters.js";
+import { lineups } from "./hindsight-view.js";
+import { refreshViews } from "./main.js";
 const LV_SESS = {
   "Sprint Shootout": "SQ",
   "Sprint Qualifying": "Sprint",
@@ -66,7 +74,7 @@ function lvScore(t, f) {
       : f(id);
   return t.ids.reduce((s, id) => s + one(id) * (id === t.x3 ? 3 : id === t.boost ? 2 : 1), 0);
 }
-function renderLive() {
+export function renderLive() {
   const L = DATA.live;
   $("#lvTeams").hidden = !L;
   $("#lvTable").closest("section").hidden = !L;
@@ -205,7 +213,7 @@ function evIdx(s, n, c) {
   }
   return i;
 }
-async function pullLive() {
+export async function pullLive() {
   const gd = liveGd();
   if (!gd || liveFeed.busy) return;
   liveFeed.busy = true;
@@ -312,7 +320,7 @@ function renderLiveLeague(g, over) {
       : "") +
     " Transfer penalties and chips are only counted once the round's official points arrive (✓).";
 }
-function lvCell(id) {
+export function lvCell(id) {
   const a = byId[id],
     x = DATA.live.assets[id];
   if (!x) return;

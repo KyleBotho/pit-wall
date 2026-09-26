@@ -1,33 +1,23 @@
 // The page's saved-settings handling (web/js/state.js): migrations, a new season, defaults not shared.
-// Loads the real page scripts into a sandbox with this season's data.
+// Loads the real page modules into a sandbox with this season's data.
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const path = require("node:path");
-const vm = require("node:vm");
-const { ROOT, loadData } = require("./helpers.js");
+const { loadData, pageModules } = require("./helpers.js");
 
 const D = loadData();
 const opt = { skip: D ? false : "no cache/data.json" };
 
 function page() {
   const store = {};
-  const ctx = vm.createContext({
-    Engine: require("../engine.js"),
-    Hindsight: require("../hindsight.js"),
+  const run = pageModules(["core.js", "state.js"], D, {
     localStorage: {
       getItem: (k) => store[k] ?? null,
       setItem: (k, v) => (store[k] = String(v)),
       removeItem: (k) => delete store[k],
     },
-    document: { querySelector: () => null, querySelectorAll: () => [] },
-    structuredClone,
   });
-  const src = (f) => fs.readFileSync(path.join(ROOT, "web", "js", f), "utf8");
-  vm.runInContext(src("core.js").replace(/\/\*__DATA__\*\/\s*null/, JSON.stringify(D)), ctx);
-  vm.runInContext(src("state.js"), ctx);
   // results come back through JSON: objects from the sandbox have its own prototypes
-  return (expr) => JSON.parse(vm.runInContext(`JSON.stringify(${expr})`, ctx));
+  return (expr) => JSON.parse(run(`JSON.stringify(${expr})`));
 }
 const drivers = () => D.assets.filter((a) => a.kind === "D" && a.active).map((a) => a.id);
 const cons = () => D.assets.filter((a) => a.kind === "C").map((a) => a.id);

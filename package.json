@@ -11,7 +11,7 @@
     "backtest": "node backtest/run.js",
     "fit": "node backtest/fit.js",
     "rebuild": "node backtest/rebuild_projections.js",
-    "vendor": "node tools/vendor.js",
+    "bundle": "node tools/bundle.js",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm test"
   },
   "devDependencies": {

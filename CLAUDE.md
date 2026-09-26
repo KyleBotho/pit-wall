@@ -46,10 +46,12 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   and, once run, the actual qualifying/sprint order from OpenF1).
 - `priors.py` — run once per season (before round 1): `data/circuit_priors.json`, one row per past race (Jolpica
   2014+: position changes, grid-finish correlation, retirements; OpenF1 2023+: SC, VSC, red, rain, overtakes).
-- `web/app.html` + `web/app.css` + `web/js/*.js` — the page. Plain scripts sharing one global scope, loaded in
-  the order app.html lists them (core, state, sync, forecast, import, league, elite, filters, hindsight-view, stats,
-  live, calc, views, lab, main). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
-  never their name/logo. Key globals: `state` (settings), `forecast` (sims and projections from `compute()`),
+- `web/app.html` + `web/app.css` + `web/js/*.js` — the page. ES modules with explicit imports (since 2026-09-26),
+  entry `main.js`; `tools/bundle.js` (esbuild) bundles them and supabase-js from npm into one script that refresh.py
+  inlines (so `python refresh.py` needs `npm ci`). Engine and Hindsight stay classic scripts (also used by Node);
+  the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
+  setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `SEALED`, `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
   `state.calcStart`; pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
@@ -105,16 +107,16 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `leagues.py` imports `f1feeds.py` from the public checkout: push this repo before a private change that needs it.
 
 ## Code conventions (2026-09-24 review)
-- Page scripts share one scope, so ESLint collects every file's top-level names as globals (`eslint.config.mjs`) and
-  forbids locals that shadow the shared state (`state`, `forecast`, …): a `renderLive` helper called `state` once
-  broke Live Scoring.
+- Page modules import what they use, so ESLint's no-undef catches typos; `eslint.config.mjs` also forbids locals that
+  shadow the shared values (`state`, `forecast`, …): a `renderLive` helper called `state` once broke Live Scoring.
+  Tests load modules through `tests/helpers.js` `pageModules()` (bundled into a vm sandbox).
 - Saved settings go through `loadState()` (`web/js/state.js`): bump `SCHEMA` and add a `MIGRATIONS` step for any
   shape change; `CARRY` lists what survives into a new season. `defaults()` returns fresh objects.
 - Only the visible view renders: after a change call `rerender()` (all views stale, visible one redrawn) or
   `refreshViews([...])`. Clicks/changes/inputs dispatch through the `CLICK` / `CHANGE` / `INPUT_ID` tables in
   `main.js`; add an entry rather than a branch.
 - Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
-  local instead. `web/js/core.js` keeps the `/*__DATA__*/ null` placeholder (refresh.py matches it with a regex).
+  local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 
 ## Commands
 - New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`.
@@ -683,7 +685,7 @@ User-approved order: 1–5, then the rest.
       sealed export line-ups (`lineups`).
     - Keep-alive: free projects pause after ~1 week idle; have refresh.yml make a tiny anon request each run
       (verify that counts as activity).
-    - Page: supabase-js bundled into `web/vendor/supabase.js` (`npm run vendor`; was jsdelivr until 2026-09-26);
+    - Page: supabase-js bundled from npm with the page modules (was jsdelivr until 2026-09-26);
       the page ships a hash-based CSP (`refresh.content_policy`); "Sign in with Google" in the ☰ menu and Settings; "Synced n min ago";
       sign out (clears the local session and the stored key).
     - User setup (once): Supabase project (send URL + anon key; both public); Google Cloud consent screen in

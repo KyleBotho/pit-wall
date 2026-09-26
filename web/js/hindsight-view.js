@@ -1,5 +1,12 @@
 /* ---------- hindsight: best teams on actual points (scoring in hindsight.js, as Hind) ---------- */
-const lineups = (key) => (SEALED && SEALED.lineups && SEALED.lineups[key]) || null; // by teamKey
+import { $, $$, CHIPS, DATA, Hind, byId, code, esc, f0, f1, money, sgn } from "./core.js";
+import { activeTeam, state } from "./state.js";
+import { SEALED } from "./sync.js";
+import { chip, heat, who } from "./forecast.js";
+import { teamHist, teamKey } from "./league.js";
+import { filterUI, filters, teamText } from "./filters.js";
+import { inclExcl } from "./calc.js";
+export const lineups = (key) => (SEALED && SEALED.lineups && SEALED.lineups[key]) || null; // by teamKey
 // budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
 // fair comparison)
 const hdCapMode = () => state.hdCap || `team:${state.active}`;
@@ -138,7 +145,7 @@ const decHtml = (dec) =>
     )
     .join("");
 
-function renderHind() {
+export function renderHind() {
   const done = DATA.done || [];
   $("#hindEmpty").hidden = !!done.length;
   $("#hindDash").hidden = !done.length;

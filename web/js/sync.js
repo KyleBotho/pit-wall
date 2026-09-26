@@ -1,5 +1,12 @@
 /* ---------- encrypted private leagues (sealed by the private repo's leagues.py with seal.js and LEAGUE_KEY) ---------- */
-let SEALED = null; // decrypted payload, memory only
+import { createClient } from "@supabase/supabase-js";
+import { $, $$, DATA, byId, esc, isDriver, money } from "./core.js";
+import { KEY, loadState, setState, state } from "./state.js";
+import { compute, forecast } from "./forecast.js";
+import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
+import { labCheck } from "./lab.js";
+import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
+export let SEALED = null; // decrypted payload, memory only
 // The passphrase itself is never stored. This browser keeps a non-extractable PBKDF2 key made from it (IndexedDB):
 // it can derive the decryption key for each new seal (fresh salt every time) but can't be read back out.
 const LK = "pitwall.lk"; // IndexedDB record name; also where older pages kept the passphrase in plain text
@@ -35,7 +42,7 @@ async function unseal(base) {
   return JSON.parse(new TextDecoder().decode(pt));
 }
 // a passphrase typed in (or left by an older page): kept, as a key, only if it opens the leagues
-async function unlock(pass, quiet) {
+export async function unlock(pass, quiet) {
   if (!DATA.leagueSealed || !window.crypto || !crypto.subtle) {
     if (!quiet) toast("Encrypted leagues need the https site.");
     return;
@@ -62,7 +69,7 @@ async function tryUnseal(base, quiet) {
   return ok;
 }
 // at load: this browser's saved key, or a plain-text passphrase from an older page (moved into a key, then deleted)
-async function unlockSaved() {
+export async function unlockSaved() {
   let old = null;
   try {
     old = localStorage.getItem(LK);
@@ -123,7 +130,7 @@ function fillFromLineups() {
 // Your teams follow F1's data: once a race is over and its line-ups are in, each team's current line-up, bank, free
 // transfers and chips played update by themselves. A team already set up for a later race (t.asOf: an import taken
 // before the lock, or an earlier update) is left alone; chips played are always added (and locked in the Calculator).
-function applyTracked() {
+export function applyTracked() {
   const news = [];
   let changed = false;
   for (const t of state.teams) {
@@ -157,7 +164,7 @@ function applyTracked() {
     toast(`Teams updated after R${r}: ${news.join("; ")}.`);
   }
 }
-function save() {
+export function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify({ ...state, v: DATA.season }));
   } catch (e) {}
@@ -168,11 +175,11 @@ function save() {
    Rules: the account's row wins if it changed since this browser last matched it and this browser has nothing
    unsent; this browser's unsent edits are pushed if the row hasn't changed; if both changed (or a browser with its
    own teams signs in for the first time) nothing syncs until the user picks which set to keep. */
-const SB_URL = "https://tfljgylwpkpammzsapin.supabase.co";
+export const SB_URL = "https://tfljgylwpkpammzsapin.supabase.co";
 const SB_KEY = "sb_publishable_5XxT7rr5X-XS1HyduNK1qQ_TfoP2PLV"; // public by design (RLS protects the rows)
 const SK = "pitwall.sync"; // {uid, at, dirty}: the row version this browser last matched, and whether it has unsent changes
 const NOSYNC = ["view", "pane", "bmode", "sub", "showN", "calcGrp"]; // where you are on this device, not settings
-const syncState = {
+export const syncState = {
   sb: null,
   user: null,
   at: null,
@@ -207,11 +214,11 @@ function syncPayload() {
 }
 // rows saved by older pages may still hold the league passphrase ("lk"): used once here, then written over without it
 const holdsKey = (row) => !!row && !!row.data && "lk" in row.data;
-async function syncInit() {
+export async function syncInit() {
   if (!syncState.ok) return;
   try {
-    // web/vendor/supabase.js (npm run vendor), inlined with the page: no script is fetched from elsewhere
-    syncState.sb = supabase.createClient(SB_URL, SB_KEY, {
+    // bundled from npm with the page (package-lock.json pins it): no script is fetched from elsewhere
+    syncState.sb = createClient(SB_URL, SB_KEY, {
       auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     });
   } catch (e) {
@@ -230,7 +237,7 @@ async function syncInit() {
     if (u) setTimeout(pull, 0); // not inside the callback: supabase-js can deadlock on calls made there
   });
 }
-async function pull() {
+export async function pull() {
   const U = syncState.user;
   if (!U || syncState.hold || syncState.timer) return;
   const { data, error } = await syncState.sb
@@ -277,7 +284,7 @@ function applyRemote(row, msg) {
   }
   const next = loadState({ ...d.s, v: d.v });
   for (const k of NOSYNC) if (state[k] !== undefined) next[k] = state[k]; // this device's place and layout stay
-  state = next;
+  setState(next);
   syncState.applying = true;
   compute();
   renderAll();
@@ -328,7 +335,7 @@ async function push() {
   if (dirty) queuePush();
   renderSync();
 }
-function askWhich() {
+export function askWhich() {
   const r = syncState.hold;
   if (!r) return;
   const when = esc(new Date(r.updated_at).toLocaleString());
@@ -341,7 +348,7 @@ function askWhich() {
     <div class="chipbar"><button class="btn" data-sync="account">Use my account's</button><button class="btn ghost" data-sync="browser">Keep this browser's</button></div>`;
   openModal();
 }
-function syncChoose(k) {
+export function syncChoose(k) {
   const r = syncState.hold;
   Object.assign(syncState, { hold: null, holdWhy: "" });
   closeModal();
@@ -351,7 +358,7 @@ function syncChoose(k) {
   push();
   toast("Saved this browser's settings to your account.");
 }
-async function signIn() {
+export async function signIn() {
   if (!syncState.sb) return toast(syncState.err || "Sign-in works on the published site.");
   const { error } = await syncState.sb.auth.signInWithOAuth({
     provider: "google",
@@ -359,7 +366,7 @@ async function signIn() {
   });
   if (error) toast(error.message);
 }
-async function signOut() {
+export async function signOut() {
   if (syncState.timer) await push(); // don't drop the last edits
   try {
     await syncState.sb.auth.signOut({ scope: "local" });
@@ -383,8 +390,8 @@ const ago = (t) => {
         : new Date(t).toLocaleDateString();
 };
 // [data-needsync] buttons (sign in) only show when sign-in is available and nobody is signed in
-const needSync = () => $$("[data-needsync]").forEach((b) => (b.hidden = !syncState.sb || !!syncState.user));
-function renderSync() {
+export const needSync = () => $$("[data-needsync]").forEach((b) => (b.hidden = !syncState.sb || !!syncState.user));
+export function renderSync() {
   needSync();
   const U = syncState.user,
     ss = syncState;

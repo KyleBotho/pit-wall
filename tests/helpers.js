@@ -2,6 +2,7 @@
 // plaintext round history (only on a machine with the private clone).
 const fs = require("node:fs");
 const path = require("node:path");
+const vm = require("node:vm");
 
 const ROOT = path.join(__dirname, "..");
 const readJson = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
@@ -24,4 +25,35 @@ function loadBackfill() {
   return fs.existsSync(p) ? readJson(p) : null;
 }
 
-module.exports = { ROOT, readJson, config, loadData, loadBackfill };
+// Some of the page's ES modules (web/js), bundled and run in a sandbox with `data` in the page's JSON block. Returns
+// run(expr): evaluates expr with the modules' exports in scope. Each call is a fresh page (nothing shared).
+function pageModules(files, data, globals = {}) {
+  const esbuild = require("esbuild");
+  const contents = files.map((f) => `export * from "./web/js/${f}";`).join("\n");
+  const code = esbuild.buildSync({
+    stdin: { contents, resolveDir: ROOT },
+    bundle: true,
+    format: "iife",
+    globalName: "P",
+    platform: "browser",
+    write: false,
+    logLevel: "error",
+  }).outputFiles[0].text;
+  const ctx = vm.createContext({
+    Engine: require("../engine.js"),
+    Hindsight: require("../hindsight.js"),
+    document: {
+      getElementById: (id) => (id === "pw-data" ? { textContent: JSON.stringify(data) } : null),
+      querySelector: () => null,
+      querySelectorAll: () => [],
+    },
+    structuredClone,
+    crypto: globalThis.crypto,
+    TextEncoder,
+    ...globals,
+  });
+  vm.runInContext(code, ctx);
+  return (expr) => vm.runInContext(`with (P) { ${expr} }`, ctx);
+}
+
+module.exports = { ROOT, readJson, config, loadData, loadBackfill, pageModules };

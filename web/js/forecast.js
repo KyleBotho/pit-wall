@@ -1,12 +1,15 @@
 /* ---------- computation ---------- */
-let forecast = null; // the simulated races and projections behind every view (compute())
+import { DATA, NEXT, SEASON_OVER, byId, code, col, esc, f1, isDriver, money, sgn, teamCode, upcoming } from "./core.js";
+import { activeTeam, state } from "./state.js";
+import { leagueList, mkey, teamKey, tracked } from "./league.js";
+export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
-const trackFit = Engine.trackModel(DATA);
+export const trackFit = Engine.trackModel(DATA);
 // circuit settings: fitted track values (past seasons x this season's trend) with this weekend's rain forecast,
 // overridden by anything set in Settings
-const circ = (g) =>
+export const circ = (g) =>
   Object.assign(Engine.withWeather(trackFit.forCircuit(g), (DATA.weather || {})[g.gd]), state.circuits[g.gd] || {});
-function compute() {
+export function compute() {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
     forecast = { model: null, races: [], sims: [], idx: {}, form, proj: [], price: {} };
@@ -81,14 +84,14 @@ function compute() {
   forecast.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
 }
 // the next race as a sprint weekend: as the Simulation panel's toggle says for that race, else the calendar
-const sprintNext = () =>
+export const sprintNext = () =>
   state.simSprint && NEXT && state.simSprint.gd === NEXT.gd ? !!state.simSprint.v : !!(NEXT && NEXT.sprint);
 // each finished round's weight for a past-performance preset: the preset's, with any set by hand on top
-const simWeights = () => ({
+export const simWeights = () => ({
   ...Engine.presetWeights(state.simPreset, DATA.done, { decay: state.simDecay, win: state.simWin }),
   ...state.simW,
 });
-const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
+export const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
 // price change after the next race, from the simulated weekends (the game's rule: Engine.priceStep). The average
 // is over the last three races, or only the races run so far early on (2026: no "imaginary zero" races; confirmed
 // by the community against the game), so after round 1 the next race counts half.
@@ -119,13 +122,13 @@ function priceInfo(a) {
   }
   return { sum2, p1, p2, need, dist: dist.map((v) => v / N), ev: ev / N, up: up / N, down: down / N };
 }
-const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 0;
+export const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 0;
 
 /* ---------- the calculator's starting team ---------- */
 // One of your teams (state.active), a manual team, a rival's current line-up, or none (then only a maximum budget).
 // Rivals are identified by league and team key (see teamKey); the same team in two of your leagues is listed once.
 const rivalKey = (league, key) => league + " / " + key;
-function rivalTeams() {
+export function rivalTeams() {
   const out = [];
   for (const L of leagueList())
     for (const m of L.members || []) {
@@ -166,7 +169,7 @@ const NO_TEAM = Object.freeze({
   none: true,
 });
 // Reading the starting team changes nothing; editStart() returns the object to change.
-function startTeam() {
+export function startTeam() {
   const c = state.calcStart;
   if (c && c.type === "none") return NO_TEAM;
   if (c && c.type === "draft" && state.drafts[c.i]) return state.drafts[c.i];
@@ -194,7 +197,7 @@ function startTeam() {
 }
 // the starting team's settings to change (bank, free transfers, chips used, Boost); a rival's entry is created on
 // the first edit
-function editStart() {
+export function editStart() {
   const T = startTeam();
   if (!T.rivalKey) return T;
   if (!state.rivalCfg[T.rivalKey]) {
@@ -203,27 +206,27 @@ function editStart() {
   }
   return state.rivalCfg[T.rivalKey];
 }
-const startKind = () => {
+export const startKind = () => {
   const c = state.calcStart;
   return c && ["none", "draft", "rival"].includes(c.type) && startTeam() !== activeTeam() ? c.type : "team";
 };
 // chips F1's data shows the starting team has played ({chip: gameday}); the Calculator won't un-mark them
-const lockedChips = (T) =>
+export const lockedChips = (T) =>
   T.none || !(T.rivalKey || state.teams.includes(T)) ? {} : (tracked(teamKey(T)) || { used: {} }).used;
 // the chip the Calculator plays: the one picked, unless the starting team has already used it
-const activeChip = () => (state.chip && !startTeam().chipsUsed[state.chip] ? state.chip : "");
-const teamValue = () => startTeam().team.reduce((s, id) => s + byId[id].price, 0);
-const cap = () => (startTeam().none ? +state.maxBudget || 100 : teamValue() + (+startTeam().bank || 0));
-const maxTransfers = (T) =>
+export const activeChip = () => (state.chip && !startTeam().chipsUsed[state.chip] ? state.chip : "");
+export const teamValue = () => startTeam().team.reduce((s, id) => s + byId[id].price, 0);
+export const cap = () => (startTeam().none ? +state.maxBudget || 100 : teamValue() + (+startTeam().bank || 0));
+export const maxTransfers = (T) =>
   T.none ? 7 : Math.min(7, Math.min(7, +T.free || 0) + (state.maxPen == null ? 7 : state.maxPen));
 // a team's Boost for a race: the one set for the team (next race only), else its best projected driver
-function boostFor(ids, raceIdx = 0, T = activeTeam()) {
+export function boostFor(ids, raceIdx = 0, T = activeTeam()) {
   const ds = ids.filter(isDriver);
   if (raceIdx === 0 && T.boost !== "auto" && ds.includes(T.boost)) return T.boost;
   const pr = forecast.proj[raceIdx];
   return ds.reduce((b, id) => (pr[id].mean > pr[b].mean ? id : b), ds[0]) || null;
 }
-function teamDist(ids, boost, chip, boost2) {
+export function teamDist(ids, boost, chip, boost2) {
   const arr = teamSamples(ids, boost, chip, boost2),
     N = arr.length;
   const sorted = Array.from(arr).sort((a, b) => a - b);
@@ -234,7 +237,7 @@ function teamDist(ids, boost, chip, boost2) {
   };
 }
 // joint next-race score of a team across the simulated weekends
-function teamSamples(ids, boost, chip, boost2) {
+export function teamSamples(ids, boost, chip, boost2) {
   const sim = forecast.sims[0],
     N = sim.N,
     arr = new Float64Array(N);
@@ -263,8 +266,8 @@ function teamSamples(ids, boost, chip, boost2) {
     }
   return arr;
 }
-const horizon = () => (activeChip() === "limitless" ? 1 : Math.min(state.horizon, forecast.races.length));
-const xpts = (id, H = horizon()) => {
+export const horizon = () => (activeChip() === "limitless" ? 1 : Math.min(state.horizon, forecast.races.length));
+export const xpts = (id, H = horizon()) => {
   let s = 0;
   for (let k = 0; k < Math.min(H, forecast.proj.length); k++) s += forecast.proj[k][id].mean;
   return s;
@@ -272,7 +275,7 @@ const xpts = (id, H = horizon()) => {
 
 /* ---------- building blocks ---------- */
 // asset chip: code tile with team border, xPts strip, price-change strip
-function chip(id, o = {}) {
+export function chip(id, o = {}) {
   const a = byId[id],
     p = o.pts ?? xpts(id),
     dv = priceEv(id);
@@ -283,28 +286,28 @@ function chip(id, o = {}) {
   return `<span class="ac ${o.cls || ""}" style="--tc:${col(a)}" title="${esc(a.kind === "D" ? a.name : a.team)} · ${money(a.price)}">
     <span class="c">${esc(code(a))}</span><span class="a">${o.a ?? f1(p)}</span>${b}${o.x ? `<span class="x">${o.x}</span>` : ""}</span>`;
 }
-const codeBox = (a) => `<span class="code" style="--tc:${col(a)}">${esc(code(a))}</span>`;
+export const codeBox = (a) => `<span class="code" style="--tc:${col(a)}">${esc(code(a))}</span>`;
 // drivers with more than one asset this season (a mid-season team change): their rows also name the team
 const DUP_TLA = new Set(
   DATA.assets
     .filter((a, i, all) => a.kind === "D" && all.some((b, j) => j !== i && b.kind === "D" && b.tla === a.tla))
     .map((a) => a.tla),
 );
-const who = (a, label) =>
+export const who = (a, label) =>
   `<span class="who">${codeBox(a)}<span>${esc(label ?? (a.kind === "D" ? a.short : a.team))}${label == null && a.kind === "D" && DUP_TLA.has(a.tla) ? ` <span class="dim">${esc(teamCode(a.team))}</span>` : ""}</span></span>`;
 // the key under a heat-shaded table: red = lower, green = higher, deeper = further from the middle; none when the
 // heatmap colours are off (Settings)
-function heatKey(lo = "lower", hi = "higher") {
+export function heatKey(lo = "lower", hi = "higher") {
   if (!state.heat) return "";
   return `<span class="muted">${esc(lo)}</span><span class="ramp" style="background:linear-gradient(90deg,rgba(239,68,68,.34),rgba(239,68,68,0) 45%,rgba(34,197,94,0) 55%,rgba(34,197,94,.34))"></span><span class="muted">${esc(hi)}</span>`;
 }
-function heat(v, lo, hi) {
+export function heat(v, lo, hi) {
   if (!state.heat || v == null || isNaN(v)) return "";
   const t = Math.max(-1, Math.min(1, v >= 0 ? (hi > 0 ? v / hi : 0) : lo < 0 ? -(v / lo) : 0));
   const c = t >= 0 ? "34,197,94" : "239,68,68";
   return ` style="background-color:rgba(${c},${(Math.abs(t) * 0.28).toFixed(3)})"`;
 }
-function optionList(kind, sel) {
+export function optionList(kind, sel) {
   const list = DATA.assets
     .filter((a) => a.kind === kind && (a.active || a.id === sel))
     .sort((a, b) => b.price - a.price);

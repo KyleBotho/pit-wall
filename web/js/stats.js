@@ -1,4 +1,10 @@
 /* ---------- statistics: every asset, every round ---------- */
+import { $, $$, DATA, Hind, byId, code, esc, f0, f1, money, sgn } from "./core.js";
+import { state } from "./state.js";
+import { heat, heatKey, who } from "./forecast.js";
+import { teamKey } from "./league.js";
+import { EVLABEL, SESSN, evLabel } from "./filters.js";
+import { lineups } from "./hindsight-view.js";
 const ST_METRICS = [
   ["pts", "Fantasy points"],
   ["ppm", "Points per $1m"],
@@ -9,7 +15,7 @@ const ST_METRICS = [
   ["rpos", "Race position"],
   ["pg", "Race places gained"],
 ];
-const stExcluded = () => new Set(state.stOff || []);
+export const stExcluded = () => new Set(state.stOff || []);
 function stPts(h) {
   const off = stExcluded();
   if (!off.size) return h.pts;
@@ -49,7 +55,7 @@ function stHeat(v, m, lo, hi) {
   if (m === "price") return "";
   return heat(v, lo, hi);
 }
-function renderStats() {
+export function renderStats() {
   const kind = state.stKind || "D",
     m = state.stMetric || "pts",
     done = DATA.done || [];
@@ -153,7 +159,7 @@ function renderStats() {
         : "") +
     (posM ? " Blank = no classified result." : "");
 }
-function stCell(id, gd) {
+export function stCell(id, gd) {
   const a = byId[id],
     h = Hind.at(id, gd),
     g = DATA.schedule.find((x) => x.gd === gd) || {};

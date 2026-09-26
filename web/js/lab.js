@@ -3,7 +3,12 @@
    localhost with ?lab=1. It's a UI gate: everything here comes from the public build. Runs are in this browser, on
    demand: the switches are applied to Engine.SIM / TRACK / MODEL for the run only and put back afterwards, so the
    Calculator and every other view keep the shipped model. Settings live in this browser only (LAB_KEY). */
-let labOwner = false;
+import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming } from "./core.js";
+import { state } from "./state.js";
+import { syncState } from "./sync.js";
+import { BINS, codeBox, forecast, heat, sprintNext, startTeam, who } from "./forecast.js";
+import { showView } from "./main.js";
+export let labOwner = false;
 let labRun = null; // the last run: { g, N, ms, sim, setup, base (the shipped model's run, when compared), changed }
 const LAB_KEY = "pitwall.lab";
 // the switches, with the shipped value read from the engine at start-up (backtest notes in CLAUDE.md, item 9)
@@ -67,8 +72,8 @@ const labRead = () => {
     return {};
   }
 };
-const lab = { set: {}, race: 0, N: 10000, compare: true, pos: "r", lapv: "pos", tab: "assets", ...labRead() };
-const labSave = () => {
+export const lab = { set: {}, race: 0, N: 10000, compare: true, pos: "r", lapv: "pos", tab: "assets", ...labRead() };
+export const labSave = () => {
   try {
     localStorage.setItem(LAB_KEY, JSON.stringify(lab));
   } catch (e) {}
@@ -80,7 +85,7 @@ const labVal = (s) => {
 const labChanged = () => LAB_SWITCHES.filter((s) => labVal(s) !== LAB_SHIPPED[s.o + "." + s.k]);
 
 // the gate: an `owners` row for the signed-in account (or ?lab=1 on this machine)
-async function labCheck() {
+export async function labCheck() {
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && new URLSearchParams(location.search).has("lab");
   let ok = local;
   const U = syncState.user;
@@ -141,7 +146,7 @@ function labSim(set, g, k, N) {
     return { setup, sim, ms: performance.now() - t0 };
   });
 }
-function labRerun() {
+export function labRerun() {
   const races = upcoming.slice(0, 3);
   const k = Math.min(lab.race, races.length - 1),
     g = races[k];
@@ -849,7 +854,7 @@ function labControls() {
     )
     .join("");
 }
-function renderLab() {
+export function renderLab() {
   if (!labOwner) return;
   const races = upcoming.slice(0, 3);
   $("#labRace").innerHTML = races
@@ -905,7 +910,7 @@ function renderLab() {
   } else if (t === "practice") $("#labPractice").innerHTML = labPractice(r);
 }
 // a switch changed: keep it (the shipped value clears the entry)
-function labSet(t) {
+export function labSet(t) {
   const k = t.dataset.labset,
     s = LAB_SWITCHES.find((x) => x.o + "." + x.k === k);
   let v = t.type === "checkbox" ? t.checked : t.type === "range" ? +t.value : t.value;

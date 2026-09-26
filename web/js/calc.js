@@ -1,9 +1,58 @@
 /* ---------- team calculator ----------
    Layout: Best Teams (left) | Settings + Simulation (middle) | Drivers + Constructors (right). The starting team is
    startTeam() (forecast.js); Best Teams come from Engine.optimise over every legal line-up. */
+import {
+  $,
+  $$,
+  CHIPS,
+  DATA,
+  NEXT,
+  byId,
+  chipName,
+  code,
+  col,
+  esc,
+  f1,
+  isDriver,
+  money,
+  pct,
+  sameTeam,
+  sgn,
+  shortDate,
+  upcoming,
+} from "./core.js";
+import { state } from "./state.js";
+import { needSync } from "./sync.js";
+import {
+  activeChip,
+  boostFor,
+  cap,
+  chip,
+  codeBox,
+  editStart,
+  forecast,
+  heat,
+  horizon,
+  lockedChips,
+  maxTransfers,
+  optionList,
+  priceEv,
+  rivalTeams,
+  simWeights,
+  sprintNext,
+  startKind,
+  startTeam,
+  teamDist,
+  teamSamples,
+  teamValue,
+  xpts,
+} from "./forecast.js";
+import { teamKey, tracked } from "./league.js";
+import { EVLABEL, SESSN, evLabel, filterUI, filters, teamText } from "./filters.js";
+import { modalKind, openModal, rerender, toast, keepUndo } from "./main.js";
 
 // Incl / Excl toggles for an asset (attr "mark" = the Calculator's, "hmark" = Hindsight's)
-const inclExcl = (id, m, attr = "mark") =>
+export const inclExcl = (id, m, attr = "mark") =>
   `<span class="mini"><button class="tbtn lock sm" data-${attr}="${id}" data-to="lock" aria-pressed="${m === "lock"}" aria-label="Include">✓</button>` +
   `<button class="tbtn ban sm" data-${attr}="${id}" data-to="ban" aria-pressed="${m === "ban"}" aria-label="Exclude">✕</button></span>`;
 const PIN_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z"/></svg>`;
@@ -13,9 +62,10 @@ const pill = (v, on, cls = "", title = "") =>
 
 /* ---------- edit team (dialog) ---------- */
 // what the editor changes: null = the starting team, a number = that manual team (from Compare's ✎)
-let editTarget = null;
-const editing = () => (editTarget != null && state.drafts[editTarget] ? state.drafts[editTarget] : editStart());
-function openTeamEditor(target = editTarget) {
+export let editTarget = null;
+export const endTeamEdit = () => (editTarget = null);
+export const editing = () => (editTarget != null && state.drafts[editTarget] ? state.drafts[editTarget] : editStart());
+export function openTeamEditor(target = editTarget) {
   editTarget = target != null && state.drafts[target] ? target : null;
   const draft = editTarget != null,
     T = draft ? state.drafts[editTarget] : startTeam();
@@ -100,7 +150,7 @@ function renderStartPicker(T, kind) {
     `<div class="grp">Other</div>` +
     opt("none", kind === "none", startBadge("none"), "No starting team (maximum budget only)");
 }
-function renderSettings() {
+export function renderSettings() {
   const T = startTeam(),
     kind = startKind(),
     chipK = activeChip();
@@ -216,16 +266,20 @@ function raceInputs() {
 
 // wide screens: the Settings | Simulation divider's position = Settings' share of the column (0..1), null =
 // automatic. Deliberately not saved: a reload goes back to the automatic split (the user's ask).
-let setSplit = null;
+export let setSplit = null;
 function applySplit() {
   const col = $("#setSplit").parentElement;
   col.classList.toggle("split", setSplit != null);
   if (setSplit != null) col.style.setProperty("--setsplit", (setSplit * 100).toFixed(1) + "%");
 }
-function setSplitFrac(f) {
+export function setSplitFrac(f) {
   const h = $("#setSplit").parentElement.clientHeight,
     min = Math.min(0.45, 140 / Math.max(1, h)); // keep both panels at least ~140px
   setSplit = Math.max(min, Math.min(1 - min, f));
+  applySplit();
+}
+export function resetSplit() {
+  setSplit = null;
   applySplit();
 }
 
@@ -286,7 +340,7 @@ function renderSim() {
 }
 
 /* ---------- best teams ---------- */
-let bestRows = { cur: null, pin: [], best: [] }; // what Best Teams shows: current, pinned and best line-ups
+export let bestRows = { cur: null, pin: [], best: [] }; // what Best Teams shows: current, pinned and best line-ups
 // optional Best Teams columns: [key, header, tooltip]
 const BCOLS = [
   ["xd", "xΔ$", "Expected price change of the team ($m)"],
@@ -320,9 +374,9 @@ const BSORT = [
   ["dx", "xGap", "Expected points gained on the team to beat"],
 ];
 // goal columns: need a team to beat, and like xPts they rank highest first
-const GOAL_COLS = ["pb", "pk", "dx", "dr"];
+export const GOAL_COLS = ["pb", "pk", "dx", "dr"];
 const GOAL_K = 25;
-function bestSort() {
+export function bestSort() {
   const b = state.bsort,
     def = { k: state.xdp ? "xsp" : "x", d: -1 };
   if (!b || ((b.k === "xsp" || b.k === "xdp") && !state.xdp)) return def;
@@ -453,7 +507,7 @@ function calcCtx() {
     e(id) + ((id === r.boost ? (chipK === "x3" ? 3 : 2) : id === r.boost2 ? 2 : 1) - 1) * pk(id, 0);
   return { chipK, H, T, rem, vp, pk, e, stats, boosts, tilePts, unlimited, tg };
 }
-function runOptimiser() {
+export function runOptimiser() {
   const C = calcCtx(),
     { chipK, H, T, vp, pk, e, stats, boosts } = C;
   const fprop = (id) => {
@@ -685,12 +739,12 @@ function renderBestTable(C) {
 }
 
 /* ---------- the ⋯ menu on a Best Teams row ---------- */
-let menuRow = null;
+export let menuRow = null;
 const rowOf = (key) => {
   const [k, i] = key.split(":");
   return k === "cur" ? bestRows.cur : k === "pin" ? bestRows.pin[+i] : bestRows.best[+i];
 };
-function openMenu(btn) {
+export function openMenu(btn) {
   const key = btn.dataset.menu,
     [k] = key.split(":"),
     r = rowOf(key),
@@ -710,16 +764,16 @@ function openMenu(btn) {
   m.style.top = b.bottom - host.top + 4 + "px";
   m.style.left = Math.max(0, Math.min(host.width - m.offsetWidth, b.right - host.left - m.offsetWidth)) + "px";
 }
-const copyText = (txt) =>
+export const copyText = (txt) =>
   (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(
     () => toast("Copied."),
     () => toast(txt),
   );
-function pinTeam(ids) {
+export function pinTeam(ids) {
   state.pins = state.pins.concat([{ ids: ids.slice() }]).slice(-6);
   rerender();
 }
-function addDraft(name, team) {
+export function addDraft(name, team) {
   if (state.drafts.length >= 8) {
     toast("Up to 8 manual teams. Delete one in Calculator → Compare first.");
     return false;
@@ -747,7 +801,7 @@ function showTransfers(r) {
   $("#modalBody").innerHTML = `<h3 id="modalTitle">Transfers</h3>` + body + boost;
   openModal();
 }
-function menuAction(a) {
+export function menuAction(a) {
   const r = rowOf(menuRow),
     T = editStart();
   $("#rowMenu").hidden = true;
@@ -779,7 +833,7 @@ function menuAction(a) {
     return toast("Saved as a manual team (see Compare, next to Best Teams).");
   }
   if (a === "use") {
-    undoTeam = { ref: T, team: T.team.slice(), bank: T.bank, boost: T.boost, example: T.example };
+    keepUndo(T);
     const oldCap = cap();
     Object.assign(T, {
       team: r.ids.filter(isDriver).concat(r.ids.filter((id) => !isDriver(id))),
@@ -808,7 +862,7 @@ const matchSearch = (a, q) =>
           .includes(t),
       ),
     );
-function renderAssetPanels() {
+export function renderAssetPanels() {
   const H = horizon(),
     C = calcCtx(),
     T = C.T;
@@ -875,7 +929,7 @@ function planStages(C, H) {
   }
   return stages;
 }
-function openPlan() {
+export function openPlan() {
   const C = calcCtx(),
     { chipK, H, T, pk } = C;
   const stages = planStages(C, H);
@@ -918,7 +972,7 @@ function openPlan() {
 // Each chip's expected gain for the starting team next race, from the same simulated weekends: X3, No Negative,
 // Autopilot (with the chance it moves the Boost), Wildcard and Limitless (best team with the chip vs without).
 // Once qualifying is in, Final Fix: the best single driver swap on the points still to be scored.
-function openChipValues() {
+export function openChipValues() {
   const T = startTeam();
   if (T.none) {
     $("#modalBody").innerHTML = `<h3>Chip values</h3><p class="note">Pick a starting team first.</p>`;
@@ -1029,7 +1083,7 @@ function finalFixHtml(T, boost) {
 // setting uses.
 const BV_COL = { own: "#a855f7", wild: "#0891b2" }; // accent + cyan: checked for colour-blind separation on --card
 const bvMoney = (d) => (d ? sgn(d, 1).replace(/^([+−])/, "$1$") + "m" : "Your budget");
-function openBudgetValue() {
+export function openBudgetValue() {
   const { H, T, pk, rem } = calcCtx();
   const B = Math.round(cap() * 10) / 10,
     lo = Math.round((B - 2) * 10) / 10,
@@ -1180,7 +1234,7 @@ function bvChart(box, ds, series, flat) {
 // ones carry over, extras cost −10), and once with one more free transfer. Spend now or bank, and whether a hit pays.
 // The plans stop at the last simulated race, so a transfer still banked then counts for nothing: that edge
 // undervalues banking a little.
-function openTransferValue() {
+export function openTransferValue() {
   const T = startTeam(),
     chipK = activeChip();
   const title = `<h3>What is a transfer worth? <small>${esc(T.none ? "no starting team" : T.name)}</small></h3>`;

@@ -1,5 +1,22 @@
 /* ---------- header ---------- */
-function renderHeader() {
+import { $, $$, DATA, NEXT, byId, esc, f0, f1, money, pct, sgn, shortDate, upcoming } from "./core.js";
+import { state } from "./state.js";
+import {
+  boostFor,
+  chip,
+  circ,
+  codeBox,
+  forecast,
+  heat,
+  heatKey,
+  priceEv,
+  teamSamples,
+  trackFit,
+  who,
+  xpts,
+} from "./forecast.js";
+import { inclExcl } from "./calc.js";
+export function renderHeader() {
   $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : `${DATA.season} season complete`;
   const age = Math.round((Date.now() - new Date(DATA.generated)) / 6e4);
   const fresh = `data ${age < 60 ? age + " min" : age < 2880 ? Math.round(age / 60) + " h" : Math.round(age / 1440) + " days"} old`;
@@ -33,7 +50,7 @@ function horizonPts(ids, H) {
   }
   return t;
 }
-function renderCompare() {
+export function renderCompare() {
   const list = state.teams
     .map((t) => ({ name: t.name, ids: t.team, own: true, boost: t.boost, example: t.example }))
     .concat(state.drafts.map((d, di) => ({ name: d.name, ids: d.team, own: false, boost: d.boost || "auto", di })));
@@ -97,7 +114,7 @@ function spark(a) {
     .join("");
   return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="#27272A"/>${bars}</svg>`;
 }
-function renderAssets() {
+export function renderAssets() {
   $("#assetKey").innerHTML = heatKey("fewer xPts", "more xPts");
   const pre = $("#simPreset").selectedOptions[0];
   $("#assetPreset").hidden = state.simPreset === "sim";
@@ -164,7 +181,7 @@ function renderAssets() {
 }
 
 /* ---------- practice ---------- */
-function renderPractice() {
+export function renderPractice() {
   const ps = DATA.practice || [];
   const fmtT = (iso) =>
     new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
@@ -215,7 +232,7 @@ function renderPractice() {
 }
 
 /* ---------- positions ---------- */
-function renderGrid() {
+export function renderGrid() {
   $$("#gridKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gridmode === state.grid)));
   const q = state.grid === "q";
   $("#gridKey").innerHTML = state.heat
@@ -257,7 +274,7 @@ function renderGrid() {
 }
 
 /* ---------- budget builder ---------- */
-function renderPrices() {
+export function renderPrices() {
   const binLbl = ["−0.6", "−0.3", "−0.2", "−0.1", "0", "+0.1", "+0.2", "+0.3", "+0.6"];
   const group = (title, list) =>
     !list.length
@@ -313,7 +330,7 @@ function histUse() {
 const OV_SC = Engine.ovScenarios(DATA);
 const ovBase = (g) => trackFit.forCircuit(g).ov ?? 1;
 // rounded to the Overtaking slider's 0.05 step, so the slider shows exactly the scenario
-const ovFor = (g, k) => (k === "base" ? ovBase(g) : Math.round(ovBase(g) * OV_SC[k] * 20) / 20);
+export const ovFor = (g, k) => (k === "base" ? ovBase(g) : Math.round(ovBase(g) * OV_SC[k] * 20) / 20);
 function ovScenarioUI(g, now) {
   if (!OV_SC) return "";
   const set = (state.circuits[g.gd] || {}).ov;
@@ -344,7 +361,7 @@ const PEN_OPTS = [
 // the next race's grid penalties: race control's (DATA.weekend) with yours on top
 const penFor = (tla) =>
   (state.pen || {})[tla] ?? ((DATA.weekend && NEXT && DATA.weekend.gd === NEXT.gd && DATA.weekend.penalties[tla]) || 0);
-function renderCal() {
+export function renderCal() {
   const tr = trackFit.trend || {},
     pct0 = (v) => (v == null || isNaN(v) ? "—" : Math.round(v * 100) + "%");
   const trendTxt = trackFit.priors
@@ -413,7 +430,7 @@ function renderCal() {
 }
 
 /* ---------- model ---------- */
-function renderModel() {
+export function renderModel() {
   $("#halfLife").value = state.halfLife;
   $("#halfLifeV").textContent = state.halfLife + " races";
   $("#pw").value = state.pw;

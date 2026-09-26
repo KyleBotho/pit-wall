@@ -1,4 +1,7 @@
 /* ---------- import from an F1 Fantasy data export (runs only in this browser) ---------- */
+import { byId, teamTk } from "./core.js";
+import { state } from "./state.js";
+import { teamKey } from "./league.js";
 const dec = (x) => {
   try {
     return decodeURIComponent(x || "");
@@ -7,13 +10,6 @@ const dec = (x) => {
   }
 };
 const on = (v) => v != null && +v > 0;
-// A team's key (see teamKey): the first 16 hex digits of SHA-256("<F1 account guid>:<team number>"), the same as
-// f1feeds.team_key in Python. Hashed so no account id is kept; null where WebCrypto isn't available (plain http).
-async function teamTk(guid, no) {
-  if (!guid || no == null || !window.crypto || !crypto.subtle) return null;
-  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${guid}:${no}`)));
-  return [...h.slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
 // the gameday each chip was played, from an export's team record
 const CHIP_GD = {
   wildcard: ["is_wildcard_taken_gd_id", "wildcardtakengd"],
@@ -81,7 +77,7 @@ function lineup(u) {
     cons = ids.filter((id) => byId[id].kind === "C");
   return drs.length === 5 && cons.length === 2 ? drs.concat(cons) : null;
 }
-async function importOfficial(d) {
+export async function importOfficial(d) {
   if (!d || d.source !== "fantasy.formula1.com" || !d.my_team)
     throw new Error("That file isn't an F1 Fantasy data export.");
   const res = { teams: 0, league: 0 };

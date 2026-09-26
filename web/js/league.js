@@ -1,4 +1,28 @@
 /* ---------- league ---------- */
+import {
+  $,
+  $$,
+  CHIPS,
+  DATA,
+  Hind,
+  NEXT,
+  SEASON_OVER,
+  byId,
+  chipName,
+  chipShort,
+  code,
+  esc,
+  f0,
+  f1,
+  isDriver,
+  money,
+  pct,
+  sgn,
+} from "./core.js";
+import { activeTeam, state } from "./state.js";
+import { SEALED } from "./sync.js";
+import { boostFor, chip, heat, teamSamples, who, xpts } from "./forecast.js";
+import { lineups } from "./hindsight-view.js";
 // Each team's season as far as the data goes (Hind.track): per-round records from exports (sealed or imported)
 // first, else the line-up seen after each race plus the official round points, from which Boost, chips, budget,
 // bank and free transfers are worked out. Cached until the sealed data or an import changes.
@@ -6,10 +30,10 @@ let TRACK = { ver: null, by: {} };
 // A team is known by its key: F1's account id + team number, hashed (tk: from the private repo, or worked out on
 // import). Names only label teams, so a rename or two managers with the same team name never mixes up whose season
 // is whose. Data from before team keys (an older sealed file, import or save) has none: its name stands in.
-const teamKey = (t) => (t && (t.tk || t.name)) || "";
-const mkey = (m) => m.key || m.name; // a member of leagueList() or of an imported league
-const teamLabel = (k) => (SEALED && SEALED.names && SEALED.names[k]) || k;
-function tracked(key) {
+export const teamKey = (t) => (t && (t.tk || t.name)) || "";
+export const mkey = (m) => m.key || m.name; // a member of leagueList() or of an imported league
+export const teamLabel = (k) => (SEALED && SEALED.names && SEALED.names[k]) || k;
+export function tracked(key) {
   const ver = [SEALED, state.league && state.league.collected, DATA.done.length];
   if (!TRACK.ver || TRACK.ver.some((k, i) => k !== ver[i])) TRACK = { ver, by: {} };
   if (!(key in TRACK.by)) {
@@ -25,9 +49,9 @@ function tracked(key) {
   }
   return TRACK.by[key];
 }
-const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) || {}).map((k) => [k, true]));
+export const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) || {}).map((k) => [k, true]));
 // Leagues: auto-updated (decrypted) standings merged with anything imported (chips, bank, round history)
-function leagueList() {
+export function leagueList() {
   const out = [];
   for (const L of (SEALED && SEALED.leagues) || []) {
     const imp = state.league && state.league.name === L.name ? state.league : null;
@@ -68,7 +92,7 @@ function leagueList() {
   if (state.league && !out.some((l) => l.name === state.league.name)) out.push(state.league);
   return out;
 }
-function renderLeague() {
+export function renderLeague() {
   $("#lgUnlock").hidden = !(DATA.leagueSealed && !SEALED);
   const all = leagueList(),
     L = all[Math.min(state.lgIdx | 0, all.length - 1)];
@@ -254,7 +278,7 @@ function renderLeagueForecast(L, myIds, myKey) {
     "</tbody>";
 }
 // Round points for a team: the private repo's round table (after unlocking) first, else an imported league.
-function teamHist(key) {
+export function teamHist(key) {
   const rs = ((SEALED && SEALED.rounds) || [])
     .filter((r) => r.pts[key] != null)
     .map((r) => ({ gd: r.gd, pts: r.pts[key] }));
@@ -262,13 +286,13 @@ function teamHist(key) {
   const im = state.league && state.league.members.find((m) => mkey(m) === key);
   return im ? im.hist : [];
 }
-const cumPts = (hist, gds) => {
+export const cumPts = (hist, gds) => {
   let c = 0;
   const by = Object.fromEntries(hist.map((h) => [h.gd, h.pts]));
   return gds.map((gd) => ({ v: (c += by[gd] || 0), r: by[gd] ?? null }));
 };
 // chip badges for a team's line: your teams from the saved line-ups, rivals from an import
-function chipMarks(key, gds) {
+export function chipMarks(key, gds) {
   const L = lineups(key),
     im = state.league && state.league.members.find((m) => mkey(m) === key),
     short = (k) => (CHIPS.find(([c]) => c === k) || [])[1];
@@ -331,7 +355,7 @@ function renderLeagueChart(L) {
   );
 }
 // Cumulative line chart on a gameday axis. series: [{name, me, color, dash, pts: [{v, r}] aligned with gds}]; v null = no data.
-function lineChart(box, gds, series, label, opt = {}) {
+export function lineChart(box, gds, series, label, opt = {}) {
   series = series.filter((s) => s.pts.some((p) => p.v != null));
   if (!series.length || !gds.length) {
     box.innerHTML = '<p class="note">No round history yet.</p>';

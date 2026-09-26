@@ -29,6 +29,12 @@ jobs:
           cache: pip
       # FastF1: practice laps from F1's live-timing archive when OpenF1 is closed (it locks during live sessions)
       - run: pip install -r requirements.txt
+      # esbuild bundles the page's modules (and supabase-js) during the build
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
       # finished gamedays / sessions are cached so each run makes only a handful of requests
       - uses: actions/cache@v6
         with:

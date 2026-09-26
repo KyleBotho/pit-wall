@@ -241,7 +241,9 @@ class PageBuild(unittest.TestCase):
         self.assertNotIn('<script src="', html)
         self.assertNotIn('<link rel="stylesheet" href="web/', html)
         self.assertIsNone(refresh.DATA_MARK.search(html))
-        self.assertIn("const DATA = {", html)
+        block = re.search(r'<script type="application/json" id="pw-data">\s*(.*?)\s*</script>', html, re.S).group(1)
+        self.assertTrue(block.startswith("{"))
+        self.assertNotIn("<", block)  # every "<" escaped, so the data can't end its block
 
     def test_content_policy_allows_exactly_the_page_scripts(self):
         html = self.build(self.data())

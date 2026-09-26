@@ -1,7 +1,13 @@
 /* ---------- elite (global top 500, aggregates only) ---------- */
+import { $, $$, CHIPS, DATA, byId, code, esc, f0, pct, sgn } from "./core.js";
+import { state } from "./state.js";
+import { SEALED, needSync } from "./sync.js";
+import { chip, heat, who, xpts } from "./forecast.js";
+import { chipMarks, cumPts, lineChart, teamHist, teamKey } from "./league.js";
+import { lineups } from "./hindsight-view.js";
 // the team the Elite page compares (its own picker at the top; defaults to the team last picked in the Calculator)
 const elTeam = () => state.teams[Math.min(state.teams.length - 1, state.elT ?? state.active)];
-function renderElite() {
+export function renderElite() {
   const El = DATA.elite;
   $("#eliteEmpty").hidden = !!El;
   $("#eliteDash").hidden = !El;
@@ -165,7 +171,7 @@ function renderElite() {
     "</tbody>";
 }
 
-function renderEliteSeason(El) {
+export function renderEliteSeason(El) {
   const Hs = El.history || [],
     byGd = Object.fromEntries(Hs.map((h) => [h.gd, h]));
   const mine = state.teams.map((t) => ({ t, h: teamHist(teamKey(t)) })).filter((x) => x.h.length);

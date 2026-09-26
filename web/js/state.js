@@ -2,9 +2,10 @@
    `state` is the one settings object. Its shape is versioned: SCHEMA is the current version and MIGRATIONS[n]
    turns a version-n object into version n+1. Everything read from localStorage or the account goes through
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
-const KEY = "pitwall.v1";
-const SCHEMA = 6;
-const VIEWS = [
+import { CFG, DATA, FORECAST_VIEWS, SEASON_OVER, byId } from "./core.js";
+export const KEY = "pitwall.v1";
+export const SCHEMA = 6;
+export const VIEWS = [
   "calc",
   "live",
   "league",
@@ -33,7 +34,7 @@ function defaultTeam() {
 }
 const newTeam = (name) => ({ name, free: 2, chipsUsed: {}, boost: "auto", example: true, ...defaultTeam() });
 // A fresh default settings object every call, so nothing is shared by reference between loads.
-const defaults = () => ({
+export const defaults = () => ({
   schema: SCHEMA,
   teams: [newTeam("Team 1"), newTeam("Team 2"), newTeam("Team 3")],
   active: 0,
@@ -177,7 +178,7 @@ function carryOver(old) {
 }
 
 // saved settings (this browser's, or the account's) -> the current shape
-function loadState(saved) {
+export function loadState(saved) {
   if (!saved || typeof saved !== "object") return defaults();
   let s = structuredClone(saved);
   for (let v = s.schema || 0; v < SCHEMA; v++) MIGRATIONS[v](s);
@@ -211,10 +212,14 @@ function normalise(s) {
     s.view = SEASON_OVER ? "hind" : "calc";
 }
 
-let state = defaults();
+export let state = defaults();
+// the one place `state` is replaced (an account's settings loaded by sync.js); modules see the new object
+export function setState(next) {
+  state = next;
+}
 try {
   state = loadState(JSON.parse(localStorage.getItem(KEY) || "null"));
 } catch (e) {
   state = defaults();
 }
-const activeTeam = () => state.teams[state.active];
+export const activeTeam = () => state.teams[state.active];

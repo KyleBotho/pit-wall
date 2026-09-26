@@ -54,7 +54,7 @@ SEASON = CFG["season"]
 ARCHIVE = os.path.join(HERE, "history", str(SEASON))
 F1 = "https://fantasy.formula1.com/feeds"
 PAGE = os.path.join(HERE, "web", "app.html")
-DATA_MARK = re.compile(r"/\*__DATA__\*/\s*null")  # in web/js/core.js
+DATA_MARK = re.compile(r"__PITWALL_DATA__")  # the JSON data block in web/app.html
 
 # Jolpica constructorId -> F1 Fantasy team name
 JOLPICA_TEAM = {jid: name for name, t in CFG["teams"].items() if not name.startswith("_") for jid in t["jolpica"]}
@@ -619,13 +619,34 @@ def inline_page(data):
         lambda m: "<script>\n" + local(m.group(1)).replace("</script", "<\\/script") + "</script>",
         html,
     )
+    # the page's ES modules (and the npm packages they import), bundled into one classic script
+    html = re.sub(
+        r'<script type="module" src="([^":]+)"\s*></script>',
+        lambda m: "<script>\n" + bundle(m.group(1)).replace("</script", "<\\/script") + "</script>",
+        html,
+    )
     left = re.findall(r'<(?:script|link)\b[^>]*\b(?:src|href)="([^":]+)"', html)
     if left:
         raise RuntimeError(f"local files not inlined (check the tag format in web/app.html): {left}")
     if len(DATA_MARK.findall(html)) != 1:
-        raise RuntimeError("expected exactly one /*__DATA__*/ null placeholder in the page")
-    js = json.dumps(data, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+        raise RuntimeError("expected exactly one __PITWALL_DATA__ placeholder in the page")
+    # every "<" escaped, so nothing in the data (a team name, say) can end the <script> block it sits in
+    js = json.dumps(data, separators=(",", ":"), ensure_ascii=False).replace("<", "\\u003c")
     return DATA_MARK.sub(lambda _: js, html)
+
+
+def bundle(entry):
+    """tools/bundle.js: the page's modules as one script (needs `npm ci`: esbuild and supabase-js)."""
+    res = subprocess.run(
+        ["node", os.path.join(HERE, "tools", "bundle.js"), entry],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        cwd=HERE,
+    )
+    if res.returncode:
+        raise RuntimeError(f"bundling {entry} failed:\n{res.stderr}")
+    return res.stdout
 
 
 def content_policy(html):
@@ -633,7 +654,7 @@ def content_policy(html):
     injected <script> or onclick= doesn't), and it talks only to Supabase and Google Fonts. Styles stay inline-able:
     the views build style="" attributes."""
     with open(os.path.join(HERE, "web", "js", "sync.js"), encoding="utf-8") as f:
-        sb = re.search(r'^const SB_URL = "(https://[^"]+)";', f.read(), re.M)
+        sb = re.search(r'^(?:export )?const SB_URL = "(https://[^"]+)";', f.read(), re.M)
     if not sb:
         raise RuntimeError("SB_URL not found in web/js/sync.js")
     hashes = " ".join(
