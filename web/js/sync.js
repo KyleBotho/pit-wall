@@ -394,8 +394,12 @@ export async function signIn() {
   });
   if (error) toast(error.message);
 }
+// Signing out leaves this browser as a new visitor sees it (no starting team): your teams and settings are all in
+// the account and come back when you sign in. Only settings the account doesn't have yet (a failed or held sync)
+// stay, so nothing is lost.
 export async function signOut() {
   if (syncState.timer) await push(); // don't drop the last edits
+  const saved = syncState.ready && !syncState.hold && JSON.stringify(syncPayload()) === syncState.last;
   try {
     await syncState.sb.auth.signOut({ scope: "local" });
   } catch (e) {}
@@ -404,9 +408,20 @@ export async function signOut() {
   LEAGUE_DATA = LEAGUES = ACCOUNT = null;
   leaguesAt = null;
   resetLink();
+  if (saved) {
+    const next = defaults();
+    for (const k of NOSYNC) if (state[k] !== undefined) next[k] = state[k]; // this device's place and layout stay
+    setState(next);
+    save();
+    compute();
+    renderAll();
+  } else if (forecast) refreshViews(LEAGUE_VIEWS);
   renderSync();
-  if (forecast) refreshViews(LEAGUE_VIEWS);
-  toast("Signed out. Your private leagues are hidden again in this browser; its settings stay.");
+  toast(
+    saved
+      ? "Signed out. This browser is back to a fresh start; sign in to load your teams and settings again."
+      : "Signed out. This browser kept settings your account doesn't have yet; sign in again to sync them.",
+  );
 }
 const ago = (t) => {
   const m = Math.round((Date.now() - Date.parse(t)) / 60000);
