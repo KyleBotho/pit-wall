@@ -107,11 +107,11 @@ export function renderStats() {
 
   // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs unlocked leagues)
   const team = hi >= 0 ? state.teams[hi] : null,
-    L = team ? lineups(teamKey(team)) : null;
+    rounds = team ? lineups(teamKey(team)) : null;
   const pick = (id, g) => {
     if (!team) return "";
-    const r = L && L[g];
-    if (!r) return !L && team.team.includes(id) ? "hl" : "";
+    const r = rounds && rounds[g];
+    if (!r) return !rounds && team.team.includes(id) ? "hl" : "";
     return id === String(r.x3)
       ? "hl3"
       : id === String(r.boost)
@@ -152,7 +152,7 @@ export function renderStats() {
     (off.size && ["pts", "ppm"].includes(m)
       ? ` ${off.size} scoring categor${off.size > 1 ? "ies" : "y"} left out.`
       : "") +
-    (team && !L
+    (team && !rounds
       ? " Unlock your leagues to highlight each round's picks; showing your current team."
       : team
         ? " Dashed = picked, solid = Boost, thick = X3."

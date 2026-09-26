@@ -68,14 +68,14 @@ export const editing = () => (editTarget != null && state.drafts[editTarget] ? s
 export function openTeamEditor(target = editTarget) {
   editTarget = target != null && state.drafts[target] ? target : null;
   const draft = editTarget != null,
-    T = draft ? state.drafts[editTarget] : startTeam();
-  if (!draft && (T.none || T.ro))
+    team = draft ? state.drafts[editTarget] : startTeam();
+  if (!draft && (team.none || team.ro))
     return toast(
-      T.none
+      team.none
         ? "Pick one of your teams or a manual team first."
         : "Rival line-ups follow the league standings. Save one as a manual team to edit it.",
     );
-  const boost = boostFor(T.team, 0, T);
+  const boost = boostFor(team.team, 0, team);
   const slot = (id, k) => {
     const a = byId[id],
       kind = k < 5 ? "D" : "C",
@@ -83,18 +83,18 @@ export function openTeamEditor(target = editTarget) {
     const label = `${kind === "D" ? "Driver" : "Constructor"} ${k < 5 ? k + 1 : k - 4}`;
     const boostBtn =
       kind === "D"
-        ? `<button class="tbtn" data-boost="${id}" aria-pressed="${isB}" title="Boost this driver">${isB && T.boost === "auto" ? "2× auto" : "2×"}</button>`
+        ? `<button class="tbtn" data-boost="${id}" aria-pressed="${isB}" title="Boost this driver">${isB && team.boost === "auto" ? "2× auto" : "2×"}</button>`
         : "<span></span>";
     return `<div class="slotrow" style="--tc:${col(a)}"><select id="slot-${k}" data-slot="${k}" aria-label="${label}">${optionList(kind, id)}</select>
         <span class="x">${forecast.proj[0][id].out ? '<span class="tag">out</span>' : f1(xpts(id, 1))}</span>${boostBtn}</div>`;
   };
   $("#modalBody").innerHTML =
-    `<h3 id="modalTitle">Edit ${esc(T.name)}</h3>
-    <label class="field">Team name<input id="tname" class="inp" type="text" maxlength="24" value="${esc(T.name)}"></label>
-    ${T.example ? '<div class="banner">This is an <b>example team</b>. Pick your drivers and constructors below.</div>' : ""}
-    <div class="slots">${T.team.map(slot).join("")}</div>` +
+    `<h3 id="modalTitle">Edit ${esc(team.name)}</h3>
+    <label class="field">Team name<input id="tname" class="inp" type="text" maxlength="24" value="${esc(team.name)}"></label>
+    ${team.example ? '<div class="banner">This is an <b>example team</b>. Pick your drivers and constructors below.</div>' : ""}
+    <div class="slots">${team.team.map(slot).join("")}</div>` +
     (draft
-      ? `<div class="chipbar" style="align-items:center"><span class="muted" style="margin-right:auto">${money(T.team.reduce((s, id) => s + byId[id].price, 0))}</span>` +
+      ? `<div class="chipbar" style="align-items:center"><span class="muted" style="margin-right:auto">${money(team.team.reduce((s, id) => s + byId[id].price, 0))}</span>` +
         state.teams
           .map(
             (t, j) =>
@@ -109,12 +109,12 @@ export function openTeamEditor(target = editTarget) {
 /* ---------- settings ---------- */
 const startBadge = (kind, i) =>
   `<span class="tno">${kind === "team" ? "T" + (i + 1) : kind === "draft" ? "M" + (i + 1) : kind === "rival" ? "R" + (i + 1) : "–"}</span>`;
-function renderStartPicker(T, kind) {
+function renderStartPicker(team, kind) {
   const rv = rivalTeams();
-  const ri = kind === "rival" ? rv.findIndex((x) => x.key === T.rivalKey) : 0,
+  const ri = kind === "rival" ? rv.findIndex((x) => x.key === team.rivalKey) : 0,
     di = kind === "draft" ? state.calcStart.i : state.active;
   $("#startBtn").innerHTML =
-    startBadge(kind, kind === "team" ? state.active : kind === "draft" ? di : ri) + `<span>${esc(T.name)}</span>`;
+    startBadge(kind, kind === "team" ? state.active : kind === "draft" ? di : ri) + `<span>${esc(team.name)}</span>`;
   const opt = (start, on, badge, label) =>
     `<button class="opt" data-start="${start}" aria-pressed="${on}">${badge}${label}</button>`;
   $("#pop-start").innerHTML =
@@ -151,36 +151,36 @@ function renderStartPicker(T, kind) {
     opt("none", kind === "none", startBadge("none"), "No starting team (maximum budget only)");
 }
 export function renderSettings() {
-  const T = startTeam(),
+  const team = startTeam(),
     kind = startKind(),
     chipK = activeChip();
-  renderStartPicker(T, kind);
-  $("#exampleBanner").hidden = !T.example;
-  $("#bank").disabled = $("#free").disabled = !!T.none;
-  if (document.activeElement !== $("#bank")) $("#bank").value = T.none ? "" : T.bank;
-  $("#free").value = String(Math.min(7, +T.free || 0) >= 4 ? 7 : +T.free || 0);
+  renderStartPicker(team, kind);
+  $("#exampleBanner").hidden = !team.example;
+  $("#bank").disabled = $("#free").disabled = !!team.none;
+  if (document.activeElement !== $("#bank")) $("#bank").value = team.none ? "" : team.bank;
+  $("#free").value = String(Math.min(7, +team.free || 0) >= 4 ? 7 : +team.free || 0);
   $("#maxPen").value = state.maxPen == null ? "any" : String(state.maxPen);
-  $("#maxPen").disabled = !!T.none || chipK === "wildcard" || chipK === "limitless";
-  $("#maxBudget").disabled = !T.none;
+  $("#maxPen").disabled = !!team.none || chipK === "wildcard" || chipK === "limitless";
+  $("#maxBudget").disabled = !team.none;
   // the sections: open as the user left them, each summarised in its header
   for (const d of $$("#view-calc details.grp")) {
     const open = state.calcGrp[d.dataset.grp] !== false;
     if (d.open !== open) d.open = open;
   }
-  const free = +T.free || 0;
-  $("#grpTeam").textContent = T.none
+  const free = +team.free || 0;
+  $("#grpTeam").textContent = team.none
     ? `none · max ${money(+state.maxBudget || 100)}`
-    : `${T.name} · ${money(+T.bank || 0)} · ${free >= 4 ? "∞" : free} free`;
+    : `${team.name} · ${money(+team.bank || 0)} · ${free >= 4 ? "∞" : free} free`;
   $("#grpPlan").textContent =
     `${horizon() === 1 ? "next race" : horizon() + " races"} · ${chipK ? (CHIPS.find(([k]) => k === chipK) || [])[2] : "no chip"}`;
   $("#grpPrice").textContent = state.xdp ? `xΔ$Pts on · ${(+state.valW).toFixed(1)} pts per $1m` : "xΔ$Pts off";
   // a starting team plans from its budget and transfers; no team plans from a maximum budget
-  $("#budgetField").hidden = $("#maxPen").closest(".field").hidden = !!T.none;
-  $("#maxOr").hidden = $("#maxField").hidden = !T.none;
+  $("#budgetField").hidden = $("#maxPen").closest(".field").hidden = !!team.none;
+  $("#maxOr").hidden = $("#maxField").hidden = !team.none;
   needSync();
   if (document.activeElement !== $("#maxBudget"))
-    $("#maxBudget").value = T.none ? +state.maxBudget || 100 : cap().toFixed(1);
-  $$("[data-editteam],[data-keep]").forEach((b) => (b.disabled = !!T.none || (b.dataset.editteam && T.ro)));
+    $("#maxBudget").value = team.none ? +state.maxBudget || 100 : cap().toFixed(1);
+  $$("[data-editteam],[data-keep]").forEach((b) => (b.disabled = !!team.none || (b.dataset.editteam && team.ro)));
   $$("#horizon button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.horizon === state.horizon)));
   $("#planField").hidden = horizon() < 2;
   $("#goal").value = state.goal || "pts";
@@ -197,19 +197,19 @@ export function renderSettings() {
     : `<option value="">No rivals yet (unlock or import a league)</option>`;
   // chips F1's data shows as played are locked; the rest can still be marked by hand (Autopilot, or a No Negative that
   // changed nothing, can't be seen in the data)
-  const locked = lockedChips(T),
+  const locked = lockedChips(team),
     playedIn = (k) => (locked[k] ? ` (played in R${locked[k]}, from F1's data)` : " (used)");
   $("#chipBar").innerHTML = CHIPS.filter(([k]) => k !== "finalfix")
     .map(([k, sh, n]) => {
-      const used = T.chipsUsed[k] || locked[k];
+      const used = team.chipsUsed[k] || locked[k];
       return `<button class="tbtn" data-chip="${k}" aria-pressed="${chipK === k}" ${used ? "disabled" : ""} title="${n}${used ? playedIn(k) : ""}">${sh}</button>`;
     })
     .join("");
   $("#chipsUsed").innerHTML = CHIPS.map(
     ([k, sh, n]) =>
-      `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!(T.chipsUsed[k] || locked[k])}" ${locked[k] ? "disabled" : ""} title="${n}${locked[k] ? playedIn(k) : ""}">${sh}</button>`,
+      `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!(team.chipsUsed[k] || locked[k])}" ${locked[k] ? "disabled" : ""} title="${n}${locked[k] ? playedIn(k) : ""}">${sh}</button>`,
   ).join("");
-  const upTo = Object.keys(locked).length && tracked(teamKey(T))?.next?.asOf;
+  const upTo = Object.keys(locked).length && tracked(teamKey(team))?.next?.asOf;
   $("#chipsNote").textContent = upTo ? `Locked chips come from F1's data up to R${upTo}. Mark any others by hand.` : "";
   const rem = Math.max(0, upcoming.length - 1);
   $("#xdp").checked = !!state.xdp;
@@ -418,9 +418,10 @@ function goalTarget() {
   return null;
 }
 // the target's simulated next-race scores (Boost as set, else its best projected driver), for P(beat)
-function targetSamples(tg) {
-  const boost = tg.boost && tg.ids.includes(tg.boost) ? tg.boost : boostFor(tg.ids, 0, { boost: "auto" });
-  return teamSamples(tg.ids, boost, "");
+function targetSamples(target) {
+  const boost =
+    target.boost && target.ids.includes(target.boost) ? target.boost : boostFor(target.ids, 0, { boost: "auto" });
+  return teamSamples(target.ids, boost, "");
 }
 
 // Everything the Calculator's numbers depend on. Points are summed over the horizon (1-3 races, keeping the team);
@@ -428,7 +429,7 @@ function targetSamples(tg) {
 function calcCtx() {
   const chipK = activeChip(),
     H = horizon(),
-    T = startTeam(),
+    team = startTeam(),
     rem = Math.max(0, upcoming.length - 1);
   const vp = (id) => (!state.xdp || chipK === "limitless" ? 0 : priceEv(id) * state.valW * rem);
   // an asset's expected points in race k of the horizon (No Negative only in the next race)
@@ -441,7 +442,7 @@ function calcCtx() {
     for (let k = 0; k < H; k++) s += pk(id, k);
     return s;
   };
-  const unlimited = T.none || chipK === "wildcard" || chipK === "limitless";
+  const unlimited = team.none || chipK === "wildcard" || chipK === "limitless";
   // the Boost's extra points: next race on `boost` (X3: 3x boost + 2x boost2; Autopilot: whoever scores most in
   // each simulated weekend), each later race on the team's best driver
   const boostPts = (ids, boost, boost2) => {
@@ -453,8 +454,8 @@ function calcCtx() {
     return b;
   };
   // goal rival / template: the target's simulated scores, to give every team its chance of outscoring it
-  const tg = goalTarget(),
-    tgS = tg ? targetSamples(tg) : null;
+  const target = goalTarget(),
+    tgS = target ? targetSamples(target) : null;
   // D = my team - the target, weekend by weekend (shared assets cancel): P(D > 0), P(D >= K), E[D], its 10-90%
   const vsTarget = (ids, boost, boost2, pen) => {
     if (!tgS) return {};
@@ -475,8 +476,8 @@ function calcCtx() {
   };
   // one team's numbers: xPts after Boost (and chip) and penalties, price-change points, and the column extras
   const stats = (ids, boost, boost2) => {
-    const tr = T.none ? 0 : ids.filter((id) => !T.team.includes(id)).length;
-    const pen = unlimited ? 0 : 10 * Math.max(0, tr - (+T.free || 0));
+    const tr = team.none ? 0 : ids.filter((id) => !team.team.includes(id)).length;
+    const pen = unlimited ? 0 : 10 * Math.max(0, tr - (+team.free || 0));
     const x = ids.reduce((a, id) => a + e(id), 0) + boostPts(ids, boost, boost2) - pen;
     const sum = (f) => ids.reduce((a, id) => a + f(id), 0),
       st = (id) => forecast.proj[0][id].st || {};
@@ -505,11 +506,11 @@ function calcCtx() {
   // an asset's tile value: xPts over the horizon plus its Boost in the next race
   const tilePts = (r, id) =>
     e(id) + ((id === r.boost ? (chipK === "x3" ? 3 : 2) : id === r.boost2 ? 2 : 1) - 1) * pk(id, 0);
-  return { chipK, H, T, rem, vp, pk, e, stats, boosts, tilePts, unlimited, tg };
+  return { chipK, H, T: team, rem, vp, pk, e, stats, boosts, tilePts, unlimited, tg: target };
 }
 export function runOptimiser() {
-  const C = calcCtx(),
-    { chipK, H, T, vp, pk, e, stats, boosts } = C;
+  const ctx = calcCtx(),
+    { chipK, H, T: team, vp, pk, e, stats, boosts } = ctx;
   const fprop = (id) => {
     const p = forecast.proj[0][id],
       st = p.st || {};
@@ -523,21 +524,21 @@ export function runOptimiser() {
     };
   };
   // the ranked list follows the sorted column: the optimiser maximises that column (or minimises it, ascending)
-  const bs = bestSort(),
-    sg = -bs.d,
-    pts = bs.k === "x" || bs.k === "xsp" || GOAL_COLS.includes(bs.k);
+  const sort = bestSort(),
+    sg = -sort.d,
+    pts = sort.k === "x" || sort.k === "xsp" || GOAL_COLS.includes(sort.k);
   const goal = (id) =>
-    bs.k === "x" || GOAL_COLS.includes(bs.k)
+    sort.k === "x" || GOAL_COLS.includes(sort.k)
       ? e(id)
-      : bs.k === "xsp"
+      : sort.k === "xsp"
         ? e(id) + vp(id)
-        : bs.k === "xdp"
+        : sort.k === "xdp"
           ? vp(id)
-          : bs.k === "cost"
+          : sort.k === "cost"
             ? byId[id].price
-            : bs.k === "xd"
+            : sort.k === "xd"
               ? priceEv(id) // fprop calls it `d` (the filters' name)
-              : (fprop(id)[bs.k] ?? 0);
+              : (fprop(id)[sort.k] ?? 0);
   const cand = DATA.assets
     .map((a) => ({
       id: a.id,
@@ -555,8 +556,8 @@ export function runOptimiser() {
   const flt = filters("calc");
   const optO = {
     cap: cap(),
-    free: T.none ? 7 : +T.free || 0,
-    maxT: maxTransfers(T),
+    free: team.none ? 7 : +team.free || 0,
+    maxT: maxTransfers(team),
     chip: chipK,
     locks,
     bans,
@@ -564,7 +565,7 @@ export function runOptimiser() {
     filters: flt,
     penW: pts ? 10 : 0,
   };
-  let res = Engine.optimise(cand, T.team, pts ? { ...optO, top: 400 } : optO);
+  let res = Engine.optimise(cand, team.team, pts ? { ...optO, top: 400 } : optO);
   // how many teams sit within 5% of the best: one obvious team (chalky) or many near-equal ones (flat)
   const near =
     pts && res.length ? res.filter((r) => r.score >= res[0].score - 0.05 * Math.abs(res[0].score)).length : 0;
@@ -572,8 +573,8 @@ export function runOptimiser() {
   // goal rival / template: expected points can't tell teams apart on beating someone (shared assets score for
   // both), so add the best teams with the shared assets counted at half (more differentials) and rank all of them
   // by the chance of outscoring the target
-  if (C.tg && pts) {
-    const shared = new Set(C.tg.ids);
+  if (ctx.tg && pts) {
+    const shared = new Set(ctx.tg.ids);
     const half = (v, id) => (shared.has(id) ? v / 2 : v);
     const diff = cand.map((c) => ({
       ...c,
@@ -581,15 +582,19 @@ export function runOptimiser() {
       boostE: Array.isArray(c.boostE) ? c.boostE.map((v) => half(v, c.id)) : c.boostE,
     }));
     const seen = new Set(res.map((r) => r.drivers.concat(r.cons).sort().join()));
-    for (const r of Engine.optimise(diff, T.team, optO))
+    for (const r of Engine.optimise(diff, team.team, optO))
       if (!seen.has(r.drivers.concat(r.cons).sort().join())) res.push(r);
   }
 
   const mk = (ids, boost, boost2) => ({ ids, boost, boost2, st: stats(ids, boost, boost2) });
   bestRows.cur = null;
-  if (!T.none) {
-    const [b1, b2] = boosts(T.team);
-    bestRows.cur = mk(T.team.slice(), chipK === "x3" ? b1 : boostFor(T.team, 0, T), chipK === "x3" ? b2 : null);
+  if (!team.none) {
+    const [b1, b2] = boosts(team.team);
+    bestRows.cur = mk(
+      team.team.slice(),
+      chipK === "x3" ? b1 : boostFor(team.team, 0, team),
+      chipK === "x3" ? b2 : null,
+    );
   }
   bestRows.pin = state.pins.map((p) => {
     const [b1, b2] = boosts(p.ids);
@@ -600,9 +605,9 @@ export function runOptimiser() {
       [b1, b2] = pts ? [r.boost, r.boost2] : boosts(ids);
     return mk(ids, b1, b2);
   });
-  bestRows.best.sort((a, b) => (a.st[bs.k] - b.st[bs.k]) * bs.d);
-  if (C.tg && pts) {
-    const k = GOAL_COLS.includes(bs.k) && bs.k !== "dr" ? bs.k : "pb";
+  bestRows.best.sort((a, b) => (a.st[sort.k] - b.st[sort.k]) * sort.d);
+  if (ctx.tg && pts) {
+    const k = GOAL_COLS.includes(sort.k) && sort.k !== "dr" ? sort.k : "pb";
     bestRows.best.sort((a, b) => b.st[k] - a.st[k]);
     bestRows.best.length = Math.min(bestRows.best.length, 60);
   }
@@ -612,51 +617,51 @@ export function runOptimiser() {
   ];
   if (chipK === "limitless") bits.push("Limitless: no budget cap or transfer limit; the team reverts after the race.");
   else if (chipK === "wildcard") bits.push("Wildcard: unlimited transfers within budget.");
-  else if (!T.none)
+  else if (!team.none)
     bits.push(
-      `Transfers beyond ${T.free} free cost −10 each (included${state.maxPen == null ? "" : `; at most −${state.maxPen * 10}`}).`,
+      `Transfers beyond ${team.free} free cost −10 each (included${state.maxPen == null ? "" : `; at most −${state.maxPen * 10}`}).`,
     );
   if (state.xdp)
     bits.push(
-      `xΔ$Pts: ${(+state.valW).toFixed(1)} pts per $1m per race over ${C.rem} races; ranked by xSPts = xPts + xΔ$Pts.`,
+      `xΔ$Pts: ${(+state.valW).toFixed(1)} pts per $1m per race over ${ctx.rem} races; ranked by xSPts = xPts + xΔ$Pts.`,
     );
   if (near)
     bits.push(
       `${near >= 400 ? "400+" : near} team${near === 1 ? "" : "s"} within 5% of the best: ${near <= 5 ? "a chalky weekend (few obvious teams)" : near >= 60 ? "a flat weekend (many near-equal teams: pick on price changes, differentials or chips)" : "a normal spread"}.`,
     );
-  if (C.tg && pts)
+  if (ctx.tg && pts)
     bits.push(
-      `Goal: beat ${C.tg.name}. Ranked by ${GOAL_COLS.includes(bs.k) && bs.k !== "dr" ? (BSORT.find(([k]) => k === bs.k) || [])[1] : "P(beat)"}: both teams scored on the same simulated weekends, so shared assets cancel. P(+${GOAL_K}) is the chance of a gain that moves your rank; xGap the average gain; Gap 10–90% the bad-to-good weekend range.`,
+      `Goal: beat ${ctx.tg.name}. Ranked by ${GOAL_COLS.includes(sort.k) && sort.k !== "dr" ? (BSORT.find(([k]) => k === sort.k) || [])[1] : "P(beat)"}: both teams scored on the same simulated weekends, so shared assets cancel. P(+${GOAL_K}) is the chance of a gain that moves your rank; xGap the average gain; Gap 10–90% the bad-to-good weekend range.`,
     );
-  else if (state.goal !== "pts" && !C.tg)
+  else if (state.goal !== "pts" && !ctx.tg)
     bits.push(state.goal === "rival" ? "Goal: pick a rival in Plan & chip." : "Goal: no top-100 data yet.");
   if (locks.size || bans.size) bits.push(`${locks.size} included, ${bans.size} excluded.`);
   if (flt.length) bits.push(`${flt.length} team filter${flt.length > 1 ? "s" : ""}.`);
-  if (!pts || bs.d > 0)
+  if (!pts || sort.d > 0)
     bits.push(
-      `Ranked by ${(BSORT.find(([k]) => k === bs.k) || [])[1]} (${bs.d < 0 ? "highest" : "lowest"} first); click a column header to change.`,
+      `Ranked by ${(BSORT.find(([k]) => k === sort.k) || [])[1]} (${sort.d < 0 ? "highest" : "lowest"} first); click a column header to change.`,
     );
   $("#optNote").textContent = bits.join(" ");
   $("#bestNote").textContent =
-    `${T.name} · ${chipK === "limitless" ? "no budget cap" : (T.none ? "max budget " : "budget ") + money(cap())}`;
+    `${team.name} · ${chipK === "limitless" ? "no budget cap" : (team.none ? "max budget " : "budget ") + money(cap())}`;
   $("#colList").innerHTML = BCOLS.map(([k, n, t]) => {
     const on = visCols().some(([c]) => c === k);
     return `<label class="switch" title="${esc(t)}"><input type="checkbox" data-bcol="${k}" ${on ? "checked" : ""}><span>${esc(n)} <span class="dim">${esc(t)}</span></span></label>`;
   }).join("");
-  renderBestTable(C);
+  renderBestTable(ctx);
 }
-function renderBestTable(C) {
-  const { chipK, T, vp, tilePts } = C,
+function renderBestTable(ctx) {
+  const { chipK, T: team, vp, tilePts } = ctx,
     cols = visCols(),
-    bs = bestSort(),
-    sortK = bs.k;
+    sort = bestSort(),
+    sortK = sort.k;
   const ncol = 7 + cols.length;
   const tile = (r, id, kind) =>
     chip(id, {
       pts: tilePts(r, id),
       b: state.xdp ? f1(vp(id)) : sgn(priceEv(id), 2).replace("−0.00", "0.00"),
       x: id === r.boost ? (chipK === "x3" ? "3×" : "2×") : id === r.boost2 ? "2×" : "",
-      cls: [kind !== "cur" && T.team.includes(id) ? "same" : "", forecast.proj[0][id].out ? "out" : ""].join(" "),
+      cls: [kind !== "cur" && team.team.includes(id) ? "same" : "", forecast.proj[0][id].out ? "out" : ""].join(" "),
     });
   const cell = (k, st) => {
     const v = st[k];
@@ -682,9 +687,9 @@ function renderBestTable(C) {
   const row = (kind, i, r) => {
     const cons = r.ids.filter((id) => !isDriver(id)),
       boostsIn = [r.boost, r.boost2].filter(Boolean);
-    const drs = r.ids.filter((id) => isDriver(id) && !boostsIn.includes(id)).sort((a, b) => C.e(b) - C.e(a));
+    const drs = r.ids.filter((id) => isDriver(id) && !boostsIn.includes(id)).sort((a, b) => ctx.e(b) - ctx.e(a));
     const st = r.st,
-      over = !C.unlimited && kind === "pin" && st.cost > cap() + 1e-6;
+      over = !ctx.unlimited && kind === "pin" && st.cost > cap() + 1e-6;
     const pen = st.pen ? `<span class="pen">−${st.pen}</span>` : "";
     const tiles = (ids) => `<div class="chips">${ids.map((id) => tile(r, id, kind)).join("")}</div>`;
     // phones show one stacked cell (td.mv) instead of the desktop-only cells marked data-vc
@@ -699,10 +704,10 @@ function renderBestTable(C) {
       <td class="dots"><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
   };
   const shown = bestRows.best.slice(0, state.showN || 20);
-  const arrow = (k) => (k === sortK ? (bs.d < 0 ? " ↓" : " ↑") : "");
+  const arrow = (k) => (k === sortK ? (sort.d < 0 ? " ↓" : " ↑") : "");
   const sth = (k, n, t, vc) => {
     const attrs =
-      (vc ? ' data-vc="1"' : "") + (k === sortK ? ` aria-sort="${bs.d < 0 ? "descending" : "ascending"}"` : "");
+      (vc ? ' data-vc="1"' : "") + (k === sortK ? ` aria-sort="${sort.d < 0 ? "descending" : "ascending"}"` : "");
     return BSORT.some(([b]) => b === k)
       ? `<th class="bsort" data-bsort="${k}" title="${esc(t)}. Click to rank by it"${attrs}>${n}${arrow(k)}</th>`
       : `<th title="${esc(t)}"${attrs}>${n}</th>`;
@@ -748,13 +753,13 @@ export function openMenu(btn) {
   const key = btn.dataset.menu,
     [k] = key.split(":"),
     r = rowOf(key),
-    T = startTeam(),
+    team = startTeam(),
     m = $("#rowMenu");
   if (!r) return;
   menuRow = key;
   const items = [state.pins.some((p) => sameTeam(p.ids, r.ids)) ? ["unpin", "Unpin team"] : ["pin", "Pin team"]];
   if (k !== "cur") items.push(["tr", "Show transfers"]);
-  if (k !== "cur" && !T.none && !T.ro && activeChip() !== "limitless") items.push(["use", "Set as current team"]);
+  if (k !== "cur" && !team.none && !team.ro && activeChip() !== "limitless") items.push(["use", "Set as current team"]);
   if (k !== "cur") items.push(["save", "Save as manual team"]);
   items.push(["copy", "Copy team as text"]);
   m.innerHTML = items.map(([a, n]) => `<button data-mi="${a}">${n}</button>`).join("");
@@ -782,16 +787,16 @@ export function addDraft(name, team) {
   return true;
 }
 function showTransfers(r) {
-  const T = startTeam(),
-    C = calcCtx();
-  const outs = T.team.filter((id) => !r.ids.includes(id)),
-    ins = r.ids.filter((id) => !T.team.includes(id));
+  const team = startTeam(),
+    ctx = calcCtx();
+  const outs = team.team.filter((id) => !r.ids.includes(id)),
+    ins = r.ids.filter((id) => !team.team.includes(id));
   const line = (id, sign) => {
     const a = byId[id];
-    return `<div class="mline"><span>${sign} ${esc(code(a))} <span class="muted">${esc(a.kind === "D" ? a.short : a.team)} · ${money(a.price)}</span></span><span>${f1(C.e(id))} <span class="muted">xΔ$ ${sgn(priceEv(id), 2)}</span></span></div>`;
+    return `<div class="mline"><span>${sign} ${esc(code(a))} <span class="muted">${esc(a.kind === "D" ? a.short : a.team)} · ${money(a.price)}</span></span><span>${f1(ctx.e(id))} <span class="muted">xΔ$ ${sgn(priceEv(id), 2)}</span></span></div>`;
   };
-  const gain = ins.reduce((s, id) => s + C.e(id), 0) - outs.reduce((s, id) => s + C.e(id), 0);
-  const body = T.none
+  const gain = ins.reduce((s, id) => s + ctx.e(id), 0) - outs.reduce((s, id) => s + ctx.e(id), 0);
+  const body = team.none
     ? '<p class="note">No starting team: this is a fresh pick.</p>'
     : !ins.length
       ? '<p class="note">No changes from the starting team.</p>'
@@ -803,7 +808,7 @@ function showTransfers(r) {
 }
 export function menuAction(a) {
   const r = rowOf(menuRow),
-    T = editStart();
+    team = editStart();
   $("#rowMenu").hidden = true;
   if (!r) return;
   if (a === "pin") return pinTeam(r.ids);
@@ -817,7 +822,7 @@ export function menuAction(a) {
       drs = r.ids.filter(isDriver);
     return copyText(
       teamText(
-        menuRow.startsWith("cur") ? T.name : `R${NEXT.gd} option`,
+        menuRow.startsWith("cur") ? team.name : `R${NEXT.gd} option`,
         cons,
         drs,
         x3 ? r.boost2 : r.boost,
@@ -833,16 +838,16 @@ export function menuAction(a) {
     return toast("Saved as a manual team (see Compare, next to Best Teams).");
   }
   if (a === "use") {
-    keepUndo(T);
+    keepUndo(team);
     const oldCap = cap();
-    Object.assign(T, {
+    Object.assign(team, {
       team: r.ids.filter(isDriver).concat(r.ids.filter((id) => !isDriver(id))),
       bank: Math.round(Math.max(0, oldCap - r.st.cost) * 10) / 10,
       boost: "auto",
       example: false,
     });
     rerender();
-    return toast(`${T.name} updated. Make the same changes in the official game.`, true);
+    return toast(`${team.name} updated. Make the same changes in the official game.`, true);
   }
   if (a === "tr") showTransfers(r);
 }
@@ -864,12 +869,12 @@ const matchSearch = (a, q) =>
     );
 export function renderAssetPanels() {
   const H = horizon(),
-    C = calcCtx(),
-    T = C.T;
+    ctx = calcCtx(),
+    team = ctx.T;
   $("#drvNote").textContent = H > 1 ? `xPts: next race (editable) and over ${H} races` : "";
   const table = (kind, q) => {
     const list = DATA.assets.filter((a) => a.kind === kind && (a.active || kind === "C") && matchSearch(a, q));
-    const val = (a) => xpts(a.id) + (state.xdp ? C.vp(a.id) : 0);
+    const val = (a) => xpts(a.id) + (state.xdp ? ctx.vp(a.id) : 0);
     list.sort((x, y) => val(y) - val(x));
     const xs = list.map(val),
       max = Math.max(...xs, 1),
@@ -884,7 +889,7 @@ export function renderAssetPanels() {
     const line = (a) => {
       const dv = priceEv(a.id),
         p = forecast.proj[0][a.id],
-        mine = T.team.includes(a.id),
+        mine = team.team.includes(a.id),
         ov = state.xo[a.id] != null;
       const input =
         `<input class="xin${ov ? " ov" : ""}" type="number" step="0.1" data-xo="${a.id}" value="${f1(p.mean)}" aria-label="xPts for ${esc(code(a))}" ` +
@@ -893,7 +898,7 @@ export function renderAssetPanels() {
           ? `<button class="pinb" style="display:inline-grid" data-xoclear="${a.id}" title="Back to the model's ${f1(p.model)}" aria-label="Reset">↺</button>`
           : "");
       const value = state.xdp
-        ? `<td class="${C.vp(a.id) >= 0 ? "good" : "bad"}">${sgn(C.vp(a.id), 1)}</td><td${heat(val(a), min, max)}><b>${f1(val(a))}</b></td>`
+        ? `<td class="${ctx.vp(a.id) >= 0 ? "good" : "bad"}">${sgn(ctx.vp(a.id), 1)}</td><td${heat(val(a), min, max)}><b>${f1(val(a))}</b></td>`
         : `<td class="${dv > 0.04 ? "good" : dv < -0.04 ? "bad" : "muted"}">${sgn(dv, 2)}</td>`;
       return `<tr><td><span class="who">${codeBox(a)}${mine ? '<span title="In the starting team" style="color:var(--accent)">●</span>' : ""}</span></td>
           <td>${f1(a.price)}</td><td>${input}</td>${H > 1 ? `<td>${f1(xpts(a.id))}</td>` : ""}${value}
@@ -906,12 +911,10 @@ export function renderAssetPanels() {
 }
 
 /* ---------- race-by-race plan (horizon 2-3) ---------- */
-// The best sequence of teams over the horizon from the starting team (Engine.planHorizon): per race, that race's
-// expected points and Boost; the next race's price changes move the budget for the one after.
-// the planner's races: each race's candidates (xΔ$Pts on the next race's price changes, as in Best Teams) and the
-// next race's simulated price changes, which move the budget for the one after
-function planStages(C, H) {
-  const { pk, vp } = C;
+// The planner's races (Engine.planHorizon): each race's candidates (xΔ$Pts on the next race's price changes, as in
+// Best Teams) and its simulated price changes, which move the budget for the one after.
+function planStages(ctx, H) {
+  const { pk, vp } = ctx;
   const stages = [];
   for (let k = 0; k < H; k++) {
     const cand = DATA.assets
@@ -930,15 +933,15 @@ function planStages(C, H) {
   return stages;
 }
 export function openPlan() {
-  const C = calcCtx(),
-    { chipK, H, T, pk } = C;
-  const stages = planStages(C, H);
+  const ctx = calcCtx(),
+    { chipK, H, T: team, pk } = ctx;
+  const stages = planStages(ctx, H);
   const locks = new Set(Object.keys(state.marks).filter((k) => state.marks[k] === "lock"));
   const bans = new Set(Object.keys(state.marks).filter((k) => state.marks[k] === "ban"));
-  const plans = Engine.planHorizon(stages, T.team, {
+  const plans = Engine.planHorizon(stages, team.team, {
     cap: cap(),
-    free: T.none ? 7 : +T.free || 0,
-    maxT: maxTransfers(T),
+    free: team.none ? 7 : +team.free || 0,
+    maxT: maxTransfers(team),
     chip: chipK,
     locks,
     bans,
@@ -952,7 +955,7 @@ export function openPlan() {
       p.steps
         .map((st, k) => {
           const g = races[k],
-            prev = k ? p.steps[k - 1].team : T.team,
+            prev = k ? p.steps[k - 1].team : team.team,
             ins = st.team.filter((id) => !prev.includes(id)),
             outs = prev.filter((id) => !st.team.includes(id));
           const ds = st.team.filter(isDriver),
@@ -973,16 +976,16 @@ export function openPlan() {
 // Autopilot (with the chance it moves the Boost), Wildcard and Limitless (best team with the chip vs without).
 // Once qualifying is in, Final Fix: the best single driver swap on the points still to be scored.
 export function openChipValues() {
-  const T = startTeam();
-  if (T.none) {
+  const team = startTeam();
+  if (team.none) {
     $("#modalBody").innerHTML = `<h3>Chip values</h3><p class="note">Pick a starting team first.</p>`;
     return openModal("chips");
   }
   const pr = forecast.proj[0],
     mean = (id) => pr[id].mean,
-    ids = T.team,
+    ids = team.team,
     ds = ids.filter(isDriver).sort((a, b) => mean(b) - mean(a));
-  const boost = boostFor(ids, 0, T),
+  const boost = boostFor(ids, 0, team),
     base = teamDist(ids, boost, "").mean;
   // autopilot: how often the best scorer isn't the Boost you picked
   const sim = forecast.sims[0],
@@ -1012,8 +1015,8 @@ export function openChipValues() {
       e: mean(a.id),
       boostE: a.kind === "D" ? mean(a.id) : 0,
     }));
-  const o = { cap: cap(), free: +T.free || 0, maxT: maxTransfers(T), locks: new Set(), bans: new Set(), top: 1 };
-  const bestOf = (chip) => (Engine.optimise(cand, T.team, { ...o, chip })[0] || { score: NaN }).score;
+  const o = { cap: cap(), free: +team.free || 0, maxT: maxTransfers(team), locks: new Set(), bans: new Set(), top: 1 };
+  const bestOf = (chip) => (Engine.optimise(cand, team.team, { ...o, chip })[0] || { score: NaN }).score;
   const normal = bestOf("");
   const rows = [
     ["x3", teamDist(ids, ds[0], "x3", ds[1]).mean - base, `3× ${code(byId[ds[0]])}, 2× ${code(byId[ds[1]])}`],
@@ -1026,9 +1029,9 @@ export function openChipValues() {
     ["wildcard", bestOf("wildcard") - normal, "best team with unlimited transfers vs your best normal move"],
     ["limitless", bestOf("limitless") - normal, "best team with no budget cap vs your best normal move"],
   ];
-  const used = T.chipsUsed || {};
+  const used = team.chipsUsed || {};
   let html =
-    `<h3>Chip values <small>${esc(T.name)} · ${esc(NEXT.name.replace(" Grand Prix", " GP"))}</small></h3>` +
+    `<h3>Chip values <small>${esc(team.name)} · ${esc(NEXT.name.replace(" Grand Prix", " GP"))}</small></h3>` +
     `<p class="note">Expected extra points in the next race, from the same simulated weekends. Rules of thumb from the community: No Negative is usually worth 25–30 (more in the wet); Limitless is worth most early in a season and on sprint weekends.</p>` +
     `<div class="tw"><table class="stat"><thead><tr><th>Chip</th><th>Gain</th><th style="text-align:left">How</th></tr></thead><tbody>` +
     rows
@@ -1038,13 +1041,13 @@ export function openChipValues() {
       )
       .join("") +
     "</tbody></table></div>";
-  html += finalFixHtml(T, boost);
+  html += finalFixHtml(team, boost);
   $("#modalBody").innerHTML = html;
   openModal("chips");
 }
 // Final Fix: once qualifying (and the sprint) are known, points still to be scored = the simulated total minus what
 // qualifying (and the sprint) already paid. The swapped-in driver keeps the slot's Boost. Constructors can't be fixed.
-function finalFixHtml(T, boost) {
+function finalFixHtml(team, boost) {
   const known = (forecast.setup && forecast.setup.simOpt && forecast.setup.simOpt.known) || {};
   if (!known.q)
     return `<h3 style="margin-top:14px">Final Fix</h3><p class="note">Available once qualifying is in: the next race is then simulated from the actual grid and this shows the best swap on the points still to be scored.</p>`;
@@ -1055,9 +1058,9 @@ function finalFixHtml(T, boost) {
   };
   const room = cap() - teamValue();
   let best = null;
-  for (const out of T.team.filter(isDriver))
+  for (const out of team.team.filter(isDriver))
     for (const a of DATA.assets) {
-      if (a.kind !== "D" || !a.active || T.team.includes(a.id) || forecast.idx[a.id] == null) continue;
+      if (a.kind !== "D" || !a.active || team.team.includes(a.id) || forecast.idx[a.id] == null) continue;
       if (a.price > room + byId[out].price + 1e-9) continue;
       const g = (rem(a.id) - rem(out)) * (out === boost ? 2 : 1);
       if (!best || g > best.g) best = { out, inn: a.id, g };
@@ -1067,7 +1070,7 @@ function finalFixHtml(T, boost) {
   return (
     `<h3 style="margin-top:14px">Final Fix <small>qualifying known</small></h3>` +
     `<p class="note">Best swap: <b>${esc(code(byId[best.out]))} → ${esc(code(byId[best.inn]))}</b>, <b class="${worth ? "good" : "muted"}">${sgn(best.g, 1)}</b> points still to be scored${best.out === boost ? " (the Boost stays on the slot)" : ""}. ` +
-    (T.chipsUsed && T.chipsUsed.finalfix
+    (team.chipsUsed && team.chipsUsed.finalfix
       ? "Final Fix is already used."
       : worth
         ? "Worth it: the usual threshold is about +20."
@@ -1084,7 +1087,7 @@ function finalFixHtml(T, boost) {
 const BV_COL = { own: "#a855f7", wild: "#0891b2" }; // accent + cyan: checked for colour-blind separation on --card
 const bvMoney = (d) => (d ? sgn(d, 1).replace(/^([+−])/, "$1$") + "m" : "Your budget");
 export function openBudgetValue() {
-  const { H, T, pk, rem } = calcCtx();
+  const { H, T: team, pk, rem } = calcCtx();
   const B = Math.round(cap() * 10) / 10,
     lo = Math.round((B - 2) * 10) / 10,
     hi = Math.round((B + 5) * 10) / 10;
@@ -1102,9 +1105,9 @@ export function openBudgetValue() {
       };
     });
   const marks = (to) => new Set(Object.keys(state.marks).filter((k) => state.marks[k] === to));
-  const o = { maxT: maxTransfers(T), chip: "", locks: marks("lock"), bans: marks("ban"), lo, hi };
+  const o = { maxT: maxTransfers(team), chip: "", locks: marks("lock"), bans: marks("ban"), lo, hi };
   const curves = {
-    own: T.none ? null : Engine.budgetCurve(cand, T.team, { ...o, free: +T.free || 0 }),
+    own: team.none ? null : Engine.budgetCurve(cand, team.team, { ...o, free: +team.free || 0 }),
     wild: Engine.budgetCurve(cand, [], { ...o, chip: "wildcard", free: 7, maxT: 7 }),
   };
   const at = (c, b) => c && c[Math.round((b - lo) * 10)];
@@ -1116,7 +1119,7 @@ export function openBudgetValue() {
   };
   const ds = [];
   for (let d = -2; d <= 5 + 1e-9; d += 0.1) ds.push(Math.round(d * 10) / 10);
-  const label = { own: `From ${T.none ? "your team" : T.name}`, wild: "Free rebuild" };
+  const label = { own: `From ${team.none ? "your team" : team.name}`, wild: "Free rebuild" };
   const series = ["own", "wild"]
     .filter((k) => curves[k])
     .map((k) => ({ k, name: label[k], col: BV_COL[k], pts: ds.map((d) => gain(curves[k], d)) }));
@@ -1139,7 +1142,7 @@ export function openBudgetValue() {
     .map((g) => `R${g.gd}`)
     .join("–");
   let html =
-    `<h3>What more budget is worth <small>${esc(T.none ? "no starting team" : T.name)} · ${money(B)} · ${races}</small></h3>` +
+    `<h3>What more budget is worth <small>${esc(team.none ? "no starting team" : team.name)} · ${money(B)} · ${races}</small></h3>` +
     `<p class="note">The best team you could field at each budget, on the expected points of ${races}, per race, against the best at your budget. ` +
     `Right now +$1m is worth <b>${g1("own") == null ? "—" : sgn(g1("own"), 1)}</b> pts a race from your team and <b>${sgn(g1("wild") ?? 0, 1)}</b> with a free rebuild. ` +
     `The xΔ$Pts setting counts it as a flat <b>${(+state.valW).toFixed(1)}</b>${state.xdp ? "" : " (off)"} for each of the ${rem} race${rem === 1 ? "" : "s"} after this one. ` +
@@ -1235,10 +1238,10 @@ function bvChart(box, ds, series, flat) {
 // The plans stop at the last simulated race, so a transfer still banked then counts for nothing: that edge
 // undervalues banking a little.
 export function openTransferValue() {
-  const T = startTeam(),
+  const team = startTeam(),
     chipK = activeChip();
-  const title = `<h3>What is a transfer worth? <small>${esc(T.none ? "no starting team" : T.name)}</small></h3>`;
-  if (T.none) {
+  const title = `<h3>What is a transfer worth? <small>${esc(team.none ? "no starting team" : team.name)}</small></h3>`;
+  if (team.none) {
     $("#modalBody").innerHTML = title + `<p class="note">Pick a starting team first.</p>`;
     return openModal("transfer");
   }
@@ -1252,13 +1255,13 @@ export function openTransferValue() {
   openModal("transfer");
   setTimeout(() => {
     if (modalKind !== "transfer") return;
-    const C = calcCtx(),
+    const ctx = calcCtx(),
       n = forecast.races.length,
-      stages = planStages(C, n),
-      free = Math.max(0, +T.free || 0);
+      stages = planStages(ctx, n),
+      free = Math.max(0, +team.free || 0);
     const marks = (to) => new Set(Object.keys(state.marks).filter((k) => state.marks[k] === to));
     const o = { cap: cap(), free, maxT: 7, chip: chipK, locks: marks("lock"), bans: marks("ban"), beam: 6 };
-    const plan = (x) => Engine.planHorizon(stages, T.team, { ...o, ...x })[0] || null;
+    const plan = (x) => Engine.planHorizon(stages, team.team, { ...o, ...x })[0] || null;
     const rows = [];
     // one row per number actually used: a cap of k that still uses fewer repeats the row above
     for (let k = 0; k <= Math.min(7, free + 2); k++) {
@@ -1271,8 +1274,8 @@ export function openTransferValue() {
     const races = forecast.races.map((g) => `R${g.gd}`).join("–");
     const moves = (p) => {
       const st = p.steps[0],
-        outs = T.team.filter((id) => !st.team.includes(id)),
-        ins = st.team.filter((id) => !T.team.includes(id));
+        outs = team.team.filter((id) => !st.team.includes(id)),
+        ins = st.team.filter((id) => !team.team.includes(id));
       return ins.length
         ? `${outs.map((id) => code(byId[id])).join(", ")} → ${ins.map((id) => code(byId[id])).join(", ")}`
         : "keep";

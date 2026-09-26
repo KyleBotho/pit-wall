@@ -130,16 +130,16 @@ export const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 
 const rivalKey = (league, key) => league + " / " + key;
 export function rivalTeams() {
   const out = [];
-  for (const L of leagueList())
-    for (const m of L.members || []) {
+  for (const league of leagueList())
+    for (const m of league.members || []) {
       const tk = mkey(m);
       if (!m.ids || state.teams.some((t) => teamKey(t) === tk)) continue;
       if (out.some((x) => x.tk === tk)) continue;
       out.push({
-        key: rivalKey(L.name, tk),
+        key: rivalKey(league.name, tk),
         tk,
         name: m.name,
-        league: L.name,
+        league: league.name,
         ids: m.ids,
         bank: m.bank,
         free: m.free,
@@ -198,31 +198,31 @@ export function startTeam() {
 // the starting team's settings to change (bank, free transfers, chips used, Boost); a rival's entry is created on
 // the first edit
 export function editStart() {
-  const T = startTeam();
-  if (!T.rivalKey) return T;
-  if (!state.rivalCfg[T.rivalKey]) {
-    const { name, tk, team, ro, rivalKey: k, ...cfg } = T;
+  const start = startTeam();
+  if (!start.rivalKey) return start;
+  if (!state.rivalCfg[start.rivalKey]) {
+    const { name, tk, team, ro, rivalKey: k, ...cfg } = start;
     state.rivalCfg[k] = cfg;
   }
-  return state.rivalCfg[T.rivalKey];
+  return state.rivalCfg[start.rivalKey];
 }
 export const startKind = () => {
   const c = state.calcStart;
   return c && ["none", "draft", "rival"].includes(c.type) && startTeam() !== activeTeam() ? c.type : "team";
 };
 // chips F1's data shows the starting team has played ({chip: gameday}); the Calculator won't un-mark them
-export const lockedChips = (T) =>
-  T.none || !(T.rivalKey || state.teams.includes(T)) ? {} : (tracked(teamKey(T)) || { used: {} }).used;
+export const lockedChips = (team) =>
+  team.none || !(team.rivalKey || state.teams.includes(team)) ? {} : (tracked(teamKey(team)) || { used: {} }).used;
 // the chip the Calculator plays: the one picked, unless the starting team has already used it
 export const activeChip = () => (state.chip && !startTeam().chipsUsed[state.chip] ? state.chip : "");
 export const teamValue = () => startTeam().team.reduce((s, id) => s + byId[id].price, 0);
 export const cap = () => (startTeam().none ? +state.maxBudget || 100 : teamValue() + (+startTeam().bank || 0));
-export const maxTransfers = (T) =>
-  T.none ? 7 : Math.min(7, Math.min(7, +T.free || 0) + (state.maxPen == null ? 7 : state.maxPen));
+export const maxTransfers = (team) =>
+  team.none ? 7 : Math.min(7, Math.min(7, +team.free || 0) + (state.maxPen == null ? 7 : state.maxPen));
 // a team's Boost for a race: the one set for the team (next race only), else its best projected driver
-export function boostFor(ids, raceIdx = 0, T = activeTeam()) {
+export function boostFor(ids, raceIdx = 0, team = activeTeam()) {
   const ds = ids.filter(isDriver);
-  if (raceIdx === 0 && T.boost !== "auto" && ds.includes(T.boost)) return T.boost;
+  if (raceIdx === 0 && team.boost !== "auto" && ds.includes(team.boost)) return team.boost;
   const pr = forecast.proj[raceIdx];
   return ds.reduce((b, id) => (pr[id].mean > pr[b].mean ? id : b), ds[0]) || null;
 }

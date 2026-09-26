@@ -39,9 +39,9 @@ const lvCat = (c) => {
 const lvPts = (id) => (DATA.live.assets[id] || {}).pts || 0;
 const lvProj = (id) => ((DATA.projHist || {})[DATA.live.gd] || {})[id];
 // the line-up that scores this weekend: the export's (after the round) or, for the round in progress, your current team
-function lvTeam(T) {
+function lvTeam(team) {
   const gd = DATA.live.gd,
-    r = (lineups(teamKey(T)) || {})[gd];
+    r = (lineups(teamKey(team)) || {})[gd];
   if (r)
     return {
       ids: r.ids.map(String),
@@ -50,12 +50,12 @@ function lvTeam(T) {
       chip: r.chip,
       src: "from your data export",
     };
-  if (T.example) return null;
-  const ids = T.team.slice(),
+  if (team.example) return null;
+  const ids = team.team.slice(),
     ds = ids.filter((id) => byId[id].kind === "D");
   const boost =
-    T.boost !== "auto" && ds.includes(T.boost)
-      ? T.boost
+    team.boost !== "auto" && ds.includes(team.boost)
+      ? team.boost
       : ds.reduce((b, id) => ((lvProj(id) ?? 0) > (lvProj(b) ?? 0) ? id : b), ds[0]);
   return {
     ids,
@@ -63,7 +63,7 @@ function lvTeam(T) {
     x3: "",
     chip: null,
     src: NEXT && gd === NEXT.gd ? "your current team" : "your current team (this round's line-up needs an export)",
-    autoB: T.boost === "auto",
+    autoB: team.boost === "auto",
   };
 }
 function lvScore(t, f) {
@@ -75,18 +75,18 @@ function lvScore(t, f) {
   return t.ids.reduce((s, id) => s + one(id) * (id === t.x3 ? 3 : id === t.boost ? 2 : 1), 0);
 }
 export function renderLive() {
-  const L = DATA.live;
-  $("#lvTeams").hidden = !L;
-  $("#lvTable").closest("section").hidden = !L;
-  if (!L) {
+  const live = DATA.live;
+  $("#lvTeams").hidden = !live;
+  $("#lvTable").closest("section").hidden = !live;
+  if (!live) {
     $("#lvTitle").textContent = "Live Scoring";
     $("#lvNote").textContent = "No race weekend has started yet.";
     return;
   }
-  const g = DATA.schedule.find((x) => x.gd === L.gd) || {},
+  const g = DATA.schedule.find((x) => x.gd === live.gd) || {},
     now = Date.now(),
     sess = g.sessions || [];
-  const scored = (s) => DATA.assets.some((a) => (L.assets[a.id]?.sess || {})[s.type] != null);
+  const scored = (s) => DATA.assets.some((a) => (live.assets[a.id]?.sess || {})[s.type] != null);
   const sessState = (s) =>
     scored(s) && Date.parse(s.end || s.start) < now
       ? "done"
@@ -95,7 +95,7 @@ export function renderLive() {
         : "up";
   const over = sess.length && sess.every((s) => sessState(s) === "done");
   const when = (t) => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
-  $("#lvTitle").textContent = `R${L.gd} · ${g.name || ""}`;
+  $("#lvTitle").textContent = `R${live.gd} · ${g.name || ""}`;
   $("#lvStamp").textContent = over ? "final" : "live";
   $("#lvSess").innerHTML = sess
     .map((s) => {
@@ -104,33 +104,33 @@ export function renderLive() {
     })
     .join("");
   const tm = (t) => new Date(t).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
-  const asOf = L.feedTime ? tm(L.feedTime) : "—";
+  const asOf = live.feedTime ? tm(live.feedTime) : "—";
   $("#lvNote").innerHTML =
-    (L.src === "fn"
+    (live.src === "fn"
       ? `Live feed · F1's scores as of <b>${esc(asOf)}</b>, checked ${esc(new Date(liveFeed.at).toLocaleTimeString())} (every minute while this view is open). `
       : `Scores as of <b>${esc(asOf)}</b> (F1's feed at the last site build). ${esc(liveFeed.err)} `) +
     (over
       ? "The weekend is over; these are its final points until the next one starts."
       : "Points appear after each session is scored.") +
-    (Object.values(L.assets).some((a) => a.lag) ? " Some scoring lines are still catching up with the totals." : "");
+    (Object.values(live.assets).some((a) => a.lag) ? " Some scoring lines are still catching up with the totals." : "");
 
   // your teams (with only example teams: one card that says how to load yours)
-  if (state.teams.every((T) => !lvTeam(T))) {
+  if (state.teams.every((team) => !lvTeam(team))) {
     $("#lvTeams").innerHTML =
       `<section class="panel" style="grid-column:1/-1"><h3>Your teams</h3><p class="note">Load your teams to follow them live here.</p>` +
       `<div class="chipbar"><button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button><button class="btn ghost sm" data-import="1">Import a data export</button></div></section>`;
     needSync();
   } else
     $("#lvTeams").innerHTML = state.teams
-      .map((T, i) => {
-        const t = lvTeam(T);
+      .map((team, i) => {
+        const t = lvTeam(team);
         if (!t)
-          return `<section class="panel"><h3>${esc(T.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
+          return `<section class="panel"><h3>${esc(team.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
         const live = lvScore(t, lvPts),
           proj = lvScore(t, (id) => lvProj(id) ?? 0),
           hasProj = t.ids.some((id) => lvProj(id) != null);
         const chipName = t.chip ? (CHIPS.find(([k]) => k === t.chip) || [])[2] : "";
-        return `<section class="panel"><h3>${esc(T.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
+        return `<section class="panel"><h3>${esc(team.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
       <div class="lvbig"><b>${f0(live)}</b><span class="muted">pts${hasProj ? ` · projected ${f0(proj)} at lock` : ""}${chipName ? ` · ${esc(chipName)}` : ""}</span></div>
       <div class="chips">${t.ids.map((id) => chip(id, { a: f0(lvPts(id)), b: lvProj(id) != null ? `<span class="dim">x${f0(lvProj(id))}</span>` : "", x: id === t.x3 ? "3×" : id === t.boost ? (t.autoB ? "2×?" : "2×") : "" })).join("")}</div>
       ${t.autoB ? '<p class="note">Boost is set to auto, so 2×? marks the driver we projected highest. Set your real Boost in the Calculator.</p>' : ""}</section>`;
@@ -146,7 +146,7 @@ export function renderLive() {
   $$("#lvBy button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lvby === by)));
   const cats = (id) => {
     const o = {};
-    for (const [ni, v] of L.assets[id]?.ev || []) {
+    for (const [ni, v] of live.assets[id]?.ev || []) {
       const c = lvCat(DATA.evNames[ni].c);
       o[c] = (o[c] || 0) + v;
     }
@@ -154,16 +154,16 @@ export function renderLive() {
   };
   // racing that weekend (a driver who changed team mid-season has two assets; only one is active per round)
   const assets = DATA.assets.filter(
-    (a) => a.kind === kind && L.assets[a.id] && ((L.assets[a.id].act ?? a.active) || lvPts(a.id)),
+    (a) => a.kind === kind && live.assets[a.id] && ((live.assets[a.id].act ?? a.active) || lvPts(a.id)),
   );
   const cols =
     by === "sess"
-      ? sess.map((s) => [s.type, LV_SESS[s.type] || s.type, (id) => (L.assets[id]?.sess || {})[s.type] ?? null])
+      ? sess.map((s) => [s.type, LV_SESS[s.type] || s.type, (id) => (live.assets[id]?.sess || {})[s.type] ?? null])
       : LV_CATS.filter(([c]) => assets.some((a) => cats(a.id)[c])).map(([c, n]) => [c, n, (id) => cats(id)[c] ?? null]);
   const teamsOf = (id) =>
     state.teams
-      .map((T, i) => {
-        const t = lvTeam(T);
+      .map((team, i) => {
+        const t = lvTeam(team);
         return t && t.ids.includes(id) ? `T${i + 1}` : "";
       })
       .filter(Boolean);
@@ -252,8 +252,8 @@ export async function pullLive() {
 // only from an import that covers this round; otherwise it's assumed on their highest-projected driver (2×?).
 // Once the round table has official points for the round (after the race), those are used instead.
 function renderLiveLeague(g, over) {
-  const L = DATA.live,
-    gd = L.gd,
+  const live = DATA.live,
+    gd = live.gd,
     all = leagueList().filter((l) => (l.members || []).length),
     box = $("#lvLeague");
   box.hidden = !all.length;

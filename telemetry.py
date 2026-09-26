@@ -1,4 +1,4 @@
-"""Session data for the lap-by-lap race model (CLAUDE.md, To do item 9), read with FastF1 from F1's live-timing
+"""Session data for the lap-by-lap race model (docs/history.md, To do item 9), read with FastF1 from F1's live-timing
 archive and saved as small JSON in history/<season>/telemetry/.
 
   python telemetry.py laps [--rounds 1-14] [--sessions R,S] [--max 20]   lap records per session (small)

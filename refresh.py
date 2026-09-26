@@ -679,8 +679,6 @@ def content_policy(html):
 def build_page(data, out_dir=BUILD):
     out = inline_page(data)
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "pit-wall.html"), "w", encoding="utf-8") as f:
-        f.write(out)  # retired Claude artifact copy: the publisher adds doctype/head/viewport
     # logo files sit next to index.html; link previews need an absolute image URL
     shutil.copytree(os.path.join(HERE, "web", "brand"), os.path.join(out_dir, "brand"), dirs_exist_ok=True)
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:

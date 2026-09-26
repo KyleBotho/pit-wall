@@ -486,7 +486,7 @@ const EXPERIMENTS = {
       ],
     ],
   ],
-  // 2026-09-25, none adopted (see CLAUDE.md)
+  // 2026-09-25, none adopted (see docs/history.md)
   skew: [
     ["qualifying noise skewed, shape 2", [[E.SIM, "qSkew", 2]]],
     ["qualifying noise skewed, shape 5", [[E.SIM, "qSkew", 5]]],

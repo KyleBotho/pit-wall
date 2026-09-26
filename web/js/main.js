@@ -228,8 +228,8 @@ function closeMenu() {
 let undoTeam = null,
   toastTimer = null;
 // the team as it was before a one-click change, for the toast's Undo
-export function keepUndo(T) {
-  undoTeam = { ref: T, team: T.team.slice(), bank: T.bank, boost: T.boost, example: T.example };
+export function keepUndo(team) {
+  undoTeam = { ref: team, team: team.team.slice(), bank: team.bank, boost: team.boost, example: team.example };
 }
 export function toast(msg, undo) {
   $("#toastMsg").textContent = msg;
@@ -338,8 +338,8 @@ const CLICK = [
   [
     "boost",
     (d) => {
-      const T = editing();
-      T.boost = T.boost === d.boost ? "auto" : d.boost;
+      const team = editing();
+      team.boost = team.boost === d.boost ? "auto" : d.boost;
       rerender();
     },
   ],
@@ -396,9 +396,9 @@ const CLICK = [
   [
     "keep",
     () => {
-      const T = startTeam(),
-        all = T.team.every((id) => state.marks[id] === "lock");
-      T.team.forEach((id) => (all ? delete state.marks[id] : (state.marks[id] = "lock")));
+      const team = startTeam(),
+        all = team.team.every((id) => state.marks[id] === "lock");
+      team.team.forEach((id) => (all ? delete state.marks[id] : (state.marks[id] = "lock")));
       toast(all ? "Team released." : "Whole team kept: every asset is included.");
       rerender();
     },
@@ -441,10 +441,10 @@ const CLICK = [
   [
     "used",
     (d) => {
-      const T = editStart();
-      if (T.none || lockedChips(startTeam())[d.used]) return;
-      T.chipsUsed[d.used] = !T.chipsUsed[d.used];
-      if (T.chipsUsed[d.used] && state.chip === d.used) state.chip = "";
+      const team = editStart();
+      if (team.none || lockedChips(startTeam())[d.used]) return;
+      team.chipsUsed[d.used] = !team.chipsUsed[d.used];
+      if (team.chipsUsed[d.used] && state.chip === d.used) state.chip = "";
       rerender();
     },
   ],
@@ -767,20 +767,20 @@ const CLICK_ON = [
   ],
 ];
 // an outside click closes popovers, the row menu and open ⓘ notes
-function closePopovers(tg) {
-  if (!tg.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
-  if (!tg.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
-  for (const d of $$("details.info[open]")) if (!d.contains(tg)) d.open = false;
+function closePopovers(target) {
+  if (!target.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
+  if (!target.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
+  for (const d of $$("details.info[open]")) if (!d.contains(target)) d.open = false;
 }
 document.addEventListener("click", (e) => {
-  const tg = e.target;
-  closePopovers(tg);
-  if (tg.id === "modal") return closeModal(); // the backdrop
+  const target = e.target;
+  closePopovers(target);
+  if (target.id === "modal") return closeModal(); // the backdrop
   for (const [sel, fn] of CLICK_ON) {
-    const el = tg.closest(sel);
+    const el = target.closest(sel);
     if (el) return fn(el);
   }
-  const t = tg.closest("button");
+  const t = target.closest("button");
   if (!t || t.disabled) return;
   if (CLICK_ID[t.id]) return CLICK_ID[t.id]();
   const d = t.dataset;
@@ -887,10 +887,10 @@ const CHANGE = [
   [
     "slot",
     (d, t) => {
-      const T = editing(),
-        prev = setSlot(T.team, +d.slot, t.value);
-      T.example = false;
-      if (T.boost === prev) T.boost = "auto";
+      const team = editing(),
+        prev = setSlot(team.team, +d.slot, t.value);
+      team.example = false;
+      if (team.boost === prev) team.boost = "auto";
       rerender();
     },
   ],
@@ -956,10 +956,10 @@ const INPUT_ID = {
     recompute(250);
   },
   tname: (t) => {
-    const T = editing(),
+    const team = editing(),
       draft = editTarget != null || startKind() === "draft";
-    T.name = t.value.trim() || (draft ? "Manual" : "Team " + (state.active + 1));
-    if (editTarget == null) $("#startBtn").lastChild.textContent = T.name;
+    team.name = t.value.trim() || (draft ? "Manual" : "Team " + (state.active + 1));
+    if (editTarget == null) $("#startBtn").lastChild.textContent = team.name;
     save();
   },
   valW: (t) => {
@@ -973,9 +973,9 @@ const INPUT_ID = {
   bank: (t) => {
     const v = parseFloat(t.value);
     if (isNaN(v) || v < 0) return;
-    const T = editStart();
-    T.bank = v;
-    T.example = false;
+    const team = editStart();
+    team.bank = v;
+    team.example = false;
     clearTimeout(recomputeTimer);
     recomputeTimer = setTimeout(rerender, 300);
   },

@@ -14,8 +14,8 @@ function hdCap(gd) {
   const mode = hdCapMode();
   if (mode === "none") return null;
   if (mode.startsWith("team:")) {
-    const T = state.teams[+mode.slice(5)] || activeTeam(),
-      r = (lineups(teamKey(T)) || {})[gd];
+    const team = state.teams[+mode.slice(5)] || activeTeam(),
+      r = (lineups(teamKey(team)) || {})[gd];
     return r ? Hind.budget(r, gd) : 100;
   }
   return 100;
@@ -61,14 +61,14 @@ function hdChips(ids, boost, x3, start, gd, chipK, ff) {
 }
 // What each decision was worth that round. Formulas as in the Decisions panel note.
 function hdDecisions(name, gd) {
-  const L = lineups(name) || {},
-    r = L[gd];
+  const rounds = lineups(name) || {},
+    r = rounds[gd];
   if (!r) return null;
-  const prevGd = Object.keys(L)
+  const prevGd = Object.keys(rounds)
       .map(Number)
       .filter((g) => g < gd)
       .sort((a, b) => b - a)[0],
-    prev = prevGd ? L[prevGd] : null;
+    prev = prevGd ? rounds[prevGd] : null;
   const base = (id) => Hind.pts(id, gd, ""),
     mult = (id) => (id === r.x3 ? 3 : id === r.boost ? 2 : 1);
   const score = (ids, boost, x3) => ids.reduce((s, id) => s + base(id) * (id === x3 ? 3 : id === boost ? 2 : 1), 0);
@@ -268,10 +268,10 @@ export function renderHind() {
     `<tr><td><b>Season</b></td><td><b>${f0(sum((g) => hdBestList(g, 1)[0]?.score))}</b></td>` +
     teams
       .map(({ t }) => {
-        const L = lineups(teamKey(t)),
-          off = sum((g) => (L[g] ? teamHist(teamKey(t)).find((h) => h.gd === g)?.pts : 0)),
-          bs = sum((g) => (L[g] ? Hind.own(L[g], g).score : 0));
-        return `<td><b>${f0(off)}</b></td><td><b>${f0(bs)}</b> <span class="muted">${bs ? Math.round((off / bs) * 100) + "%" : ""}</span></td>`;
+        const rounds = lineups(teamKey(t)),
+          off = sum((g) => (rounds[g] ? teamHist(teamKey(t)).find((h) => h.gd === g)?.pts : 0)),
+          best = sum((g) => (rounds[g] ? Hind.own(rounds[g], g).score : 0));
+        return `<td><b>${f0(off)}</b></td><td><b>${f0(best)}</b> <span class="muted">${best ? Math.round((off / best) * 100) + "%" : ""}</span></td>`;
       })
       .join("") +
     "</tr>";

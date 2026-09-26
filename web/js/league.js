@@ -53,24 +53,24 @@ export const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) 
 // Leagues: auto-updated (decrypted) standings merged with anything imported (chips, bank, round history)
 export function leagueList() {
   const out = [];
-  for (const L of (SEALED && SEALED.leagues) || []) {
-    const imp = state.league && state.league.name === L.name ? state.league : null;
-    const members = L.members
+  for (const league of (SEALED && SEALED.leagues) || []) {
+    const imp = state.league && state.league.name === league.name ? state.league : null;
+    const members = league.members
       .map((m) => {
         const key = m.tk || m.team;
         const im = imp && imp.members.find((x) => mkey(x) === key);
         const ds = m.ids.filter((id) => byId[id]?.kind === "D"),
           cs = m.ids.filter((id) => byId[id]?.kind === "C");
         const tr = tracked(key),
-          nx = tr && tr.next;
+          next = tr && tr.next;
         return {
           key,
           name: m.team,
           pts: +m.pts || 0,
           // after a Limitless round the feed still shows that team; the team held reverts to the one before
           ids:
-            nx && nx.asOf === DATA.done[DATA.done.length - 1] && nx.ids.every((id) => byId[id])
-              ? nx.ids.filter(isDriver).concat(nx.ids.filter((id) => !isDriver(id)))
+            next && next.asOf === DATA.done[DATA.done.length - 1] && next.ids.every((id) => byId[id])
+              ? next.ids.filter(isDriver).concat(next.ids.filter((id) => !isDriver(id)))
               : ds.length === 5 && cs.length === 2
                 ? ds.concat(cs)
                 : im
@@ -78,8 +78,13 @@ export function leagueList() {
                   : null,
           boost: im ? im.boost : "",
           // an import taken before the next race is newer than tracking, which only reaches the last finished round
-          bank: im && im.bank != null && state.league.round > (nx ? nx.asOf + 1 : 0) ? im.bank : nx ? nx.bank : null,
-          free: nx ? nx.free : null,
+          bank:
+            im && im.bank != null && state.league.round > (next ? next.asOf + 1 : 0)
+              ? im.bank
+              : next
+                ? next.bank
+                : null,
+          free: next ? next.free : null,
           chips: { ...(im ? im.chips : {}), ...usedChips(tr) },
           tracked: !!tr,
           hist: teamHist(key),
@@ -87,7 +92,7 @@ export function leagueList() {
         };
       })
       .sort((a, b) => b.pts - a.pts);
-    out.push({ name: L.name, pending: L.pending, collected: L.feedTime || null, members, auto: true });
+    out.push({ name: league.name, pending: league.pending, collected: league.feedTime || null, members, auto: true });
   }
   if (state.league && !out.some((l) => l.name === state.league.name)) out.push(state.league);
   return out;
@@ -95,18 +100,18 @@ export function leagueList() {
 export function renderLeague() {
   $("#lgUnlock").hidden = !(DATA.leagueSealed && !SEALED);
   const all = leagueList(),
-    L = all[Math.min(state.lgIdx | 0, all.length - 1)];
-  $("#leagueEmpty").hidden = !!L || !!DATA.leagueSealed;
-  $("#leagueDash").hidden = !L;
-  if (!L) return;
+    league = all[Math.min(state.lgIdx | 0, all.length - 1)];
+  $("#leagueEmpty").hidden = !!league || !!DATA.leagueSealed;
+  $("#leagueDash").hidden = !league;
+  if (!league) return;
   $("#lgPick").hidden = all.length < 2;
   $("#lgPick").innerHTML = all
-    .map((l, i) => `<button data-lg="${i}" aria-pressed="${l === L}">${esc(l.name)}</button>`)
+    .map((l, i) => `<button data-lg="${i}" aria-pressed="${l === league}">${esc(l.name)}</button>`)
     .join("");
   const myIds = activeTeam().team,
     myKey = teamKey(activeTeam());
-  $("#lgTitle").textContent = L.name;
-  if (L.pending || !L.members.length) {
+  $("#lgTitle").textContent = league.name;
+  if (league.pending || !league.members.length) {
     $("#lgStamp").textContent = "standings not published yet";
     $("#lgTable").innerHTML =
       `<tbody><tr><td class="muted" style="position:static">F1 Fantasy hasn't published this league's standings file yet. New leagues usually appear after the next race's leaderboard update; the site picks it up automatically.</td></tr></tbody>`;
@@ -115,17 +120,17 @@ export function renderLeague() {
     $("#lgOwn").innerHTML = "";
     return;
   }
-  const when = L.collected ? new Date(L.collected) : null;
+  const when = league.collected ? new Date(league.collected) : null;
   $("#lgStamp").textContent =
-    `${L.members.length} teams${L.auto ? " · auto-updated" : ""}${when && !isNaN(when) ? " · data from " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}`;
-  const lead = L.members[0].pts;
+    `${league.members.length} teams${league.auto ? " · auto-updated" : ""}${when && !isNaN(when) ? " · data from " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}`;
+  const lead = league.members[0].pts;
   const tok = (c) =>
     CHIPS.map(
       ([k, sh, n]) => `<span class="chiptok ${c[k] ? "used" : ""}" title="${n}${c[k] ? " (used)" : ""}">${sh}</span>`,
     ).join("");
   $("#lgTable").innerHTML =
     `<thead><tr><th>#</th><th style="text-align:left">Team</th><th>Pts</th><th>Gap</th><th title="Points in the latest round">Last</th><th style="text-align:left">Chips left</th><th title="Cost cap left for the next race">Bank</th><th title="Free transfers for the next race">Free</th></tr></thead><tbody>` +
-    L.members
+    league.members
       .map((m, i) => {
         const last = m.hist.length ? m.hist[m.hist.length - 1].pts : null;
         return `<tr${mkey(m) === myKey ? ' style="background:var(--accent-soft)"' : ""}><td>${i + 1}</td><td style="text-align:left;position:static"><b>${esc(m.name)}</b>${m.mine ? ' <span class="tag sprint">you</span>' : ""}</td>
@@ -133,21 +138,21 @@ export function renderLeague() {
       })
       .join("") +
     "</tbody>";
-  renderLeagueChart(L);
-  renderLeagueRounds(L);
+  renderLeagueChart(league);
+  renderLeagueRounds(league);
   if (SEASON_OVER) {
     $("#lgH2hNote").textContent = "";
     $("#lgH2h").innerHTML = '<p class="note">The season is over: no race left to compare line-ups for.</p>';
     $("#lgOwn").innerHTML = "";
     return;
   }
-  renderLeagueForecast(L, myIds, myKey);
+  renderLeagueForecast(league, myIds, myKey);
 }
 // Round by round: every member's team for a finished round, like F1's own league view: line-up and each asset's
 // points (Boost 2×, x3 3×), chip, bank, transfers. From an export where there is one, else worked out from the line-up
 // seen after the race and the official points.
-function renderLeagueRounds(L) {
-  const rows = L.members.map((m) => ({ m, tr: tracked(mkey(m)) })).filter((x) => x.tr && x.tr.rounds.length);
+function renderLeagueRounds(league) {
+  const rows = league.members.map((m) => ({ m, tr: tracked(mkey(m)) })).filter((x) => x.tr && x.tr.rounds.length);
   $("#lgRoundsBox").hidden = !rows.length;
   if (!rows.length) return;
   const gds = [...new Set(rows.flatMap((x) => x.tr.rounds.map((r) => r.gd)))].sort((a, b) => a - b);
@@ -212,13 +217,13 @@ function roundCard(m, r) {
     <div class="note">${facts.join(" · ")}${facts.length ? " · " : ""}${src}</div></div>`;
 }
 // Next race: head-to-head against each rival's current line-up, and league ownership
-function renderLeagueForecast(L, myIds, myKey) {
+function renderLeagueForecast(league, myIds, myKey) {
   // head-to-head: same simulated weekends for everyone, so the comparison is paired
   const mySmp = teamSamples(myIds, boostFor(myIds), ""),
     N = mySmp.length;
   const myMean = mySmp.reduce((a, b) => a + b, 0) / N;
   $("#lgH2hNote").textContent = `${activeTeam().name} vs current rival line-ups`;
-  const rivals = L.members.filter((m) => mkey(m) !== myKey && m.ids);
+  const rivals = league.members.filter((m) => mkey(m) !== myKey && m.ids);
   $("#lgH2h").innerHTML =
     rivals
       .map((m) => {
@@ -293,17 +298,17 @@ export const cumPts = (hist, gds) => {
 };
 // chip badges for a team's line: your teams from the saved line-ups, rivals from an import
 export function chipMarks(key, gds) {
-  const L = lineups(key),
+  const rounds = lineups(key),
     im = state.league && state.league.members.find((m) => mkey(m) === key),
     short = (k) => (CHIPS.find(([c]) => c === k) || [])[1];
   const at = {};
-  if (L) for (const [g, r] of Object.entries(L)) if (r.chip) at[+g] = short(r.chip);
+  if (rounds) for (const [g, r] of Object.entries(rounds)) if (r.chip) at[+g] = short(r.chip);
   if (im && im.chipGd) for (const [k, g] of Object.entries(im.chipGd)) if (!at[g]) at[g] = short(k);
   return gds.map((g) => at[g] || null);
 }
-function renderLeagueChart(L) {
+function renderLeagueChart(league) {
   const mode = state.lgMode || "total",
-    withH = L.members.filter((m) => m.hist.length);
+    withH = league.members.filter((m) => m.hist.length);
   const gds = [...new Set(withH.flatMap((m) => m.hist.map((h) => h.gd)))].sort((a, b) => a - b);
   const cum = new Map(withH.map((m) => [mkey(m), cumPts(m.hist, gds)]));
   const myKey = teamKey(activeTeam());

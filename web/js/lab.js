@@ -11,7 +11,7 @@ import { showView } from "./main.js";
 export let labOwner = false;
 let labRun = null; // the last run: { g, N, ms, sim, setup, base (the shipped model's run, when compared), changed }
 const LAB_KEY = "pitwall.lab";
-// the switches, with the shipped value read from the engine at start-up (backtest notes in CLAUDE.md, item 9)
+// the switches, with the shipped value read from the engine at start-up (backtest notes in docs/history.md, item 9)
 const LAB_SWITCHES = [
   {
     g: "Race",
@@ -313,17 +313,17 @@ function labStrips(rows, sim) {
 }
 // the starting team's total per simulated weekend (Boost doubled; "auto" = the top projected driver)
 function labTeam(run) {
-  const T = startTeam();
-  if (!T || !T.team || T.team.length < 7) return `<p class="note">No starting team set in the Calculator.</p>`;
+  const team = startTeam();
+  if (!team || !team.team || team.team.length < 7) return `<p class="note">No starting team set in the Calculator.</p>`;
   const tot = (r) => {
     const { sim } = r,
       N = sim.N,
       idx = Object.fromEntries(sim.ids.map((id, i) => [id, i]));
-    const ids = T.team.filter((id) => idx[id] != null);
+    const ids = team.team.filter((id) => idx[id] != null);
     const drivers = ids.filter((id) => byId[id].kind === "D");
     const boost =
-      T.boost && T.boost !== "auto" && idx[T.boost] != null
-        ? T.boost
+      team.boost && team.boost !== "auto" && idx[team.boost] != null
+        ? team.boost
         : drivers.sort((x, y) => sim.stats[idx[y]].mean - sim.stats[idx[x]].mean)[0];
     const out = new Float64Array(N);
     for (let s = 0; s < N; s++) {
@@ -368,40 +368,40 @@ function labTeam(run) {
   const line = (arr) =>
     `p10 ${f1(labQ(arr, 0.1))} · p50 ${f1(labQ(arr, 0.5))} · mean <b>${f1(mean(arr))}</b> · p90 ${f1(labQ(arr, 0.9))}`;
   return (
-    `<p class="note">${esc(T.name || "Starting team")}: ${line(a)}${b ? `<br><span class="dim">Shipped model (dashed): ${line(b)}</span>` : ""}</p>` +
+    `<p class="note">${esc(team.name || "Starting team")}: ${line(a)}${b ? `<br><span class="dim">Shipped model (dashed): ${line(b)}</span>` : ""}</p>` +
     s
   );
 }
 
 // average position (or gap to the leader) at each lap end, per driver, from the lap races' traces
 function labLaps(run) {
-  const L = run.sim.laps;
-  if (!L)
+  const laps = run.sim.laps;
+  if (!laps)
     return `<p class="note">Only the lap races record laps: set Race model to "Lap by lap" or "Timing segments" and Rerun.</p>`;
   const fieldMode = lab.lapv === "field",
     gapMode = lab.lapv === "gap" || fieldMode,
     D = run.setup.model.drivers;
-  const T = startTeam(),
-    mine = new Set((T && T.team) || []);
+  const team = startTeam(),
+    mine = new Set((team && team.team) || []);
   const W = 720,
     H = 340,
     PL = 34,
     PR = 44,
     PT = 8,
     PB = 22;
-  let vals = gapMode ? L.gap : L.pos;
+  let vals = gapMode ? laps.gap : laps.pos;
   if (fieldMode) {
-    const mean = Array.from({ length: L.n }, (_, l) => {
+    const mean = Array.from({ length: laps.n }, (_, l) => {
       let s = 0,
         n = 0;
-      for (const v of L.gap)
+      for (const v of laps.gap)
         if (isFinite(v[l])) {
           s += v[l];
           n++;
         }
       return n ? s / n : 0;
     });
-    vals = L.gap.map((v) => v.map((x, l) => x - mean[l]));
+    vals = laps.gap.map((v) => v.map((x, l) => x - mean[l]));
   }
   let ymin = fieldMode ? 0 : gapMode ? 0 : 1,
     ymax = gapMode ? 0 : D.length;
@@ -416,13 +416,13 @@ function labLaps(run) {
     ymax = Math.ceil(ymax / 10) * 10;
     ymin = Math.floor(ymin / 10) * 10;
   }
-  const X = (l) => PL + (l / Math.max(1, L.n - 1)) * (W - PL - PR),
+  const X = (l) => PL + (l / Math.max(1, laps.n - 1)) * (W - PL - PR),
     Y = (v) => PT + ((v - ymin) / Math.max(1, ymax - ymin)) * (H - PT - PB);
   let s = `<svg viewBox="0 0 ${W} ${H}" class="labsvg" role="img" aria-label="${gapMode ? "Gap to the leader" : "Average position"} by lap">`;
   const step = gapMode ? Math.max(10, Math.round((ymax - ymin) / 60) * 10) : 5;
   for (let v = ymin; v <= ymax; v += step)
     s += `<line x1="${PL}" x2="${W - PR}" y1="${Y(v)}" y2="${Y(v)}" class="gl"/><text x="${PL - 6}" y="${Y(v) + 4}" text-anchor="end">${gapMode ? (v > 0 ? "+" : "") + v + "s" : "P" + v}</text>`;
-  for (let l = 0; l < L.n; l += Math.max(5, Math.round(L.n / 60) * 10))
+  for (let l = 0; l < laps.n; l += Math.max(5, Math.round(laps.n / 60) * 10))
     s += `<text x="${X(l)}" y="${H - 6}" text-anchor="middle">L${l + 1}</text>`;
   // your team drawn last (on top), bolder
   const order = D.map((d, i) => i).sort((a, b) => (mine.has(D[a].id) ? 1 : 0) - (mine.has(D[b].id) ? 1 : 0));
@@ -491,9 +491,9 @@ function labTeamTot(sim, ids, boost) {
 }
 // the best teams within your budget (Calculator's starting team: its value + bank; else $100m), each a violin
 function labTeams(run, rows) {
-  const T = startTeam(),
-    hasTeam = T && T.team && T.team.length === 7;
-  const cap = hasTeam ? T.team.reduce((s, id) => s + (byId[id] ? byId[id].price : 0), 0) + (T.bank || 0) : 100;
+  const team = startTeam(),
+    hasTeam = team && team.team && team.team.length === 7;
+  const cap = hasTeam ? team.team.reduce((s, id) => s + (byId[id] ? byId[id].price : 0), 0) + (team.bank || 0) : 100;
   const pr = Object.fromEntries(rows.map((r) => [r.a.id, r]));
   const cand = rows
     .filter((r) => r.a.active || r.a.kind === "C")
@@ -508,13 +508,13 @@ function labTeams(run, rows) {
   const teams = Engine.optimise(cand, [], { cap, free: 7, maxT: 7, locks: new Set(), bans: new Set(), top: 24 });
   const list = teams.map((t) => ({ ids: [...t.cons, ...t.drivers], boost: t.boost, label: "" }));
   if (hasTeam) {
-    const drivers = T.team.filter((id) => byId[id] && byId[id].kind === "D");
+    const drivers = team.team.filter((id) => byId[id] && byId[id].kind === "D");
     const boost =
-      T.boost && T.boost !== "auto"
-        ? T.boost
+      team.boost && team.boost !== "auto"
+        ? team.boost
         : drivers.slice().sort((a, b) => (pr[b] ? pr[b].st.mean : 0) - (pr[a] ? pr[a].st.mean : 0))[0];
     list.push({
-      ids: T.team.slice().sort((a, b) => (byId[a].kind === "C" ? -1 : 1) - (byId[b].kind === "C" ? -1 : 1)),
+      ids: team.team.slice().sort((a, b) => (byId[a].kind === "C" ? -1 : 1) - (byId[b].kind === "C" ? -1 : 1)),
       boost,
       label: "Yours",
     });
@@ -589,7 +589,7 @@ function labAssetViolins(run, rows) {
 }
 // every constructor pair and every 5-driver combination: summed xPts against summed price, with a fitted line
 function labCombos(rows) {
-  const C = rows.filter((r) => r.a.kind === "C"),
+  const cons = rows.filter((r) => r.a.kind === "C"),
     D = rows.filter((r) => r.a.kind === "D" && r.a.active);
   const fit = (pts) => {
     const n = pts.length,
@@ -605,11 +605,11 @@ function labCombos(rows) {
     return { b, a: my - b * mx };
   };
   const pairs = [];
-  for (let i = 0; i < C.length; i++)
-    for (let j = i + 1; j < C.length; j++) {
-      const p = C[i].a.price + C[j].a.price,
-        x = C[i].st.mean + C[j].st.mean;
-      pairs.push({ i: C[i], j: C[j], p, x });
+  for (let i = 0; i < cons.length; i++)
+    for (let j = i + 1; j < cons.length; j++) {
+      const p = cons[i].a.price + cons[j].a.price,
+        x = cons[i].st.mean + cons[j].st.mean;
+      pairs.push({ i: cons[i], j: cons[j], p, x });
     }
   const fc = fit(pairs.map((q) => [q.p, q.x]));
   // constructor pairs: SVG scatter
