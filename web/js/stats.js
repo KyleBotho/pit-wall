@@ -105,7 +105,7 @@ export function renderStats() {
     lo = Math.min(0, ...flat),
     hiV = Math.max(0, ...flat);
 
-  // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs unlocked leagues)
+  // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs your league data: signed in)
   const team = hi >= 0 ? state.teams[hi] : null,
     rounds = team ? lineups(teamKey(team)) : null;
   const pick = (id, g) => {
@@ -153,7 +153,7 @@ export function renderStats() {
       ? ` ${off.size} scoring categor${off.size > 1 ? "ies" : "y"} left out.`
       : "") +
     (team && !rounds
-      ? " Unlock your leagues to highlight each round's picks; showing your current team."
+      ? " Sign in to highlight each round's picks; showing your current team."
       : team
         ? " Dashed = picked, solid = Boost, thick = X3."
         : "") +

@@ -3,7 +3,7 @@ import globals from "globals";
 
 // The page's scripts (web/js) are ES modules with explicit imports, so no-undef catches typos and leftovers from
 // renames on its own. Engine and Hindsight are the two classic scripts loaded before the bundle.
-const SHARED = "/^(state|forecast|syncState|liveFeed|trackFit|bestRows|stale|DATA|CFG|NEXT|Engine|Hind|SEALED)$/";
+const SHARED = "/^(state|forecast|syncState|liveFeed|trackFit|bestRows|stale|DATA|CFG|NEXT|Engine|Hind|LEAGUE_DATA)$/";
 
 const common = {
   "no-unused-vars": ["error", { vars: "all", args: "none", caughtErrors: "none", ignoreRestSiblings: true }],
@@ -44,7 +44,7 @@ export default [
     },
   },
   {
-    files: ["engine.js", "hindsight.js", "seal.js"],
+    files: ["engine.js", "hindsight.js"],
     languageOptions: { sourceType: "script", globals: { ...globals.browser, ...globals.node } },
     rules: common,
   },

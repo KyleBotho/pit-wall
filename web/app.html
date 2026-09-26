@@ -387,29 +387,14 @@
     <div id="leagueEmpty" class="panel" hidden>
       <h3>League</h3>
       <p class="note">
-        No league loaded yet. Sign in, or import an F1 Fantasy data export. Your league stays in this browser and your account; it is never published.
+        No league loaded yet. Sign in (accounts with league access see their private leagues), or import an F1 Fantasy data export. An imported league stays in
+        this browser and your account; it is never published.
       </p>
       <div class="chipbar">
         <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button
         ><button class="btn ghost sm" data-import="1">Import a data export</button>
       </div>
     </div>
-    <form class="panel" id="lgUnlock" hidden>
-      <h3>Private leagues <small>encrypted</small></h3>
-      <p class="note">Your private leagues are stored encrypted. Enter your league passphrase to unlock them; this browser remembers it.</p>
-      <div class="chipbar">
-        <input class="inp" id="lgKey" type="password" autocomplete="current-password" placeholder="League passphrase" style="max-width: 260px" /><button
-          class="btn"
-          id="lgKeyBtn"
-          type="submit"
-        >
-          Unlock
-        </button>
-      </div>
-      <p class="note" id="lgSignin" hidden>
-        Unlocked it before while signed in? <button class="btn ghost sm" type="button" data-signin="1">Sign in with Google</button> and it unlocks by itself.
-      </p>
-    </form>
     <div class="dash" id="leagueDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
       <section class="panel" style="grid-column: 1/-1">
         <div class="seg" id="lgPick" style="align-self: flex-start"></div>

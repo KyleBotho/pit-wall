@@ -36,7 +36,7 @@ function chipsFrom(u) {
   };
 }
 // One played round from an export team record: the same fields the private repo's backfill.py keeps, so Hind.track
-// reads imported and sealed rounds alike. A Final Fix lists both drivers: the qualifying team is kept as ids and the
+// reads imported and account rounds alike. A Final Fix lists both drivers: the qualifying team is kept as ids and the
 // swap separately.
 function roundRecord(u, gd, start) {
   const chip = Object.keys(CHIP_GD).find((k) => CHIP_GD[k].some((f) => +u[f] === gd)) || null;

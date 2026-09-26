@@ -1,4 +1,4 @@
-/* ---------- encrypted private leagues (sealed by the private repo's leagues.py with seal.js and LEAGUE_KEY) ---------- */
+/* ---------- private leagues (from the signed-in account) and account sync ---------- */
 import { createClient } from "@supabase/supabase-js";
 import { $, $$, DATA, byId, esc, isDriver, money } from "./core.js";
 import { KEY, loadState, setState, state } from "./state.js";
@@ -6,76 +6,20 @@ import { compute, forecast } from "./forecast.js";
 import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
-export let SEALED = null; // the league payload (from the account, or decrypted with the passphrase): memory only
-// The passphrase itself is never stored. This browser keeps a non-extractable PBKDF2 key made from it (IndexedDB):
-// it can derive the decryption key for each new seal (fresh salt every time) but can't be read back out.
-const LK = "pitwall.lk"; // IndexedDB record name; also where older pages kept the passphrase in plain text
+export let LEAGUE_DATA = null; // the league payload from the signed-in account: memory only
 const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
-const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-function keyStore(mode, op) {
-  return new Promise((resolve, reject) => {
-    const open = indexedDB.open("pitwall", 1);
-    open.onupgradeneeded = () => open.result.createObjectStore("keys");
-    open.onerror = () => reject(open.error);
-    open.onsuccess = () => {
-      const db = open.result,
-        tx = db.transaction("keys", mode),
-        req = op(tx.objectStore("keys"));
-      tx.oncomplete = () => (db.close(), resolve(req.result));
-      tx.onerror = tx.onabort = () => (db.close(), reject(tx.error));
-    };
-  });
-}
-const keyGet = () => keyStore("readonly", (s) => s.get(LK)).catch(() => null);
-const keyPut = (k) => keyStore("readwrite", (s) => s.put(k, LK)).catch(() => {});
-const keyDel = () => keyStore("readwrite", (s) => s.delete(LK)).catch(() => {});
-async function unseal(base) {
-  const z = DATA.leagueSealed;
-  const key = await crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt: b64(z.salt), iterations: z.iter, hash: "SHA-256" },
-    base,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["decrypt"],
-  );
-  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(z.iv) }, key, b64(z.ct));
-  return JSON.parse(new TextDecoder().decode(pt));
-}
-// a passphrase typed in (or left by an older page): kept, as a key, only if it opens the leagues
-export async function unlock(pass, quiet) {
-  if (!DATA.leagueSealed || !window.crypto || !crypto.subtle) {
-    if (!quiet) toast("Encrypted leagues need the https site.");
-    return;
-  }
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
-  if (await tryUnseal(base, quiet)) await keyPut(base);
-}
 // league data goes live: your teams keyed and filled in, tracking applied (then refresh the league views)
 function useLeagues(payload) {
-  SEALED = payload;
+  LEAGUE_DATA = payload;
   adoptKeys();
   if (forecast) {
     fillFromLineups();
     applyTracked();
   }
 }
-const leagueCount = () => `${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}`;
-async function tryUnseal(base, quiet) {
-  let ok = false;
-  try {
-    useLeagues(await unseal(base));
-    ok = true;
-    if (!quiet) toast(`Unlocked ${leagueCount()}.`);
-  } catch (e) {
-    SEALED = null;
-    if (!quiet) toast("That passphrase didn't work.");
-  }
-  if (forecast) refreshViews(LEAGUE_VIEWS);
-  return ok;
-}
-// Signed-in accounts on the reader list (public.league_readers) get the leagues from the account, no passphrase:
-// public.league_data, written by the private repo's workflow, readable only by them (RLS). Anyone else gets no row
-// and keeps the passphrase route.
+const leagueCount = () => `${LEAGUE_DATA.leagues.length} league${LEAGUE_DATA.leagues.length === 1 ? "" : "s"}`;
+// Private leagues are read by signing in: public.league_data, written by the private repo's workflow, readable only
+// by accounts in public.league_readers (RLS). Anyone else gets no row.
 let leaguesAt = null; // updated_at of the row in use
 export async function pullLeagues() {
   const U = syncState.user;
@@ -86,27 +30,24 @@ export async function pullLeagues() {
     .eq("id", "current")
     .maybeSingle();
   if (U !== syncState.user || error || !data || data.updated_at === leaguesAt) return;
-  const first = leaguesAt == null && !SEALED;
+  const first = leaguesAt == null;
   leaguesAt = data.updated_at;
   useLeagues(data.body);
   if (first) toast(`Loaded ${leagueCount()} from your account.`);
   if (forecast) refreshViews(LEAGUE_VIEWS);
 }
-// at load: this browser's saved key, or a plain-text passphrase from an older page (moved into a key, then deleted)
-export async function unlockSaved() {
-  let old = null;
+// Until 2026-09-26 leagues were unlocked with a passphrase, kept in this browser as a key (IndexedDB "pitwall") or,
+// before that, in plain text (localStorage "pitwall.lk"). Neither is used now: remove them.
+export function forgetOldKeys() {
   try {
-    old = localStorage.getItem(LK);
-    localStorage.removeItem(LK);
+    localStorage.removeItem("pitwall.lk");
+    indexedDB.deleteDatabase("pitwall");
   } catch (e) {}
-  if (old) return unlock(old, true);
-  const base = await keyGet();
-  if (base) tryUnseal(base, true);
 }
-// Teams saved before team keys (see teamKey) are matched to the sealed data by name, once; from then on the key
+// Teams saved before team keys (see teamKey) are matched to the league data by name, once; from then on the key
 // follows them through renames. A name two teams share stays unmatched rather than guessed.
 function adoptKeys() {
-  const names = SEALED && SEALED.names;
+  const names = LEAGUE_DATA && LEAGUE_DATA.names;
   if (!names) return;
   let changed = false;
   for (const t of state.teams) {
@@ -119,10 +60,10 @@ function adoptKeys() {
   }
   if (changed) save();
 }
-// A browser with only example teams takes your teams from the sealed data: the line-up, bank, free transfers and
+// A browser with only example teams takes your teams from the league data: the line-up, bank, free transfers and
 // chips going into the round after the last one known (an export, then the line-ups seen after each race).
 function fillFromLineups() {
-  const saved = SEALED && SEALED.lineups;
+  const saved = LEAGUE_DATA && LEAGUE_DATA.lineups;
   if (!saved || !state.teams.every((t) => t.example)) return;
   let n = 0,
     latest = 0;
@@ -135,7 +76,7 @@ function fillFromLineups() {
     if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) continue;
     Object.assign(state.teams[n], {
       name: teamLabel(key),
-      ...(SEALED.names ? { tk: key } : {}), // older sealed files are keyed by name
+      tk: key,
       team: ids,
       bank: next.bank ?? state.teams[n].bank,
       free: next.free ?? 2,
@@ -234,9 +175,9 @@ const pristine = () => state.teams.every((t) => t.example) && !state.drafts.leng
 function syncPayload() {
   const s = {};
   for (const k in state) if (!NOSYNC.includes(k)) s[k] = state[k];
-  return { v: DATA.season, s }; // never the league passphrase
+  return { v: DATA.season, s };
 }
-// rows saved by older pages may still hold the league passphrase ("lk"): used once here, then written over without it
+// rows saved by older pages may still hold the old league passphrase ("lk"): written over without it
 const holdsKey = (row) => !!row && !!row.data && "lk" in row.data;
 export async function syncInit() {
   if (!syncState.ok) return;
@@ -323,7 +264,6 @@ function applyRemote(row, msg) {
   Object.assign(syncState, { at: row.updated_at, last, ready: true, err: "" });
   writeMark({ uid: syncState.user.id, at: row.updated_at, dirty: false });
   renderSync();
-  if (typeof d.lk === "string" && d.lk && !SEALED) unlock(d.lk, true);
   if (d.v !== DATA.season) toast(`Carried your settings over from ${d.v}; teams start fresh for ${DATA.season}.`);
   else if (msg) toast(msg);
   queuePush();
@@ -406,12 +346,11 @@ export async function signOut() {
   } catch (e) {}
   Object.assign(syncState, { user: null, at: null, err: "", hold: null, last: null, ready: false });
   writeMark(null);
-  await keyDel();
-  SEALED = null;
+  LEAGUE_DATA = null;
   leaguesAt = null;
   renderSync();
   if (forecast) refreshViews(LEAGUE_VIEWS);
-  toast("Signed out. Your leagues are locked again in this browser; its settings stay.");
+  toast("Signed out. Your private leagues are hidden again in this browser; its settings stay.");
 }
 const ago = (t) => {
   const m = Math.round((Date.now() - Date.parse(t)) / 60000);
@@ -456,7 +395,6 @@ export function renderSync() {
     el.innerHTML = h;
     el.closest("[data-acct]").hidden = false;
   });
-  $("#lgSignin").hidden = !(ss.sb && !U);
   // the rail's account row (bottom of the desktop menu): who is signed in, or a way to sign in
   const ra = $("#railAcct");
   ra.hidden = !(ss.ok && (ss.sb || ss.err));

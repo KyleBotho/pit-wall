@@ -1,7 +1,7 @@
 /* ---------- elite (global top 500, aggregates only) ---------- */
 import { $, $$, CHIPS, DATA, byId, code, esc, f0, pct, sgn } from "./core.js";
 import { state } from "./state.js";
-import { SEALED, needSync } from "./sync.js";
+import { LEAGUE_DATA, needSync } from "./sync.js";
 import { chip, heat, who, xpts } from "./forecast.js";
 import { chipMarks, cumPts, lineChart, teamHist, teamKey } from "./league.js";
 import { lineups } from "./hindsight-view.js";
@@ -32,8 +32,8 @@ export function renderElite() {
         `<div class="stat"><span class="l">#${k}</span><span class="v">${Math.round(El.cut[k]).toLocaleString()}</span><span class="s">points</span></div>`,
     )
     .join("");
-  // your totals: auto-updated league standings when unlocked, otherwise the last import
-  const auto = ((SEALED && SEALED.leagues) || []).flatMap((l) => l.members);
+  // your totals: auto-updated league standings when signed in, otherwise the last import
+  const auto = ((LEAGUE_DATA && LEAGUE_DATA.leagues) || []).flatMap((l) => l.members);
   const gap = (p, c) =>
     p == null || c == null
       ? "—"
@@ -94,7 +94,7 @@ export function renderElite() {
     $("#elChipNote").innerHTML = "";
     $("#elChipSub").textContent =
       `Share of the top 100 (line-ups export after R${top.round}) playing each chip, by round.` +
-      (Lu ? ` Outlined: when ${tm.name} played it.` : " Unlock your leagues to outline your own chip rounds.");
+      (Lu ? ` Outlined: when ${tm.name} played it.` : " Sign in to outline your own chip rounds.");
     const rounds = Array.from({ length: top.round }, (_, i) => top.round - i);
     $("#elChips").innerHTML =
       `<thead><tr><th>Round</th>${order.map((k) => `<th title="${esc(chipDef(k)[2])}">${chipDef(k)[1]}</th>`).join("")}</tr></thead><tbody>` +
@@ -208,8 +208,7 @@ export function renderEliteSeason(El) {
   $("#elSeasonNote").textContent =
     (gap
       ? "Points above or below the global top-100 cut-off after each round. "
-      : "Cumulative points after each round. ") +
-    (mine.length ? "" : "Unlock your leagues under Leagues → My leagues to add your teams.");
+      : "Cumulative points after each round. ") + (mine.length ? "" : "Sign in to add your teams.");
   const cell = (p, avg) =>
     p == null
       ? '<td class="dim">—</td>'

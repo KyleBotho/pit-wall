@@ -46,7 +46,6 @@ jobs:
           path: cache
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
-      # data/league.sealed.json is pushed here by the private pit-wall-private workflow
       - run: python refresh.py
       # Free Supabase projects (Google sign-in, synced settings) pause after ~1 week idle: a tiny query each run.
       # The key is the public publishable one (it's in the page too). Never fails the build.

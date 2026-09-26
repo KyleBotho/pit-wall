@@ -146,7 +146,7 @@ function renderStartPicker(team, kind) {
             ),
           )
           .join("")
-      : '<p class="note" style="padding:4px 8px">Unlock or import a league to pick rivals.</p>') +
+      : '<p class="note" style="padding:4px 8px">Sign in or import a league to pick rivals.</p>') +
     `<div class="grp">Other</div>` +
     opt("none", kind === "none", startBadge("none"), "No starting team (maximum budget only)");
 }
@@ -194,7 +194,7 @@ export function renderSettings() {
             `<option value="${esc(r.key)}" ${r.key === state.goalRival ? "selected" : ""}>${esc(r.name)} · ${esc(r.league)}</option>`,
         )
         .join("")
-    : `<option value="">No rivals yet (unlock or import a league)</option>`;
+    : `<option value="">No rivals yet (sign in or import a league)</option>`;
   // chips F1's data shows as played are locked; the rest can still be marked by hand (Autopilot, or a No Negative that
   // changed nothing, can't be seen in the data)
   const locked = lockedChips(team),

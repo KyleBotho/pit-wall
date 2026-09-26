@@ -52,7 +52,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
   setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
-  `syncState`, `SEALED`, `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
+  `syncState`, `LEAGUE_DATA` (the league payload from the account), `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
   `state.calcStart`; pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
   `state.maxPen`; the chip played is `activeChip()`.
@@ -85,25 +85,26 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
-- `supabase/setup.sql` — the sign-in/sync database (item 12) and the Sim lab's `owners` gate. Re-runnable in
-  Supabase's SQL Editor.
-- `seal.js` — AES-256-GCM + PBKDF2-SHA256 (250k) sealing of stdin with `LEAGUE_KEY`; the page's `unseal` mirrors it
-  (`tests/seal.test.js`). Used by the private repo's workflow, which checks this repo out.
+- `supabase/setup.sql` — the sign-in/sync database (item 12), the Sim lab's `owners` gate, and the private leagues:
+  `league_data` (one row, the league payload) readable only by accounts in `league_readers` (RLS). Re-runnable in
+  Supabase's SQL Editor. Add a reader there (see the comment in the file).
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
-- `data/league.sealed.json` — encrypted `{leagues, rounds, lineups, rivals, seen}`, written ONLY by the private repo's
-  workflow. `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per
+- League payload (Supabase `league_data`, written ONLY by the private repo's workflow): `{v: 2, leagues, names,
+  rounds, lineups, rivals, seen}`, keyed by team key. `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per
   round (ids, start line-up, boost, x3, budget, bank, free, subs, chip) for Hindsight; `rivals` = the same for league
   rivals (from exports); `seen` = {team: {gd: 7 ids}}, the line-up in each round's last league-feed snapshot (the
-  team that scored it), which `Hind.track` works the rest out from. Don't hand-edit.
+  team that scored it), which `Hind.track` works the rest out from. The page loads it after sign-in
+  (`pullLeagues`). Until 2026-09-26 it was an encrypted `data/league.sealed.json` unlocked with a passphrase.
 - `data/elite_history.json` — real global cut-offs/means per gameday, written by the private workflow (plaintext,
   numbers only). `refresh.py` merges it over the estimated R1–R14 paths in `data/elite_top100.json` `history`.
 - Private repo `KyleBotho/pit-wall-private` (local clone `../pit-wall-private`): `leagues.py` + `leagues.yml`
   (every 6 h, hourly Sun–Mon) fetch the private-league feeds and the global top 500, keep plaintext
   `history/<leagueId>/<feedTime>.json` and `history/global/` there, map each snapshot to a gameday via the schedule
-  (last race started before the feed time), and push the sealed snapshot and `elite_history.json` here with the
-  `PUBLIC_REPO_TOKEN` PAT (which triggers a rebuild). Secrets `LEAGUE_KEY`, `LEAGUE_IDS`, `PUBLIC_REPO_TOKEN` live in
-  that repo only. Its runs aren't visible without auth; check for its commits here instead:
-  `https://api.github.com/repos/KyleBotho/pit-wall/commits?path=data/league.sealed.json`.
+  (last race started before the feed time), upload the league payload to Supabase (`SUPABASE_SECRET_KEY`, only
+  when it changed; `state/published.sha256`), and push `elite_history.json` here with the `PUBLIC_REPO_TOKEN` PAT
+  (which triggers a rebuild). Secrets `LEAGUE_IDS`, `SUPABASE_SECRET_KEY`, `PUBLIC_REPO_TOKEN` live in that repo
+  only. Its runs aren't visible without auth; check for its commits here instead:
+  `https://api.github.com/repos/KyleBotho/pit-wall/commits?path=data/elite_history.json`.
   `leagues.py` imports `f1feeds.py` from the public checkout: push this repo before a private change that needs it.
 
 ## Code conventions (2026-09-24 review)
@@ -132,7 +133,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `python -m unittest discover tests`, `ruff check . && ruff format --check .`. `npm run backtest` for the model.
 - After editing `config/feeds.json`: `node tools/sync-shared.js`, then redeploy the Supabase function.
 - Deploy: commit and `git push` (Git Credential Manager handles auth; no gh CLI). Pages rebuilds on push.
-  `git pull --rebase` first: both workflows push to main (history, sealed files).
+  `git pull --rebase` first: both workflows push to main (history, elite history).
 - After a fresh F1 Fantasy export (Claude for Chrome -> `Downloads/f1fantasy_official_data_<date>.json`): in
   `../pit-wall-private` run `python backfill.py "<that file>"` and push. It rewrites `history/backfill.json` (round
   points R1+ and every team's per-round records: yours and league rivals'), and the push triggers a reseal. Between
@@ -156,7 +157,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
   for it: one attempt, cached copy on failure, never aborts the build (seen 2026-09-24 during Baku FP1).
 - The old `fantasy-api.formula1.com` API (Postman doc, dlthub, skelmis package) is dead since 2023 — don't use.
-- Private-league standings come from the private repo (above), sealed. Chips, bank and free transfers are
+- Private-league standings come from the private repo (above), via Supabase. Chips, bank and free transfers are
   logged-in data and are NOT fetched by code (checked 2026-09-25: `services/user/opponentteam/...` and
   `services/user/gameplay/.../getteam` answer 401 without a session). Exports give them exactly; after the last
   export `Hind.track` works them out from the public feeds (Round tracking). The user collects an
@@ -216,9 +217,10 @@ there before re-deciding something.
       `LEAGUE_IDS` secret) is how Pit Wall finds and follows every user's teams: anyone who wants to use the tool joins
       it, and their teams are discovered and tracked from there, not only the owner's three. Design onboarding and
       per-user team discovery around it. It builds on team keys (below) and on the "Pit Wall" account session check.
-- [ ] Next (user's order, 2026-09-26): "option 1", signing in unlocks the leagues: league data in Supabase behind
-      per-account RLS, no passphrase and no public sealed file. It's the first step of the Team Tracking plan. (The
-      security review's items 1-9 are done: docs/history.md, "Recently finished".)
+- [x] 2026-09-26 "option 1": signing in unlocks the leagues (Supabase `league_data` behind `league_readers` RLS);
+      the passphrase, `seal.js` and `data/league.sealed.json` are gone. Old sealed files stay in git history
+      (encrypted; left in place rather than rewriting history). The security review's items 1-9 are done too
+      (docs/history.md, "Recently finished"). Next is the Team Tracking TO DO above: per-user teams and access.
 - Workflow (item 9 of that review): actions are pinned to release commit SHAs (tag in a comment; bump them by hand
   when a runtime is retired). `refresh` runs our code with a read-only token and hands `history/` to the `history`
   job, the only one that can push; `deploy` needs `refresh` (the tests).

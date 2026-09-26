@@ -538,23 +538,6 @@ def elite_history(est):
     return [by[k] for k in sorted(by)]
 
 
-def sealed_leagues():
-    """Encrypted private-league standings. The private pit-wall-private workflow fetches and seals them and pushes
-    data/league.sealed.json here; this repo never sees the league IDs or the key. None until that file exists."""
-    path = os.path.join(HERE, "data", "league.sealed.json")
-    if not os.path.exists(path):
-        return None
-    try:
-        z = read_json(path)
-    except ValueError:
-        print("  ! data/league.sealed.json is not valid JSON; leagues skipped")
-        return None
-    if not all(k in z for k in ("v", "iter", "salt", "iv", "ct")):
-        print("  ! data/league.sealed.json is missing fields; leagues skipped")
-        return None
-    return z
-
-
 # ---------------------------------------------------------------- projections archive
 
 
@@ -734,8 +717,6 @@ def collect():
     print("Leaderboards…")
     elite = build_elite(assets, schedule)
     print("  global top 500: " + (f"{elite['n']} teams" if elite else "unavailable"))
-    sealed = sealed_leagues()
-    print("  private leagues: " + ("sealed snapshot embedded" if sealed else "none"))
 
     data = {
         "generated": now.isoformat(timespec="minutes"),
@@ -750,7 +731,6 @@ def collect():
         "trackStats": track_stats,
         "bands": load_bands(),
         "elite": elite,
-        "leagueSealed": sealed,
         "live": live,
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
         **ext,

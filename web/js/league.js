@@ -20,30 +20,30 @@ import {
   sgn,
 } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { SEALED } from "./sync.js";
+import { LEAGUE_DATA } from "./sync.js";
 import { boostFor, chip, heat, teamSamples, who, xpts } from "./forecast.js";
 import { lineups } from "./hindsight-view.js";
-// Each team's season as far as the data goes (Hind.track): per-round records from exports (sealed or imported)
+// Each team's season as far as the data goes (Hind.track): per-round records from exports (account or imported)
 // first, else the line-up seen after each race plus the official round points, from which Boost, chips, budget,
-// bank and free transfers are worked out. Cached until the sealed data or an import changes.
+// bank and free transfers are worked out. Cached until the league data or an import changes.
 let TRACK = { ver: null, by: {} };
 // A team is known by its key: F1's account id + team number, hashed (tk: from the private repo, or worked out on
 // import). Names only label teams, so a rename or two managers with the same team name never mixes up whose season
-// is whose. Data from before team keys (an older sealed file, import or save) has none: its name stands in.
+// is whose. Data from before team keys (an older import or save) has none: its name stands in.
 export const teamKey = (t) => (t && (t.tk || t.name)) || "";
 export const mkey = (m) => m.key || m.name; // a member of leagueList() or of an imported league
-export const teamLabel = (k) => (SEALED && SEALED.names && SEALED.names[k]) || k;
+export const teamLabel = (k) => (LEAGUE_DATA && LEAGUE_DATA.names && LEAGUE_DATA.names[k]) || k;
 export function tracked(key) {
-  const ver = [SEALED, state.league && state.league.collected, DATA.done.length];
+  const ver = [LEAGUE_DATA, state.league && state.league.collected, DATA.done.length];
   if (!TRACK.ver || TRACK.ver.some((k, i) => k !== ver[i])) TRACK = { ver, by: {} };
   if (!(key in TRACK.by)) {
     const im = state.league && state.league.members.find((m) => mkey(m) === key);
     const known = {
       ...(im && im.rounds),
-      ...((SEALED && SEALED.rivals && SEALED.rivals[key]) || {}),
-      ...((SEALED && SEALED.lineups && SEALED.lineups[key]) || {}),
+      ...((LEAGUE_DATA && LEAGUE_DATA.rivals && LEAGUE_DATA.rivals[key]) || {}),
+      ...((LEAGUE_DATA && LEAGUE_DATA.lineups && LEAGUE_DATA.lineups[key]) || {}),
     };
-    const seen = (SEALED && SEALED.seen && SEALED.seen[key]) || {};
+    const seen = (LEAGUE_DATA && LEAGUE_DATA.seen && LEAGUE_DATA.seen[key]) || {};
     const official = Object.fromEntries(teamHist(key).map((h) => [h.gd, h.pts]));
     TRACK.by[key] = Object.keys(known).length || Object.keys(seen).length ? Hind.track(known, seen, official) : null;
   }
@@ -53,7 +53,7 @@ export const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) 
 // Leagues: auto-updated (decrypted) standings merged with anything imported (chips, bank, round history)
 export function leagueList() {
   const out = [];
-  for (const league of (SEALED && SEALED.leagues) || []) {
+  for (const league of (LEAGUE_DATA && LEAGUE_DATA.leagues) || []) {
     const imp = state.league && state.league.name === league.name ? state.league : null;
     const members = league.members
       .map((m) => {
@@ -98,10 +98,9 @@ export function leagueList() {
   return out;
 }
 export function renderLeague() {
-  $("#lgUnlock").hidden = !(DATA.leagueSealed && !SEALED);
   const all = leagueList(),
     league = all[Math.min(state.lgIdx | 0, all.length - 1)];
-  $("#leagueEmpty").hidden = !!league || !!DATA.leagueSealed;
+  $("#leagueEmpty").hidden = !!league;
   $("#leagueDash").hidden = !league;
   if (!league) return;
   $("#lgPick").hidden = all.length < 2;
@@ -282,9 +281,9 @@ function renderLeagueForecast(league, myIds, myKey) {
       : `<tr><td colspan="5" class="muted">Your line-up matches the whole league.</td></tr>`) +
     "</tbody>";
 }
-// Round points for a team: the private repo's round table (after unlocking) first, else an imported league.
+// Round points for a team: the private repo's round table (signed in) first, else an imported league.
 export function teamHist(key) {
-  const rs = ((SEALED && SEALED.rounds) || [])
+  const rs = ((LEAGUE_DATA && LEAGUE_DATA.rounds) || [])
     .filter((r) => r.pts[key] != null)
     .map((r) => ({ gd: r.gd, pts: r.pts[key] }));
   if (rs.length) return rs;

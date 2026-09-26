@@ -1,12 +1,12 @@
 /* ---------- hindsight: best teams on actual points (scoring in hindsight.js, as Hind) ---------- */
 import { $, $$, CHIPS, DATA, Hind, byId, code, esc, f0, f1, money, sgn } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { SEALED } from "./sync.js";
+import { LEAGUE_DATA } from "./sync.js";
 import { chip, heat, who } from "./forecast.js";
 import { teamHist, teamKey } from "./league.js";
 import { filterUI, filters, teamText } from "./filters.js";
 import { inclExcl } from "./calc.js";
-export const lineups = (key) => (SEALED && SEALED.lineups && SEALED.lineups[key]) || null; // by teamKey
+export const lineups = (key) => (LEAGUE_DATA && LEAGUE_DATA.lineups && LEAGUE_DATA.lineups[key]) || null; // by teamKey
 // budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
 // fair comparison)
 const hdCapMode = () => state.hdCap || `team:${state.active}`;
@@ -196,9 +196,7 @@ export function renderHind() {
     r: (lineups(teamKey(t)) || {})[gd],
     off: teamHist(teamKey(t)).find((h) => h.gd === gd)?.pts,
   }));
-  if (!SEALED)
-    $("#hdMine").innerHTML =
-      '<p class="note">Unlock your leagues under Leagues → My leagues to see your teams here. Their round-by-round line-ups are saved (encrypted) from your data exports.</p>';
+  if (!LEAGUE_DATA) $("#hdMine").innerHTML = '<p class="note">Sign in to see your teams here.</p>';
   else
     $("#hdMine").innerHTML = mine
       .map(({ t, r, off }) => {
@@ -279,7 +277,7 @@ export function renderHind() {
     `<thead><tr><th>Round</th><th title="Best team from scratch with the settings above">Best possible</th>${teams.map(({ t }) => `<th>${esc(t.name)}</th><th title="Best reachable from that team's line-up, budget, free transfers and chip">Best reachable</th>`).join("")}</tr></thead><tbody>${tot}${rows.join("")}</tbody>`;
   $("#hdFoot").textContent = teams.length
     ? "Best reachable starts from the team's actual line-up going into the round, with its budget, free transfers (extra ones at −10) and the chip it played. The % is how much of that you banked."
-    : "Unlock your leagues to compare your own teams.";
+    : "Sign in to compare your own teams.";
 
   // decisions over the season, per team
   const dsum = teams.map(({ t }) => {
@@ -328,7 +326,7 @@ export function renderHind() {
         )
         .join("") +
       "</tbody>"
-    : `<tbody><tr><td class="muted" style="position:static">Unlock your leagues to see your decisions.</td></tr></tbody>`;
+    : `<tbody><tr><td class="muted" style="position:static">Sign in to see your decisions.</td></tr></tbody>`;
 
   renderModelTeam(gd);
 
@@ -434,7 +432,7 @@ function renderModelTeam(gd) {
   $("#hdModelNote").textContent = `${span} · ${nFro} frozen, ${nReb} rebuilt`;
   $("#hdModelSum").innerHTML =
     `<b>${f0(total)} pts</b> over ${span}` +
-    (cmp.length ? ` · against it: ${cmp.join(" · ")}` : " · unlock your leagues to compare your own teams");
+    (cmp.length ? ` · against it: ${cmp.join(" · ")}` : " · sign in to compare your own teams");
   const moves = (r) => {
     if (!r.start.length) return "Fresh pick";
     const outs = r.start.filter((id) => !r.ids.includes(id)),

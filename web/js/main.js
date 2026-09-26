@@ -13,8 +13,7 @@ import {
   syncChoose,
   syncInit,
   syncState,
-  unlock,
-  unlockSaved,
+  forgetOldKeys,
 } from "./sync.js";
 import { compute, editStart, forecast, lockedChips, rivalTeams, startKind, startTeam } from "./forecast.js";
 import { importOfficial } from "./import.js";
@@ -1004,13 +1003,6 @@ document.addEventListener("input", (e) => {
     recompute(300);
   }
 });
-document.addEventListener("submit", (e) => {
-  if (e.target.id !== "lgUnlock") return;
-  e.preventDefault();
-  const v = $("#lgKey").value;
-  $("#lgKey").value = "";
-  if (v) unlock(v, false);
-});
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
   closeMenu();
@@ -1130,7 +1122,7 @@ renderHeader();
 showView(state.view);
 $$("table").forEach(alignTable);
 if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
-if (DATA.leagueSealed) unlockSaved();
+forgetOldKeys();
 syncInit();
 setInterval(() => {
   renderHeader();
