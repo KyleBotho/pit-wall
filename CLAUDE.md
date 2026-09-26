@@ -68,16 +68,17 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   mark is also the `#pwMark` symbol in app.html (rail/app bar/menu); banner PNG = link preview (og:image);
   apple-touch-icon.png 180px. `build_page` copies the folder to `build/brand/`. Originals from the user (their banner
   SVG drew the mark too big, off the bottom edge; the copy here is re-laid out; their PNGs are right).
-- `.github/workflows/refresh.yml` — rebuild + deploy every 30 min Thu–Sun, every 6 h Mon–Wed, on push, and manually.
+- `.github/workflows/refresh.yml` — rebuild + deploy when the refresh function starts it (below), on push, and every 6 h
+  as a fallback.
   Commits `history/`, then runs the tests (they gate the deploy). A separate `check` job (pushes only) runs lint,
   formatting, types and ruff, so style never blocks a price refresh.
-- Data refresh (2026-09-26, being set up): `refresh.py refresh_plan` writes `build/refresh-plan.json` (due times after
+- Data refresh (live 2026-09-26): `refresh.py refresh_plan` writes `build/refresh-plan.json` (due times after
   each session, before lock, until the race's points are certified, daily). Supabase function `refresh`
   (`supabase/functions/refresh/index.ts`, Verify JWT off, secret `GITHUB_DISPATCH_TOKEN` = fine-grained token,
   pit-wall only, Actions read/write; made 2026-09-26 with 90 days: EXPIRES Fri 2026-12-25, after the season's last
   race; the admin panel shows its expiry and warns 3 weeks ahead) starts refresh.yml when an entry falls due; pg_cron calls it every 5 min
   (setup.sql). Settings > Admin > Data refresh (`web/js/refresh-view.js`) shows status and has Refresh now (admins,
-  10 min apart). Once it runs, refresh.yml's Thu–Sun 30-min cron drops to a fallback.
+  10 min apart). refresh.yml's own timer is only a 6-hourly fallback.
 - `history/2026/` — the season archive, saved as it happens: `players/gdNN.json` raw player feed per finished round
   (read back instead of refetched; the latest round is refetched for late corrections), `playerstats/<id>.json`
   latest per-asset scoring events, `projections/gdNN.json` our default-settings projection, rewritten until lock and
@@ -232,8 +233,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] Autonomy steps (user's order, 2026-09-26): 1 session-aware refresh + admin Refresh now (built; needs the
-      Supabase function deployed, the GitHub token, setup.sql run; then verify a tick and cut the Thu–Sun cron),
+- [ ] Autonomy steps (user's order, 2026-09-26): 1 session-aware refresh + admin Refresh now (DONE 2026-09-26:
+      scheduler, function and a Refresh now run checked; refresh.yml's timer is now a 6-hourly fallback),
       2 data health checks + alerts (incl. mid-season oddities: new/inactive cards, schedule changes, unknown scoring
       events, missing results), 3 automatic post-round accuracy runs + a Model health panel in the Sim lab (propose
       refits, the owner approves).
