@@ -228,10 +228,9 @@ there before re-deciding something.
 - [ ] Team Tracking (`docs/team-tracking-plan.md`): phase A built 2026-09-26 (public data; see docs/history.md).
       Phase B (the FPW account's session, members visible before their first race) waits for the session-check
       results around 2026-10-09. The tracking league is the `LEAGUE_IDS` entry marked `<id>:<Name>:track`.
-- [ ] Rivals (`docs/team-tracking-plan.md`, "Rivals"): first step built 2026-09-26 (Manage rivals: tracking-league
-      teams, your private leagues' members, the top-100/500 templates; Calculator start team and goal), checked working
-      by the user. "My rivals" tab built the same day (not yet browser-checked). Still to check: a tracking-league
-      rival, once a second account is in that league and a race has passed.
+- [x] Rivals (`docs/team-tracking-plan.md`, "Rivals"), 2026-09-26: Manage rivals (tracking-league teams, your private
+      leagues' members, the top-100/500 templates), Calculator start team and goal, and the "My rivals" tab; all
+      checked working by the user, including a tracking-league rival.
 - [x] 2026-09-26 "option 1": signing in unlocks the leagues (Supabase `league_data` behind `league_readers` RLS);
       the passphrase, `seal.js` and `data/league.sealed.json` are gone. Old sealed files stay in git history
       (encrypted; left in place rather than rewriting history). The security review's items 1-9 are done too

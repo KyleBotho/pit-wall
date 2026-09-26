@@ -5,6 +5,8 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, rivals checked in the browser by the user: Manage rivals, the Calculator's rival start team and
+      goal, the "My rivals" tab, the ⓘ tooltips, and a tracking-league rival picked by username.
 - [x] 2026-09-26, explanations into ⓘ tooltips (user: "comments like these should be hidden in small tool tips",
       showing the Calculator's note under Best Teams and the rivals head-to-head note). Moved: Best Teams' note
       (a goal with nothing to beat stays visible next to the budget), the plan-transfers note, chips-used note,
