@@ -111,3 +111,66 @@ drop policy if exists "league_data: readers only" on public.league_data;
 create policy "league_data: readers only" on public.league_data
   for select to authenticated
   using (exists (select 1 from public.league_readers r where r.user_id = (select auth.uid())));
+
+-- Team Tracking (docs/team-tracking-plan.md). Users join Pit Wall's tracking league on F1 Fantasy, then link their
+-- F1 Fantasy account once. No raw F1 ids are kept: an account is known by its account key (first 16 hex of
+-- SHA-256 of F1's account guid; f1feeds.account_key, web/js/core.js accountKey).
+--
+-- tracked_accounts: one row per F1 account in the tracking league, written only by the private repo's workflow
+-- (leagues.py, secret key). username = what users search for (they opted in by joining); teams = [{tk, no, name}];
+-- body = those teams' history in the league-payload shape ({names, rounds, seen}, keyed by team key). Every signed-in
+-- user can read it (search and loading); nobody signed out can.
+create table if not exists public.tracked_accounts (
+  account_key text primary key,
+  username    text not null,
+  teams       jsonb not null default '[]'::jsonb,
+  body        jsonb not null default '{}'::jsonb,
+  league      text not null, -- the tracking league's name (never its id)
+  season      int not null,
+  updated_at  timestamptz not null default now()
+);
+alter table public.tracked_accounts enable row level security;
+revoke all on public.tracked_accounts from anon, authenticated;
+grant select on public.tracked_accounts to authenticated;
+drop policy if exists "tracked_accounts: signed-in read" on public.tracked_accounts;
+create policy "tracked_accounts: signed-in read" on public.tracked_accounts
+  for select to authenticated using (true);
+
+-- account_links: which F1 account a Pit Wall account follows. One per Pit Wall account; any number of Pit Wall
+-- accounts may follow the same F1 account (no unique key on account_key), so nobody can block its owner. Each user
+-- reads and writes only their own row; deleting the Pit Wall account deletes the link.
+create table if not exists public.account_links (
+  user_id     uuid primary key references auth.users (id) on delete cascade,
+  account_key text not null check (account_key ~ '^[0-9a-f]{16}$'),
+  linked_at   timestamptz not null default now()
+);
+alter table public.account_links enable row level security;
+revoke all on public.account_links from anon, authenticated;
+grant select, insert, update, delete on public.account_links to authenticated;
+drop policy if exists "account_links: read own"   on public.account_links;
+drop policy if exists "account_links: insert own" on public.account_links;
+drop policy if exists "account_links: update own" on public.account_links;
+drop policy if exists "account_links: delete own" on public.account_links;
+create policy "account_links: read own" on public.account_links
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "account_links: insert own" on public.account_links
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "account_links: update own" on public.account_links
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "account_links: delete own" on public.account_links
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+-- app_config: small settings the page reads once signed in, e.g. the tracking league's join code (kept out of the
+-- public page source). Signed-in users read; only the SQL Editor writes. Set or change the join code:
+--   insert into public.app_config (key, value) values ('tracking_join_code', '<code>')
+--   on conflict (key) do update set value = excluded.value;
+create table if not exists public.app_config (
+  key   text primary key,
+  value text not null
+);
+alter table public.app_config enable row level security;
+revoke all on public.app_config from anon, authenticated;
+grant select on public.app_config to authenticated;
+drop policy if exists "app_config: signed-in read" on public.app_config;
+create policy "app_config: signed-in read" on public.app_config
+  for select to authenticated using (true);

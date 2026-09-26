@@ -145,6 +145,14 @@ def team_key(guid, team_no):
     return hashlib.sha256(f"{guid}:{int(team_no)}".encode()).hexdigest()[:16]
 
 
+def account_key(guid):
+    """An F1 account's lasting identity for Team Tracking: its account guid, hashed like team_key, so no account id
+    is kept. The page computes the same (web/js/core.js accountKey). None without a guid."""
+    if not guid:
+        return None
+    return hashlib.sha256(str(guid).encode()).hexdigest()[:16]
+
+
 def ev_code(session, name):
     """Scoring-event category code, e.g. ("Race", "Race Position Gained") -> "R PG"."""
     n = name.strip().lower()

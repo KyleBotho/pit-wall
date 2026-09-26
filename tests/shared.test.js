@@ -14,6 +14,12 @@ test("the page's team key matches f1feeds.team_key (same vector as tests/test_py
   assert.equal(await run("teamTk(null, 2)"), null);
 });
 
+test("the page's account key matches f1feeds.account_key (same vector as tests/test_python.py)", async () => {
+  const run = pageModules(["core.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } });
+  assert.equal(await run('accountKey("guid-example")'), "e13e0b890006eb4b");
+  assert.equal(await run("accountKey(null)"), null);
+});
+
 test("every team in the season config has a code, colour and Jolpica ids", () => {
   for (const [name, t] of Object.entries(config("season").teams)) {
     if (name.startsWith("_")) continue;

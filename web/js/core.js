@@ -32,10 +32,18 @@ export const chipShort = (k) => (CHIPS.find(([c]) => c === k) || [])[1] || "";
 
 // A team's key (see teamKey): the first 16 hex digits of SHA-256("<F1 account guid>:<team number>"), the same as
 // f1feeds.team_key in Python. Hashed so no account id is kept; null where WebCrypto isn't available (plain http).
+const hash16 = async (text) => {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
+  return [...h.slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+};
 export async function teamTk(guid, no) {
   if (!guid || no == null || !globalThis.crypto || !crypto.subtle) return null;
-  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${guid}:${no}`)));
-  return [...h.slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hash16(`${guid}:${no}`);
+}
+// An F1 account's key for Team Tracking: SHA-256 of its account guid, first 16 hex (f1feeds.account_key).
+export async function accountKey(guid) {
+  if (!guid || !globalThis.crypto || !crypto.subtle) return null;
+  return hash16(String(guid));
 }
 export const byId = Object.fromEntries(DATA.assets.map((a) => [a.id, a]));
 /* ---------- table alignment, the same in every table ----------

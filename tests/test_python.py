@@ -40,6 +40,12 @@ class FeedHelpers(unittest.TestCase):
         self.assertIsNone(f1feeds.team_key(None, 2))
         self.assertIsNone(f1feeds.team_key("guid-example", None))
 
+    def test_account_key(self):
+        # the page's accountKey (web/js/core.js) must give the same: tests/shared.test.js checks this vector
+        self.assertEqual(f1feeds.account_key("guid-example"), "e13e0b890006eb4b")
+        self.assertIsNone(f1feeds.account_key(None))
+        self.assertIsNone(f1feeds.account_key(""))
+
     def test_optional_feed_missing_is_none(self):
         err = urllib.error.HTTPError("u", 403, "Forbidden", {}, None)
         with mock.patch.object(f1feeds, "_read", side_effect=err), mock.patch.object(f1feeds.time, "sleep"):
