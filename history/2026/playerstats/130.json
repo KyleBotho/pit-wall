@@ -186,7 +186,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T10:00:00+00:00",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -207,7 +207,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T14:00:00+00:00",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -228,7 +228,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-23T13:00:00+00:00",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -255,7 +255,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-05T14:00:00+00:00",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -276,7 +276,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-06T13:00:00+00:00",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -303,7 +303,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-12T14:00:00+00:00",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -324,7 +324,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-13T13:00:00+00:00",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -351,7 +351,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-25T12:00:00+00:00",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -362,7 +362,7 @@
             "RaceDayId": 7389,
             "TeamId": 2636,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "2",
+            "MatchStatus": "5",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -372,7 +372,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-26T11:00:00+00:00",
+            "SessionStartDate": "2026-09-26T15:00:00+04:00",
             "Season": "2026",
             "SelectedPercentage": "1",
             "CapSelectedPercentage": "0"
@@ -400,7 +400,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T10:00:00+00:00",
+            "SessionStartDate": "2026-08-22T12:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -436,7 +436,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T14:00:00+00:00",
+            "SessionStartDate": "2026-08-22T16:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -462,7 +462,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-23T13:00:00+00:00",
+            "SessionStartDate": "2026-08-23T15:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -509,7 +509,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-05T14:00:00+00:00",
+            "SessionStartDate": "2026-09-05T16:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -535,7 +535,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-06T13:00:00+00:00",
+            "SessionStartDate": "2026-09-06T15:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -582,7 +582,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-12T14:00:00+00:00",
+            "SessionStartDate": "2026-09-12T16:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -608,7 +608,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-13T13:00:00+00:00",
+            "SessionStartDate": "2026-09-13T15:00:00+02:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -650,7 +650,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-25T12:00:00+00:00",
+            "SessionStartDate": "2026-09-25T16:00:00+04:00",
             "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
@@ -660,7 +660,7 @@
             "OldPlayerValue": 9.9,
             "RaceDayId": 7389,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -670,7 +670,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-26T11:00:00+00:00",
+            "SessionStartDate": "2026-09-26T15:00:00+04:00",
             "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
@@ -680,8 +680,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 12:54:40 PM",
-    "ISTTime": "9/26/2026 6:24:40 PM",
-    "CESTTime": "9/26/2026 2:54:40 PM"
+    "UTCTime": "9/26/2026 1:29:15 PM",
+    "ISTTime": "9/26/2026 6:59:15 PM",
+    "CESTTime": "9/26/2026 3:29:15 PM"
   }
 }
