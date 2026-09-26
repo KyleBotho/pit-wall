@@ -194,6 +194,7 @@ function normalise(s) {
   for (const t of s.teams) {
     t.team = (t.team || []).filter((id) => byId[id]);
     if (t.team.length !== 7) Object.assign(t, defaultTeam(), { example: true });
+    if (t.example) delete t.tk; // an example team isn't anyone's F1 team
     t.chipsUsed = t.chipsUsed || {};
     t.boost = t.boost || "auto";
   }

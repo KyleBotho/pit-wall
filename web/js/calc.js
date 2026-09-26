@@ -159,7 +159,7 @@ function renderSettings() {
     ([k, sh, n]) =>
       `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!(T.chipsUsed[k] || locked[k])}" ${locked[k] ? "disabled" : ""} title="${n}${locked[k] ? playedIn(k) : ""}">${sh}</button>`,
   ).join("");
-  const upTo = Object.keys(locked).length && tracked(T.name)?.next?.asOf;
+  const upTo = Object.keys(locked).length && tracked(teamKey(T))?.next?.asOf;
   $("#chipsNote").textContent = upTo ? `Locked chips come from F1's data up to R${upTo}. Mark any others by hand.` : "";
   const rem = Math.max(0, upcoming.length - 1);
   $("#xdp").checked = !!state.xdp;

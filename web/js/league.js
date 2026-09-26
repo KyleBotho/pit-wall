@@ -2,22 +2,28 @@
 // Each team's season as far as the data goes (Hind.track): per-round records from exports (sealed or imported)
 // first, else the line-up seen after each race plus the official round points, from which Boost, chips, budget,
 // bank and free transfers are worked out. Cached until the sealed data or an import changes.
-let TRACK = { key: null, by: {} };
-function tracked(name) {
-  const key = [SEALED, state.league && state.league.collected, DATA.done.length];
-  if (!TRACK.key || TRACK.key.some((k, i) => k !== key[i])) TRACK = { key, by: {} };
-  if (!(name in TRACK.by)) {
-    const im = state.league && state.league.members.find((m) => m.name === name);
+let TRACK = { ver: null, by: {} };
+// A team is known by its key: F1's account id + team number, hashed (tk: from the private repo, or worked out on
+// import). Names only label teams, so a rename or two managers with the same team name never mixes up whose season
+// is whose. Data from before team keys (an older sealed file, import or save) has none: its name stands in.
+const teamKey = (t) => (t && (t.tk || t.name)) || "";
+const mkey = (m) => m.key || m.name; // a member of leagueList() or of an imported league
+const teamLabel = (k) => (SEALED && SEALED.names && SEALED.names[k]) || k;
+function tracked(key) {
+  const ver = [SEALED, state.league && state.league.collected, DATA.done.length];
+  if (!TRACK.ver || TRACK.ver.some((k, i) => k !== ver[i])) TRACK = { ver, by: {} };
+  if (!(key in TRACK.by)) {
+    const im = state.league && state.league.members.find((m) => mkey(m) === key);
     const known = {
       ...(im && im.rounds),
-      ...((SEALED && SEALED.rivals && SEALED.rivals[name]) || {}),
-      ...((SEALED && SEALED.lineups && SEALED.lineups[name]) || {}),
+      ...((SEALED && SEALED.rivals && SEALED.rivals[key]) || {}),
+      ...((SEALED && SEALED.lineups && SEALED.lineups[key]) || {}),
     };
-    const seen = (SEALED && SEALED.seen && SEALED.seen[name]) || {};
-    const official = Object.fromEntries(teamHist(name).map((h) => [h.gd, h.pts]));
-    TRACK.by[name] = Object.keys(known).length || Object.keys(seen).length ? Hind.track(known, seen, official) : null;
+    const seen = (SEALED && SEALED.seen && SEALED.seen[key]) || {};
+    const official = Object.fromEntries(teamHist(key).map((h) => [h.gd, h.pts]));
+    TRACK.by[key] = Object.keys(known).length || Object.keys(seen).length ? Hind.track(known, seen, official) : null;
   }
-  return TRACK.by[name];
+  return TRACK.by[key];
 }
 const usedChips = (tr) => Object.fromEntries(Object.keys((tr && tr.used) || {}).map((k) => [k, true]));
 // Leagues: auto-updated (decrypted) standings merged with anything imported (chips, bank, round history)
@@ -27,12 +33,14 @@ function leagueList() {
     const imp = state.league && state.league.name === L.name ? state.league : null;
     const members = L.members
       .map((m) => {
-        const im = imp && imp.members.find((x) => x.name === m.team);
+        const key = m.tk || m.team;
+        const im = imp && imp.members.find((x) => mkey(x) === key);
         const ds = m.ids.filter((id) => byId[id]?.kind === "D"),
           cs = m.ids.filter((id) => byId[id]?.kind === "C");
-        const tr = tracked(m.team),
+        const tr = tracked(key),
           nx = tr && tr.next;
         return {
+          key,
           name: m.team,
           pts: +m.pts || 0,
           // after a Limitless round the feed still shows that team; the team held reverts to the one before
@@ -50,8 +58,8 @@ function leagueList() {
           free: nx ? nx.free : null,
           chips: { ...(im ? im.chips : {}), ...usedChips(tr) },
           tracked: !!tr,
-          hist: teamHist(m.team),
-          mine: state.teams.some((t) => t.name === m.team),
+          hist: teamHist(key),
+          mine: state.teams.some((t) => teamKey(t) === key),
         };
       })
       .sort((a, b) => b.pts - a.pts);
@@ -72,7 +80,7 @@ function renderLeague() {
     .map((l, i) => `<button data-lg="${i}" aria-pressed="${l === L}">${esc(l.name)}</button>`)
     .join("");
   const myIds = activeTeam().team,
-    myName = activeTeam().name;
+    myKey = teamKey(activeTeam());
   $("#lgTitle").textContent = L.name;
   if (L.pending || !L.members.length) {
     $("#lgStamp").textContent = "standings not published yet";
@@ -96,7 +104,7 @@ function renderLeague() {
     L.members
       .map((m, i) => {
         const last = m.hist.length ? m.hist[m.hist.length - 1].pts : null;
-        return `<tr${m.name === myName ? ' style="background:var(--accent-soft)"' : ""}><td>${i + 1}</td><td style="text-align:left;position:static"><b>${esc(m.name)}</b>${m.mine ? ' <span class="tag sprint">you</span>' : ""}</td>
+        return `<tr${mkey(m) === myKey ? ' style="background:var(--accent-soft)"' : ""}><td>${i + 1}</td><td style="text-align:left;position:static"><b>${esc(m.name)}</b>${m.mine ? ' <span class="tag sprint">you</span>' : ""}</td>
         <td><b>${m.pts.toLocaleString()}</b></td><td class="${i ? "bad" : "muted"}">${i ? "−" + (lead - m.pts).toLocaleString() : "—"}</td><td>${f0(last)}</td><td style="text-align:left">${m.tracked || Object.keys(m.chips || {}).length ? tok(m.chips) : '<span class="dim">no round data yet</span>'}</td><td class="muted">${m.bank == null ? "—" : money(m.bank)}</td><td class="muted">${m.free == null ? "—" : m.free}</td></tr>`;
       })
       .join("") +
@@ -109,13 +117,13 @@ function renderLeague() {
     $("#lgOwn").innerHTML = "";
     return;
   }
-  renderLeagueForecast(L, myIds, myName);
+  renderLeagueForecast(L, myIds, myKey);
 }
 // Round by round: every member's team for a finished round, like F1's own league view: line-up and each asset's
 // points (Boost 2×, x3 3×), chip, bank, transfers. From an export where there is one, else worked out from the line-up
 // seen after the race and the official points.
 function renderLeagueRounds(L) {
-  const rows = L.members.map((m) => ({ m, tr: tracked(m.name) })).filter((x) => x.tr && x.tr.rounds.length);
+  const rows = L.members.map((m) => ({ m, tr: tracked(mkey(m)) })).filter((x) => x.tr && x.tr.rounds.length);
   $("#lgRoundsBox").hidden = !rows.length;
   if (!rows.length) return;
   const gds = [...new Set(rows.flatMap((x) => x.tr.rounds.map((r) => r.gd)))].sort((a, b) => a - b);
@@ -180,13 +188,13 @@ function roundCard(m, r) {
     <div class="note">${facts.join(" · ")}${facts.length ? " · " : ""}${src}</div></div>`;
 }
 // Next race: head-to-head against each rival's current line-up, and league ownership
-function renderLeagueForecast(L, myIds, myName) {
+function renderLeagueForecast(L, myIds, myKey) {
   // head-to-head: same simulated weekends for everyone, so the comparison is paired
   const mySmp = teamSamples(myIds, boostFor(myIds), ""),
     N = mySmp.length;
   const myMean = mySmp.reduce((a, b) => a + b, 0) / N;
-  $("#lgH2hNote").textContent = `${myName} vs current rival line-ups`;
-  const rivals = L.members.filter((m) => m.name !== myName && m.ids);
+  $("#lgH2hNote").textContent = `${activeTeam().name} vs current rival line-ups`;
+  const rivals = L.members.filter((m) => mkey(m) !== myKey && m.ids);
   $("#lgH2h").innerHTML =
     rivals
       .map((m) => {
@@ -246,12 +254,12 @@ function renderLeagueForecast(L, myIds, myName) {
     "</tbody>";
 }
 // Round points for a team: the private repo's round table (after unlocking) first, else an imported league.
-function teamHist(name) {
+function teamHist(key) {
   const rs = ((SEALED && SEALED.rounds) || [])
-    .filter((r) => r.pts[name] != null)
-    .map((r) => ({ gd: r.gd, pts: r.pts[name] }));
+    .filter((r) => r.pts[key] != null)
+    .map((r) => ({ gd: r.gd, pts: r.pts[key] }));
   if (rs.length) return rs;
-  const im = state.league && state.league.members.find((m) => m.name === name);
+  const im = state.league && state.league.members.find((m) => mkey(m) === key);
   return im ? im.hist : [];
 }
 const cumPts = (hist, gds) => {
@@ -260,9 +268,9 @@ const cumPts = (hist, gds) => {
   return gds.map((gd) => ({ v: (c += by[gd] || 0), r: by[gd] ?? null }));
 };
 // chip badges for a team's line: your teams from the saved line-ups, rivals from an import
-function chipMarks(name, gds) {
-  const L = lineups(name),
-    im = state.league && state.league.members.find((m) => m.name === name),
+function chipMarks(key, gds) {
+  const L = lineups(key),
+    im = state.league && state.league.members.find((m) => mkey(m) === key),
     short = (k) => (CHIPS.find(([c]) => c === k) || [])[1];
   const at = {};
   if (L) for (const [g, r] of Object.entries(L)) if (r.chip) at[+g] = short(r.chip);
@@ -273,36 +281,34 @@ function renderLeagueChart(L) {
   const mode = state.lgMode || "total",
     withH = L.members.filter((m) => m.hist.length);
   const gds = [...new Set(withH.flatMap((m) => m.hist.map((h) => h.gd)))].sort((a, b) => a - b);
-  const cum = new Map(withH.map((m) => [m.name, cumPts(m.hist, gds)]));
-  const ref = cum.has(state.lgRef)
-    ? state.lgRef
-    : cum.has(activeTeam().name)
-      ? activeTeam().name
-      : withH[0] && withH[0].name;
+  const cum = new Map(withH.map((m) => [mkey(m), cumPts(m.hist, gds)]));
+  const myKey = teamKey(activeTeam());
+  const ref = cum.has(state.lgRef) ? state.lgRef : cum.has(myKey) ? myKey : withH[0] && mkey(withH[0]);
+  const refName = (withH.find((m) => mkey(m) === ref) || {}).name;
   $$("#lgMode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lgm === mode)));
   $("#lgRefBox").hidden = mode !== "rel";
   $("#lgRef").innerHTML = withH
-    .map((m) => `<option ${m.name === ref ? "selected" : ""}>${esc(m.name)}</option>`)
+    .map((m) => `<option value="${esc(mkey(m))}" ${mkey(m) === ref ? "selected" : ""}>${esc(m.name)}</option>`)
     .join("");
   $("#lgChips").checked = !!state.lgChips;
   // league rank after each round, from the running totals
-  const rankAt = (i, name) =>
-    1 + withH.filter((m) => m.name !== name && cum.get(m.name)[i].v > cum.get(name)[i].v).length;
+  const rankAt = (i, key) =>
+    1 + withH.filter((m) => mkey(m) !== key && cum.get(mkey(m))[i].v > cum.get(key)[i].v).length;
   const series = withH.map((m) => {
-    const c = cum.get(m.name);
+    const c = cum.get(mkey(m));
     const pts =
       mode === "rel"
         ? c.map((p, i) => ({ v: p.v - cum.get(ref)[i].v, r: p.r }))
         : mode === "race"
           ? c.map((p) => ({ v: p.r, r: null }))
           : mode === "rank"
-            ? c.map((p, i) => ({ v: rankAt(i, m.name), r: p.r }))
+            ? c.map((p, i) => ({ v: rankAt(i, mkey(m)), r: p.r }))
             : c;
     return {
       name: m.name,
-      me: m.name === activeTeam().name,
+      me: mkey(m) === myKey,
       pts,
-      marks: state.lgChips ? chipMarks(m.name, gds) : null,
+      marks: state.lgChips ? chipMarks(mkey(m), gds) : null,
     };
   });
   const opts =
@@ -317,7 +323,7 @@ function renderLeagueChart(L) {
     series,
     {
       total: "Cumulative league points by round",
-      rel: `Points relative to ${ref}`,
+      rel: `Points relative to ${refName}`,
       race: "Points scored each round",
       rank: "League position after each round",
     }[mode],

@@ -33,6 +33,13 @@ class FeedHelpers(unittest.TestCase):
         self.assertEqual(f1feeds.ev_code("Qualifying", "Qualifying Not Classified"), "Q NC")
         self.assertEqual(f1feeds.ev_code("Sprint Qualifying", "Something new"), "S OTH")
 
+    def test_team_key(self):
+        # the page's teamTk (web/js/import.js) must give the same: tests/shared.test.js checks this vector
+        self.assertEqual(f1feeds.team_key("guid-example", 2), "b533aeb1cc9b3744")
+        self.assertEqual(f1feeds.team_key("guid-example", "2"), "b533aeb1cc9b3744")
+        self.assertIsNone(f1feeds.team_key(None, 2))
+        self.assertIsNone(f1feeds.team_key("guid-example", None))
+
     def test_optional_feed_missing_is_none(self):
         err = urllib.error.HTTPError("u", 403, "Forbidden", {}, None)
         with mock.patch.object(f1feeds, "_read", side_effect=err), mock.patch.object(f1feeds.time, "sleep"):

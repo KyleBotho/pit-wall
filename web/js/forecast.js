@@ -123,16 +123,18 @@ const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 0;
 
 /* ---------- the calculator's starting team ---------- */
 // One of your teams (state.active), a manual team, a rival's current line-up, or none (then only a maximum budget).
-// Rivals are identified by league and team name; the same team in two of your leagues is listed once.
-const rivalKey = (league, name) => league + " / " + name;
+// Rivals are identified by league and team key (see teamKey); the same team in two of your leagues is listed once.
+const rivalKey = (league, key) => league + " / " + key;
 function rivalTeams() {
   const out = [];
   for (const L of leagueList())
     for (const m of L.members || []) {
-      if (!m.ids || state.teams.some((t) => t.name === m.name)) continue;
-      if (out.some((x) => x.name === m.name && sameTeam(x.ids, m.ids))) continue;
+      const tk = mkey(m);
+      if (!m.ids || state.teams.some((t) => teamKey(t) === tk)) continue;
+      if (out.some((x) => x.tk === tk)) continue;
       out.push({
-        key: rivalKey(L.name, m.name),
+        key: rivalKey(L.name, tk),
+        tk,
         name: m.name,
         league: L.name,
         ids: m.ids,
@@ -144,9 +146,10 @@ function rivalTeams() {
     }
   return out;
 }
-// older saves identify a rival by name only
+// older saves identify a rival by league and name, or by name only
 const findRival = (c) =>
-  rivalTeams().find((x) => x.key === c.key) || rivalTeams().find((x) => !c.key && x.name === c.name);
+  rivalTeams().find((x) => x.key === c.key) ||
+  rivalTeams().find((x) => c.key === rivalKey(x.league, x.name) || (!c.key && x.name === c.name));
 const rivalDefaults = (r) => ({
   bank: r.bank ?? 0,
   free: r.free ?? 2,
@@ -171,11 +174,16 @@ function startTeam() {
     const r = findRival(c);
     // settings you enter for a rival are kept per rival; the line-up follows the latest standings
     if (r) {
-      const cfg = state.rivalCfg[r.key] || state.rivalCfg[r.name] || rivalDefaults(r);
+      const cfg =
+        state.rivalCfg[r.key] ||
+        state.rivalCfg[rivalKey(r.league, r.name)] || // saved before team keys
+        state.rivalCfg[r.name] ||
+        rivalDefaults(r);
       return {
         ...cfg,
         chipsUsed: { ...cfg.chipsUsed, ...r.chips }, // chips F1's data shows as played always count
         name: r.name,
+        tk: r.tk,
         team: r.ids.slice(),
         ro: true,
         rivalKey: r.key,
@@ -190,7 +198,7 @@ function editStart() {
   const T = startTeam();
   if (!T.rivalKey) return T;
   if (!state.rivalCfg[T.rivalKey]) {
-    const { name, team, ro, rivalKey: k, ...cfg } = T;
+    const { name, tk, team, ro, rivalKey: k, ...cfg } = T;
     state.rivalCfg[k] = cfg;
   }
   return state.rivalCfg[T.rivalKey];
@@ -201,7 +209,7 @@ const startKind = () => {
 };
 // chips F1's data shows the starting team has played ({chip: gameday}); the Calculator won't un-mark them
 const lockedChips = (T) =>
-  T.none || !(T.rivalKey || state.teams.includes(T)) ? {} : (tracked(T.name) || { used: {} }).used;
+  T.none || !(T.rivalKey || state.teams.includes(T)) ? {} : (tracked(teamKey(T)) || { used: {} }).used;
 // the chip the Calculator plays: the one picked, unless the starting team has already used it
 const activeChip = () => (state.chip && !startTeam().chipsUsed[state.chip] ? state.chip : "");
 const teamValue = () => startTeam().team.reduce((s, id) => s + byId[id].price, 0);

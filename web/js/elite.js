@@ -35,7 +35,7 @@ function renderElite() {
         ? '<span class="good">in</span>'
         : `<span class="bad">−${Math.round(c - p).toLocaleString()}</span>`;
   const ptsOf = (tm) => {
-    const a = auto.find((m) => m.team === tm.name);
+    const a = auto.find((m) => (m.tk || m.team) === teamKey(tm));
     return a ? +a.pts : (tm.ovPts ?? null);
   };
   const anyPts = state.teams.some((tm) => ptsOf(tm) != null);
@@ -47,7 +47,7 @@ function renderElite() {
     state.teams
       .filter(() => anyPts)
       .map((tm) => {
-        const a = auto.find((m) => m.team === tm.name),
+        const a = auto.find((m) => (m.tk || m.team) === teamKey(tm)),
           p = a ? +a.pts : (tm.ovPts ?? null);
         return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">—</span>' : Math.round(p).toLocaleString()}</td><td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>
         <td>${gap(p, El.cut["500"])}</td><td>${gap(p, El.cut["100"])}</td><td>${gap(p, El.cut["1"])}</td></tr>`;
@@ -83,7 +83,7 @@ function renderElite() {
       chipDef = (k) => CHIPS.find(([c]) => c === k);
     const ti = Math.min(state.teams.length - 1, state.elT ?? state.active),
       tm = state.teams[ti],
-      Lu = tm ? lineups(tm.name) : null;
+      Lu = tm ? lineups(teamKey(tm)) : null;
     const max = Math.max(0.05, ...order.flatMap((k) => Object.values(top.chipRound[k] || {}).map((v) => v / top.n)));
     $("#elChipNote").innerHTML = "";
     $("#elChipSub").textContent =
@@ -168,7 +168,7 @@ function renderElite() {
 function renderEliteSeason(El) {
   const Hs = El.history || [],
     byGd = Object.fromEntries(Hs.map((h) => [h.gd, h]));
-  const mine = state.teams.map((t) => ({ t, h: teamHist(t.name) })).filter((x) => x.h.length);
+  const mine = state.teams.map((t) => ({ t, h: teamHist(teamKey(t)) })).filter((x) => x.h.length);
   const gds = [...new Set(Hs.map((h) => h.gd).concat(mine.flatMap((x) => x.h.map((h) => h.gd))))].sort((a, b) => a - b);
   // gap mode: every line minus the #100 cut-off that round, so the distances are readable
   const gap = state.elMode !== "total",

@@ -1,5 +1,5 @@
 /* ---------- hindsight: best teams on actual points (scoring in hindsight.js, as Hind) ---------- */
-const lineups = (name) => (SEALED && SEALED.lineups && SEALED.lineups[name]) || null;
+const lineups = (key) => (SEALED && SEALED.lineups && SEALED.lineups[key]) || null; // by teamKey
 // budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
 // fair comparison)
 const hdCapMode = () => state.hdCap || `team:${state.active}`;
@@ -8,7 +8,7 @@ function hdCap(gd) {
   if (mode === "none") return null;
   if (mode.startsWith("team:")) {
     const T = state.teams[+mode.slice(5)] || activeTeam(),
-      r = (lineups(T.name) || {})[gd];
+      r = (lineups(teamKey(T)) || {})[gd];
     return r ? Hind.budget(r, gd) : 100;
   }
   return 100;
@@ -186,8 +186,8 @@ function renderHind() {
   // your teams: what was used, what it was worth, and the best move available from the line-up going in
   const mine = state.teams.map((t) => ({
     t,
-    r: (lineups(t.name) || {})[gd],
-    off: teamHist(t.name).find((h) => h.gd === gd)?.pts,
+    r: (lineups(teamKey(t)) || {})[gd],
+    off: teamHist(teamKey(t)).find((h) => h.gd === gd)?.pts,
   }));
   if (!SEALED)
     $("#hdMine").innerHTML =
@@ -214,7 +214,7 @@ function renderHind() {
                 (b.penalty ? ` (−${b.penalty})` : "")
               : "No transfers";
         const miss = off == null ? null : b.score - off,
-          dec = hdDecisions(t.name, gd);
+          dec = hdDecisions(teamKey(t), gd);
         const txt = teamText(
           `${t.name} R${gd} best`,
           b.cons,
@@ -235,7 +235,7 @@ function renderHind() {
       .join("");
 
   // season: official vs best reachable, every finished round
-  const teams = mine.filter(({ t }) => lineups(t.name));
+  const teams = mine.filter(({ t }) => lineups(teamKey(t)));
   const rows = done
     .slice()
     .reverse()
@@ -245,8 +245,8 @@ function renderHind() {
         `<tr><td${g === gd ? ' style="background:var(--accent-soft)"' : ""}>R${g}</td><td>${bb ? f0(bb.score) : "—"}</td>` +
         teams
           .map(({ t }) => {
-            const r = lineups(t.name)[g],
-              off = teamHist(t.name).find((h) => h.gd === g)?.pts;
+            const r = lineups(teamKey(t))[g],
+              off = teamHist(teamKey(t)).find((h) => h.gd === g)?.pts;
             if (!r) return '<td class="dim">—</td><td class="dim">—</td>';
             const b = Hind.own(r, g),
               miss = off == null ? null : b.score - off;
@@ -261,8 +261,8 @@ function renderHind() {
     `<tr><td><b>Season</b></td><td><b>${f0(sum((g) => hdBestList(g, 1)[0]?.score))}</b></td>` +
     teams
       .map(({ t }) => {
-        const L = lineups(t.name),
-          off = sum((g) => (L[g] ? teamHist(t.name).find((h) => h.gd === g)?.pts : 0)),
+        const L = lineups(teamKey(t)),
+          off = sum((g) => (L[g] ? teamHist(teamKey(t)).find((h) => h.gd === g)?.pts : 0)),
           bs = sum((g) => (L[g] ? Hind.own(L[g], g).score : 0));
         return `<td><b>${f0(off)}</b></td><td><b>${f0(bs)}</b> <span class="muted">${bs ? Math.round((off / bs) * 100) + "%" : ""}</span></td>`;
       })
@@ -277,7 +277,7 @@ function renderHind() {
   // decisions over the season, per team
   const dsum = teams.map(({ t }) => {
     const all = done
-      .map((g) => hdDecisions(t.name, g))
+      .map((g) => hdDecisions(teamKey(t), g))
       .filter(Boolean)
       .flatMap((d) => d.list);
     const tr = all.filter((x) => x.k === "tr"),
@@ -343,7 +343,7 @@ function renderHind() {
         const m = (state.hdMarks || {})[a.id] || "",
           dv = Hind.delta(a.id, gd);
         return `<tr><td>${who(a)}</td><td class="muted">${money(h.price)}</td><td class="${dv > 0 ? "good" : dv < 0 ? "bad" : "muted"}">${sgn(dv, 1)}</td><td${heat(h.pts, -20, 60)}><b>${f0(h.pts)}</b></td><td class="muted">${f0(h.nn)}</td><td>${f1(h.pts / h.price)}</td><td class="muted">${f0(h.own)}%</td>${proj ? `<td class="muted">${f1(proj[a.id])}</td>` : ""}
-      <td style="text-align:left">${bestIds.includes(a.id) ? '<span class="good">✓</span>' : ""}</td><td style="text-align:left">${state.teams.map((t, i) => (((lineups(t.name) || {})[gd]?.ids || []).includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "")).join("")}</td>
+      <td style="text-align:left">${bestIds.includes(a.id) ? '<span class="good">✓</span>' : ""}</td><td style="text-align:left">${state.teams.map((t, i) => (((lineups(teamKey(t)) || {})[gd]?.ids || []).includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "")).join("")}</td>
       <td>${inclExcl(a.id, m, "hmark")}</td></tr>`;
       })
       .join("") +
@@ -406,7 +406,7 @@ function renderModelTeam(gd) {
     total = rs[rs.length - 1].total;
   // your teams' official round points and the top-100 average, over the same rounds
   const teams = state.teams
-    .map((t, i) => ({ t, i, by: Object.fromEntries(teamHist(t.name).map((h) => [h.gd, h.pts])) }))
+    .map((t, i) => ({ t, i, by: Object.fromEntries(teamHist(teamKey(t)).map((h) => [h.gd, h.pts])) }))
     .filter((x) => gds.some((g) => x.by[g] != null));
   const el = Object.fromEntries(((DATA.elite && DATA.elite.history) || []).map((h) => [h.gd, h]));
   const top = (g) => el[g]?.avg?.["100"] ?? null;

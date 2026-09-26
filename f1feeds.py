@@ -5,6 +5,7 @@ imports this file). Requests are paced (config/feeds.json "pauseSeconds") and ne
 retried slowly a couple of times and then raised as FeedError for the caller to decide what to do.
 """
 
+import hashlib
 import json
 import os
 import time
@@ -133,6 +134,15 @@ def feed_time(d):
         return datetime.strptime(t, "%m/%d/%Y %I:%M:%S %p").strftime("%Y-%m-%dT%H:%M:%SZ")
     except (TypeError, ValueError):
         return None
+
+
+def team_key(guid, team_no):
+    """A team's lasting identity: F1's account guid + team number (1-3), hashed so no account id is kept. Names are
+    only labels (they change, and two managers can share one). The page computes the same (web/js/import.js teamTk).
+    None without a guid."""
+    if not guid or team_no is None:
+        return None
+    return hashlib.sha256(f"{guid}:{int(team_no)}".encode()).hexdigest()[:16]
 
 
 def ev_code(session, name):

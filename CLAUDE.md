@@ -202,6 +202,18 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 - vs rhter's Baku sim (f1fantasytools, old engine): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
 
 ## Open items — next session starts here
+- [ ] TO DO (user's direction, 2026-09-26): the "Team Tracking" private league (ID only in the private repo's
+      `LEAGUE_IDS` secret) is how Pit Wall finds and follows every user's teams: anyone who wants to use the tool joins
+      it, and their teams are discovered and tracked from there, not only the owner's three. Design onboarding and
+      per-user team discovery around it. It builds on team keys (below) and on the "Pit Wall" account session check.
+- [x] 2026-09-26, security review items 1-4 (see git log 6e7eed6) and item 5: teams are known by a team key,
+      `f1feeds.team_key` = first 16 hex of SHA-256("<F1 account guid>:<team number>") (the page's `teamTk` in
+      import.js matches; tests check one vector in both). The private repo keys `rounds`/`lineups`/`rivals`/`seen` by
+      it and adds `names` {key: latest name} and `v: 2`; records from before keys are placed by name when that name
+      has exactly one key. Page: `teamKey(t)` (t.tk, else the name), `mkey(m)` for league members, `teamLabel(k)`;
+      `state.teams[i].tk` comes from an import, `fillFromLineups`, or `adoptKeys` (unique name match on unlock), then
+      follows the team through renames. Old (v1, name-keyed) sealed files still work. Checked: v1 and v2 payloads
+      give identical league, tracking, hindsight, rival and decision output; a renamed team keeps its season.
 - [x] 2026-09-25, from the F1 Fantasy Tools Discord findings (user's agent scraped #analyst-simulations and
       #analysis-chat, files in Downloads `F1_Fantasy_Sim_Findings_*.md`; ideas only, never rhter's sims or output):
       1. Scoring vs a team to beat on the same simulated weekends: goals rival / top-100 template / top-500 template;

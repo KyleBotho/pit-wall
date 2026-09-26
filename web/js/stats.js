@@ -101,7 +101,7 @@ function renderStats() {
 
   // your team's picks that round: dashed = picked, solid = Boost, thick = X3 (needs unlocked leagues)
   const team = hi >= 0 ? state.teams[hi] : null,
-    L = team ? lineups(team.name) : null;
+    L = team ? lineups(teamKey(team)) : null;
   const pick = (id, g) => {
     if (!team) return "";
     const r = L && L[g];

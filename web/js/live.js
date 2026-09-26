@@ -33,7 +33,7 @@ const lvProj = (id) => ((DATA.projHist || {})[DATA.live.gd] || {})[id];
 // the line-up that scores this weekend: the export's (after the round) or, for the round in progress, your current team
 function lvTeam(T) {
   const gd = DATA.live.gd,
-    r = (lineups(T.name) || {})[gd];
+    r = (lineups(teamKey(T)) || {})[gd];
   if (r)
     return {
       ids: r.ids.map(String),
@@ -258,7 +258,7 @@ function renderLiveLeague(g, over) {
     .join("");
   const boostKnown = state.league && state.league.round >= gd; // an import taken after this round's lock
   const rows = lg.members.map((m) => {
-    const ti = state.teams.findIndex((t) => t.name === m.name),
+    const ti = state.teams.findIndex((t) => teamKey(t) === mkey(m)),
       off = (m.hist || []).find((h) => h.gd === gd);
     let t = ti >= 0 ? lvTeam(state.teams[ti]) : null,
       guess = false;

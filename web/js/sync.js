@@ -49,6 +49,7 @@ async function tryUnseal(base, quiet) {
     SEALED = await unseal(base);
     ok = true;
     if (!quiet) toast(`Unlocked ${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}.`);
+    adoptKeys();
     if (forecast) {
       fillFromLineups();
       applyTracked();
@@ -71,6 +72,22 @@ async function unlockSaved() {
   const base = await keyGet();
   if (base) tryUnseal(base, true);
 }
+// Teams saved before team keys (see teamKey) are matched to the sealed data by name, once; from then on the key
+// follows them through renames. A name two teams share stays unmatched rather than guessed.
+function adoptKeys() {
+  const names = SEALED && SEALED.names;
+  if (!names) return;
+  let changed = false;
+  for (const t of state.teams) {
+    if (t.example || t.tk) continue;
+    const hits = Object.keys(names).filter((k) => names[k] === t.name);
+    if (hits.length === 1) {
+      t.tk = hits[0];
+      changed = true;
+    }
+  }
+  if (changed) save();
+}
 // A browser with only example teams takes your teams from the sealed data: the line-up, bank, free transfers and
 // chips going into the round after the last one known (an export, then the line-ups seen after each race).
 function fillFromLineups() {
@@ -78,20 +95,21 @@ function fillFromLineups() {
   if (!L || !state.teams.every((t) => t.example)) return;
   let n = 0,
     latest = 0;
-  for (const name of Object.keys(L)) {
+  for (const key of Object.keys(L)) {
     if (n > 2) break;
-    const nx = (tracked(name) || {}).next;
+    const nx = (tracked(key) || {}).next;
     if (!nx) continue;
     const got = nx.ids.map(String).filter((id) => byId[id]);
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
     if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) continue;
     Object.assign(state.teams[n], {
-      name,
+      name: teamLabel(key),
+      ...(SEALED.names ? { tk: key } : {}), // older sealed files are keyed by name
       team: ids,
       bank: nx.bank ?? state.teams[n].bank,
       free: nx.free ?? 2,
       boost: "auto",
-      chipsUsed: usedChips(tracked(name)),
+      chipsUsed: usedChips(tracked(key)),
       asOf: nx.asOf + 1,
       example: false,
     });
@@ -110,7 +128,7 @@ function applyTracked() {
   let changed = false;
   for (const t of state.teams) {
     if (t.example) continue;
-    const tr = tracked(t.name);
+    const tr = tracked(teamKey(t));
     if (!tr) continue;
     const used = usedChips(tr);
     if (Object.keys(used).some((k) => !t.chipsUsed[k])) {

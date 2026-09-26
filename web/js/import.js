@@ -7,6 +7,13 @@ const dec = (x) => {
   }
 };
 const on = (v) => v != null && +v > 0;
+// A team's key (see teamKey): the first 16 hex digits of SHA-256("<F1 account guid>:<team number>"), the same as
+// f1feeds.team_key in Python. Hashed so no account id is kept; null where WebCrypto isn't available (plain http).
+async function teamTk(guid, no) {
+  if (!guid || no == null || !window.crypto || !crypto.subtle) return null;
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${guid}:${no}`)));
+  return [...h.slice(0, 8)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 // the gameday each chip was played, from an export's team record
 const CHIP_GD = {
   wildcard: ["is_wildcard_taken_gd_id", "wildcardtakengd"],
@@ -74,7 +81,7 @@ function lineup(u) {
     cons = ids.filter((id) => byId[id].kind === "C");
   return drs.length === 5 && cons.length === 2 ? drs.concat(cons) : null;
 }
-function importOfficial(d) {
+async function importOfficial(d) {
   if (!d || d.source !== "fantasy.formula1.com" || !d.my_team)
     throw new Error("That file isn't an F1 Fantasy data export.");
   const res = { teams: 0, league: 0 };
@@ -87,6 +94,9 @@ function importOfficial(d) {
   };
   const cur = pick(latest),
     prev = pick(latest - 1);
+  // Your own team records carry no account id: find it from one of your teams in the league (same name and number)
+  const rows = Object.values((d.league && d.league.members) || {}).map((m) => m.meta || {});
+  const me = rows.find((r) => cur.some((u) => dec(r.team_name) === dec(u.teamname) && +r.team_no === +u.teamno));
   for (const u of cur) {
     const i = (u.teamno | 0) - 1,
       ids = lineup(u);
@@ -95,6 +105,8 @@ function importOfficial(d) {
     // 2 free per race; one unused transfer carries over (not out of a Limitless week)
     const carried = p && (p.usersubs | 0) < 2 && !(+p.limitlesstakengd === latest - 1) ? 1 : 0;
     const cap = String(u.capplayerid || "");
+    const tk = me ? await teamTk(me.user_guid, u.teamno) : null;
+    if (tk) state.teams[i].tk = tk;
     Object.assign(state.teams[i], {
       name: dec(u.teamname) || state.teams[i].name,
       team: ids,
@@ -112,11 +124,13 @@ function importOfficial(d) {
   const lg = d.league;
   if (lg && lg.members) {
     const info = lg.info?.Data?.Value || {};
-    const mine = new Set(state.teams.map((t) => t.name));
+    const mine = new Set(state.teams.map(teamKey));
+    const tks = await Promise.all(Object.values(lg.members).map((m) => teamTk(m.meta?.user_guid, m.meta?.team_no)));
     const members = Object.values(lg.members)
-      .map((m) => {
+      .map((m, j) => {
         const meta = m.meta || {},
-          name = dec(meta.team_name);
+          name = dec(meta.team_name),
+          key = tks[j] || name;
         const keys = Object.keys(m.teams || {})
           .map(Number)
           .sort((a, b) => a - b);
@@ -128,6 +142,7 @@ function importOfficial(d) {
           .map((k) => ({ gd: k, pts: +md[k].pts || 0 }));
         // only what the planner needs: no account ids or user names are kept
         return {
+          key,
           name,
           pts: +meta.cur_points || 0,
           ids: lineup(u),
@@ -137,7 +152,7 @@ function importOfficial(d) {
           chipGd: chipRounds(u),
           rounds: memberRounds(m),
           hist,
-          mine: mine.has(name),
+          mine: mine.has(key),
         };
       })
       .sort((a, b) => b.pts - a.pts);

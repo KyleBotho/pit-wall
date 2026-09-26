@@ -709,9 +709,9 @@ function importFile(t) {
   t.value = "";
   if (!f) return;
   const fr = new FileReader();
-  fr.onload = () => {
+  fr.onload = async () => {
     try {
-      const r = importOfficial(JSON.parse(fr.result));
+      const r = await importOfficial(JSON.parse(fr.result));
       applyTracked(); // chips a later round shows as played
       rerender();
       if (r.league) showView("league");
