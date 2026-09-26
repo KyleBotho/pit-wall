@@ -41,34 +41,26 @@ async function loadConfig() {
   admin.err = error ? "Couldn't load the settings: " + error.message : "";
 }
 const when = (t) => new Date(t).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" });
-function field({ key, label, help, row, known }) {
+function field({ key, label, help, row }) {
   return (
     `<div class="adminfield"><label for="cfg-${key}">${esc(label)}</label>` +
     `<div class="adminrow"><input id="cfg-${key}" class="inp" type="text" maxlength="2000" spellcheck="false" autocomplete="off" value="${esc(row ? row.value : "")}">` +
-    `<button class="btn sm" data-cfgsave="${key}">Save</button>` +
-    (known ? "" : `<button class="btn ghost sm" data-cfgdel="${key}">Delete</button>`) +
-    `</div><small>${esc(help)}${help ? " " : ""}${row ? `Changed ${when(row.updated_at)}.` : "Not set."}</small></div>`
+    `<button class="btn sm" data-cfgsave="${key}">Save</button></div>` +
+    `<small>${esc(help)} ${row ? `Changed ${when(row.updated_at)}.` : "Not set."}</small></div>`
   );
 }
+// only the settings the page knows (CONFIG_KEYS): a new one needs code that reads it, and supabase/setup.sql only
+// lets admins write these keys
 export function renderAdmin() {
   const box = $("#adminPanel");
   if (!box) return;
   box.hidden = !admin.on;
   if (!admin.on) return;
   const rows = admin.rows || [];
-  const known = CONFIG_KEYS.map(([key, label, help]) => ({ key, label, help, known: true }));
-  const other = rows
-    .filter((r) => !CONFIG_KEYS.some(([k]) => k === r.key))
-    .map((r) => ({ key: r.key, label: r.key, help: "", known: false }));
   $("#adminBody").innerHTML =
     `<p class="note">Settings that change from season to season. Only admins see this panel and can change them; the page reads them for signed-in users.</p>` +
     (admin.err ? `<p class="note bad">${esc(admin.err)}</p>` : "") +
-    [...known, ...other].map((x) => field({ ...x, row: rows.find((r) => r.key === x.key) })).join("") +
-    `<details class="adminadd"><summary>Add a setting</summary><div class="adminrow">` +
-    `<input id="cfgNewKey" class="inp" type="text" placeholder="key_name" spellcheck="false" autocomplete="off">` +
-    `<input id="cfgNewVal" class="inp" type="text" placeholder="value" spellcheck="false" autocomplete="off">` +
-    `<button class="btn sm" data-cfgadd="1">Add</button></div>` +
-    `<small>Lower-case letters, digits and _. The page only uses settings its code reads, so a new one also needs a code change.</small></details>`;
+    CONFIG_KEYS.map(([key, label, help]) => field({ key, label, help, row: rows.find((r) => r.key === key) })).join("");
 }
 async function write(key, value) {
   const U = syncState.user;
@@ -95,15 +87,4 @@ async function write(key, value) {
 export async function cfgSave(key) {
   const value = ($(`#cfg-${key}`).value || "").trim();
   if (await write(key, value)) toast(value ? "Saved." : "Cleared.");
-}
-export async function cfgDelete(key) {
-  if (await write(key, "")) toast(`Deleted ${key}.`);
-}
-export async function cfgAdd() {
-  const key = ($("#cfgNewKey").value || "").trim().toLowerCase(),
-    value = ($("#cfgNewVal").value || "").trim();
-  if (!/^[a-z][a-z0-9_]{1,62}$/.test(key))
-    return toast("A key is lower-case letters, digits and _ (starting with a letter).");
-  if (!value) return toast("Give it a value.");
-  if (await write(key, value)) toast(`Added ${key}.`);
 }

@@ -183,14 +183,18 @@ drop policy if exists "app_config: admins update" on public.app_config;
 drop policy if exists "app_config: admins delete" on public.app_config;
 create policy "app_config: signed-in read" on public.app_config
   for select to authenticated using (true);
--- an admin is an account with an owners row (each user can see only their own, which is all this needs)
+-- An admin is an account with an owners row (each user can see only their own, which is all this needs). Admins
+-- change only the settings the page knows (web/js/admin.js CONFIG_KEYS): a new setting needs code that reads it,
+-- so it's added here and there together.
+create or replace function public.app_config_admin_key(k text) returns boolean
+  language sql stable set search_path = '' as $$
+  select k in ('tracking_join_code', 'tracking_league_name')
+     and exists (select 1 from public.owners o where o.user_id = (select auth.uid()))
+$$;
 create policy "app_config: admins insert" on public.app_config
-  for insert to authenticated
-  with check (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
+  for insert to authenticated with check (public.app_config_admin_key(key));
 create policy "app_config: admins update" on public.app_config
   for update to authenticated
-  using (exists (select 1 from public.owners o where o.user_id = (select auth.uid())))
-  with check (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
+  using (public.app_config_admin_key(key)) with check (public.app_config_admin_key(key));
 create policy "app_config: admins delete" on public.app_config
-  for delete to authenticated
-  using (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
+  for delete to authenticated using (public.app_config_admin_key(key));

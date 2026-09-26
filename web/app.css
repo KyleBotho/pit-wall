@@ -169,8 +169,7 @@ input {
   margin-top: 12px;
   font-size: 13px;
 }
-.adminfield small,
-.adminadd small {
+.adminfield small {
   color: var(--muted);
   font-size: 12px;
 }
@@ -182,17 +181,6 @@ input {
 .adminrow .inp {
   flex: 1;
   min-width: 0;
-}
-.adminadd {
-  margin-top: 14px;
-  font-size: 13px;
-}
-.adminadd summary {
-  cursor: pointer;
-  color: var(--muted);
-}
-.adminadd .adminrow {
-  margin: 8px 0 4px;
 }
 .acctpick:hover,
 .acctpick[aria-pressed="true"] {
