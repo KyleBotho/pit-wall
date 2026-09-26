@@ -16,6 +16,9 @@ commit hashes and backtest numbers are as of then).
       whose next line-up `Hind.track` knows (`league.js nextIds`), keyed by team key (`rivalCfg` too). The private
       leagues' members are no longer Calculator rivals (schema 7 drops old rival picks and `rivalCfg`); they stay in
       the League views, head-to-head and live standings. Not checked in a browser (no data feeds in that session).
+      Same day, user's follow-up: private-league members pickable again, but only for him (the dialog lists the
+      members of `league_data`'s leagues, which only `league_readers` get; pick `{lg, tk}`), and the top-100/500
+      templates as picks for everyone (`{tpl}`, forecast.js `templateTeam`, shared with the template goals).
 - [x] 2026-09-26, Settings > Admin (admin.js): admins = accounts in `owners` (set in SQL only; the user expects
       no other admins for now, so no appointing from the page: that would let one stolen account add more). They
       edit only the known app_config keys (RLS allowlist `app_config_admin_key`): site notice (typed by the admin,

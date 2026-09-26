@@ -129,10 +129,11 @@ Done when: a member who joined the league after the last race can be found and l
 ## Rivals (first step built 2026-09-26, see docs/history.md)
 
 Decisions (user, 2026-09-26): joining the tracking league never makes anyone a rival (the list would grow too long);
-rivals are only teams the user picks from the tracking league (`tracked_accounts`); other users can't add their own
-private leagues (too much manual work for now); the League views stay limited to real leagues. Built: "Manage
-rivals" (rivals.js), used by the Calculator's start team and goal "Beat a rival". Still open: where else rivals
-should show (a rivals comparison view?), and whether the top-100/500 template becomes a pickable rival.
+rivals are only what the user picks: teams from the tracking league (`tracked_accounts`), the top-100/500 templates,
+and, for the owner only for now, members of his private leagues (anyone in `league_readers`, which is only him).
+Other users can't add their own private leagues (too much manual work for now); the League views stay limited to
+real leagues. Built: "Manage rivals" (rivals.js), used by the Calculator's start team and goal "Beat a rival".
+Still open: where else rivals should show (a rivals comparison view?).
 
 ## Why not automate the login
 
