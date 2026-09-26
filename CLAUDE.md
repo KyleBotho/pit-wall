@@ -108,7 +108,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - Private repo `KyleBotho/pit-wall-private` (local clone `../pit-wall-private`): `leagues.py` + `leagues.yml`
   (every 6 h, hourly Sun–Mon) fetch the private-league feeds and the global top 500, keep plaintext
   `history/<leagueId>/<feedTime>.json` and `history/global/` there, map each snapshot to a gameday via the schedule
-  (last race started before the feed time), upload the league payload to Supabase (`SUPABASE_SECRET_KEY`, only
+  (last round locked before the feed time: feeds update once qualifying is scored, with the new line-ups), upload the league payload to Supabase (`SUPABASE_SECRET_KEY`, only
   when it changed; `state/published.sha256`), and push `elite_history.json` here with the `PUBLIC_REPO_TOKEN` PAT
   (which triggers a rebuild). Secrets `LEAGUE_IDS`, `SUPABASE_SECRET_KEY`, `PUBLIC_REPO_TOKEN` live in that repo
   only. Its runs aren't visible without auth; check for its commits here instead:
@@ -241,14 +241,11 @@ there before re-deciding something.
 - [ ] Pit Wall F1 account (history: Round tracking): around 2026-10-09, or as soon as a check run fails, read
       `history/session-check.csv` in `../pit-wall-private` (`git pull` first). The first failing day = the session's
       lifetime; then decide with the user whether account-based tracking can run unattended.
-- [ ] After Baku (R15), the checks set up for it (details in history: Round tracking, To do, Feature plan):
-      the R15 snapshot's line-ups explain R15; projections vs results (done 2026-09-26: backtest 6 and 7 on the
-      certified points) and the practice weights with R15 added (R15 is the first frozen projection); the elite
-      `firstSeen` times (do line-ups change at lock or after the race?); live league standings against real Baku
-      qualifying.
-      [x] 2026-09-26 rhter's post-FP3 sims vs ours scored against the result. Kept in the private repo only
-      (`research/rhter-comparisons.md` = running log, method and lessons; `research/score_rhter.py` scores a round);
-      never copy the numbers here.
+- [x] After Baku (R15), all checks done 2026-09-26 (docs/history.md: Round tracking, To do, Feature plan 6 and 11):
+      line-ups explain R15 for all 9 league teams once feeds map to the last LOCKED round (they update after
+      qualifying, with the new line-ups; fixed in leagues.py and refresh.py); live league standings fixed (they
+      counted qualifying twice); practice weights unchanged; backtest 6/7 run. rhter's sims vs ours: private repo only
+      (`research/rhter-comparisons.md`, `research/score_rhter.py`); never copy the numbers here.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result); `npm run fit` again after
       a few more rounds.
 - [ ] Item 9, the lap-by-lap race model (history: To do, item 9): stages 2-5 built and backtested (most off by

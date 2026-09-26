@@ -106,8 +106,15 @@ commit hashes and backtest numbers are as of then).
       `t.asOf` (the race a team is set up for; schema 5 sets it to the next race for older saves) is later; chips F1's
       data shows are locked in the Calculator (`lockedChips`), others stay markable. Rivals as starting team get the
       same bank/free/chips.
-- [ ] Check on real data after Baku: the R15 snapshot's line-ups explain R15 (the user's leagues; his team-tracking league was
-      still 403 on 2026-09-25). Rounds that come out "not worked out" mean the feed's line-up isn't the scoring team.
+- [x] 2026-09-26 Checked on real data after Baku: the R15 snapshots' line-ups explain R15 for all 9 league teams
+      (certified points, plain Boosts, no chips, every fit `sure`), but only after a fix. The leaderboard feeds update
+      once qualifying is scored (Fri 14:32 UTC at Baku) with the round's line-ups AND its qualifying points; mapping
+      a feed to "the last race started" filed that Friday feed under R14, so R14 took Baku's qualifying points and
+      R15 missed them (4 teams unexplained, 4 more only via spurious Final Fixes). Now a feed belongs to the last
+      round LOCKED before it (`leagues.py round_locks`/`gd_at`, private repo; refresh.py `elite_snapshots` works the
+      gd out again on reading, so old elite files need no rewrite). Only the Baku-weekend files moved (2 league, 1
+      global); `data/elite_history.json` R14 had the Friday cut-offs (#1 4119 instead of 4077) until the private
+      workflow reruns.
 - [ ] Decide (user): a dedicated "Pit Wall" F1 account whose session reads every opted-in team's rounds exactly
       (discussed 2026-09-25; not built). He made the account on 2026-09-25; the private repo's daily
       `session_check.py` (workflow "Pit Wall session check") logs whether its session still works to
@@ -400,9 +407,12 @@ R. Code review (2026-09-24, user asked for a critique then "implement all"): spl
       repo; calibration only). Fill in the actual table there, then compare: xPts MAE / rank corr, race overtakes per
       driver (his ~5.2 vs our ~2.8: the stage 2 speed level x0.70 on its first unseen round), Hadjar / Red Bull (his
       FP3 ideal lap has RED 2nd; ours HAD ~P9), retirement rates, win / pole shares. Keep doing it for rounds he posts.
-- [ ] After Baku: compare projections with results and rhter; re-check the practice weights with R15 added. R15 is
-      the first round with a frozen projection (`history/2026/projections/gd15.json`); a projected-vs-actual view
-      across rounds could go in Hindsight once a few exist.
+- [x] 2026-09-26 After Baku: projections vs results (backtest 7, certified points: R15 MAE 14.8, rank corr 0.57;
+      section 6 R5-R15 CRPS 8.76, MAE 12.13, with Baku practice in `backtest/practice_by_round.json`). Practice
+      weights with R15 (section 4, R4-R15): short-run 0.5 vs 0.6 tie (quali MAE 1.849 / 1.842), long-run 0 still
+      best, pull cap 0.8% ties: unchanged. The rhter comparison is in the private repo only
+      (`research/rhter-comparisons.md`). A projected-vs-actual view across rounds could go in Hindsight once a few
+      frozen rounds exist.
 - [x] Final Fix (2026-09-24): the outgoing driver keeps the sessions before the swap (`ff.cat`, R = before the
       race; order Sprint, Qualifying, Race), the incoming one scores from it on, and the slot keeps its Boost.
       The swap lasts ONE race (found 2026-09-25): MaxPeet's R7 start line-up and R7 budget follow the R6
@@ -432,11 +442,12 @@ User-approved order: 1–5, then the rest.
    AVG column/row, heatmap, own-team highlight, cell click -> that round's scoring lines.
 6. [x] Elite ownership ± per round: every build saves `history/2026/elite/<feedTime>_<hash>.json` when the top-500
    line-ups change (`firstSeen` = when we first saw it); the page shows ± vs the previous round's snapshot (from R15).
-   [ ] After Baku: read the `firstSeen` times to learn whether the feed's line-ups change at lock or only after the
-   race (their site snapshots after the qualifying lock). If only after, the ± compares post-race line-ups.
-   The user says (2026-09-24) the feed's line-ups update only AFTER the race; confirm with the Baku `firstSeen` times.
-   If so, rivals' picks for a round can't be seen before the race; mid-weekend League live uses last round's
-   line-ups (the page already warns when line-ups are older than the lock).
+   [x] 2026-09-26 Answered with the Baku times: the line-ups change with the first feed after the lock, i.e. once
+   qualifying is scored (global feed 14:32 UTC Friday, ~1.1 picks per top-500 team changed, cut-offs up by the
+   qualifying points; league feeds 16:45: the one team that transferred shows its new line-up), and NOT after the
+   race (league line-ups identical Friday -> Saturday; top-500 ownership moved only by rank shuffles). The feed
+   never updated between R14 and the Baku lock. So rivals' picks are visible from Friday evening, and the ± (from
+   R15) compares a round's line-ups with the previous round's, as on their site.
 7. [x] League chart (Total / Relative to a chosen team / Race points / Rank, chip badges; rivals' chips need an
    import, which now keeps each chip's round as `chipGd`): "relative to you" and race-points modes, chip markers.
 8. [x] Direct xPts override per asset (alongside pace nudges).
@@ -477,7 +488,12 @@ User-approved order: 1–5, then the rest.
     round: Lawson has two assets, Racing Bulls 114 / Red Bull 116). Your teams' totals use the export line-up for
     that round if there is one, else the current team (Boost ×2, x3, No Negative floors lines; penalties and other
     chips not counted); xPts = the frozen projection, "To go" mid-weekend, Δ once it's over. Tested on R14 (real) and
-    a simulated Baku Friday. [ ] Check it against real Baku qualifying (Fri 25 Sep, 12:00 UTC).
+    a simulated Baku Friday. [x] 2026-09-26 checked against real Baku qualifying (after the fact, from the Friday
+    league snapshots): the feed's round points = each line-up's qualifying points with its Boost, exactly, for all 6
+    teams with a known R14 total. It also showed a bug, fixed with the gameday mapping: the page took
+    "before" = the feed total, which already held qualifying, and added the live qualifying points again. Now
+    before = feed total − the round so far (`m.hist`), and the feed's round points replace the live score only once
+    the weekend is over and the league data is from after the race (`renderLiveLeague`).
     Playerstats caching changed with it: `ps_<id>_<live_gd>_<fingerprint of the live weekend's points>`, so they're
     refetched whenever anything is scored (before, a round's lines froze at race start, missing the race until the
     next round). If lines don't add up to the feed total (playerstats lagging), the file is dropped and refetched.

@@ -250,7 +250,9 @@ export async function pullLive() {
 // A league's standings with this weekend added: season points before the round + the round's points so far.
 // Your teams score as in the cards above; rivals from their line-up in the league feed. A rival's Boost is known
 // only from an import that covers this round; otherwise it's assumed on their highest-projected driver (2×?).
-// Once the round table has official points for the round (after the race), those are used instead.
+// The league feed carries a round from its first scored session on (seen at Baku: qualifying points on Friday), so
+// "before" is always the feed's season total minus the round so far. The feed's round points replace the live score
+// only once the weekend is over and the league data is from after the race; mid-weekend they lag the live feed.
 function renderLiveLeague(g, over) {
   const live = DATA.live,
     gd = live.gd,
@@ -265,9 +267,12 @@ function renderLiveLeague(g, over) {
     .map((l, i) => `<button data-lvlg="${i}" aria-pressed="${l === lg}">${esc(l.name)}</button>`)
     .join("");
   const boostKnown = state.league && state.league.round >= gd; // an import taken after this round's lock
+  const race = g.sessions.find((s) => s.type === "Race"),
+    final = over && Date.parse(lg.collected || "") >= Date.parse((race && (race.end || race.start)) || g.raceStart);
   const rows = lg.members.map((m) => {
     const ti = state.teams.findIndex((t) => teamKey(t) === mkey(m)),
-      off = (m.hist || []).find((h) => h.gd === gd);
+      sofar = (m.hist || []).find((h) => h.gd === gd),
+      off = final ? sofar : null;
     let t = ti >= 0 ? lvTeam(state.teams[ti]) : null,
       guess = false;
     if (!t && m.ids) {
@@ -282,8 +287,8 @@ function renderLiveLeague(g, over) {
         chip: null,
       };
     }
-    const live = off ? off.pts : t ? lvScore(t, lvPts) : null;
-    const before = (+m.pts || 0) - (off ? off.pts : 0); // the feed's season total includes the round once it's official
+    const live = off ? off.pts : t ? lvScore(t, lvPts) : sofar ? sofar.pts : null;
+    const before = (+m.pts || 0) - (sofar ? sofar.pts : 0); // the feed's season total includes the round so far
     return { m, ti, t, guess, live, before, total: before + (live || 0), official: !!off };
   });
   const rankBy = (k) => {

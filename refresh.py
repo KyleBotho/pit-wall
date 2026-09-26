@@ -514,14 +514,17 @@ def elite_snapshots(elite, rows, schedule):
         json.dumps([sorted(str(x) for x in r.get("user_team") or []) for r in rows]).encode()
     ).hexdigest()[:10]
     ft = elite["feedTime"] or "unknown"
-    starts = {g["gd"]: iso(g["raceStart"]) for g in schedule if g.get("raceStart")}
+    # a leaderboard belongs to the last round locked before it was built: F1 updates it once the round's first session
+    # is scored, already with that round's line-ups (Baku R15: Friday 14:32 UTC, after qualifying; unchanged after the
+    # race). Snapshots saved before 2026-09-26 carry a gd from race starts, so it's worked out again on reading.
+    locks = {g["gd"]: iso(g["lock"]) for g in schedule if g.get("lock")}
 
     def gd_at(t):
         try:
             when = iso(t.replace("Z", "+00:00"))
         except (AttributeError, ValueError):
             return None
-        return max([g for g, st in starts.items() if st <= when], default=None)
+        return max([g for g, lk in locks.items() if lk <= when], default=None)
 
     path = archived("elite", f"{ft.replace(':', '')}_{fp}.json")
     if not os.path.exists(path):
@@ -539,6 +542,8 @@ def elite_snapshots(elite, rows, schedule):
     snaps = sorted(
         (read_json(fn) for fn in glob.glob(os.path.join(ARCHIVE, "elite", "*.json"))), key=lambda x: x["firstSeen"]
     )
+    for x in snaps:
+        x["gd"] = gd_at(x["feedTime"])
     cur = next((x for x in snaps if x["hash"] == fp and x["feedTime"] == ft), snaps[-1])
     prev = [x for x in snaps if x["gd"] is not None and cur["gd"] is not None and x["gd"] < cur["gd"]]
     return {
