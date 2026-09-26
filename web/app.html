@@ -92,7 +92,6 @@
   </header>
   <nav class="subtabs" id="subTabs" hidden aria-label="Sections"></nav>
   <!-- the open group's views (main.js GROUPS) -->
-  <input type="file" id="importFile" accept=".json,application/json" hidden /><!-- opened by any [data-import] button -->
 
   <!-- TEAM CALCULATOR -->
   <main id="view-calc" data-v>
@@ -165,10 +164,10 @@
                 </div>
               </div>
               <div class="banner" id="exampleBanner" hidden>
-                This is an <b>example team</b>. Load your own teams, or press Edit to enter one by hand.
+                <span id="exampleText"></span>
                 <div class="chipbar" style="margin-top: 8px">
                   <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button
-                  ><button class="btn ghost sm" data-import="1">Import a data export</button>
+                  ><button class="btn sm" data-setup="join" data-needlink="1" hidden>Link your F1 Fantasy account</button>
                 </div>
               </div>
               <div class="field" id="budgetField">
@@ -386,13 +385,9 @@
   <main id="view-league" data-v hidden>
     <div id="leagueEmpty" class="panel" hidden>
       <h3>League</h3>
-      <p class="note">
-        No league loaded yet. Sign in (accounts with league access see their private leagues), or import an F1 Fantasy data export. An imported league stays in
-        this browser and your account; it is never published.
-      </p>
+      <p class="note">No league loaded yet. Sign in: accounts with league access see their private leagues.</p>
       <div class="chipbar">
-        <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button
-        ><button class="btn ghost sm" data-import="1">Import a data export</button>
+        <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button>
       </div>
     </div>
     <div class="dash" id="leagueDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">

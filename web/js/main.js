@@ -2,7 +2,6 @@
 import { $, $$, DATA, FORECAST_VIEWS, NEXT, SEASON_OVER, alignTable, byId, esc } from "./core.js";
 import { VIEWS, activeTeam, state } from "./state.js";
 import {
-  applyTracked,
   askWhich,
   pull,
   pullLeagues,
@@ -16,7 +15,6 @@ import {
   forgetOldKeys,
 } from "./sync.js";
 import { compute, editStart, forecast, lockedChips, rivalTeams, startKind, startTeam } from "./forecast.js";
-import { importOfficial } from "./import.js";
 import { renderLeague } from "./league.js";
 import { renderElite, renderEliteSeason } from "./elite.js";
 import { fprops } from "./filters.js";
@@ -60,6 +58,7 @@ import {
   renderPrices,
 } from "./views.js";
 import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
+import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
 const RENDER = {
@@ -245,7 +244,7 @@ function pickStart(start) {
   const [k, i] = start.split(":");
   if (k === "team") {
     state.active = +i;
-    state.calcStart = null;
+    state.calcStart = { type: "team" }; // picked: shown even if it's only an example team
   } else if (k === "draft") state.calcStart = { type: "draft", i: +i };
   else if (k === "rival") {
     const r = rivalTeams()[+i];
@@ -331,10 +330,11 @@ const CLICK = [
       save();
     },
   ],
-  ["import", () => $("#importFile").click()],
   ["signin", () => signIn()],
   ["signout", () => signOut()],
   ["sync", (d) => (d.sync === "ask" ? askWhich() : syncChoose(d.sync))],
+  ["setup", (d) => setupAction(d.setup)],
+  ["linkacct", (d) => linkAccount(d.linkacct)],
   [
     "boost",
     (d) => {
@@ -787,27 +787,6 @@ document.addEventListener("click", (e) => {
   for (const [k, fn] of CLICK) if (k in d) return fn(d, t);
 });
 
-function importFile(t) {
-  const f = t.files && t.files[0];
-  t.value = "";
-  if (!f) return;
-  const fr = new FileReader();
-  fr.onload = async () => {
-    try {
-      const r = await importOfficial(JSON.parse(fr.result));
-      applyTracked(); // chips a later round shows as played
-      rerender();
-      if (r.league) showView("league");
-      toast(
-        `Imported ${r.teams} team${r.teams === 1 ? "" : "s"}${r.league ? ` and ${r.league} league teams` : ""}. Check free transfers and bank.`,
-      );
-    } catch (err) {
-      toast(err.message || "Couldn't read that file.");
-    }
-  };
-  fr.onerror = () => toast("Couldn't read that file.");
-  fr.readAsText(f);
-}
 // picking someone already in the team swaps the two slots
 function setSlot(team, k, id) {
   const prev = team[k],
@@ -837,7 +816,6 @@ const CHANGE_ID = {
     state.goalRival = t.value || null;
     saveAnd(runOptimiser);
   },
-  importFile,
   simPreset: (t) => {
     state.simPreset = t.value;
     state.simW = {}; // a new preset starts from its own round weights
@@ -943,6 +921,7 @@ const slider = (id, key, label) => (t) => {
   recompute(250);
 };
 const INPUT_ID = {
+  acctSearch: searchInput,
   simDecay: (t) => {
     state.simDecay = +t.value;
     state.simW = {};
@@ -1133,6 +1112,7 @@ document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
   if (syncState.ready) pull();
   pullLeagues();
+  pullLink();
   if (state.view === "live") pullLive();
 });
 setInterval(() => {

@@ -117,15 +117,15 @@ export function renderLive() {
   // your teams (with only example teams: one card that says how to load yours)
   if (state.teams.every((team) => !lvTeam(team))) {
     $("#lvTeams").innerHTML =
-      `<section class="panel" style="grid-column:1/-1"><h3>Your teams</h3><p class="note">Load your teams to follow them live here.</p>` +
-      `<div class="chipbar"><button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button><button class="btn ghost sm" data-import="1">Import a data export</button></div></section>`;
+      `<section class="panel" style="grid-column:1/-1"><h3>Your teams</h3><p class="note">Sign in and link your F1 Fantasy account to follow your teams live here.</p>` +
+      `<div class="chipbar"><button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button><button class="btn sm" data-setup="join" data-needlink="1" hidden>Link your F1 Fantasy account</button></div></section>`;
     needSync();
   } else
     $("#lvTeams").innerHTML = state.teams
       .map((team, i) => {
         const t = lvTeam(team);
         if (!t)
-          return `<section class="panel"><h3>${esc(team.name)}</h3><p class="note">Example team. Import your teams (or sign in) to follow them live.</p></section>`;
+          return `<section class="panel"><h3>${esc(team.name)}</h3><p class="note">Example team. Link your F1 Fantasy account to follow your teams live.</p></section>`;
         const live = lvScore(t, lvPts),
           proj = lvScore(t, (id) => lvProj(id) ?? 0),
           hasProj = t.ids.some((id) => lvProj(id) != null);

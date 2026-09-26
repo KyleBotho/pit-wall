@@ -48,6 +48,7 @@ import {
   xpts,
 } from "./forecast.js";
 import { teamKey, tracked } from "./league.js";
+import { step } from "./setup.js";
 import { EVLABEL, SESSN, evLabel, filterUI, filters, teamText } from "./filters.js";
 import { modalKind, openModal, rerender, toast, keepUndo } from "./main.js";
 
@@ -155,7 +156,18 @@ export function renderSettings() {
     kind = startKind(),
     chipK = activeChip();
   renderStartPicker(team, kind);
-  $("#exampleBanner").hidden = !team.example;
+  // an example team, or no team because nothing is linked yet (not "none" picked on purpose): say how to get yours
+  const st = step(),
+    auto = team.none && !(state.calcStart && state.calcStart.type === "none");
+  $("#exampleBanner").hidden = !(team.example || auto);
+  $("#exampleText").innerHTML = team.example
+    ? "This is an <b>example team</b>. Load your own teams, or press Edit to enter one by hand."
+    : "<b>No starting team</b>: the Calculator picks teams from a maximum budget. " +
+      (st === "linked"
+        ? "Your linked teams load once F1's standings show their line-ups (after the next race)."
+        : st === "signin"
+          ? "Sign in and link your F1 Fantasy account to start from your own teams."
+          : "Link your F1 Fantasy account to start from your own teams.");
   $("#bank").disabled = $("#free").disabled = !!team.none;
   if (document.activeElement !== $("#bank")) $("#bank").value = team.none ? "" : team.bank;
   $("#free").value = String(Math.min(7, +team.free || 0) >= 4 ? 7 : +team.free || 0);

@@ -1,6 +1,7 @@
 # Team Tracking: plan
 
-Agreed with the user on 2026-09-26; to be built in a fresh session. Read CLAUDE.md first (architecture, conventions),
+Agreed with the user on 2026-09-26. **Phase A built 2026-09-26** (docs/history.md); phase B waits for the
+session-check results. Read CLAUDE.md first (architecture, conventions),
 then this. The build order is below; check each phase's "done when" before moving on.
 
 ## Goal

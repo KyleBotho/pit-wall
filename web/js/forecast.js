@@ -168,7 +168,8 @@ const NO_TEAM = Object.freeze({
   boost: "auto",
   none: true,
 });
-// Reading the starting team changes nothing; editStart() returns the object to change.
+// Reading the starting team changes nothing; editStart() returns the object to change. With nothing picked, it's
+// your active team, unless that is only an example (no F1 Fantasy account linked, nothing entered): then none.
 export function startTeam() {
   const c = state.calcStart;
   if (c && c.type === "none") return NO_TEAM;
@@ -193,6 +194,7 @@ export function startTeam() {
       };
     }
   }
+  if (!(c && c.type === "team") && activeTeam().example) return NO_TEAM;
   return activeTeam();
 }
 // the starting team's settings to change (bank, free transfers, chips used, Boost); a rival's entry is created on
@@ -207,8 +209,10 @@ export function editStart() {
   return state.rivalCfg[start.rivalKey];
 }
 export const startKind = () => {
-  const c = state.calcStart;
-  return c && ["none", "draft", "rival"].includes(c.type) && startTeam() !== activeTeam() ? c.type : "team";
+  const c = state.calcStart,
+    t = startTeam();
+  if (t.none) return "none";
+  return c && ["draft", "rival"].includes(c.type) && t !== activeTeam() ? c.type : "team";
 };
 // chips F1's data shows the starting team has played ({chip: gameday}); the Calculator won't un-mark them
 export const lockedChips = (team) =>

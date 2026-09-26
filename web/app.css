@@ -100,6 +100,72 @@ input {
   font-size: 13px;
   word-break: break-all;
 }
+/* Team Tracking: the linked F1 Fantasy account (Settings) and the setup dialog (setup.js) */
+.linkbox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: stretch;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.linkbox .lbl {
+  color: var(--muted);
+  font-size: 12px;
+}
+.linkbox small,
+.acctpick small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.linkbox .chipbar {
+  margin-top: 4px;
+}
+.setupsteps {
+  margin: 8px 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.joincode {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  user-select: all;
+}
+.accthits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 8px 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.acctpick {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.acctpick:hover,
+.acctpick[aria-pressed="true"] {
+  border-color: rgba(168, 85, 247, 0.6);
+  background: var(--accent-soft);
+}
 p {
   margin: 0;
 }

@@ -52,9 +52,13 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
   setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
-  `syncState`, `LEAGUE_DATA` (the league payload from the account), `Hind`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
+  `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
+  `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
+  from `app_config`, username search, link), Settings' Change/Delete, `pullLink()` after sign-in; `tracking.js` = its
+  pure helpers (tested); `sync.js setAccount/dropAccount/fillTeams`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
-  `state.calcStart`; pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
+  `state.calcStart` (null = auto: your active team, or "No starting team" while it's only an example; `{type:
+  "team"}` = picked); pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
   `state.maxPen`; the chip played is `activeChip()`.
 - `web/brand/` — logo (renamed "Fantasy Pit Wall" 2026-09-24; repo/URL stay `pit-wall`). Icon SVG = favicon; its
   mark is also the `#pwMark` symbol in app.html (rail/app bar/menu); banner PNG = link preview (og:image);
@@ -161,7 +165,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   logged-in data and are NOT fetched by code (checked 2026-09-25: `services/user/opponentteam/...` and
   `services/user/gameplay/.../getteam` answer 401 without a session). Exports give them exactly; after the last
   export `Hind.track` works them out from the public feeds (Round tracking). The user collects an
-  export with Claude for Chrome; the page's Import button reads it in the browser only (localStorage).
+  export with Claude for Chrome for `backfill.py` (private repo); the page's Import button was removed on 2026-09-26
+  (Team Tracking replaces it; an older import saved in `state.league` is still read).
   Never put league or personal data into the repo/site, and never handle the user's F1 login or tokens.
 
 ## Model decisions (backtested — keep unless new evidence; `npm run backtest` reproduces the evidence)
@@ -213,9 +218,9 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] NEXT: Team Tracking, planned with the user on 2026-09-26: **read `docs/team-tracking-plan.md` and build it** (phase
-      A on public data first, then phase B with the FPW account). Users join the tracking league, search their F1
-      Fantasy username once, and their teams load by themselves.
+- [ ] Team Tracking (`docs/team-tracking-plan.md`): phase A built 2026-09-26 (public data; see docs/history.md).
+      Phase B (the FPW account's session, members visible before their first race) waits for the session-check
+      results around 2026-10-09. The tracking league is the `LEAGUE_IDS` entry marked `<id>:<Name>:track`.
 - [x] 2026-09-26 "option 1": signing in unlocks the leagues (Supabase `league_data` behind `league_readers` RLS);
       the passphrase, `seal.js` and `data/league.sealed.json` are gone. Old sealed files stay in git history
       (encrypted; left in place rather than rewriting history). The security review's items 1-9 are done too

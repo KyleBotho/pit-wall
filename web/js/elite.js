@@ -48,7 +48,7 @@ export function renderElite() {
   $("#elMine").innerHTML =
     `<thead><tr><th>Your team</th><th>Points</th><th title="From your last import">Global rank</th><th>To top 500</th><th>To top 100</th><th>To #1</th></tr></thead><tbody>` +
     (!anyPts
-      ? `<tr><td colspan="6" style="text-align:left"><span class="muted">Sign in or import a data export to see where your teams stand.</span> <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button> <button class="btn ghost sm" data-import="1">Import a data export</button></td></tr>`
+      ? `<tr><td colspan="6" style="text-align:left"><span class="muted">Sign in and link your F1 Fantasy account to see where your teams stand.</span> <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button> <button class="btn sm" data-setup="join" data-needlink="1" hidden>Link your F1 Fantasy account</button></td></tr>`
       : "") +
     state.teams
       .filter(() => anyPts)

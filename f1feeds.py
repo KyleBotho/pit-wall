@@ -138,7 +138,7 @@ def feed_time(d):
 
 def team_key(guid, team_no):
     """A team's lasting identity: F1's account guid + team number (1-3), hashed so no account id is kept. Names are
-    only labels (they change, and two managers can share one). The page computes the same (web/js/import.js teamTk).
+    only labels (they change, and two managers can share one). The page computes the same (web/js/core.js teamTk).
     None without a guid."""
     if not guid or team_no is None:
         return None

@@ -5,6 +5,19 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, Team Tracking phase A (docs/team-tracking-plan.md): Supabase `tracked_accounts` (signed-in read,
+      written by the private workflow), `account_links` (own row only, not unique on the account key), `app_config`
+      (the join code, signed-in read). `f1feeds.account_key` / core.js `accountKey` (shared vector). Private repo:
+      the `LEAGUE_IDS` entry `<id>:<Name>:track` keeps usernames + account keys in its snapshots (never in
+      league_data) and uploads one row per account (per-round points only where the round before is known too, so a
+      late joiner gets no lumped round; seen line-ups), changed rows only (`state/tracked.json`), earlier seasons'
+      rows deleted. `Hind.track` keeps a seen line-up without that round's points (a late joiner's first snapshot) so
+      the next team is still known (bank/free unknown: the page says so). Page: setup dialog opens once per tab while
+      signed in without a link; linking replaces the Calculator's teams (keeping one already following a team);
+      Delete puts them back to examples; the Calculator starts from "No starting team" while the active team is only
+      an example. The Import-a-data-export button and `import.js` were removed at the user's request (exports still
+      feed `backfill.py`). Checked in the browser with an in-memory stand-in for supabase-js: auto-open with the
+      code, search "pit w" -> "Fantasy Pit Wall" + team names, link, reload doesn't ask, Change, Delete.
 - [x] 2026-09-26, security review (scored 7/10; the user approved all nine fixes, in order): 1 passphrase no longer
       synced (non-extractable key per browser), PBKDF2 600k; 2 supabase-js bundled, hash-based CSP; 3 feed cache can't
       be poisoned by a block page, atomic writes; 4 live function: separate feed/stats columns, atomic claims, back-off;

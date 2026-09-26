@@ -122,3 +122,23 @@ test("track() rebuilds chips, Boost, budget, bank and transfers from line-ups an
   assert.ok(n >= 150, `team-rounds checked: ${n}`);
   assert.deepEqual(miss, []);
 });
+
+// Team Tracking: a member who joined the tracking league mid-season is first seen with a season total, not a round's
+// points. That line-up still counts as the team held, so the next round's team is known (bank and free transfers not).
+test("track() keeps a line-up seen without that round's points", { skip: D ? false : "no cache/data.json" }, () => {
+  const h = H.create(D, E);
+  const last = D.done[D.done.length - 1];
+  const ids = D.assets
+    .filter((a) => a.kind === "D" && h.at(a.id, last)?.active)
+    .slice(0, 5)
+    .concat(D.assets.filter((a) => a.kind === "C").slice(0, 2))
+    .map((a) => a.id);
+  const t = h.track({}, { [last]: ids }, {});
+  assert.equal(t.rounds.length, 1);
+  assert.equal(t.rounds[0].pts, null);
+  assert.ok(t.rounds[0].unexplained);
+  assert.deepEqual(t.next.ids, ids);
+  assert.equal(t.next.asOf, last);
+  assert.equal(t.next.bank, null);
+  assert.equal(t.next.free, null);
+});

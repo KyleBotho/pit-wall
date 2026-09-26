@@ -34,7 +34,7 @@ class FeedHelpers(unittest.TestCase):
         self.assertEqual(f1feeds.ev_code("Sprint Qualifying", "Something new"), "S OTH")
 
     def test_team_key(self):
-        # the page's teamTk (web/js/import.js) must give the same: tests/shared.test.js checks this vector
+        # the page's teamTk (web/js/core.js) must give the same: tests/shared.test.js checks this vector
         self.assertEqual(f1feeds.team_key("guid-example", 2), "b533aeb1cc9b3744")
         self.assertEqual(f1feeds.team_key("guid-example", "2"), "b533aeb1cc9b3744")
         self.assertIsNone(f1feeds.team_key(None, 2))

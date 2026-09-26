@@ -1,21 +1,50 @@
 /* ---------- private leagues (from the signed-in account) and account sync ---------- */
 import { createClient } from "@supabase/supabase-js";
 import { $, $$, DATA, byId, esc, isDriver, money } from "./core.js";
-import { KEY, loadState, setState, state } from "./state.js";
+import { KEY, defaults, loadState, setState, state } from "./state.js";
 import { compute, forecast } from "./forecast.js";
 import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
+import { accountTeams, mergeLeague } from "./tracking.js";
+import { linkHtml, pullLink, resetLink, step } from "./setup.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
-export let LEAGUE_DATA = null; // the league payload from the signed-in account: memory only
-const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
+// What the page reads about leagues and teams: the owner's private leagues (league_data, league readers only) merged
+// with the linked F1 Fantasy account's teams (tracked_accounts, see setup.js). Memory only.
+export let LEAGUE_DATA = null;
+let LEAGUES = null, // league_data's payload
+  ACCOUNT = null; // the linked account's tracked_accounts row
+export const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
 // league data goes live: your teams keyed and filled in, tracking applied (then refresh the league views)
-function useLeagues(payload) {
-  LEAGUE_DATA = payload;
+function useData(force = false) {
+  LEAGUE_DATA = mergeLeague(LEAGUES, ACCOUNT && ACCOUNT.body);
   adoptKeys();
   if (forecast) {
-    fillFromLineups();
+    fillTeams(force);
     applyTracked();
   }
+}
+function useLeagues(payload) {
+  LEAGUES = payload;
+  useData();
+}
+// The linked account's row (null: none, or not in the data). force: the user just linked it, so its teams replace
+// the Calculator's teams (else they only fill a browser that has nothing but example teams).
+export function setAccount(row, force = false) {
+  ACCOUNT = row || null;
+  useData(force);
+  if (forecast) refreshViews(LEAGUE_VIEWS);
+}
+// The link was deleted: the teams that came from it go back to example teams, so the Calculator starts from none.
+export function dropAccount() {
+  const keys = accountTeams(ACCOUNT).map((t) => t.tk);
+  const fresh = defaults().teams;
+  state.teams = state.teams.map((t, i) => (t.tk && keys.includes(t.tk) ? fresh[i] : t));
+  if (!state.calcStart || state.calcStart.type === "team") state.calcStart = null;
+  state.chip = "";
+  ACCOUNT = null;
+  useData();
+  save();
+  rerender();
 }
 const leagueCount = () => `${LEAGUE_DATA.leagues.length} league${LEAGUE_DATA.leagues.length === 1 ? "" : "s"}`;
 // Private leagues are read by signing in: public.league_data, written by the private repo's workflow, readable only
@@ -60,37 +89,62 @@ function adoptKeys() {
   }
   if (changed) save();
 }
-// A browser with only example teams takes your teams from the league data: the line-up, bank, free transfers and
-// chips going into the round after the last one known (an export, then the line-ups seen after each race).
-function fillFromLineups() {
-  const saved = LEAGUE_DATA && LEAGUE_DATA.lineups;
-  if (!saved || !state.teams.every((t) => t.example)) return;
+// Your teams come from the linked F1 Fantasy account: each one's line-up, bank, free transfers and chips going into
+// the round after the last one known (an export where there is one, else the line-ups seen after each race). A
+// browser with only example teams takes them; linking (force) puts them in team-number order in place of what was
+// there, keeping a team already following one of them (its Boost and later updates stay).
+function fillTeams(force) {
+  const keys = accountTeams(ACCOUNT).map((t) => t.tk);
+  if (!keys.length || (!force && !state.teams.every((t) => t.example))) return;
+  const fresh = defaults().teams;
   let n = 0,
-    latest = 0;
-  for (const key of Object.keys(saved)) {
-    if (n > 2) break;
+    latest = 0,
+    unknown = 0;
+  const waiting = [];
+  const teams = [0, 1, 2].map((i) => {
+    const key = keys[i];
+    if (!key) return force ? fresh[i] : state.teams[i];
+    const had = state.teams.find((t) => t.tk === key);
+    if (had) return (n++, had);
     const next = (tracked(key) || {}).next;
-    if (!next) continue;
-    const got = next.ids.map(String).filter((id) => byId[id]);
+    const got = next ? next.ids.map(String).filter((id) => byId[id]) : [];
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
-    if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) continue;
-    Object.assign(state.teams[n], {
+    if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) {
+      waiting.push(teamLabel(key));
+      return force ? fresh[i] : state.teams[i];
+    }
+    if (next.bank == null || next.free == null) unknown++;
+    latest = Math.max(latest, next.asOf);
+    n++;
+    return {
+      ...fresh[i],
       name: teamLabel(key),
       tk: key,
       team: ids,
-      bank: next.bank ?? state.teams[n].bank,
+      bank: next.bank ?? 0,
       free: next.free ?? 2,
-      boost: "auto",
       chipsUsed: usedChips(tracked(key)),
       asOf: next.asOf + 1,
       example: false,
-    });
-    latest = Math.max(latest, next.asOf);
-    n++;
+    };
+  });
+  if (!n && !force) return;
+  state.teams = teams;
+  if (force) {
+    state.active = 0;
+    state.calcStart = null;
+    state.chip = "";
   }
-  if (!n) return;
+  save();
   rerender();
-  toast(`Loaded ${n} team${n === 1 ? "" : "s"} as they stood after R${latest}.`);
+  const msg = [];
+  if (n) msg.push(`Loaded ${n} team${n === 1 ? "" : "s"}${latest ? ` as they stood after R${latest}` : ""}.`);
+  if (unknown)
+    msg.push(
+      "Bank and free transfers aren't known yet for a team first seen after the last race: set them in the Calculator.",
+    );
+  if (waiting.length) msg.push(`No line-up yet for ${waiting.join(", ")}: it loads after the next race.`);
+  if (msg.length) toast(msg.join(" "));
 }
 // Your teams follow F1's data: once a race is over and its line-ups are in, each team's current line-up, bank, free
 // transfers and chips played update by themselves. A team already set up for a later race (t.asOf: an import taken
@@ -204,6 +258,7 @@ export async function syncInit() {
       setTimeout(() => {
         pull();
         pullLeagues();
+        pullLink();
       }, 0);
   });
 }
@@ -346,8 +401,9 @@ export async function signOut() {
   } catch (e) {}
   Object.assign(syncState, { user: null, at: null, err: "", hold: null, last: null, ready: false });
   writeMark(null);
-  LEAGUE_DATA = null;
+  LEAGUE_DATA = LEAGUES = ACCOUNT = null;
   leaguesAt = null;
+  resetLink();
   renderSync();
   if (forecast) refreshViews(LEAGUE_VIEWS);
   toast("Signed out. Your private leagues are hidden again in this browser; its settings stay.");
@@ -362,8 +418,12 @@ const ago = (t) => {
         ? `${Math.round(m / 60)} h ago`
         : new Date(t).toLocaleDateString();
 };
-// [data-needsync] buttons (sign in) only show when sign-in is available and nobody is signed in
-export const needSync = () => $$("[data-needsync]").forEach((b) => (b.hidden = !syncState.sb || !!syncState.user));
+// [data-needsync] buttons (sign in) only show when sign-in is available and nobody is signed in; [data-needlink]
+// buttons (Team Tracking setup) when someone is signed in whose F1 Fantasy account isn't linked or not in the data
+export const needSync = () => {
+  $$("[data-needsync]").forEach((b) => (b.hidden = !syncState.sb || !!syncState.user));
+  $$("[data-needlink]").forEach((b) => (b.hidden = !["join", "missing"].includes(step())));
+};
 export function renderSync() {
   needSync();
   const U = syncState.user,
@@ -387,10 +447,10 @@ export function renderSync() {
               : "Connecting…";
       h =
         `<div class="em">${esc(U.email || "Signed in")}</div><p class="note${ss.err ? " bad" : ""}">${status}</p>` +
-        `<div class="chipbar">${ss.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>`;
+        `<div class="chipbar">${ss.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>` +
+        linkHtml();
     }
   }
-  h += `<button class="btn ghost sm" data-import="1">Import a data export</button><p class="note">After a new F1 Fantasy export: updates your teams, bank, chips and league.</p>`;
   $$(".acct").forEach((el) => {
     el.innerHTML = h;
     el.closest("[data-acct]").hidden = false;

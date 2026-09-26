@@ -337,7 +337,9 @@
      * Wildcard or Limitless round; the budget moves with the price changes of the team held; a Limitless round
      * reverts to the team before it); Boost, x3 and chip = the plainest combination, among chips not yet used, that
      * rebuilds the official score exactly. Several Boosts can fit when two drivers scored the same (`sure` false).
-     * No fit (a line-up changed after the race, or data missing) leaves the round unexplained.
+     * No fit (a line-up changed after the race, or data missing) leaves the round unexplained. A line-up seen without
+     * that round's points (a team first seen after it joined the tracking league mid-season) is kept the same way, so
+     * the team going into the next round is still known.
      * @param {Record<string, Lineup>} known per gameday, from exports
      * @param {Record<string, string[]>} seen per gameday, the line-up that scored it
      * @param {Record<string, number>} official per gameday, official round points */
@@ -353,7 +355,7 @@
         const k = known[gd],
           ids = k ? k.ids.map(String) : (seen[gd] || []).map(String),
           p = official[gd];
-        if (!k && (ids.length !== 7 || p == null)) {
+        if (!k && ids.length !== 7) {
           held = budget = free = null; // a gap: nothing carries across it
           continue;
         }
@@ -371,7 +373,7 @@
           if (k.budget != null) budget = +k.budget;
         } else {
           const usedNow = new Set(Object.keys(used));
-          let hits = explain(ids, gd, { start, free, budget, used: usedNow, pts: p });
+          let hits = p == null ? [] : explain(ids, gd, { start, free, budget, used: usedNow, pts: p });
           // Final Fix options that leave different teams going into the next round: keep those that also explain it
           const nx = data.done[data.done.indexOf(gd) + 1];
           if (new Set(hits.map((x) => x.qual.join())).size > 1 && !known[nx] && seen[nx] && official[nx] != null) {
@@ -416,7 +418,7 @@
                 src: "seen",
                 sure: false,
                 unexplained: true,
-                pts: p,
+                pts: p ?? null,
               };
         }
         r.gd = gd;
