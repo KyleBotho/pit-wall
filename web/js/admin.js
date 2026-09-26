@@ -127,7 +127,7 @@ async function loadRefresh() {
     refresh.err = r.ok ? "" : "The refresh service isn't answering (HTTP " + r.status + ").";
   } catch (e) {
     refresh.st = null;
-    refresh.err = "The refresh service isn't set up yet or isn't answering.";
+    refresh.err = "The refresh service isn't set up yet or isn't answering (" + ((e && e.message) || e) + ").";
   }
 }
 export async function refreshStatus() {
@@ -155,7 +155,7 @@ export async function refreshNow() {
         : b.error || "The refresh didn't start (HTTP " + r.status + ").",
     );
   } catch (e) {
-    toast("The refresh service isn't answering.");
+    toast("The refresh service isn't answering (" + ((e && e.message) || e) + "). Reload the page and try again.");
   }
   refresh.busy = false;
   // GitHub lists the new run after a few seconds
