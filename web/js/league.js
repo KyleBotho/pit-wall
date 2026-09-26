@@ -223,48 +223,66 @@ function roundCard(m, r) {
 }
 // Next race: head-to-head against each rival's current line-up, and league ownership
 function renderLeagueForecast(league, myIds, myKey) {
-  // head-to-head: same simulated weekends for everyone, so the comparison is paired
-  const mySmp = teamSamples(myIds, boostFor(myIds), ""),
-    N = mySmp.length;
-  const myMean = mySmp.reduce((a, b) => a + b, 0) / N;
   $("#lgH2hNote").textContent = `${activeTeam().name} vs current rival line-ups`;
   const rivals = league.members.filter((m) => mkey(m) !== myKey && m.ids);
+  const h = h2h(myIds, rivals);
   $("#lgH2h").innerHTML =
-    rivals
-      .map((m) => {
-        const ds = m.ids.slice(0, 5),
-          boost = ds.includes(m.boost) ? m.boost : boostFor(m.ids, 0, { boost: "auto" });
-        const smp = teamSamples(m.ids, boost, "");
-        let win = 0,
-          gap = 0;
-        for (let s = 0; s < N; s++) {
-          if (mySmp[s] > smp[s]) win++;
-          gap += mySmp[s] - smp[s];
-        }
-        const drs = ds.slice().sort((x, y) => (x === boost ? -1 : y === boost ? 1 : xpts(y, 1) - xpts(x, 1)));
-        const chipsHtml =
-          m.ids
-            .slice(5)
-            .map((id) => chip(id, { pts: xpts(id, 1), cls: myIds.includes(id) ? "" : "in" }))
-            .join("") +
-          '<span class="sep"></span>' +
-          drs
-            .map((id) =>
-              chip(id, {
-                pts: xpts(id, 1) * (id === boost ? 2 : 1),
-                x: id === boost ? "2×" : "",
-                cls: myIds.includes(id) ? "" : "in",
-              }),
-            )
-            .join("");
-        const p = win / N;
-        return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}</b><div class="chips">${chipsHtml}</div></div>
-      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}">${pct(p)}</b><span class="muted">you win</span><span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span></div></div>`;
-      })
-      .join("") +
-    `<p class="note">Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock. Your team: ${f1(myMean)} xPts.</p>`;
-
-  // league ownership
+    h.html +
+    `<p class="note">Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock. Your team: ${f1(h.mean)} xPts.</p>`;
+  $("#lgOwn").innerHTML = ownTable(myIds, rivals, "Your line-up matches the whole league.");
+}
+// Next race head-to-head: your line-up against each rival's on the same simulated weekends, so the comparison is
+// paired. rivals: [{key, name, ids, boost, sub (a second line), goal (a button to aim for it in the Calculator)}].
+// Returns the cards and your team's expected points.
+export function h2h(myIds, rivals, opt = {}) {
+  const mySmp = teamSamples(myIds, boostFor(myIds), ""),
+    N = mySmp.length;
+  const mean = mySmp.reduce((a, b) => a + b, 0) / N;
+  const html = rivals
+    .map((m) => {
+      const ds = m.ids.slice(0, 5),
+        boost = ds.includes(m.boost) ? m.boost : boostFor(m.ids, 0, { boost: "auto" });
+      const smp = teamSamples(m.ids, boost, "");
+      let win = 0,
+        gap = 0;
+      const d = new Float64Array(N);
+      for (let s = 0; s < N; s++) {
+        d[s] = mySmp[s] - smp[s];
+        if (d[s] > 0) win++;
+        gap += d[s];
+      }
+      const drs = ds.slice().sort((x, y) => (x === boost ? -1 : y === boost ? 1 : xpts(y, 1) - xpts(x, 1)));
+      const chipsHtml =
+        m.ids
+          .slice(5)
+          .map((id) => chip(id, { pts: xpts(id, 1), cls: myIds.includes(id) ? "" : "in" }))
+          .join("") +
+        '<span class="sep"></span>' +
+        drs
+          .map((id) =>
+            chip(id, {
+              pts: xpts(id, 1) * (id === boost ? 2 : 1),
+              x: id === boost ? "2×" : "",
+              cls: myIds.includes(id) ? "" : "in",
+            }),
+          )
+          .join("");
+      const p = win / N;
+      let range = "";
+      if (opt.range) {
+        d.sort();
+        const q = (f) => d[Math.min(N - 1, Math.floor(f * N))];
+        range = `<span class="muted" title="Your points minus theirs: 10% of simulated weekends end below the first number, 10% above the second">${sgn(q(0.1), 0)} to ${sgn(q(0.9), 0)}</span>`;
+      }
+      return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}${m.sub ? ` <small class="dim">${esc(m.sub)}</small>` : ""}</b><div class="chips">${chipsHtml}</div>${m.goal ? `<button class="btn ghost sm" data-rvgoal="${esc(m.key)}" style="align-self:flex-start">Aim to beat in the Calculator</button>` : ""}</div>
+      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}">${pct(p)}</b><span class="muted">you win</span><span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
+    })
+    .join("");
+  return { html, mean };
+}
+// Differentials: assets only you own (chances to gain) and assets rivals own that you don't (threats), with the
+// expected swing against the field of rivals.
+export function ownTable(myIds, rivals, emptyText) {
   const own = {};
   for (const m of rivals) for (const id of m.ids) own[id] = (own[id] || 0) + 1;
   const ids = Array.from(new Set(Object.keys(own).concat(myIds)));
@@ -273,7 +291,7 @@ function renderLeagueForecast(league, myIds, myKey) {
     .map((id) => ({ id, n: own[id] || 0, mine: myIds.includes(id), x: xpts(id, 1) }))
     .filter((r) => (r.mine && r.n < rivals.length) || (!r.mine && r.n > 0))
     .sort((a, b) => a.mine - b.mine || b.n * b.x - a.n * a.x);
-  $("#lgOwn").innerHTML =
+  return (
     `<thead><tr><th>Asset</th><th style="text-align:left">Type</th><th title="How many rivals own it">Rivals</th><th>xPts R${NEXT.gd}</th><th title="Expected swing against the field: positive helps you">Swing</th></tr></thead><tbody>` +
     (rows.length
       ? rows
@@ -284,8 +302,9 @@ function renderLeagueForecast(league, myIds, myKey) {
         <td style="text-align:left">${r.mine ? '<span class="good">Only you</span>' : '<span class="bad">Threat</span>'}</td><td>${r.n}/${rivals.length}</td><td>${f1(r.x)}</td><td${heat(sw, -30, 30)} class="${sw >= 0 ? "good" : "bad"}">${sgn(sw)}</td></tr>`;
           })
           .join("")
-      : `<tr><td colspan="5" class="muted">Your line-up matches the whole league.</td></tr>`) +
-    "</tbody>";
+      : `<tr><td colspan="5" class="muted">${esc(emptyText)}</td></tr>`) +
+    "</tbody>"
+  );
 }
 // Round points for a team: the private repo's round table (signed in) first, else an imported league.
 export function teamHist(key) {
@@ -301,7 +320,7 @@ export const cumPts = (hist, gds) => {
   const by = Object.fromEntries(hist.map((h) => [h.gd, h.pts]));
   return gds.map((gd) => ({ v: (c += by[gd] || 0), r: by[gd] ?? null }));
 };
-// chip badges for a team's line: your teams from the saved line-ups, rivals from an import
+// chip badges for a team's line: your teams from the saved line-ups, then an import, then tracking
 export function chipMarks(key, gds) {
   const rounds = lineups(key),
     im = state.league && state.league.members.find((m) => mkey(m) === key),
@@ -309,40 +328,72 @@ export function chipMarks(key, gds) {
   const at = {};
   if (rounds) for (const [g, r] of Object.entries(rounds)) if (r.chip) at[+g] = short(r.chip);
   if (im && im.chipGd) for (const [k, g] of Object.entries(im.chipGd)) if (!at[g]) at[g] = short(k);
+  const tr = tracked(key); // chips worked out from the league feeds (Round tracking)
+  if (tr && tr.used) for (const [k, g] of Object.entries(tr.used)) if (!at[g]) at[g] = short(k);
   return gds.map((g) => at[g] || null);
 }
 function renderLeagueChart(league) {
-  const mode = state.lgMode || "total",
-    withH = league.members.filter((m) => m.hist.length);
-  const gds = [...new Set(withH.flatMap((m) => m.hist.map((h) => h.gd)))].sort((a, b) => a - b);
-  const cum = new Map(withH.map((m) => [mkey(m), cumPts(m.hist, gds)]));
   const myKey = teamKey(activeTeam());
-  const ref = cum.has(state.lgRef) ? state.lgRef : cum.has(myKey) ? myKey : withH[0] && mkey(withH[0]);
-  const refName = (withH.find((m) => mkey(m) === ref) || {}).name;
-  $$("#lgMode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lgm === mode)));
-  $("#lgRefBox").hidden = mode !== "rel";
-  $("#lgRef").innerHTML = withH
-    .map((m) => `<option value="${esc(mkey(m))}" ${mkey(m) === ref ? "selected" : ""}>${esc(m.name)}</option>`)
+  pointsRace(
+    "lg",
+    league.members.map((m) => ({ key: mkey(m), name: m.name, hist: m.hist, me: mkey(m) === myKey })),
+    "League",
+  );
+}
+// The points race chart (League and Rivals: p = "lg" / "rv" names its elements, its mode buttons data-<p>m and its
+// settings state.<p>Mode / <p>Ref / <p>Chips). members: [{key, name, me, hist: [{gd, pts}]}] or, for a reference
+// line (dashed, left out of ranks), {total: {gd: cumulative points}}. A team first seen after round 1 (a tracking-
+// league member who joined late) starts where its data starts: its earlier points aren't known.
+export function pointsRace(p, members, noun) {
+  const mode = state[p + "Mode"] || "total",
+    withH = members.filter((m) => (m.hist && m.hist.length) || m.total);
+  const gds = [
+    ...new Set(withH.flatMap((m) => (m.total ? Object.keys(m.total).map(Number) : m.hist.map((h) => h.gd)))),
+  ].sort((a, b) => a - b);
+  const line = (m) => {
+    if (m.total)
+      return gds.map((gd, i) => {
+        const v = m.total[gd] ?? null,
+          prev = i ? (m.total[gds[i - 1]] ?? null) : null;
+        return { v, r: v != null && prev != null ? v - prev : null };
+      });
+    const first = Math.min(...m.hist.map((h) => h.gd));
+    return cumPts(m.hist, gds).map((q, i) => (gds[i] < first ? { v: null, r: null } : q));
+  };
+  const cum = new Map(withH.map((m) => [m.key, line(m)]));
+  const ranked = withH.filter((m) => !m.total);
+  const me = withH.find((m) => m.me);
+  const ref = cum.has(state[p + "Ref"]) ? state[p + "Ref"] : me ? me.key : withH[0] && withH[0].key;
+  const refName = (withH.find((m) => m.key === ref) || {}).name;
+  $$(`#${p}Mode button`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset[p + "m"] === mode)));
+  $(`#${p}RefBox`).hidden = mode !== "rel";
+  $(`#${p}Ref`).innerHTML = withH
+    .map((m) => `<option value="${esc(m.key)}" ${m.key === ref ? "selected" : ""}>${esc(m.name)}</option>`)
     .join("");
-  $("#lgChips").checked = !!state.lgChips;
-  // league rank after each round, from the running totals
-  const rankAt = (i, key) =>
-    1 + withH.filter((m) => mkey(m) !== key && cum.get(mkey(m))[i].v > cum.get(key)[i].v).length;
+  $(`#${p}Chips`).checked = !!state[p + "Chips"];
+  // rank after each round among the teams (not the reference lines), from the running totals
+  const rankAt = (i, key) => {
+    const v = cum.get(key)[i].v;
+    return v == null ? null : 1 + ranked.filter((m) => m.key !== key && (cum.get(m.key)[i].v ?? -1e9) > v).length;
+  };
   const series = withH.map((m) => {
-    const c = cum.get(mkey(m));
+    const c = cum.get(m.key),
+      rc = cum.get(ref);
     const pts =
       mode === "rel"
-        ? c.map((p, i) => ({ v: p.v - cum.get(ref)[i].v, r: p.r }))
+        ? c.map((q, i) => ({ v: q.v == null || rc[i].v == null ? null : q.v - rc[i].v, r: q.r }))
         : mode === "race"
-          ? c.map((p) => ({ v: p.r, r: null }))
+          ? c.map((q) => ({ v: q.r, r: null }))
           : mode === "rank"
-            ? c.map((p, i) => ({ v: rankAt(i, mkey(m)), r: p.r }))
+            ? c.map((q, i) => ({ v: m.total ? null : rankAt(i, m.key), r: q.r }))
             : c;
     return {
       name: m.name,
-      me: mkey(m) === myKey,
+      me: !!m.me,
+      dash: !!m.total,
+      color: m.color,
       pts,
-      marks: state.lgChips ? chipMarks(mkey(m), gds) : null,
+      marks: state[p + "Chips"] && !m.total ? chipMarks(m.key, gds) : null,
     };
   });
   const opts =
@@ -352,14 +403,14 @@ function renderLeagueChart(league) {
         ? { fmt: (v) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(Math.round(v)).toLocaleString() }
         : {};
   lineChart(
-    $("#lgChart"),
+    $(`#${p}Chart`),
     gds,
     series,
     {
-      total: "Cumulative league points by round",
+      total: `Cumulative ${noun.toLowerCase()} points by round`,
       rel: `Points relative to ${refName}`,
       race: "Points scored each round",
-      rank: "League position after each round",
+      rank: `${noun} position after each round`,
     }[mode],
     opts,
   );

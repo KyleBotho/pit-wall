@@ -5,6 +5,15 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, "My rivals" tab (user asked where a side-by-side view would go; agreed: a third tab in the Leagues
+      group, not a pretend league, so the League views stay real leagues). rivals-view.js: your team (switch between
+      your linked teams, `state.rvMe`) against the picked rivals' current line-ups on the same simulated weekends
+      (P(win), expected gap, 10-90% range of the gap, "Aim to beat in the Calculator" sets goal rival), differentials,
+      and the points race (Total / Relative / Race points / Rank, chips) with your teams, the picked teams and, for a
+      template, the #100/#500 cut-off as a dashed line (templates have no season). League's head-to-head, ownership
+      table and chart became shared functions (`h2h`, `ownTable`, `pointsRace`); League's chart now starts a late
+      joiner's line at its first known round (it used to run from 0), and `chipMarks` adds chips worked out by
+      tracking (rivals' chips no longer need an import). Not browser-checked in that session (no data feeds).
 - [x] 2026-09-26, Rivals, first step (user's decisions: joining the tracking league never makes anyone a rival, the
       list would grow too long; rivals are only teams the user picks from the tracking league, no other users' private
       leagues (too much manual work); the League views stay limited to real leagues). `rivals.js`: "Manage rivals"

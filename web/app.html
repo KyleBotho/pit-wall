@@ -454,6 +454,61 @@
     </div>
   </main>
 
+  <!-- MY RIVALS (rivals-view.js) -->
+  <main id="view-rivals" data-v hidden>
+    <div id="rivalsEmpty" class="panel" hidden>
+      <h3>My rivals</h3>
+      <p class="note" id="rivalsEmptyText"></p>
+      <div class="chipbar">
+        <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button>
+        <button class="btn sm" data-rivals="open">Manage rivals</button>
+      </div>
+    </div>
+    <div class="dash" id="rivalsDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
+      <section class="panel" style="grid-column: 1/-1">
+        <h3>
+          My rivals <small id="rvStamp"></small>
+          <button class="btn ghost sm" data-rivals="open" style="margin-left: auto">Manage rivals</button>
+        </h3>
+        <div class="seg" id="rvMe" style="align-self: flex-start" title="Your team to compare"></div>
+      </section>
+      <section class="panel">
+        <h3>Next race head-to-head <small id="rvH2hNote"></small></h3>
+        <div id="rvH2h" class="bts"></div>
+      </section>
+      <section class="panel">
+        <h3>
+          Points race
+          <span class="seg" id="rvMode"
+            ><button data-rvm="total">Total</button><button data-rvm="rel">Relative</button><button data-rvm="race">Race points</button
+            ><button data-rvm="rank">Rank</button></span
+          >
+        </h3>
+        <div class="chipbar" style="align-items: center; gap: 12px">
+          <label class="field" id="rvRefBox" style="flex-direction: row; align-items: center; gap: 8px"
+            >Compare with<select id="rvRef" class="inp" style="width: auto"></select
+          ></label>
+          <label class="switch"><input type="checkbox" id="rvChips" /><span>Show chips</span></label>
+        </div>
+        <div id="rvChart" style="position: relative"></div>
+        <p class="note" id="rvSeasonNote"></p>
+      </section>
+      <section class="panel" id="rvOwnBox" style="grid-column: 1/-1">
+        <h3>
+          Differentials
+          <details class="info">
+            <summary aria-label="About this">i</summary>
+            <div class="infobox">
+              Assets your rivals own but your team doesn't are threats: if they score big, you fall behind. Assets only you own are your chances to gain.
+            </div>
+          </details>
+          <small>who owns what among your rivals</small>
+        </h3>
+        <div class="tw"><table id="rvOwn"></table></div>
+      </section>
+    </div>
+  </main>
+
   <!-- ELITE -->
   <main id="view-elite" data-v hidden>
     <div id="eliteEmpty" class="panel" hidden>

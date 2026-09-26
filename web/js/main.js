@@ -60,6 +60,7 @@ import {
 import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
 import { pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
+import { renderRivals } from "./rivals-view.js";
 import { cfgSave, closeNotice, loadNotice } from "./admin.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
@@ -72,6 +73,7 @@ const RENDER = {
   },
   live: () => renderLive(),
   league: () => renderLeague(),
+  rivals: () => renderRivals(),
   elite: () => renderElite(),
   hind: () => renderHind(),
   stats: () => renderStats(),
@@ -136,6 +138,7 @@ const GROUPS = {
   ],
   leagues: [
     ["league", "My leagues"],
+    ["rivals", "My rivals"],
     ["elite", "Global elite"],
   ],
   season: [
@@ -538,6 +541,30 @@ const CLICK = [
     },
   ],
   [
+    "rvm",
+    (d) => {
+      state.rvMode = d.rvm;
+      saveAnd(renderRivals);
+    },
+  ],
+  [
+    "rvme",
+    (d) => {
+      state.rvMe = +d.rvme;
+      saveAnd(renderRivals);
+    },
+  ],
+  [
+    // a rival's head-to-head card: aim to beat it in the Calculator
+    "rvgoal",
+    (d) => {
+      state.goal = "rival";
+      state.goalRival = d.rvgoal;
+      refreshViews(["calc"]); // stale: rendered with the new goal when shown
+      showView("calc");
+    },
+  ],
+  [
     "elt",
     (d) => {
       state.elT = +d.elt;
@@ -856,6 +883,14 @@ const CHANGE_ID = {
   lgChips: (t) => {
     state.lgChips = t.checked;
     saveAnd(renderLeague);
+  },
+  rvRef: (t) => {
+    state.rvRef = t.value;
+    saveAnd(renderRivals);
+  },
+  rvChips: (t) => {
+    state.rvChips = t.checked;
+    saveAnd(renderRivals);
   },
   lgRoundPick: (t) => {
     state.lgRound = +t.value;

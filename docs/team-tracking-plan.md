@@ -133,7 +133,9 @@ rivals are only what the user picks: teams from the tracking league (`tracked_ac
 and, for the owner only for now, members of his private leagues (anyone in `league_readers`, which is only him).
 Other users can't add their own private leagues (too much manual work for now); the League views stay limited to
 real leagues. Built: "Manage rivals" (rivals.js), used by the Calculator's start team and goal "Beat a rival".
-Still open: where else rivals should show (a rivals comparison view?).
+The "My rivals" tab (Leagues group, rivals-view.js) compares your team with them: next-race head-to-head (P(win),
+expected gap, 10-90% range, a button to aim for that rival in the Calculator), differentials, and the points race
+with your teams and theirs; a template's season is the global cut-off it stands for (dashed).
 
 ## Why not automate the login
 
