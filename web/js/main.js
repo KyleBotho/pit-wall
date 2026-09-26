@@ -5,6 +5,7 @@ import {
   applyTracked,
   askWhich,
   pull,
+  pullLeagues,
   renderSync,
   save,
   signIn,
@@ -1139,6 +1140,7 @@ setInterval(() => {
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
   if (syncState.ready) pull();
+  pullLeagues();
   if (state.view === "live") pullLive();
 });
 setInterval(() => {

@@ -83,3 +83,31 @@ grant select on public.owners to authenticated;
 drop policy if exists "owners: read own row" on public.owners;
 create policy "owners: read own row" on public.owners
   for select to authenticated using ((select auth.uid()) = user_id);
+
+-- Private leagues, read by signing in (no passphrase). The private repo's workflow (leagues.py) upserts the league
+-- payload into league_data with the secret key; only accounts listed in league_readers can read it. Each signed-in
+-- user can read only their own league_readers row. Add a reader in the SQL Editor:
+--   insert into public.league_readers (user_id) select id from auth.users where email = '<sign-in email>'
+--   on conflict do nothing;
+create table if not exists public.league_readers (
+  user_id uuid primary key references auth.users (id) on delete cascade
+);
+alter table public.league_readers enable row level security;
+revoke all on public.league_readers from anon, authenticated;
+grant select on public.league_readers to authenticated;
+drop policy if exists "league_readers: read own row" on public.league_readers;
+create policy "league_readers: read own row" on public.league_readers
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+create table if not exists public.league_data (
+  id         text primary key, -- "current": the whole payload the page reads
+  body       jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.league_data enable row level security;
+revoke all on public.league_data from anon, authenticated;
+grant select on public.league_data to authenticated;
+drop policy if exists "league_data: readers only" on public.league_data;
+create policy "league_data: readers only" on public.league_data
+  for select to authenticated
+  using (exists (select 1 from public.league_readers r where r.user_id = (select auth.uid())));

@@ -6,7 +6,7 @@ import { compute, forecast } from "./forecast.js";
 import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
-export let SEALED = null; // decrypted payload, memory only
+export let SEALED = null; // the league payload (from the account, or decrypted with the passphrase): memory only
 // The passphrase itself is never stored. This browser keeps a non-extractable PBKDF2 key made from it (IndexedDB):
 // it can derive the decryption key for each new seal (fresh salt every time) but can't be read back out.
 const LK = "pitwall.lk"; // IndexedDB record name; also where older pages kept the passphrase in plain text
@@ -50,23 +50,47 @@ export async function unlock(pass, quiet) {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
   if (await tryUnseal(base, quiet)) await keyPut(base);
 }
+// league data goes live: your teams keyed and filled in, tracking applied (then refresh the league views)
+function useLeagues(payload) {
+  SEALED = payload;
+  adoptKeys();
+  if (forecast) {
+    fillFromLineups();
+    applyTracked();
+  }
+}
+const leagueCount = () => `${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}`;
 async function tryUnseal(base, quiet) {
   let ok = false;
   try {
-    SEALED = await unseal(base);
+    useLeagues(await unseal(base));
     ok = true;
-    if (!quiet) toast(`Unlocked ${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}.`);
-    adoptKeys();
-    if (forecast) {
-      fillFromLineups();
-      applyTracked();
-    }
+    if (!quiet) toast(`Unlocked ${leagueCount()}.`);
   } catch (e) {
     SEALED = null;
     if (!quiet) toast("That passphrase didn't work.");
   }
   if (forecast) refreshViews(LEAGUE_VIEWS);
   return ok;
+}
+// Signed-in accounts on the reader list (public.league_readers) get the leagues from the account, no passphrase:
+// public.league_data, written by the private repo's workflow, readable only by them (RLS). Anyone else gets no row
+// and keeps the passphrase route.
+let leaguesAt = null; // updated_at of the row in use
+export async function pullLeagues() {
+  const U = syncState.user;
+  if (!U || !syncState.sb) return;
+  const { data, error } = await syncState.sb
+    .from("league_data")
+    .select("body, updated_at")
+    .eq("id", "current")
+    .maybeSingle();
+  if (U !== syncState.user || error || !data || data.updated_at === leaguesAt) return;
+  const first = leaguesAt == null && !SEALED;
+  leaguesAt = data.updated_at;
+  useLeagues(data.body);
+  if (first) toast(`Loaded ${leagueCount()} from your account.`);
+  if (forecast) refreshViews(LEAGUE_VIEWS);
 }
 // at load: this browser's saved key, or a plain-text passphrase from an older page (moved into a key, then deleted)
 export async function unlockSaved() {
@@ -234,7 +258,12 @@ export async function syncInit() {
     Object.assign(syncState, { user: u, at: null, err: "", hold: null, last: null, ready: false });
     renderSync();
     labCheck();
-    if (u) setTimeout(pull, 0); // not inside the callback: supabase-js can deadlock on calls made there
+    // not inside the callback: supabase-js can deadlock on calls made there
+    if (u)
+      setTimeout(() => {
+        pull();
+        pullLeagues();
+      }, 0);
   });
 }
 export async function pull() {
@@ -379,6 +408,7 @@ export async function signOut() {
   writeMark(null);
   await keyDel();
   SEALED = null;
+  leaguesAt = null;
   renderSync();
   if (forecast) refreshViews(LEAGUE_VIEWS);
   toast("Signed out. Your leagues are locked again in this browser; its settings stay.");
