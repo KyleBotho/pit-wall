@@ -539,7 +539,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -19
+            "Value": -18
           },
           {
             "Frequency": "10th",
@@ -550,8 +550,21 @@
             "Frequency": "-",
             "Event": "Race not classified ",
             "Value": -20
+          },
+          {
+            "Frequency": "1",
+            "Event": "race overtake bonus",
+            "Value": 1
           }
         ]
+      },
+      {
+        "GamedayId": 16,
+        "PlayerValue": 10.0,
+        "OldPlayerValue": 10.6,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -565,7 +578,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 137
+            "Value": 138
           },
           {
             "Frequency": "2",
@@ -613,9 +626,9 @@
             "Value": -5
           },
           {
-            "Frequency": "75",
+            "Frequency": "76",
             "Event": "race overtake bonus",
-            "Value": 75
+            "Value": 76
           }
         ]
       }
@@ -1429,7 +1442,7 @@
             "RaceDayId": 7389,
             "TeamId": 23,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -1443,6 +1456,54 @@
             "Season": "2026",
             "SelectedPercentage": "21",
             "CapSelectedPercentage": "1"
+          }
+        ]
+      },
+      {
+        "GamedayId": 16,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 10.0,
+            "OldPlayerValue": 10.6,
+            "RaceDayId": 7577,
+            "TeamId": 23,
+            "DateTime": "10/02/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Kuala Lumpur",
+            "MeetingNumber": 16,
+            "MeetingName": "Bahrain Grand Prix",
+            "CountryId": 37,
+            "CountryName": "Bahrain",
+            "CircuitOfficialName": "Sepang International Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-03T16:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 10.0,
+            "OldPlayerValue": 10.6,
+            "RaceDayId": 7578,
+            "TeamId": 23,
+            "DateTime": "10/02/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Kuala Lumpur",
+            "MeetingNumber": 16,
+            "MeetingName": "Bahrain Grand Prix",
+            "CountryId": 37,
+            "CountryName": "Bahrain",
+            "CircuitOfficialName": "Sepang International Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-04T15:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -2710,7 +2771,7 @@
             "OldPlayerValue": 10.4,
             "RaceDayId": 7389,
             "DateTime": "09/24/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Baku",
             "MeetingNumber": 15,
             "MeetingName": "Azerbaijan Grand Prix",
@@ -2727,22 +2788,53 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -20
+                "Value": -19
               },
               {
                 "Frequency": "-",
                 "Event": "Race not classified ",
                 "Value": -20
+              },
+              {
+                "Frequency": "1",
+                "Event": "race overtake bonus",
+                "Value": 1
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 16,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 10.0,
+            "OldPlayerValue": 10.6,
+            "RaceDayId": 7577,
+            "DateTime": "10/02/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Kuala Lumpur",
+            "MeetingNumber": 16,
+            "MeetingName": "Bahrain Grand Prix",
+            "CountryId": 37,
+            "CountryName": "Bahrain",
+            "CircuitOfficialName": "Sepang International Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-03T16:00:00+08:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 1:29:14 PM",
-    "ISTTime": "9/26/2026 6:59:14 PM",
-    "CESTTime": "9/26/2026 3:29:14 PM"
+    "UTCTime": "9/26/2026 5:33:28 PM",
+    "ISTTime": "9/26/2026 11:03:28 PM",
+    "CESTTime": "9/26/2026 7:33:28 PM"
   }
 }
