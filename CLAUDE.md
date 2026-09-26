@@ -113,8 +113,13 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - Saved settings go through `loadState()` (`web/js/state.js`): bump `SCHEMA` and add a `MIGRATIONS` step for any
   shape change; `CARRY` lists what survives into a new season. `defaults()` returns fresh objects.
 - Only the visible view renders: after a change call `rerender()` (all views stale, visible one redrawn) or
-  `refreshViews([...])`. Clicks/changes/inputs dispatch through the `CLICK` / `CHANGE` / `INPUT_ID` tables in
-  `main.js`; add an entry rather than a branch.
+  `refreshViews([...])`. Clicks/changes/inputs dispatch through the `CLICK` / `CLICK_ID` / `CLICK_ON` (non-button
+  targets by selector) / `CHANGE` / `INPUT_ID` tables in `main.js`; add an entry rather than a branch.
+- engine.js's big functions are split into named stages (2026-09-26): `simulate` = `simState` + `lapCalib` +
+  `simSample` (`qualiOrder`, `raceSession`) + `simSummary`; `trackModel` = `circuitPriors`, `seasonTrend`,
+  `featureResiduals`, `scOvertakes`, `teamTrackPace`, `speedFit`; `buildModel` = `reliability`, `paceObservations`,
+  `paceEstimates`, `applyPractice`, `constructorModels`. The split was checked output-identical (seeded sims, 8
+  switch combinations x 4 races); check any engine refactor the same way.
 - Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 
