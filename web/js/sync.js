@@ -98,29 +98,29 @@ function adoptKeys() {
 // A browser with only example teams takes your teams from the sealed data: the line-up, bank, free transfers and
 // chips going into the round after the last one known (an export, then the line-ups seen after each race).
 function fillFromLineups() {
-  const L = SEALED && SEALED.lineups;
-  if (!L || !state.teams.every((t) => t.example)) return;
+  const saved = SEALED && SEALED.lineups;
+  if (!saved || !state.teams.every((t) => t.example)) return;
   let n = 0,
     latest = 0;
-  for (const key of Object.keys(L)) {
+  for (const key of Object.keys(saved)) {
     if (n > 2) break;
-    const nx = (tracked(key) || {}).next;
-    if (!nx) continue;
-    const got = nx.ids.map(String).filter((id) => byId[id]);
+    const next = (tracked(key) || {}).next;
+    if (!next) continue;
+    const got = next.ids.map(String).filter((id) => byId[id]);
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
     if (ids.length !== 7 || ids.slice(0, 5).some((id) => !isDriver(id))) continue;
     Object.assign(state.teams[n], {
       name: teamLabel(key),
       ...(SEALED.names ? { tk: key } : {}), // older sealed files are keyed by name
       team: ids,
-      bank: nx.bank ?? state.teams[n].bank,
-      free: nx.free ?? 2,
+      bank: next.bank ?? state.teams[n].bank,
+      free: next.free ?? 2,
       boost: "auto",
       chipsUsed: usedChips(tracked(key)),
-      asOf: nx.asOf + 1,
+      asOf: next.asOf + 1,
       example: false,
     });
-    latest = Math.max(latest, nx.asOf);
+    latest = Math.max(latest, next.asOf);
     n++;
   }
   if (!n) return;
@@ -142,18 +142,18 @@ export function applyTracked() {
       Object.assign(t.chipsUsed, used);
       changed = true;
     }
-    const nx = tr.next;
-    if (!nx || nx.asOf + 1 <= (t.asOf || 0)) continue;
-    const got = nx.ids.map(String).filter((id) => byId[id]);
+    const next = tr.next;
+    if (!next || next.asOf + 1 <= (t.asOf || 0)) continue;
+    const got = next.ids.map(String).filter((id) => byId[id]);
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
     if (ids.length !== 7) continue;
     const moved = ids.filter((id) => !t.team.includes(id)).length;
-    Object.assign(t, { team: ids, boost: "auto", asOf: nx.asOf + 1 });
-    if (nx.bank != null) t.bank = nx.bank;
-    if (nx.free != null) t.free = nx.free;
+    Object.assign(t, { team: ids, boost: "auto", asOf: next.asOf + 1 });
+    if (next.bank != null) t.bank = next.bank;
+    if (next.free != null) t.free = next.free;
     changed = true;
     news.push(
-      `${t.name}${moved ? ` (${moved} change${moved === 1 ? "" : "s"})` : ""}: ${nx.bank != null ? money(nx.bank) + " bank, " : ""}${nx.free ?? "?"} free`,
+      `${t.name}${moved ? ` (${moved} change${moved === 1 ? "" : "s"})` : ""}: ${next.bank != null ? money(next.bank) + " bank, " : ""}${next.free ?? "?"} free`,
     );
   }
   if (!changed) return;
@@ -326,7 +326,11 @@ async function push() {
   syncState.busy = false;
   if (U !== syncState.user) return;
   if (error) {
-    syncState.err = "Not synced: " + error.message;
+    // 23514: over the account's size cap (configs_data_size in supabase/setup.sql)
+    syncState.err =
+      error.code === "23514"
+        ? "Not synced: your settings are over the account's 1 MB limit (an imported league is the big part)."
+        : "Not synced: " + error.message;
     return renderSync();
   }
   Object.assign(syncState, { at: data.updated_at, last: j, ready: true, err: "" });

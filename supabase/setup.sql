@@ -1,4 +1,4 @@
--- Pit Wall sync (CLAUDE.md item 12). Run once in Supabase: SQL Editor -> New query -> paste -> Run.
+-- Pit Wall sync (docs/history.md, item 12). Run once in Supabase: SQL Editor -> New query -> paste -> Run.
 -- Safe to re-run. One row per signed-in user; RLS limits every user to their own row.
 
 create table if not exists public.configs (
@@ -23,6 +23,11 @@ create policy "configs: update own" on public.configs
 -- Explicit grants: signed-out visitors get nothing; signed-in users read/write (RLS still applies). No delete.
 revoke all on public.configs from anon;
 grant select, insert, update on public.configs to authenticated;
+
+-- A settings row is tens of KB (an imported league with every member's rounds is the big part). Cap it at 1 MB
+-- (stored, i.e. compressed) so an account can't use the table as free storage.
+alter table public.configs drop constraint if exists configs_data_size;
+alter table public.configs add constraint configs_data_size check (pg_column_size(data) < 1048576);
 
 -- The server sets updated_at, so "Synced n min ago" doesn't depend on the browser's clock.
 create or replace function public.configs_touch() returns trigger
@@ -76,4 +81,5 @@ alter table public.owners enable row level security;
 revoke all on public.owners from anon, authenticated;
 grant select on public.owners to authenticated;
 drop policy if exists "owners: read own row" on public.owners;
-create policy "owners: read own row" on public.owners for select to authenticated using (auth.uid() = user_id);
+create policy "owners: read own row" on public.owners
+  for select to authenticated using ((select auth.uid()) = user_id);
