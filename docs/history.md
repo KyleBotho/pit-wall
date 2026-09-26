@@ -5,6 +5,17 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, autonomy steps 1-3 (user's list: "make it autonomous / easy to operate and allow it to improve
+      itself"). 1: session-aware refresh (refresh.py `refresh_plan` -> build/refresh-plan.json; Supabase function
+      `refresh` started by pg_cron every 5 min; Settings > Admin > Data refresh with Refresh now; refresh.yml's own
+      timer is a 6-hourly fallback). Found on the way: admin.js built the function URL at load, before sync.js set
+      SB_URL (circular import) -> "undefined/functions/v1/refresh", CSP-blocked; a bundle-order test guards it now.
+      2: health.py (problems + 3-day notices for mid-season oddities) in Settings > Admin > Data health and a
+      self-managing "Data health" GitHub issue (user chose issue + email over a mail service). 3: backtest/accuracy.js
+      (frozen projection vs result and walk-forward per certified round -> history/<season>/accuracy.json, run by
+      refresh.py, ~3 s, skipped when unchanged) and a weekly settings fit (.github/workflows/fit.yml, Tuesdays,
+      fit.js --save -> fit.json) shown in the Sim lab's Model health panel. The fit only proposes: fitted in-sample,
+      a gain under ~0.1 CRPS is noise; adopting a change stays the owner's decision (applied by hand in engine.js).
 - [x] 2026-09-26, rivals checked in the browser by the user: Manage rivals, the Calculator's rival start team and
       goal, the "My rivals" tab, the ⓘ tooltips, and a tracking-league rival picked by username.
 - [x] 2026-09-26, explanations into ⓘ tooltips (user: "comments like these should be hidden in small tool tips",

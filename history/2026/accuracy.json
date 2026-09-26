@@ -1,0 +1,204 @@
+{
+ "generated": "2026-09-26T21:04Z",
+ "key": "2a0c6634b2d9",
+ "N": 3000,
+ "rounds": [
+  {
+   "gd": 1,
+   "frozen": null,
+   "walk": null
+  },
+  {
+   "gd": 2,
+   "frozen": null,
+   "walk": null
+  },
+  {
+   "gd": 3,
+   "frozen": null,
+   "walk": null
+  },
+  {
+   "gd": 4,
+   "frozen": null,
+   "walk": null
+  },
+  {
+   "gd": 5,
+   "frozen": null,
+   "walk": {
+    "crps": 9.22,
+    "mae": 12.36,
+    "bias": 5.51,
+    "rho": 0.7,
+    "team": 271
+   }
+  },
+  {
+   "gd": 6,
+   "frozen": null,
+   "walk": {
+    "crps": 10.72,
+    "mae": 14.61,
+    "bias": 4.97,
+    "rho": 0.48,
+    "team": 82
+   }
+  },
+  {
+   "gd": 7,
+   "frozen": null,
+   "walk": {
+    "crps": 9.22,
+    "mae": 12.7,
+    "bias": 3.59,
+    "rho": 0.77,
+    "team": 73
+   }
+  },
+  {
+   "gd": 8,
+   "frozen": null,
+   "walk": {
+    "crps": 7.19,
+    "mae": 9.05,
+    "bias": 0.99,
+    "rho": 0.9,
+    "team": 210
+   }
+  },
+  {
+   "gd": 9,
+   "frozen": null,
+   "walk": {
+    "crps": 8.78,
+    "mae": 13.81,
+    "bias": -6.68,
+    "rho": 0.76,
+    "team": 273
+   }
+  },
+  {
+   "gd": 10,
+   "frozen": null,
+   "walk": {
+    "crps": 7.41,
+    "mae": 10.1,
+    "bias": -0.21,
+    "rho": 0.83,
+    "team": 180
+   }
+  },
+  {
+   "gd": 11,
+   "frozen": null,
+   "walk": {
+    "crps": 7.25,
+    "mae": 9.84,
+    "bias": -3.47,
+    "rho": 0.74,
+    "team": 181
+   }
+  },
+  {
+   "gd": 12,
+   "frozen": null,
+   "walk": {
+    "crps": 8.06,
+    "mae": 9.82,
+    "bias": 2.95,
+    "rho": 0.7,
+    "team": 211
+   }
+  },
+  {
+   "gd": 13,
+   "frozen": null,
+   "walk": {
+    "crps": 10.95,
+    "mae": 16.02,
+    "bias": -7.77,
+    "rho": 0.73,
+    "team": 162
+   }
+  },
+  {
+   "gd": 14,
+   "frozen": null,
+   "walk": {
+    "crps": 7.43,
+    "mae": 10.08,
+    "bias": 1.62,
+    "rho": 0.82,
+    "team": 138
+   }
+  },
+  {
+   "gd": 15,
+   "frozen": {
+    "n": 33,
+    "mae": 14.82,
+    "bias": 2.47,
+    "rho": 0.57,
+    "in50": 0.36,
+    "miss": [
+     {
+      "name": "McLaren",
+      "x": 44.1,
+      "y": 1
+     },
+     {
+      "name": "Alpine",
+      "x": 24.4,
+      "y": -18
+     },
+     {
+      "name": "Aston Martin",
+      "x": -4.2,
+      "y": -35
+     },
+     {
+      "name": "NOR",
+      "x": 17.6,
+      "y": -11
+     },
+     {
+      "name": "GAS",
+      "x": 10,
+      "y": -15
+     },
+     {
+      "name": "COL",
+      "x": 6.8,
+      "y": -18
+     }
+    ]
+   },
+   "walk": {
+    "crps": 10.14,
+    "mae": 14.99,
+    "bias": 0.68,
+    "rho": 0.57,
+    "team": 194
+   }
+  }
+ ],
+ "season": {
+  "from": 5,
+  "crps": 8.76,
+  "mae": 12.12,
+  "maeD": 10.6,
+  "maeC": 15.17,
+  "bias": 0.2,
+  "rho": 0.73,
+  "cover80": 0.85,
+  "cover50": 0.56,
+  "team": 1975,
+  "best": 3170,
+  "baselines": {
+   "seasonAvg": 13.44,
+   "form": 13.84,
+   "last3": 14.34
+  }
+ }
+}

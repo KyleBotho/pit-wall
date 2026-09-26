@@ -721,6 +721,31 @@ def build_page(data, out_dir=BUILD):
     return len(out)
 
 
+# ---------------------------------------------------------------- model health
+
+
+def model_health():
+    """How the model did on each certified round (backtest/accuracy.js -> history/<season>/accuracy.json). It reads
+    cache/data.json and skips itself when nothing changed; a failure never blocks a build."""
+    try:
+        res = subprocess.run(
+            ["node", "backtest/accuracy.js"], capture_output=True, text=True, encoding="utf-8", cwd=HERE, timeout=600
+        )
+        print((res.stdout or "").rstrip() or f"  ! model health: {(res.stderr or '').strip()[-300:]}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! model health not updated: {e}")
+
+
+def load_model_health():
+    """accuracy.json and the weekly settings-fit proposal (fit.json, .github/workflows/fit.yml), for the Sim lab."""
+    out = {}
+    for k, name in (("accuracy", "accuracy.json"), ("fit", "fit.json")):
+        path = os.path.join(ARCHIVE, name)
+        if os.path.exists(path):
+            out[k] = read_json(path)
+    return out
+
+
 # ---------------------------------------------------------------- refresh plan
 
 PLAN_FILE = "refresh-plan.json"
@@ -869,6 +894,8 @@ def main():
             sys.exit(f"Giving up: {e}\nIf this is a block/CAPTCHA, wait before retrying.")
         with open(cached("data.json"), "w", encoding="utf-8") as f:
             json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
+        model_health()
+    data["modelHealth"] = load_model_health()
     size = build_page(data, args.out)
     write_json(os.path.join(args.out, "health.json"), data.get("health") or {"items": []}, indent=1)
     plan = refresh_plan(data, datetime.now(timezone.utc))

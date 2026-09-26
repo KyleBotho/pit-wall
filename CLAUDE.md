@@ -94,6 +94,11 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tests/` — `node --test` (engine vs brute force, price rule vs real changes, scoring lines, state migrations,
   seal round-trip, shared tables, Hindsight vs official scores when the private clone is next door) and
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
+- Model health: `backtest/accuracy.js` (`npm run accuracy`; refresh.py runs it after each fetch, ~3 s, skipped when
+  unchanged) scores every certified round (frozen projection vs result, walk-forward CRPS/MAE) into
+  `history/<season>/accuracy.json`; `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
+  into `history/<season>/fit.json`. Both are embedded as `DATA.modelHealth` and shown in the Sim lab's Model health
+  panel (`web/js/model-health.js`). The fit only proposes; adopting a setting is a manual engine.js change.
 - `backtest/run.js` (`npm run backtest [section numbers]`) — 1 price rule, 2 track model (leave-one-round-out, circuit
   history weight alpha), 3 retirements, 4 practice weights, 5 calibration by scoring category, 6 THE GATE:
   walk-forward projected points vs actual (CRPS, MAE, coverage, team pick; variants without market/practice/...),
@@ -239,11 +244,9 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] Autonomy steps (user's order, 2026-09-26): 1 session-aware refresh + admin Refresh now (DONE 2026-09-26:
-      scheduler, function and a Refresh now run checked; refresh.yml's timer is now a 6-hourly fallback),
-      2 data health checks + alerts (DONE 2026-09-26: health.py + the Data health issue; first real alert still to
-      see), 3 automatic post-round accuracy runs + a Model health panel in the Sim lab (propose
-      refits, the owner approves).
+- [x] Autonomy steps 1-3 done 2026-09-26 (docs/history.md): session-aware refresh + Refresh now, data health +
+      the Data health issue, model health (accuracy per round + weekly fit proposals in the Sim lab). Still to see
+      live: the first Data health issue, the first weekly fit (Tue 2026-09-29), R16 scored automatically.
 - [ ] Team Tracking (`docs/team-tracking-plan.md`): phase A built 2026-09-26 (public data; see docs/history.md).
       Phase B (the FPW account's session, members visible before their first race) waits for the session-check
       results around 2026-10-09. The tracking league is the `LEAGUE_IDS` entry marked `<id>:<Name>:track`.

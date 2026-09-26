@@ -10,6 +10,15 @@ const D = loadData();
 const read = (f) =>
   fs.existsSync(path.join(__dirname, f)) ? JSON.parse(fs.readFileSync(path.join(__dirname, f), "utf8")) : {};
 const PRACTICE = read("practice_by_round.json");
+// rounds not in practice_by_round.json yet: the site's own practice archive (same format, history/<season>/practice)
+if (D) {
+  const dir = path.join(__dirname, "..", "history", String(D.season || ""), "practice");
+  if (fs.existsSync(dir))
+    for (const f of fs.readdirSync(dir)) {
+      const r = +f.slice(2, 4);
+      if (!PRACTICE[r]) PRACTICE[r] = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+    }
+}
 // item 9 stage 5: practice short-run pace from minisector ideal laps (telemetry.py minisectors), per round
 const MINI = {};
 if (D) {
@@ -254,6 +263,8 @@ function evaluate(o = {}) {
       n: cr.length,
       crps: mean(cr),
       mae: mean(er),
+      bias: mean(out.bias.slice(k0)),
+      rho: out.rho[out.rho.length - 1],
       ov: mean(out.ov.slice(ko)),
       places: mean(out.places.slice(ko)),
       ovLvl: Math.abs(lvl),

@@ -3,8 +3,13 @@
 // (CRPS rewards both a good mean and an honest spread). Prints the best values; copy them into engine.js (SIM /
 // MODEL, marked "fitted") and re-run `npm run backtest`. Uses the same rounds and seeds for every trial (common
 // random numbers), so differences are the settings', not the dice's.
+// --save: also write the result to history/<season>/fit.json as a proposal (the weekly fit workflow), shown in the
+// Sim lab's Model health panel; the owner decides, and a change goes into engine.js by hand.
+const fs = require("node:fs");
+const path = require("node:path");
 const W = require("./walk.js");
 const { E } = W;
+const SAVE = process.argv.includes("--save");
 
 const N = +(process.env.FIT_N || 4000);
 const PASSES = +(process.env.FIT_PASSES || 1);
@@ -33,7 +38,10 @@ const score = () => W.evaluate({ N, seed: 3 });
 const fmt = (r) =>
   `CRPS ${r.crps.toFixed(3)}  MAE ${r.mae.toFixed(3)}  rho ${r.rho.toFixed(3)}  80% ${(100 * r.cover80).toFixed(1)}%  50% ${(100 * r.cover50).toFixed(1)}%  logQ ${r.lsQ.toFixed(3)}  logR ${r.lsR.toFixed(3)}`;
 
+const shipped = SPACE.map(([obj, key]) => obj[key]);
+const t0 = Date.now();
 let best = score();
+const start = best;
 console.log(`start      ${fmt(best)}`);
 for (let pass = 0; pass < PASSES; pass++)
   for (const [obj, key, vals] of SPACE) {
@@ -53,3 +61,30 @@ for (let pass = 0; pass < PASSES; pass++)
   }
 console.log("\nbest settings:");
 for (const [obj, key] of SPACE) console.log(`  ${obj === E.SIM ? "SIM" : "MODEL"}.${key} = ${obj[key]}`);
+if (SAVE) {
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  const sum = (r) => ({
+    crps: r3(r.crps),
+    mae: r3(r.mae),
+    rho: r3(r.rho),
+    cover80: r3(r.cover80),
+    cover50: r3(r.cover50),
+  });
+  const out = {
+    generated: new Date().toISOString().slice(0, 16) + "Z",
+    N,
+    passes: PASSES,
+    rounds: W.D.done.filter((g) => g >= 5),
+    shipped: sum(start),
+    fitted: sum(best),
+    changes: SPACE.map(([obj, key], i) => ({
+      setting: `${obj === E.SIM ? "SIM" : "MODEL"}.${key}`,
+      shipped: shipped[i],
+      fitted: obj[key],
+    })).filter((c) => c.shipped !== c.fitted),
+    minutes: Math.round((Date.now() - t0) / 6000) / 10,
+  };
+  const f = path.join(__dirname, "..", "history", String(W.D.season), "fit.json");
+  fs.writeFileSync(f, JSON.stringify(out, null, 1) + "\n");
+  console.log(`saved ${path.relative(path.join(__dirname, ".."), f)}`);
+}

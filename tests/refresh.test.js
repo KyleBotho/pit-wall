@@ -97,3 +97,50 @@ test("Data health: all clear, or the problems and notices with when they started
   assert.match(got, /class="muted">Notice:<\/span> New card: B \(T\)/);
   assert.match(h(null), /No health check in this build yet/);
 });
+
+test("Model health: season summary, rounds newest first, misses, and the fit proposal with its caution", () => {
+  const mh = (x) =>
+    pageModules(["model-health.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } })(
+      `modelHealthHtml(${JSON.stringify(x)}, [{ gd: 15, name: "Azerbaijan Grand Prix" }])`,
+    );
+  assert.match(mh(null), /No model health yet/);
+  const acc = {
+    generated: "2026-09-26T21:00Z",
+    season: {
+      from: 5,
+      crps: 8.76,
+      mae: 12.12,
+      maeD: 10.6,
+      maeC: 15.2,
+      rho: 0.73,
+      cover80: 0.85,
+      cover50: 0.56,
+      team: 1975,
+      best: 3170,
+      baselines: { seasonAvg: 13.44, form: 13.84 },
+    },
+    rounds: [
+      { gd: 14, frozen: null, walk: { crps: 7.9, mae: 11.2, bias: -0.4, rho: 0.8, team: 180 } },
+      {
+        gd: 15,
+        frozen: { n: 33, mae: 14.82, bias: 2.47, rho: 0.57, in50: 0.36, miss: [{ name: "McLaren", x: 44.1, y: 1 }] },
+        walk: { crps: 10.14, mae: 14.99, bias: 0.68, rho: 0.57, team: 194 },
+      },
+    ],
+  };
+  const fit = {
+    generated: "2026-09-29T03:50Z",
+    N: 4000,
+    rounds: [5, 15],
+    shipped: { crps: 8.76, mae: 12.1 },
+    fitted: { crps: 8.71, mae: 12.0 },
+    changes: [{ setting: "SIM.qSd", shipped: 0.2, fitted: 0.25 }],
+  };
+  const h = mh({ accuracy: acc, fit });
+  assert.match(h, /<b>CRPS 8\.76<\/b>/);
+  assert.ok(h.indexOf("R15 Azerbaijan") < h.indexOf("R14"), "newest round first");
+  assert.match(h, /McLaren 44\.1 → 1/);
+  assert.match(h, /SIM\.qSd<\/td><td>0\.2<\/td><td>0\.25/);
+  assert.match(h, /Within noise/);
+  assert.match(mh({ accuracy: acc, fit: { ...fit, changes: [] } }), /still the best fit/);
+});

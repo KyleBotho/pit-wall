@@ -8,6 +8,7 @@ import { state } from "./state.js";
 import { syncState } from "./sync.js";
 import { BINS, codeBox, forecast, heat, sprintNext, startTeam, who } from "./forecast.js";
 import { showView } from "./main.js";
+import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
 let labRun = null; // the last run: { g, N, ms, sim, setup, base (the shipped model's run, when compared), changed }
 const LAB_KEY = "pitwall.lab";
@@ -856,6 +857,7 @@ function labControls() {
 }
 export function renderLab() {
   if (!labOwner) return;
+  $("#labHealth").innerHTML = modelHealthHtml(DATA.modelHealth, DATA.schedule);
   const races = upcoming.slice(0, 3);
   $("#labRace").innerHTML = races
     .map(
