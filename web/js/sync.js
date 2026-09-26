@@ -19,7 +19,7 @@ let LEAGUES = null, // league_data's payload
   RIVALS = [], // the picked rivals' tracked_accounts rows
   rivalsSig = "";
 export const rivalRows = () => RIVALS;
-export const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
+export const LEAGUE_VIEWS = ["league", "rivals", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
 // league data goes live: your teams keyed and filled in, tracking applied (then refresh the league views)
 function useData(force = false) {
   const own = mergeLeague(LEAGUES, ACCOUNT && ACCOUNT.body);
@@ -48,7 +48,7 @@ export function setRivals(rows) {
   rivalsSig = sig;
   RIVALS = rows;
   useData();
-  if (forecast) refreshViews(["calc"]);
+  if (forecast) refreshViews(["calc", "rivals"]);
 }
 // The link was deleted: the teams that came from it go back to example teams, so the Calculator starts from none.
 export function dropAccount() {
