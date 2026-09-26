@@ -3,8 +3,9 @@
    turns a version-n object into version n+1. Everything read from localStorage or the account goes through
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 import { CFG, DATA, FORECAST_VIEWS, SEASON_OVER, byId } from "./core.js";
+import { rivalPicks } from "./tracking.js";
 export const KEY = "pitwall.v1";
-export const SCHEMA = 6;
+export const SCHEMA = 7;
 export const VIEWS = [
   "calc",
   "live",
@@ -45,8 +46,9 @@ export const defaults = () => ({
   pw: Engine.DEFAULTS.pw,
   oddsW: Engine.DEFAULTS.oddsW, // weight of the betting market in the next race's pace (0 = model only)
   pen: {}, // grid penalties you set for the next race: TLA -> places (99 = back of the grid)
-  goal: "pts", // the Calculator's goal: "pts" (expected points), "field" (gain on the field) or "rival"
-  goalRival: null, // rival key for goal "rival"
+  goal: "pts", // the Calculator's goal: "pts" (expected points), "template" / "template500" or "rival"
+  goalRival: null, // the rival's team key for goal "rival"
+  rivals: [], // tracking-league teams picked as rivals: [{ak: account key, tk: team key}] (rivals.js)
   adj: {},
   marks: {},
   circuits: {},
@@ -58,7 +60,7 @@ export const defaults = () => ({
   maxPen: null,
   pins: [],
   xo: {},
-  rivalCfg: {},
+  rivalCfg: {}, // settings entered for a rival as starting team (bank, free, chips, Boost), by team key
   // the Calculator's Simulation preset: "sim" (Monte Carlo) or a past-performance one (classic, weighted, form, ppm)
   simPreset: "sim",
   simDecay: 0.9, // weighted: each older round counts this much of the next
@@ -128,6 +130,14 @@ const MIGRATIONS = [
   (s) => {
     delete s.syncKey;
   },
+  // 6 -> 7: rivals are tracking-league teams the user picks (they were every member of the private leagues, keyed
+  // "league / team"), so a rival picked before, and the settings entered for it, go
+  (s) => {
+    s.rivals = [];
+    s.rivalCfg = {};
+    s.goalRival = null;
+    if (s.calcStart && s.calcStart.type === "rival") s.calcStart = null;
+  },
 ];
 
 // Settings that mean the same in any season. The rest (teams, marks, nudges, pins, filters on points...) refer to
@@ -144,6 +154,7 @@ const CARRY = [
   "valW",
   "xdp",
   "maxPen",
+  "rivals",
   "view",
   "pane",
   "bmode",
@@ -204,6 +215,7 @@ function normalise(s) {
     .map((d) => ({ bank: 0, free: 2, chipsUsed: {}, boost: "auto", ...d }));
   s.active = Math.min(2, Math.max(0, s.active | 0));
   if (s.calcStart && s.calcStart.type === "draft" && !s.drafts[s.calcStart.i]) s.calcStart = null;
+  s.rivals = rivalPicks(s.rivals);
   s.pins = (s.pins || []).filter((p) => p.ids && p.ids.every((id) => byId[id]));
   if (!s.sub || typeof s.sub !== "object") s.sub = {};
   if (s.view === "compare") Object.assign(s, { view: "calc", bmode: "cmp" }); // Compare moved into the Calculator

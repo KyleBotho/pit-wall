@@ -55,7 +55,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
   from `app_config`, username search, link), Settings' Change/Delete, `pullLink()` after sign-in; `tracking.js` = its
-  pure helpers (tested); `sync.js setAccount/dropAccount/fillTeams`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
+  pure helpers (tested); `rivals.js` = "Manage rivals" (teams picked from the tracking league, `state.rivals`
+  [{ak, tk}], merged into `LEAGUE_DATA` by `setRivals`; nobody is a rival by joining; League views ignore them); `sync.js setAccount/dropAccount/fillTeams`. Calculator: the starting team is `startTeam()` (read-only; `editStart()` returns
   the object to change) = your team `activeTeam()`, a manual team, a rival (key "league / team name") or none, via
   `state.calcStart` (null = auto: your active team, or "No starting team" while it's only an example; `{type:
   "team"}` = picked); pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
@@ -221,6 +222,8 @@ there before re-deciding something.
 - [ ] Team Tracking (`docs/team-tracking-plan.md`): phase A built 2026-09-26 (public data; see docs/history.md).
       Phase B (the FPW account's session, members visible before their first race) waits for the session-check
       results around 2026-10-09. The tracking league is the `LEAGUE_IDS` entry marked `<id>:<Name>:track`.
+- [ ] Rivals (`docs/team-tracking-plan.md`, "Rivals"): first step built 2026-09-26 (Manage rivals; Calculator start
+      team and goal). Check it in the browser with a second tracking-league account; then decide what's next.
 - [x] 2026-09-26 "option 1": signing in unlocks the leagues (Supabase `league_data` behind `league_readers` RLS);
       the passphrase, `seal.js` and `data/league.sealed.json` are gone. Old sealed files stay in git history
       (encrypted; left in place rather than rewriting history). The security review's items 1-9 are done too

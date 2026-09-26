@@ -1,7 +1,8 @@
 /* ---------- computation ---------- */
 import { DATA, NEXT, SEASON_OVER, byId, code, col, esc, f1, isDriver, money, sgn, teamCode, upcoming } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { leagueList, mkey, teamKey, tracked } from "./league.js";
+import { nextIds, teamKey, teamLabel, tracked, usedChips } from "./league.js";
+import { rivalRows } from "./sync.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
@@ -126,33 +127,32 @@ export const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 
 
 /* ---------- the calculator's starting team ---------- */
 // One of your teams (state.active), a manual team, a rival's current line-up, or none (then only a maximum budget).
-// Rivals are identified by league and team key (see teamKey); the same team in two of your leagues is listed once.
-const rivalKey = (league, key) => league + " / " + key;
+// Rivals are the tracking-league teams you picked (state.rivals, rivals.js), known by team key; one whose line-up
+// isn't known yet (no race since it joined) or that left the league isn't listed.
 export function rivalTeams() {
   const out = [];
-  for (const league of leagueList())
-    for (const m of league.members || []) {
-      const tk = mkey(m);
-      if (!m.ids || state.teams.some((t) => teamKey(t) === tk)) continue;
-      if (out.some((x) => x.tk === tk)) continue;
-      out.push({
-        key: rivalKey(league.name, tk),
-        tk,
-        name: m.name,
-        league: league.name,
-        ids: m.ids,
-        bank: m.bank,
-        free: m.free,
-        boost: m.boost,
-        chips: m.chips,
-      });
-    }
+  for (const p of state.rivals) {
+    if (state.teams.some((t) => teamKey(t) === p.tk)) continue; // your own team
+    const row = rivalRows().find((r) => r.account_key === p.ak);
+    if (!row || !(row.teams || []).some((t) => t && t.tk === p.tk)) continue;
+    const tr = tracked(p.tk),
+      ids = nextIds(tr);
+    if (!ids) continue;
+    out.push({
+      key: p.tk,
+      tk: p.tk,
+      name: teamLabel(p.tk),
+      user: row.username,
+      ids,
+      bank: tr.next.bank,
+      free: tr.next.free,
+      boost: "",
+      chips: usedChips(tr),
+    });
+  }
   return out;
 }
-// older saves identify a rival by league and name, or by name only
-const findRival = (c) =>
-  rivalTeams().find((x) => x.key === c.key) ||
-  rivalTeams().find((x) => c.key === rivalKey(x.league, x.name) || (!c.key && x.name === c.name));
+const findRival = (c) => rivalTeams().find((x) => x.key === c.key);
 const rivalDefaults = (r) => ({
   bank: r.bank ?? 0,
   free: r.free ?? 2,
@@ -178,11 +178,7 @@ export function startTeam() {
     const r = findRival(c);
     // settings you enter for a rival are kept per rival; the line-up follows the latest standings
     if (r) {
-      const cfg =
-        state.rivalCfg[r.key] ||
-        state.rivalCfg[rivalKey(r.league, r.name)] || // saved before team keys
-        state.rivalCfg[r.name] ||
-        rivalDefaults(r);
+      const cfg = state.rivalCfg[r.key] || rivalDefaults(r);
       return {
         ...cfg,
         chipsUsed: { ...cfg.chipsUsed, ...r.chips }, // chips F1's data shows as played always count
