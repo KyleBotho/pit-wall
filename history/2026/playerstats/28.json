@@ -759,7 +759,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 78
+            "Value": 81
           },
           {
             "Frequency": "-",
@@ -784,7 +784,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 33
+            "Value": 35
           },
           {
             "Frequency": "-",
@@ -792,9 +792,9 @@
             "Value": 10
           },
           {
-            "Frequency": "10",
+            "Frequency": "11",
             "Event": "Race position gained",
-            "Value": 10
+            "Value": 11
           }
         ]
       }
@@ -810,7 +810,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 1259
+            "Value": 1262
           },
           {
             "Frequency": "-",
@@ -835,7 +835,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 476
+            "Value": 478
           },
           {
             "Frequency": "-",
@@ -863,9 +863,9 @@
             "Value": 5
           },
           {
-            "Frequency": "36",
+            "Frequency": "37",
             "Event": "Race position gained",
-            "Value": 36
+            "Value": 37
           },
           {
             "Frequency": "34",
@@ -3287,7 +3287,7 @@
               {
                 "Frequency": "-",
                 "Event": "Race Position",
-                "Value": 33
+                "Value": 35
               },
               {
                 "Frequency": "-",
@@ -3295,14 +3295,14 @@
                 "Value": 10
               },
               {
-                "Frequency": "10",
+                "Frequency": "11",
                 "Event": "Race position gained",
-                "Value": 10
+                "Value": 11
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 63
+                "Value": 66
               }
             ]
           }
@@ -3311,8 +3311,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 12:22:40 PM",
-    "ISTTime": "9/26/2026 5:52:40 PM",
-    "CESTTime": "9/26/2026 2:22:40 PM"
+    "UTCTime": "9/26/2026 12:38:27 PM",
+    "ISTTime": "9/26/2026 6:08:27 PM",
+    "CESTTime": "9/26/2026 2:38:27 PM"
   }
 }
