@@ -1,5 +1,5 @@
 /* ---------- elite (global top 500, aggregates only) ---------- */
-import { $, $$, CHIPS, DATA, byId, code, esc, f0, pct, sgn } from "./core.js";
+import { $, $$, CHIPS, DATA, byId, code, esc, infoTip, f0, pct, sgn } from "./core.js";
 import { state } from "./state.js";
 import { LEAGUE_DATA, needSync } from "./sync.js";
 import { chip, heat, who, xpts } from "./forecast.js";
@@ -92,9 +92,12 @@ export function renderElite() {
       Lu = tm ? lineups(teamKey(tm)) : null;
     const max = Math.max(0.05, ...order.flatMap((k) => Object.values(top.chipRound[k] || {}).map((v) => v / top.n)));
     $("#elChipNote").innerHTML = "";
-    $("#elChipSub").textContent =
-      `Share of the top 100 (line-ups export after R${top.round}) playing each chip, by round.` +
-      (Lu ? ` Outlined: when ${tm.name} played it.` : " Sign in to outline your own chip rounds.");
+    $("#elChipSub").innerHTML = infoTip(
+      esc(
+        `Share of the top 100 (line-ups export after R${top.round}) playing each chip, by round.` +
+          (Lu ? ` Outlined: when ${tm.name} played it.` : " Sign in to outline your own chip rounds."),
+      ),
+    );
     const rounds = Array.from({ length: top.round }, (_, i) => top.round - i);
     $("#elChips").innerHTML =
       `<thead><tr><th>Round</th>${order.map((k) => `<th title="${esc(chipDef(k)[2])}">${chipDef(k)[1]}</th>`).join("")}</tr></thead><tbody>` +
@@ -205,7 +208,7 @@ export function renderEliteSeason(El) {
       ? "Points above or below the global top-100 cut-off, by round"
       : "Cumulative points: your teams against global cut-offs",
   );
-  $("#elSeasonNote").textContent =
+  const chartNote =
     (gap
       ? "Points above or below the global top-100 cut-off after each round. "
       : "Cumulative points after each round. ") + (mine.length ? "" : "Sign in to add your teams.");
@@ -226,9 +229,11 @@ export function renderEliteSeason(El) {
   $("#elRounds").innerHTML =
     `<thead><tr><th>Round</th><th title="Average round score of the current global top 10">Top 10</th><th title="Average round score of the current global top 100">Top 100</th>${mine.map(({ t }) => `<th>${esc(t.name)}</th>`).join("")}</tr></thead><tbody>${avgRow}${rows.join("")}</tbody>`;
   const est = Hs.filter((h) => h.est).map((h) => h.gd);
-  $("#elSeasonFoot").innerHTML =
-    "Your round score against the top-100 average (green: beat it). " +
-    (est.length
-      ? `Cut-offs for R${est[0]}–R${est[est.length - 1]} trace today's top 100 through the season, so they are an estimate and run slightly low; later rounds are the real cut-offs recorded after each race.`
-      : "Cut-offs are recorded after each race.");
+  $("#elSeasonNote").innerHTML = infoTip(
+    `<p>${chartNote}</p><p style="margin-top:6px">Table: your round score against the top-100 average (green: beat it). ` +
+      (est.length
+        ? `Cut-offs for R${est[0]}–R${est[est.length - 1]} trace today's top 100 through the season, so they are an estimate and run slightly low; later rounds are the real cut-offs recorded after each race.`
+        : "Cut-offs are recorded after each race.") +
+      "</p>",
+  );
 }

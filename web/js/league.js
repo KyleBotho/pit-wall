@@ -18,6 +18,7 @@ import {
   money,
   pct,
   sgn,
+  infoTip,
 } from "./core.js";
 import { activeTeam, state } from "./state.js";
 import { LEAGUE_DATA } from "./sync.js";
@@ -146,7 +147,7 @@ export function renderLeague() {
   renderLeagueChart(league);
   renderLeagueRounds(league);
   if (SEASON_OVER) {
-    $("#lgH2hNote").textContent = "";
+    $("#lgH2hNote").textContent = $("#lgH2hTip").innerHTML = "";
     $("#lgH2h").innerHTML = '<p class="note">The season is over: no race left to compare line-ups for.</p>';
     $("#lgOwn").innerHTML = "";
     return;
@@ -223,12 +224,13 @@ function roundCard(m, r) {
 }
 // Next race: head-to-head against each rival's current line-up, and league ownership
 function renderLeagueForecast(league, myIds, myKey) {
-  $("#lgH2hNote").textContent = `${activeTeam().name} vs current rival line-ups`;
   const rivals = league.members.filter((m) => mkey(m) !== myKey && m.ids);
   const h = h2h(myIds, rivals);
-  $("#lgH2h").innerHTML =
-    h.html +
-    `<p class="note">Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock. Your team: ${f1(h.mean)} xPts.</p>`;
+  $("#lgH2hNote").textContent = `${activeTeam().name} (${f1(h.mean)} xPts) vs current rival line-ups`;
+  $("#lgH2hTip").innerHTML = infoTip(
+    "Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock.",
+  );
+  $("#lgH2h").innerHTML = h.html;
   $("#lgOwn").innerHTML = ownTable(myIds, rivals, "Your line-up matches the whole league.");
 }
 // Next race head-to-head: your line-up against each rival's on the same simulated weekends, so the comparison is

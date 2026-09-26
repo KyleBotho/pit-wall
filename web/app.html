@@ -144,9 +144,8 @@
             <div id="colList" style="margin-top: 8px; display: grid; gap: 6px"></div>
           </div>
           <div data-bm="best">
-            <p class="note" id="bestNote"></p>
+            <p class="note"><span id="bestNote"></span> <span class="tipslot" id="optNote"></span></p>
             <div class="tw"><table class="bestt" id="bestTable"></table></div>
-            <p class="note" id="optNote"></p>
           </div>
           <div data-bm="cmp" hidden>
             <div class="tw"><table class="cmpt" id="cmpTable"></table></div>
@@ -241,8 +240,13 @@
                 </div>
               </div>
               <div class="field" id="planField" hidden>
-                <button class="btn ghost sm" id="planBtn" style="align-self: flex-start">Plan transfers race by race</button>
-                <span class="note">Best sequence of teams over the races: transfers can wait, free ones carry over, prices move the budget.</span>
+                <span class="chipbar" style="align-items: center"
+                  ><button class="btn ghost sm" id="planBtn">Plan transfers race by race</button>
+                  <details class="info">
+                    <summary aria-label="About this">i</summary>
+                    <div class="infobox">Best sequence of teams over the races: transfers can wait, free ones carry over, prices move the budget.</div>
+                  </details></span
+                >
               </div>
               <button class="btn ghost sm" id="transferValBtn" style="align-self: flex-start">What is a transfer worth?</button>
               <div class="field">
@@ -264,7 +268,7 @@
               <details class="edit sub">
                 <summary>Chips this team has used</summary>
                 <div class="chipbar" id="chipsUsed" style="margin-top: 8px"></div>
-                <p class="note" id="chipsNote"></p>
+                <span class="tipslot" id="chipsNote"></span>
               </details>
             </div>
           </details>
@@ -295,7 +299,7 @@
         ></div>
         <section class="panel" data-pane="settings">
           <h3>
-            Simulation
+            Simulation <span class="tipslot" id="simNote"></span>
             <button class="tbtn" data-simreset="1" title="Back to the Pit Wall sim with default settings" aria-label="Reset the simulation">↺</button>
           </h3>
           <label class="field"
@@ -315,7 +319,7 @@
             </select></label
           >
           <label class="switch"><input type="checkbox" id="simSprint" /><span id="simSprintL">Simulate a sprint weekend</span></label>
-          <p class="note" id="simNote"></p>
+          <p class="note warn" id="simWarn" hidden></p>
           <div id="simPast" class="simpast" hidden>
             <details class="simcats">
               <summary>Point types for calculations <span class="pill" id="simCatN"></span></summary>
@@ -433,7 +437,7 @@
         <div id="lgChart" style="position: relative"></div>
       </section>
       <section class="panel">
-        <h3>Next race head-to-head <small id="lgH2hNote"></small></h3>
+        <h3>Next race head-to-head <small id="lgH2hNote"></small><span class="tipslot" id="lgH2hTip"></span></h3>
         <div id="lgH2h" class="bts"></div>
       </section>
       <section class="panel" style="grid-column: 1/-1">
@@ -473,12 +477,12 @@
         <div class="seg" id="rvMe" style="align-self: flex-start" title="Your team to compare"></div>
       </section>
       <section class="panel">
-        <h3>Next race head-to-head <small id="rvH2hNote"></small></h3>
+        <h3>Next race head-to-head <small id="rvH2hNote"></small><span class="tipslot" id="rvH2hTip"></span></h3>
         <div id="rvH2h" class="bts"></div>
       </section>
       <section class="panel">
         <h3>
-          Points race
+          Points race <span class="tipslot" id="rvSeasonNote"></span>
           <span class="seg" id="rvMode"
             ><button data-rvm="total">Total</button><button data-rvm="rel">Relative</button><button data-rvm="race">Race points</button
             ><button data-rvm="rank">Rank</button></span
@@ -491,7 +495,6 @@
           <label class="switch"><input type="checkbox" id="rvChips" /><span>Show chips</span></label>
         </div>
         <div id="rvChart" style="position: relative"></div>
-        <p class="note" id="rvSeasonNote"></p>
       </section>
       <section class="panel" id="rvOwnBox" style="grid-column: 1/-1">
         <h3>
@@ -523,12 +526,11 @@
       </section>
       <section class="panel" style="grid-column: 1/-1">
         <h3>
-          Season vs the elite <span class="seg" id="elMode"><button data-em="gap">Gap to #100</button><button data-em="total">Total</button></span>
+          Season vs the elite <span class="tipslot" id="elSeasonNote"></span
+          ><span class="seg" id="elMode"><button data-em="gap">Gap to #100</button><button data-em="total">Total</button></span>
         </h3>
-        <p class="note" id="elSeasonNote"></p>
         <div id="elSeasonChart" style="position: relative"></div>
         <div class="tw"><table id="elRounds"></table></div>
-        <p class="note" id="elSeasonFoot"></p>
       </section>
       <section class="panel">
         <h3>Top-100 template <small>most-owned line-up</small></h3>
@@ -536,8 +538,7 @@
         <p class="note" id="elTemplateNote"></p>
       </section>
       <section class="panel">
-        <h3>Chip usage by round <small id="elChipNote"></small></h3>
-        <p class="note" id="elChipSub"></p>
+        <h3>Chip usage by round <small id="elChipNote"></small><span class="tipslot" id="elChipSub"></span></h3>
         <div class="tw"><table id="elChips"></table></div>
       </section>
       <section class="panel" style="grid-column: 1/-1">
@@ -548,13 +549,13 @@
             <div class="infobox">
               Share of the global top 10 / 100 / 500 teams owning each asset, against everyone's ownership. <b>Differential</b> marks assets your active team
               owns that the top 100 mostly doesn't (a chance to gain), and top-100 staples your active team is missing (a risk).
+              <p id="elOwnNote" style="margin-top: 6px"></p>
             </div>
           </details>
           <small>vs your teams</small>
         </h3>
 
         <div class="tw"><table id="elOwn"></table></div>
-        <p class="note" id="elOwnNote"></p>
       </section>
     </div>
   </main>
@@ -597,9 +598,8 @@
         <div class="bts" id="hdMine"></div>
       </section>
       <section class="panel" style="grid-column: 1/-1">
-        <h3>Season <small>your official points against the best you could reach</small></h3>
+        <h3>Season <small>your official points against the best you could reach</small><span class="tipslot" id="hdFoot"></span></h3>
         <div class="tw"><table id="hdSeason"></table></div>
-        <p class="note" id="hdFoot"></p>
       </section>
       <section class="panel" style="grid-column: 1/-1">
         <h3>
@@ -736,9 +736,9 @@
   <main id="view-grid" data-v hidden>
     <section class="panel">
       <h3>
-        Positions <span class="seg" id="gridKind"><button data-gridmode="q">Qualifying</button><button data-gridmode="r">Race</button></span>
+        Positions <span class="tipslot" id="gridNote"></span
+        ><span class="seg" id="gridKind"><button data-gridmode="q">Qualifying</button><button data-gridmode="r">Race</button></span>
       </h3>
-      <p class="note" id="gridNote"></p>
       <div class="hkey" id="gridKey"></div>
       <div class="tw"><table class="heat" id="heat"></table></div>
     </section>

@@ -3,7 +3,7 @@
    League head-to-head (league.js h2h, ownTable) with the rivals' current line-ups (forecast.js rivalTeams); the
    season reuses the points race (pointsRace) with your teams, the picked teams and, for a picked template, the
    global cut-off it stands for (the templates have no season of their own). */
-import { $, DATA, NEXT, SEASON_OVER, esc, f1 } from "./core.js";
+import { $, DATA, NEXT, SEASON_OVER, esc, f1, infoTip } from "./core.js";
 import { activeTeam, state } from "./state.js";
 import { rivalTeams } from "./forecast.js";
 import { h2h, ownTable, pointsRace, teamHist, teamKey, teamLabel } from "./league.js";
@@ -46,11 +46,11 @@ export function renderRivals() {
 
   // next race
   if (SEASON_OVER || !NEXT) {
-    $("#rvH2hNote").textContent = "";
+    $("#rvH2hNote").textContent = $("#rvH2hTip").innerHTML = "";
     $("#rvH2h").innerHTML = '<p class="note">The season is over: no race left to compare line-ups for.</p>';
     $("#rvOwnBox").hidden = true;
   } else if (!rv.length) {
-    $("#rvH2hNote").textContent = "";
+    $("#rvH2hNote").textContent = $("#rvH2hTip").innerHTML = "";
     $("#rvH2h").innerHTML =
       '<p class="note">None of your rivals has a line-up yet: a tracking-league team shows up after the first race since it joined.</p>';
     $("#rvOwnBox").hidden = true;
@@ -60,10 +60,12 @@ export function renderRivals() {
       rv.map((r) => ({ ...r, sub: r.user, goal: true })),
       { range: true },
     );
-    $("#rvH2hNote").textContent = `${me.name}${me.example ? " (example team)" : ""} vs your rivals, R${NEXT.gd}`;
-    $("#rvH2h").innerHTML =
-      h.html +
-      `<p class="note">Same simulated weekends for everyone. Green dot = an asset you don't have. The range is your points minus theirs on 80% of weekends. Rivals' line-ups are the ones F1's standings showed after the last race; they can still transfer before lock. ${esc(me.name)}: ${f1(h.mean)} xPts.</p>`;
+    $("#rvH2hNote").textContent =
+      `${me.name}${me.example ? " (example team)" : ""} (${f1(h.mean)} xPts) vs your rivals, R${NEXT.gd}`;
+    $("#rvH2hTip").innerHTML = infoTip(
+      "Same simulated weekends for everyone. Green dot = an asset you don't have. The range is your points minus theirs on 80% of weekends. Rivals' line-ups are the ones F1's standings showed after the last race; they can still transfer before lock.",
+    );
+    $("#rvH2h").innerHTML = h.html;
     $("#rvOwnBox").hidden = false;
     $("#rvOwn").innerHTML = ownTable(me.team, rv, "Your line-up matches all your rivals.");
   }
@@ -85,11 +87,14 @@ export function renderRivals() {
     if (hist.length && first > 1) late.push(`${name} (from R${first})`);
   }
   pointsRace("rv", members, "Rival");
-  $("#rvSeasonNote").textContent =
+  $("#rvSeasonNote").innerHTML = infoTip(
     (picks.some((p) => p.tpl)
       ? "A template has no season of its own: its dashed line is the global cut-off it stands for. "
       : "") +
-    (late.length
-      ? `Points before a team was first seen aren't known, so its line starts later: ${late.join(", ")}. Race points compare them round by round.`
-      : "");
+      (late.length
+        ? esc(
+            `Points before a team was first seen aren't known, so its line starts later: ${late.join(", ")}. Race points compare them round by round.`,
+          )
+        : ""),
+  );
 }
