@@ -193,21 +193,19 @@ def build_assets(feeds, done, cur_gd):
 
 def load_results(done):
     """Jolpica classifications per round. Results only change when a round completes, so pages are cached per
-    number of completed rounds."""
+    number of completed rounds. A round counts as done once its race starts, before Jolpica has it, and Jolpica's
+    first upload can lack the grid (both seen 2026-09-26 at Baku), so pages missing either are refetched; until the
+    grid arrives, the qualifying order stands in for it."""
     results = {"race": {}, "quali": {}, "sprint": {}}
     for kind, key, path in (
         ("race", "Results", "results"),
         ("quali", "QualifyingResults", "qualifying"),
         ("sprint", "SprintResults", "sprint"),
     ):
-        off, total = 0, 1
-        while off < total:
-            d = get(
-                f"https://api.jolpi.ca/ergast/f1/{SEASON}/{path}.json?limit=100&offset={off}",
-                cached(f"j_{path}_{len(done)}_{off}.json"),
-                reuse=True,
-            )["MRData"]
-            total = int(d["total"])
+        pages = jolpica_pages(path, len(done), reuse=True)
+        if kind != "sprint" and not jolpica_complete(pages, key, done):
+            pages = jolpica_pages(path, len(done), reuse=False)
+        for d in pages:
             for race in d["RaceTable"]["Races"]:
                 rows = results[kind].setdefault(int(race["round"]), [])
                 for r in race[key]:
@@ -218,17 +216,47 @@ def load_results(done):
                         "pos": int(r["position"]),
                     }
                     if kind != "quali":
-                        row["grid"] = int(r["grid"])
+                        row["grid"] = int(r["grid"]) if r.get("grid") else None
                         row["cls"] = r["positionText"].isdigit()
                         row["fl"] = (r.get("FastestLap") or {}).get("rank") == "1"
                         row["num"] = int(r["number"])
                     else:
                         row["qt"] = [lap_secs(r.get(k)) for k in ("Q1", "Q2", "Q3")]
                     rows.append(row)
-            off += 100
+    for kind in ("race", "sprint"):
+        for rnd, rows in results[kind].items():
+            if any(r["grid"] is None for r in rows):
+                qpos = {q["tla"]: q["pos"] for q in results["quali"].get(rnd, [])}
+                print(f"  ! round {rnd} {kind}: no grid from Jolpica yet, using the qualifying order")
+                for r in rows:
+                    if r["grid"] is None:
+                        r["grid"] = qpos.get(r["tla"], 0)
     for rows in results["quali"].values():
         quali_gaps(rows)
     return results
+
+
+def jolpica_complete(pages, key, done):
+    """Whether cached pages already hold the last completed round, with its grid (race tables)."""
+    if not done:
+        return True
+    last = [race for d in pages for race in d["RaceTable"]["Races"] if int(race["round"]) == done[-1]]
+    return bool(last) and all(r.get("grid") for race in last for r in race[key] if key != "QualifyingResults")
+
+
+def jolpica_pages(path, n_done, reuse):
+    """Every page of one Jolpica season table, cached per number of completed rounds."""
+    pages, off, total = [], 0, 1
+    while off < total:
+        d = get(
+            f"https://api.jolpi.ca/ergast/f1/{SEASON}/{path}.json?limit=100&offset={off}",
+            cached(f"j_{path}_{n_done}_{off}.json"),
+            reuse=reuse,
+        )["MRData"]
+        total = int(d["total"])
+        pages.append(d)
+        off += 100
+    return pages
 
 
 def lap_secs(t):
