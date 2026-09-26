@@ -1,5 +1,5 @@
 /* ---------- hindsight: best teams on actual points (scoring in hindsight.js, as Hind) ---------- */
-import { $, $$, CHIPS, DATA, Hind, byId, code, esc, f0, f1, money, sgn } from "./core.js";
+import { $, $$, CHIPS, DATA, Hind, byId, code, esc, infoTip, f0, f1, money, sgn } from "./core.js";
 import { activeTeam, state } from "./state.js";
 import { LEAGUE_DATA } from "./sync.js";
 import { chip, heat, who } from "./forecast.js";
@@ -275,9 +275,11 @@ export function renderHind() {
     "</tr>";
   $("#hdSeason").innerHTML =
     `<thead><tr><th>Round</th><th title="Best team from scratch with the settings above">Best possible</th>${teams.map(({ t }) => `<th>${esc(t.name)}</th><th title="Best reachable from that team's line-up, budget, free transfers and chip">Best reachable</th>`).join("")}</tr></thead><tbody>${tot}${rows.join("")}</tbody>`;
-  $("#hdFoot").textContent = teams.length
-    ? "Best reachable starts from the team's actual line-up going into the round, with its budget, free transfers (extra ones at −10) and the chip it played. The % is how much of that you banked."
-    : "Sign in to compare your own teams.";
+  $("#hdFoot").innerHTML = infoTip(
+    teams.length
+      ? "Best reachable starts from the team's actual line-up going into the round, with its budget, free transfers (extra ones at −10) and the chip it played. The % is how much of that you banked."
+      : "Sign in to compare your own teams.",
+  );
 
   // decisions over the season, per team
   const dsum = teams.map(({ t }) => {

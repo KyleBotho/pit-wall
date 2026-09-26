@@ -1,5 +1,5 @@
 /* ---------- live scoring: the weekend in progress (or the last one), as fresh as the last build ---------- */
-import { $, $$, CHIPS, DATA, NEXT, byId, code, esc, f0, f1, sgn } from "./core.js";
+import { $, $$, CHIPS, DATA, NEXT, byId, code, esc, infoTip, f0, f1, sgn } from "./core.js";
 import { state } from "./state.js";
 import { SB_URL, needSync } from "./sync.js";
 import { chip, heat, heatKey, who } from "./forecast.js";
@@ -315,10 +315,12 @@ function renderLiveLeague(g, over) {
     (beforeLock && !over
       ? " <b>That's before this round's lock</b>, so rivals' transfers for this round aren't in yet."
       : "") +
-    (rows.some((r) => r.guess && !r.official)
-      ? " A Boost with ? is a guess (their highest-projected driver): the league feed doesn't say, only an import after the lock does."
-      : "") +
-    " Transfer penalties and chips are only counted once the round's official points arrive (✓).";
+    " " +
+    infoTip(
+      (rows.some((r) => r.guess && !r.official)
+        ? "A Boost with ? is a guess (their highest-projected driver): the league feed doesn't say, only an import after the lock does. "
+        : "") + "Transfer penalties and chips are only counted once the round's official points arrive (✓).",
+    );
 }
 export function lvCell(id) {
   const a = byId[id],

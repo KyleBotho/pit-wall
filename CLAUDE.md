@@ -129,6 +129,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `featureResiduals`, `scOvertakes`, `teamTrackPace`, `speedFit`; `buildModel` = `reliability`, `paceObservations`,
   `paceEstimates`, `applyPractice`, `constructorModels`. The split was checked output-identical (seeded sims, 8
   switch combinations x 4 races); check any engine refactor the same way.
+- How-it-works text goes in an ⓘ popover, not a paragraph on the page (user, 2026-09-26): static ones as
+  `<details class="info">` in the title row, dynamic ones via a `<span class="tipslot">` filled with core.js
+  `infoTip(html)`. What the user must see stays visible: status (data as of…), warnings, instructions to act.
 - Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 

@@ -88,3 +88,9 @@ export const NEXT = upcoming[0] || null;
 export const SEASON_OVER = !NEXT;
 export const FORECAST_VIEWS = ["calc", "assets", "prices", "practice", "grid", "lab"];
 export const Hind = Hindsight.create(DATA, Engine);
+// How-it-works text as a small ⓘ popover, not a paragraph on the page (the user's rule, 2026-09-26: explanations sit
+// in tooltips). html is trusted markup; "" gives nothing.
+export const infoTip = (html) =>
+  html
+    ? `<details class="info"><summary aria-label="About this">i</summary><div class="infobox">${html}</div></details>`
+    : "";

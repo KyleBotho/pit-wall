@@ -1,5 +1,5 @@
 /* ---------- header ---------- */
-import { $, $$, DATA, NEXT, byId, esc, f0, f1, money, pct, sgn, shortDate, upcoming } from "./core.js";
+import { $, $$, DATA, NEXT, byId, esc, infoTip, f0, f1, money, pct, sgn, shortDate, upcoming } from "./core.js";
 import { state } from "./state.js";
 import {
   boostFor,
@@ -238,8 +238,11 @@ export function renderGrid() {
   $("#gridKey").innerHTML = state.heat
     ? `<span class="muted">less likely</span><span class="ramp" style="background:linear-gradient(90deg,rgba(168,85,247,.04),rgba(168,85,247,.85))"></span><span class="muted">more likely</span>${q ? "" : '<span class="sw" style="background:rgba(239,68,68,.6)"></span><span class="muted">not classified</span>'}`
     : "";
-  $("#gridNote").textContent =
-    `${q ? "Qualifying" : "Race"} position probabilities (%) for ${NEXT.name}, from ${state.sims.toLocaleString()} simulated weekends${q ? "" : "; last column = not classified"}.`;
+  $("#gridNote").innerHTML = infoTip(
+    esc(
+      `${q ? "Qualifying" : "Race"} position probabilities (%) for ${NEXT.name}, from ${state.sims.toLocaleString()} simulated weekends${q ? "" : "; last column = not classified"}.`,
+    ),
+  );
   const sim = forecast.sims[0];
   const rows = DATA.assets
     .filter((a) => a.kind === "D" && forecast.idx[a.id] != null)

@@ -5,6 +5,14 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, explanations into ⓘ tooltips (user: "comments like these should be hidden in small tool tips",
+      showing the Calculator's note under Best Teams and the rivals head-to-head note). Moved: Best Teams' note
+      (a goal with nothing to beat stays visible next to the budget), the plan-transfers note, chips-used note,
+      Simulation note (active edits stay visible as a warning), League and Rivals head-to-head (your xPts moved into
+      the title's small text), Rivals points race, live league standings' Boost/penalty explanation, Elite season
+      (chart + table notes in one), Elite chip usage, Elite ownership (into its existing ⓘ), Hindsight season,
+      Positions. Kept visible: status lines (Live scores as of…, template overlap, Hindsight model team sum,
+      calendar trend) and empty states. Convention added to CLAUDE.md.
 - [x] 2026-09-26, "My rivals" tab (user asked where a side-by-side view would go; agreed: a third tab in the Leagues
       group, not a pretend league, so the League views stay real leagues). rivals-view.js: your team (switch between
       your linked teams, `state.rvMe`) against the picked rivals' current line-ups on the same simulated weekends

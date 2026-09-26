@@ -20,6 +20,7 @@ import {
   sgn,
   shortDate,
   upcoming,
+  infoTip,
 } from "./core.js";
 import { state } from "./state.js";
 import { needSync, syncState } from "./sync.js";
@@ -226,7 +227,9 @@ export function renderSettings() {
       `<button class="tbtn ban" data-used="${k}" aria-pressed="${!!(team.chipsUsed[k] || locked[k])}" ${locked[k] ? "disabled" : ""} title="${n}${locked[k] ? playedIn(k) : ""}">${sh}</button>`,
   ).join("");
   const upTo = Object.keys(locked).length && tracked(teamKey(team))?.next?.asOf;
-  $("#chipsNote").textContent = upTo ? `Locked chips come from F1's data up to R${upTo}. Mark any others by hand.` : "";
+  $("#chipsNote").innerHTML = infoTip(
+    upTo ? `Locked chips come from F1's data up to R${upTo}. Mark any others by hand.` : "",
+  );
   const rem = Math.max(0, upcoming.length - 1);
   $("#xdp").checked = !!state.xdp;
   $("#xdpBox").hidden = !state.xdp;
@@ -247,14 +250,15 @@ export function renderSettings() {
   ].filter(Boolean);
   const P = state.simPreset,
     upd = `Data updated ${esc(new Date(DATA.generated).toLocaleString(undefined, shortDate))}.`;
-  $("#simNote").innerHTML =
+  $("#simNote").innerHTML = infoTip(
     (P === "sim"
       ? `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
         `Practice used: ${prac.length ? esc(prac.join(", ")) : "none yet"}. ` +
         raceInputs()
-      : SIM_NOTES[P] + " Ranges and odds still come from the simulated weekends. ") +
-    upd +
-    (edits.length ? ` <span class="warn">${edits.join(", ")} active.</span>` : "");
+      : SIM_NOTES[P] + " Ranges and odds still come from the simulated weekends. ") + upd,
+  );
+  $("#simWarn").hidden = !edits.length; // a setting that changes the numbers stays in sight
+  $("#simWarn").textContent = edits.length ? `${edits.join(", ")} active.` : "";
   $("#xoReset").hidden = !nxo;
   renderSim();
   applySplit();
@@ -636,17 +640,24 @@ export function runOptimiser() {
     bits.push(
       `Goal: beat ${ctx.tg.name}. Ranked by ${GOAL_COLS.includes(sort.k) && sort.k !== "dr" ? (BSORT.find(([k]) => k === sort.k) || [])[1] : "P(beat)"}: both teams scored on the same simulated weekends, so shared assets cancel. P(+${GOAL_K}) is the chance of a gain that moves your rank; xGap the average gain; Gap 10–90% the bad-to-good weekend range.`,
     );
-  else if (state.goal !== "pts" && !ctx.tg)
-    bits.push(state.goal === "rival" ? "Goal: pick a rival in Plan & chip." : "Goal: no top-100 data yet.");
+  // a goal with nothing to beat stays in sight (the rest of the note is in the ⓘ)
+  const warn =
+    state.goal !== "pts" && !ctx.tg
+      ? state.goal === "rival"
+        ? "Goal: pick a rival in Plan & chip."
+        : "Goal: no top-100 data yet."
+      : "";
   if (locks.size || bans.size) bits.push(`${locks.size} included, ${bans.size} excluded.`);
   if (flt.length) bits.push(`${flt.length} team filter${flt.length > 1 ? "s" : ""}.`);
   if (!pts || sort.d > 0)
     bits.push(
       `Ranked by ${(BSORT.find(([k]) => k === sort.k) || [])[1]} (${sort.d < 0 ? "highest" : "lowest"} first); click a column header to change.`,
     );
-  $("#optNote").textContent = bits.join(" ");
-  $("#bestNote").textContent =
-    `${team.name} · ${chipK === "limitless" ? "no budget cap" : (team.none ? "max budget " : "budget ") + money(cap())}`;
+  $("#optNote").innerHTML = infoTip(esc(bits.join(" ")));
+  $("#bestNote").innerHTML =
+    esc(
+      `${team.name} · ${chipK === "limitless" ? "no budget cap" : (team.none ? "max budget " : "budget ") + money(cap())}`,
+    ) + (warn ? ` · <span class="warn">${warn}</span>` : "");
   $("#colList").innerHTML = BCOLS.map(([k, n, t]) => {
     const on = visCols().some(([c]) => c === k);
     return `<label class="switch" title="${esc(t)}"><input type="checkbox" data-bcol="${k}" ${on ? "checked" : ""}><span>${esc(n)} <span class="dim">${esc(t)}</span></span></label>`;
