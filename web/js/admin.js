@@ -3,10 +3,11 @@
    visitors only the site notice); only admins can change it, and only these keys (RLS, supabase/setup.sql). Also the
    site notice itself, shown to everyone. */
 import { $, esc } from "./core.js";
-import { syncState } from "./sync.js";
+import { SB_URL, syncState } from "./sync.js";
 import { link } from "./setup.js";
 import { contactLink } from "./tracking.js";
 import { toast } from "./main.js";
+import { refreshHtml } from "./refresh-view.js";
 
 // The settings the page reads: key, label, what it's for, and {long: a text box, check: which values are allowed}.
 export const CONFIG_KEYS = [
@@ -42,7 +43,7 @@ export async function pullAdmin() {
   const { data } = await syncState.sb.from("owners").select("user_id").eq("user_id", U.id).maybeSingle();
   if (U !== syncState.user) return;
   admin.on = !!data;
-  if (admin.on) await loadConfig();
+  if (admin.on) await Promise.all([loadConfig(), loadRefresh()]);
   renderAdmin();
 }
 export function resetAdmin() {
@@ -76,6 +77,7 @@ export function renderAdmin() {
   if (!admin.on) return;
   const rows = admin.rows || [];
   $("#adminBody").innerHTML =
+    refreshHtml(refresh.st, refresh) +
     `<p class="note">Settings that change from season to season. Only admins see this panel and can change them; the page reads them for signed-in users.</p>` +
     (admin.err ? `<p class="note bad">${esc(admin.err)}</p>` : "") +
     CONFIG_KEYS.map(([key, label, help, o]) =>
@@ -111,6 +113,54 @@ export async function cfgSave(key) {
   const ok = value && o.check ? o.check(value) : true;
   if (ok !== true) return toast(ok);
   if (await write(key, value)) toast(value ? "Saved." : "Cleared.");
+}
+
+/* ---------- Data refresh: the site rebuilds itself when new data is due (supabase/functions/refresh) ----------
+   The function starts the GitHub workflow after each session, before lock and until a race's points are certified
+   (refresh.py writes that plan); admins can start one now, at most every 10 minutes. */
+const REFRESH_FN = SB_URL + "/functions/v1/refresh"; // the function's slug: update it if it was deployed as another name
+export const refresh = { st: null, err: "", busy: false };
+async function loadRefresh() {
+  try {
+    const r = await fetch(REFRESH_FN);
+    refresh.st = r.ok ? await r.json() : null;
+    refresh.err = r.ok ? "" : "The refresh service isn't answering (HTTP " + r.status + ").";
+  } catch (e) {
+    refresh.st = null;
+    refresh.err = "The refresh service isn't set up yet or isn't answering.";
+  }
+}
+export async function refreshStatus() {
+  await loadRefresh();
+  renderAdmin();
+}
+export async function refreshNow() {
+  if (refresh.busy || !syncState.sb) return;
+  refresh.busy = true;
+  renderAdmin();
+  try {
+    const { data } = await syncState.sb.auth.getSession();
+    const r = await fetch(REFRESH_FN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + ((data.session && data.session.access_token) || ""),
+      },
+      body: JSON.stringify({ action: "run" }),
+    });
+    const b = await r.json().catch(() => ({}));
+    toast(
+      r.ok
+        ? "Refresh started: new data in about 5 minutes."
+        : b.error || "The refresh didn't start (HTTP " + r.status + ").",
+    );
+  } catch (e) {
+    toast("The refresh service isn't answering.");
+  }
+  refresh.busy = false;
+  // GitHub lists the new run after a few seconds
+  setTimeout(refreshStatus, 5000);
+  renderAdmin();
 }
 
 /* ---------- the site notice, for everyone ---------- */

@@ -125,6 +125,52 @@ class Config(unittest.TestCase):
         self.assertEqual(refresh.JOLPICA_TEAM["rb"], "Racing Bulls")
 
 
+class RefreshPlan(unittest.TestCase):
+    # a weekend like Baku's: qualifying Fri 12:00-13:00 UTC (the lock), race Sat 11:00-13:00, practice before
+    DATA = {
+        "next": 15,
+        "schedule": [
+            {
+                "gd": 15,
+                "lock": "2026-09-25T12:00:00+00:00",
+                "certified": False,
+                "sessions": [
+                    {"type": "Qualifying", "start": "2026-09-25T12:00:00+00:00", "end": "2026-09-25T13:00:00+00:00"},
+                    {"type": "Race", "start": "2026-09-26T11:00:00+00:00", "end": "2026-09-26T13:00:00+00:00"},
+                ],
+            }
+        ],
+        "practice": [{"name": "Practice 3", "start": "2026-09-25T08:30:00+00:00", "done": False}],
+    }
+
+    def plan(self, now, data=None):
+        return {p["at"]: p["why"] for p in refresh.refresh_plan(data or self.DATA, now)["plan"]}
+
+    def test_session_driven_times(self):
+        from datetime import datetime, timezone
+
+        p = self.plan(datetime(2026, 9, 24, 12, tzinfo=timezone.utc))
+        self.assertIn("after Practice 3", p["2026-09-25T09:55+00:00"])
+        self.assertIn("before lock", p["2026-09-25T11:00+00:00"])
+        self.assertIn("before lock", p["2026-09-25T11:40+00:00"])
+        self.assertIn("after qualifying", p["2026-09-25T13:20+00:00"])
+        self.assertIn("line-ups", p["2026-09-25T15:30+00:00"])
+        self.assertIn("after the race", p["2026-09-26T13:20+00:00"])
+        self.assertIn("certified", p["2026-09-26T16:30+00:00"])
+        self.assertIn("daily", p["2026-09-24T06:17+00:00"])
+        self.assertEqual(list(p), sorted(p))
+
+    def test_certified_race_stops_polling_and_old_entries_drop(self):
+        from copy import deepcopy
+        from datetime import datetime, timezone
+
+        d = deepcopy(self.DATA)
+        d["schedule"][0]["certified"] = True
+        p = self.plan(datetime(2026, 9, 26, 18, tzinfo=timezone.utc), d)
+        self.assertFalse([w for w in p.values() if "certified" in w])
+        self.assertNotIn("2026-09-25T13:20+00:00", p)  # more than 12 h ago
+
+
 class Practice(unittest.TestCase):
     def test_open_stint_counts_as_a_long_run(self):
         laps = [

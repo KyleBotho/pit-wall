@@ -61,7 +61,7 @@ import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from ".
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
 import { pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
 import { renderRivals } from "./rivals-view.js";
-import { cfgSave, closeNotice, loadNotice } from "./admin.js";
+import { cfgSave, closeNotice, loadNotice, refreshNow, refreshStatus } from "./admin.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
 const RENDER = {
@@ -343,6 +343,8 @@ const CLICK = [
   ["rivals", (d) => rivalsAction(d.rivals)],
   ["rival", (d) => toggleRivalPick(d.rival)],
   ["cfgsave", (d) => cfgSave(d.cfgsave)],
+  ["refreshnow", () => refreshNow()],
+  ["refreshstatus", () => refreshStatus()],
   ["noticeclose", () => closeNotice()],
   [
     "boost",

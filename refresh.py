@@ -30,7 +30,7 @@ import re
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import extras
 import practice
@@ -115,6 +115,8 @@ def load_schedule(now):
             g["lock"] = start
         if s["SessionType"] == "Race":
             g["raceStart"] = start
+            # F1 Fantasy's MatchStatus: 4 once the race's points are certified (5 = being certified, 3 = live)
+            g["certified"] = str(s.get("MatchStatus")) == "4"
     schedule = [gds[k] for k in sorted(gds)]
     for g in schedule:
         g["sessions"].sort(key=lambda s: s["start"])
@@ -717,6 +719,61 @@ def build_page(data, out_dir=BUILD):
     return len(out)
 
 
+# ---------------------------------------------------------------- refresh plan
+
+PLAN_FILE = "refresh-plan.json"
+PRACTICE_MIN = 60  # a practice session's length (OpenF1 lists only starts for sessions still to come)
+# (minutes after a session ends, why): when new data is expected. OpenF1 publishes laps shortly after a session and
+# refuses everything while any session is live; F1's leaderboards (line-ups, league points) follow qualifying by
+# 1.5-2.5 h (Baku: 13:00 end -> 14:32 feed); certification comes 3-5 h after the race (Baku: ~4.5 h).
+AFTER = {
+    "practice": [(25, "after {s}: practice laps"), (100, "after {s}: practice laps (second try)")],
+    "session": [(20, "after {s}: points and order"), (150, "after {s}: line-ups and league points")],
+    "race": [(20, "after the race: results"), (90, "after the race: results and race data"), (180, "after the race")],
+}
+BEFORE_LOCK = [(60, "before lock: final projection"), (20, "before lock: last projection and prices")]
+CERTIFY_EVERY, CERTIFY_FROM, CERTIFY_UNTIL = 30, 210, 12 * 60  # minutes after the race ends
+DAILY = "06:17"  # UTC, every day: prices, odds and weather even in a quiet week
+
+
+def refresh_plan(data, now):
+    """When the site should rebuild itself: [{at, why}], soonest first, from 12 h ago to 10 days ahead. Read by the
+    Supabase function "refresh" (supabase/functions/refresh), which starts the workflow when an entry falls due."""
+    out = []
+
+    def add(t, why):
+        if now - timedelta(hours=12) <= t <= now + timedelta(days=10):
+            out.append((t, why))
+
+    nxt = data.get("next")
+    for g in data.get("schedule") or []:
+        lock = iso(g["lock"])
+        for mins, why in BEFORE_LOCK:
+            add(lock - timedelta(minutes=mins), why)
+        for s in g["sessions"]:
+            end = iso(s.get("end") or s["start"])
+            kind = "race" if s["type"] == "Race" else "session"
+            for mins, why in AFTER[kind]:
+                add(end + timedelta(minutes=mins), why.format(s=s["type"].lower()))
+            if kind == "race" and not g.get("certified"):
+                for mins in range(CERTIFY_FROM, CERTIFY_UNTIL + 1, CERTIFY_EVERY):
+                    add(end + timedelta(minutes=mins), "after the race: waiting for certified points")
+        if g["gd"] == nxt:
+            for p in data.get("practice") or []:
+                end = iso(p["start"]) + timedelta(minutes=PRACTICE_MIN)
+                for mins, why in AFTER["practice"]:
+                    add(end + timedelta(minutes=mins), why.format(s=p["name"]))
+    hh, mm = map(int, DAILY.split(":"))
+    day = now.replace(hour=hh, minute=mm, second=0, microsecond=0)
+    for k in range(-1, 11):
+        add(day + timedelta(days=k), "daily: prices, odds and weather")
+    plan = sorted({t: why for t, why in sorted(out, reverse=True)}.items())  # one entry per time
+    return {
+        "generated": now.isoformat(timespec="minutes"),
+        "plan": [{"at": t.astimezone(timezone.utc).isoformat(timespec="minutes"), "why": why} for t, why in plan],
+    }
+
+
 # ---------------------------------------------------------------- main
 
 
@@ -804,6 +861,11 @@ def main():
         with open(cached("data.json"), "w", encoding="utf-8") as f:
             json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
     size = build_page(data, args.out)
+    plan = refresh_plan(data, datetime.now(timezone.utc))
+    write_json(os.path.join(args.out, PLAN_FILE), plan, indent=1)
+    upcoming = [p for p in plan["plan"] if iso(p["at"]) > datetime.now(timezone.utc)]
+    if upcoming:
+        print(f"  next refresh: {upcoming[0]['at']} ({upcoming[0]['why']}), {len(upcoming)} planned")
     nxt = data.get("next")
     out = os.path.relpath(args.out, HERE)
     print(f"Built {out}/index.html ({size // 1024} KB), next race: {nxt or 'none (season over)'}")

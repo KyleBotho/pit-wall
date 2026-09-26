@@ -203,3 +203,34 @@ create policy "app_config: admins update" on public.app_config
   using (public.app_config_admin_key(key)) with check (public.app_config_admin_key(key));
 create policy "app_config: admins delete" on public.app_config
   for delete to authenticated using (public.app_config_admin_key(key));
+
+-- Data refresh (supabase/functions/refresh): the site rebuilds when new data is due, not on a blind timer. The
+-- function keeps one row here: the last plan entry it started the workflow for, the last start (scheduled or an
+-- admin's "Refresh now") and the last error. Only the function (service role) reads or writes it.
+create table if not exists public.refresh_state (
+  id         int primary key default 1 check (id = 1),
+  last_due   timestamptz,
+  started_at timestamptz,
+  source     text,
+  reason     text,
+  error      text,
+  error_at   timestamptz
+);
+alter table public.refresh_state enable row level security;
+revoke all on public.refresh_state from anon, authenticated;
+insert into public.refresh_state (id) values (1) on conflict (id) do nothing;
+
+-- The scheduler: every 5 minutes, ask the refresh function whether a plan entry fell due. Needs the pg_cron and
+-- pg_net extensions (Database > Extensions, or the two lines below). Re-running this replaces the job. The URL's
+-- last part is the function's slug: check it in Edge Functions if the function got a different name.
+create extension if not exists pg_cron;
+create extension if not exists pg_net;
+select cron.schedule(
+  'pit-wall-refresh-tick',
+  '*/5 * * * *',
+  $$ select net.http_post(
+       url := 'https://tfljgylwpkpammzsapin.supabase.co/functions/v1/refresh?tick=1',
+       headers := '{"Content-Type": "application/json"}'::jsonb,
+       body := '{}'::jsonb
+     ) $$
+);
