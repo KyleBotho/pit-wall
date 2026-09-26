@@ -268,8 +268,8 @@ there before re-deciding something.
       qualifying, with the new line-ups; fixed in leagues.py and refresh.py); live league standings fixed (they
       counted qualifying twice); practice weights unchanged; backtest 6/7 run. rhter's sims vs ours: private repo only
       (`research/rhter-comparisons.md`, `research/score_rhter.py`); never copy the numbers here.
-- [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result); `npm run fit` again after
-      a few more rounds.
+- [ ] After each round: automatic since 2026-09-26 (Model health: accuracy per certified round, the weekly fit's
+      proposal). What stays manual: deciding on a fit proposal, and the rhter comparison when he posts (private repo).
 - [ ] Item 9, the lap-by-lap race model (history: To do, item 9): stages 2-5 built and backtested (most off by
       default; see Model decisions), the Sim lab tab is live. Still to do there: the later stages in the plan. The
       server-side locks (owner-only results table, rerun via an edge function) aren't needed while the lab runs in the
