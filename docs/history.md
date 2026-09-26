@@ -5,6 +5,12 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, security review (scored 7/10; the user approved all nine fixes, in order): 1 passphrase no longer
+      synced (non-extractable key per browser), PBKDF2 600k; 2 supabase-js bundled, hash-based CSP; 3 feed cache can't
+      be poisoned by a block page, atomic writes; 4 live function: separate feed/stats columns, atomic claims, back-off;
+      5 team keys; 6 ES modules bundled by esbuild, engine functions split into stages (output-identical), CLICK_ON
+      table; 7 configs row capped at 1 MB, owners policy; 8 scope-aware renames, dead pit-wall.html, this file split
+      out of CLAUDE.md; 9 actions pinned to SHAs, least-privilege jobs (refresh read-only, history the only writer).
 - [x] 2026-09-26, security review items 1-4 (see git log 6e7eed6) and item 5: teams are known by a team key,
       `f1feeds.team_key` = first 16 hex of SHA-256("<F1 account guid>:<team number>") (the page's `teamTk` in
       import.js matches; tests check one vector in both). The private repo keys `rounds`/`lineups`/`rivals`/`seen` by

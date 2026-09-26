@@ -216,10 +216,12 @@ there before re-deciding something.
       `LEAGUE_IDS` secret) is how Pit Wall finds and follows every user's teams: anyone who wants to use the tool joins
       it, and their teams are discovered and tracked from there, not only the owner's three. Design onboarding and
       per-user team discovery around it. It builds on team keys (below) and on the "Pit Wall" account session check.
-- [ ] Security review (2026-09-26, scored 7/10): items 1-6 done; 7 (configs size cap, owners policy), 8 (names,
-      comments, dead code, this split) and 9 (actions pinned to commit SHAs) in progress; then "option 1": signing
-      in unlocks the leagues (league data in Supabase behind per-account RLS, no passphrase, no public sealed file),
-      the first step of the Team Tracking plan.
+- [ ] Next (user's order, 2026-09-26): "option 1", signing in unlocks the leagues: league data in Supabase behind
+      per-account RLS, no passphrase and no public sealed file. It's the first step of the Team Tracking plan. (The
+      security review's items 1-9 are done: docs/history.md, "Recently finished".)
+- Workflow (item 9 of that review): actions are pinned to release commit SHAs (tag in a comment; bump them by hand
+  when a runtime is retired). `refresh` runs our code with a read-only token and hands `history/` to the `history`
+  job, the only one that can push; `deploy` needs `refresh` (the tests).
 - [ ] Pit Wall F1 account (history: Round tracking): around 2026-10-09, or as soon as a check run fails, read
       `history/session-check.csv` in `../pit-wall-private` (`git pull` first). The first failing day = the session's
       lifetime; then decide with the user whether account-based tracking can run unattended.
