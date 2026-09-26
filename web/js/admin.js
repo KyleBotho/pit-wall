@@ -118,11 +118,13 @@ export async function cfgSave(key) {
 /* ---------- Data refresh: the site rebuilds itself when new data is due (supabase/functions/refresh) ----------
    The function starts the GitHub workflow after each session, before lock and until a race's points are certified
    (refresh.py writes that plan); admins can start one now, at most every 10 minutes. */
-const REFRESH_FN = SB_URL + "/functions/v1/refresh"; // the function's slug: update it if it was deployed as another name
+// the function's slug: update it if it was deployed as another name. Built when used, not at load: sync.js imports
+// this module, so at load time SB_URL isn't set yet (the page asked ".../undefined/functions/v1/refresh")
+const refreshFn = () => SB_URL + "/functions/v1/refresh";
 export const refresh = { st: null, err: "", busy: false };
 async function loadRefresh() {
   try {
-    const r = await fetch(REFRESH_FN);
+    const r = await fetch(refreshFn());
     refresh.st = r.ok ? await r.json() : null;
     refresh.err = r.ok ? "" : "The refresh service isn't answering (HTTP " + r.status + ").";
   } catch (e) {
@@ -140,7 +142,7 @@ export async function refreshNow() {
   renderAdmin();
   try {
     const { data } = await syncState.sb.auth.getSession();
-    const r = await fetch(REFRESH_FN, {
+    const r = await fetch(refreshFn(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

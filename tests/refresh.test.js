@@ -61,3 +61,24 @@ test("the GitHub token's expiry: shown, and a warning three weeks ahead", () => 
   assert.match(html({ ...base, tokenExpires: iso(60 * 24 * 10) }), /class="note bad">The GitHub token expires on/);
   assert.match(html({ ...base, tokenExpires: iso(-60) }), /token expired on/);
 });
+
+// A value used while the page loads must already be set: sync.js imports admin.js, so a load-time
+// `SB_URL + ...` in a module bundled before SB_URL came out as "undefined/functions/v1/refresh" (2026-09-26).
+test("the bundled page sets SB_URL before any load-time use of it", () => {
+  const esbuild = require("esbuild");
+  const path = require("node:path");
+  const code = esbuild.buildSync({
+    entryPoints: [path.join(__dirname, "..", "web", "js", "main.js")],
+    bundle: true,
+    format: "iife",
+    write: false,
+    logLevel: "error",
+  }).outputFiles[0].text;
+  const def = code.search(/\bSB_URL = "https:/);
+  assert.ok(def > 0, "SB_URL definition not found");
+  const early = [...code.matchAll(/^\s*(?:var|let|const) (\w+) = SB_URL\b/gm)].filter((m) => m.index < def);
+  assert.deepEqual(
+    early.map((m) => m[1]),
+    [],
+  );
+});
