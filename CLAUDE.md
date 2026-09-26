@@ -614,7 +614,10 @@ User-approved order: 1–5, then the rest.
     dashboard editor with Verify JWT OFF; public, read-only). Its URL slug is `smooth-action` (the editor's random
     first name; renaming in the dashboard doesn't change the slug): `GET /functions/v1/smooth-action?gd=N` fetches F1's player feed
     at most once a minute (cache table `live_cache`, service role only; SQL in setup.sql) and, in the background,
-    playerstats only for assets whose points changed (1.5 s apart). The page calls it on opening Live Scoring and
+    playerstats only for assets whose points changed (1.5 s apart). Since 2026-09-26: the feed (`body`) and scoring
+    lines (`stats`, merged by `live_stats_merge`) are separate columns so the two writers can't undo each other;
+    both refreshes are claimed with conditional updates; lagging lines back off 1, 2, 4... up to 30 min; a
+    non-404 failure stops the run and keeps `stats_busy` for 3 min. The page calls it on opening Live Scoring and
     every minute while that view is open (`pullLive`, gameday = latest lock passed), and falls back to the build's
     `DATA.live` if it fails. Tested under Node with a mocked table against real R14 feeds (33 assets' lines in
     ~63 s, cache hit within a minute, no refetch when nothing changed). GitHub's cron still skips runs (one
@@ -645,8 +648,10 @@ User-approved order: 1–5, then the rest.
     `tfljgylwpkpammzsapin` (URL + publishable key are public, in web/js/sync.js and refresh.yml); SQL in
     `supabase/setup.sql` (table, RLS, grants, server-set `updated_at`, `ping()`). Google provider on, Email off,
     sign-ups on (the Google test-user list is the gate). Page: `syncState` + `syncInit/pull/push/applyRemote` after `save()`;
-    synced = all of `state` except `NOSYNC` (view, pane, showN) plus `lk` (LEAGUE_KEY, only while `state.syncKey`:
-    "Keep my league passphrase in my account", default on); `pitwall.sync` = {uid, at, dirty}.
+    synced = all of `state` except `NOSYNC` (view, pane, showN); `pitwall.sync` = {uid, at, dirty}. Since 2026-09-26
+    (security review) the account never holds the league passphrase: each browser keeps a non-extractable PBKDF2
+    key made from it in IndexedDB (`keyGet/keyPut/keyDel`, `unlock`, `unlockSaved`), so a new browser asks once.
+    Old plain-text copies (localStorage `pitwall.lk`, an account row's `lk`) are used once, then deleted/overwritten.
     Rules: a row changed since this browser's mark wins if this browser has nothing unsent; unsent local edits are
     pushed if the row didn't change; if both changed, or a browser with its own teams has no mark, it asks which to
     keep (nothing syncs until it chooses). Before 2026-09-24 the both-changed case silently dropped the local edits. Re-pulls on tab focus. `fillFromLineups`
@@ -666,7 +671,8 @@ User-approved order: 1–5, then the rest.
       sealed export line-ups (`lineups`).
     - Keep-alive: free projects pause after ~1 week idle; have refresh.yml make a tiny anon request each run
       (verify that counts as activity).
-    - Page: supabase-js from jsdelivr; "Sign in with Google" in the ☰ menu and Settings; "Synced n min ago";
+    - Page: supabase-js bundled into `web/vendor/supabase.js` (`npm run vendor`; was jsdelivr until 2026-09-26);
+      the page ships a hash-based CSP (`refresh.content_policy`); "Sign in with Google" in the ☰ menu and Settings; "Synced n min ago";
       sign out (clears the local session and the stored key).
     - User setup (once): Supabase project (send URL + anon key; both public); Google Cloud consent screen in
       TESTING mode with his email as test user + web OAuth client; paste client id/secret into Supabase's Google

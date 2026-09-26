@@ -1,7 +1,10 @@
 """Tests for the Python side: shared feed helpers and the page build. Run:  python -m unittest discover tests"""
 
+import base64
+import hashlib
 import json
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -63,6 +66,44 @@ class FeedHelpers(unittest.TestCase):
             with open(p, "w") as f:
                 json.dump([1, 2], f)
             self.assertEqual(f1feeds.get_soft("https://example.invalid/x", p), [1, 2])
+
+    def test_a_block_page_is_not_cached_or_retried(self):
+        calls = []
+
+        def captcha(url):
+            calls.append(url)
+            return "<html>Are you a robot?</html>"
+
+        with (
+            tempfile.TemporaryDirectory() as d,
+            mock.patch.object(f1feeds, "_read", captcha),
+            mock.patch.object(f1feeds.time, "sleep"),
+        ):
+            p = os.path.join(d, "x.json")
+            with self.assertRaises(f1feeds.FeedError):
+                f1feeds.get("https://example.invalid/x", p, attempts=3)
+            self.assertEqual(len(calls), 1)
+            self.assertFalse(os.path.exists(p))
+            with open(p, "w") as f:
+                json.dump([1, 2], f)
+            self.assertEqual(f1feeds.get_soft("https://example.invalid/x", p), [1, 2])
+            with open(p) as f:
+                self.assertEqual(json.load(f), [1, 2])
+            with self.assertRaises(f1feeds.FeedError):
+                f1feeds.get_optional("https://example.invalid/x")
+
+    def test_a_bad_saved_copy_is_fetched_again(self):
+        with (
+            tempfile.TemporaryDirectory() as d,
+            mock.patch.object(f1feeds, "_read", return_value='{"ok": 1}'),
+            mock.patch.object(f1feeds.time, "sleep"),
+        ):
+            p = os.path.join(d, "x.json")
+            with open(p, "w") as f:
+                f.write("<html>blocked</html>")
+            self.assertEqual(f1feeds.get("https://example.invalid/x", p, reuse=True), {"ok": 1})
+            self.assertEqual(f1feeds.get("https://example.invalid/x", p, reuse=True), {"ok": 1})
+            self.assertEqual(os.listdir(d), ["x.json"])
 
 
 class Config(unittest.TestCase):
@@ -194,6 +235,16 @@ class PageBuild(unittest.TestCase):
         self.assertNotIn('<link rel="stylesheet" href="web/', html)
         self.assertIsNone(refresh.DATA_MARK.search(html))
         self.assertIn("const DATA = {", html)
+
+    def test_content_policy_allows_exactly_the_page_scripts(self):
+        html = self.build(self.data())
+        policy = re.search(r'<meta http-equiv="Content-Security-Policy" content="([^"]+)">', html).group(1)
+        allowed = re.search(r"script-src ([^;]+)", policy).group(1).split()
+        scripts = re.findall(r"<script>(.*?)</script>", html, re.S)
+        digest = lambda s: "'sha256-" + base64.b64encode(hashlib.sha256(s.encode()).digest()).decode() + "'"
+        self.assertEqual(sorted(allowed), sorted(digest(s) for s in scripts))
+        self.assertNotIn("unsafe-inline", re.search(r"script-src[^;]+", policy).group(0))
+        self.assertIn("connect-src https://", policy)
 
     def test_season_over_builds(self):
         d = self.data()

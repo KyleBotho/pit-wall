@@ -1,12 +1,29 @@
 /* ---------- encrypted private leagues (sealed by the private repo's leagues.py with seal.js and LEAGUE_KEY) ---------- */
 let SEALED = null; // decrypted payload, memory only
-const LK = "pitwall.lk";
+// The passphrase itself is never stored. This browser keeps a non-extractable PBKDF2 key made from it (IndexedDB):
+// it can derive the decryption key for each new seal (fresh salt every time) but can't be read back out.
+const LK = "pitwall.lk"; // IndexedDB record name; also where older pages kept the passphrase in plain text
 const LEAGUE_VIEWS = ["league", "elite", "hind", "live", "stats", "calc"]; // views that show league or line-up data
 const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-async function unseal(pass) {
+function keyStore(mode, op) {
+  return new Promise((resolve, reject) => {
+    const open = indexedDB.open("pitwall", 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("keys");
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const db = open.result,
+        tx = db.transaction("keys", mode),
+        req = op(tx.objectStore("keys"));
+      tx.oncomplete = () => (db.close(), resolve(req.result));
+      tx.onerror = tx.onabort = () => (db.close(), reject(tx.error));
+    };
+  });
+}
+const keyGet = () => keyStore("readonly", (s) => s.get(LK)).catch(() => null);
+const keyPut = (k) => keyStore("readwrite", (s) => s.put(k, LK)).catch(() => {});
+const keyDel = () => keyStore("readwrite", (s) => s.delete(LK)).catch(() => {});
+async function unseal(base) {
   const z = DATA.leagueSealed;
-  if (!z || !window.crypto || !crypto.subtle) throw new Error("Encrypted leagues need the https site.");
-  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
   const key = await crypto.subtle.deriveKey(
     { name: "PBKDF2", salt: b64(z.salt), iterations: z.iter, hash: "SHA-256" },
     base,
@@ -17,23 +34,42 @@ async function unseal(pass) {
   const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: b64(z.iv) }, key, b64(z.ct));
   return JSON.parse(new TextDecoder().decode(pt));
 }
-async function tryUnseal(pass, quiet) {
+// a passphrase typed in (or left by an older page): kept, as a key, only if it opens the leagues
+async function unlock(pass, quiet) {
+  if (!DATA.leagueSealed || !window.crypto || !crypto.subtle) {
+    if (!quiet) toast("Encrypted leagues need the https site.");
+    return;
+  }
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  if (await tryUnseal(base, quiet)) await keyPut(base);
+}
+async function tryUnseal(base, quiet) {
+  let ok = false;
   try {
-    SEALED = await unseal(pass);
-    try {
-      localStorage.setItem(LK, pass);
-    } catch (e) {}
+    SEALED = await unseal(base);
+    ok = true;
     if (!quiet) toast(`Unlocked ${SEALED.leagues.length} league${SEALED.leagues.length === 1 ? "" : "s"}.`);
-    queuePush(); // the key travels with the account (unless that's switched off)
     if (forecast) {
       fillFromLineups();
       applyTracked();
     }
   } catch (e) {
     SEALED = null;
-    if (!quiet) toast(e.message && e.message.includes("https") ? e.message : "That passphrase didn't work.");
+    if (!quiet) toast("That passphrase didn't work.");
   }
   if (forecast) refreshViews(LEAGUE_VIEWS);
+  return ok;
+}
+// at load: this browser's saved key, or a plain-text passphrase from an older page (moved into a key, then deleted)
+async function unlockSaved() {
+  let old = null;
+  try {
+    old = localStorage.getItem(LK);
+    localStorage.removeItem(LK);
+  } catch (e) {}
+  if (old) return unlock(old, true);
+  const base = await keyGet();
+  if (base) tryUnseal(base, true);
 }
 // A browser with only example teams takes your teams from the sealed data: the line-up, bank, free transfers and
 // chips going into the round after the last one known (an export, then the line-ups seen after each race).
@@ -116,7 +152,6 @@ function save() {
    own teams signs in for the first time) nothing syncs until the user picks which set to keep. */
 const SB_URL = "https://tfljgylwpkpammzsapin.supabase.co";
 const SB_KEY = "sb_publishable_5XxT7rr5X-XS1HyduNK1qQ_TfoP2PLV"; // public by design (RLS protects the rows)
-const SB_LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/+esm";
 const SK = "pitwall.sync"; // {uid, at, dirty}: the row version this browser last matched, and whether it has unsent changes
 const NOSYNC = ["view", "pane", "bmode", "sub", "showN", "calcGrp"]; // where you are on this device, not settings
 const syncState = {
@@ -150,18 +185,15 @@ const pristine = () => state.teams.every((t) => t.example) && !state.drafts.leng
 function syncPayload() {
   const s = {};
   for (const k in state) if (!NOSYNC.includes(k)) s[k] = state[k];
-  let lk = null;
-  if (state.syncKey)
-    try {
-      lk = localStorage.getItem(LK);
-    } catch (e) {}
-  return { v: DATA.season, s, lk };
+  return { v: DATA.season, s }; // never the league passphrase
 }
+// rows saved by older pages may still hold the league passphrase ("lk"): used once here, then written over without it
+const holdsKey = (row) => !!row && !!row.data && "lk" in row.data;
 async function syncInit() {
   if (!syncState.ok) return;
   try {
-    const { createClient } = await import(SB_LIB);
-    syncState.sb = createClient(SB_URL, SB_KEY, {
+    // web/vendor/supabase.js (npm run vendor), inlined with the page: no script is fetched from elsewhere
+    syncState.sb = supabase.createClient(SB_URL, SB_KEY, {
       auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     });
   } catch (e) {
@@ -200,7 +232,7 @@ async function pull() {
   if (!changed) {
     syncState.at = data.updated_at;
     syncState.ready = true;
-    if (m.dirty) return push();
+    if (m.dirty || holdsKey(data)) return push();
     syncState.last = JSON.stringify(syncPayload());
     return renderSync();
   }
@@ -228,24 +260,19 @@ function applyRemote(row, msg) {
   const next = loadState({ ...d.s, v: d.v });
   for (const k of NOSYNC) if (state[k] !== undefined) next[k] = state[k]; // this device's place and layout stay
   state = next;
-  if (d.lk) {
-    try {
-      localStorage.setItem(LK, d.lk);
-    } catch (e) {}
-  }
   syncState.applying = true;
   compute();
   renderAll();
   save();
   syncState.applying = false;
-  Object.assign(syncState, { at: row.updated_at, last: JSON.stringify(syncPayload()), ready: true, err: "" });
+  const last = holdsKey(row) ? null : JSON.stringify(syncPayload()); // null: push again, to clear the passphrase
+  Object.assign(syncState, { at: row.updated_at, last, ready: true, err: "" });
   writeMark({ uid: syncState.user.id, at: row.updated_at, dirty: false });
   renderSync();
-  if (d.lk && !SEALED && DATA.leagueSealed) tryUnseal(d.lk, true);
-  if (d.v !== DATA.season) {
-    toast(`Carried your settings over from ${d.v}; teams start fresh for ${DATA.season}.`);
-    queuePush();
-  } else if (msg) toast(msg);
+  if (typeof d.lk === "string" && d.lk && !SEALED) unlock(d.lk, true);
+  if (d.v !== DATA.season) toast(`Carried your settings over from ${d.v}; teams start fresh for ${DATA.season}.`);
+  else if (msg) toast(msg);
+  queuePush();
 }
 function queuePush() {
   if (!syncState.user || !syncState.ready || syncState.hold || syncState.applying) return;
@@ -321,9 +348,7 @@ async function signOut() {
   } catch (e) {}
   Object.assign(syncState, { user: null, at: null, err: "", hold: null, last: null, ready: false });
   writeMark(null);
-  try {
-    localStorage.removeItem(LK);
-  } catch (e) {}
+  await keyDel();
   SEALED = null;
   renderSync();
   if (forecast) refreshViews(LEAGUE_VIEWS);
@@ -350,7 +375,7 @@ function renderSync() {
     if (!U) {
       h =
         `<button class="btn sm" data-signin="1">Sign in with Google</button>` +
-        `<p class="note">Your teams, settings and leagues follow you to every browser you sign in on.</p>` +
+        `<p class="note">Your teams and settings follow you to every browser you sign in on.</p>` +
         (ss.err ? `<p class="note bad">${esc(ss.err)}</p>` : "");
     } else {
       const status = ss.err
@@ -364,8 +389,7 @@ function renderSync() {
               : "Connecting…";
       h =
         `<div class="em">${esc(U.email || "Signed in")}</div><p class="note${ss.err ? " bad" : ""}">${status}</p>` +
-        `<div class="chipbar">${ss.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>` +
-        `<label class="switch" title="Off: each browser asks for the passphrase once; the account never holds it"><input type="checkbox" data-synckey="1" ${state.syncKey ? "checked" : ""}><span>Keep my league passphrase in my account</span></label>`;
+        `<div class="chipbar">${ss.hold ? '<button class="btn sm" data-sync="ask">Choose</button>' : ""}<button class="btn ghost sm" data-signout="1">Sign out</button></div>`;
     }
   }
   h += `<button class="btn ghost sm" data-import="1">Import a data export</button><p class="note">After a new F1 Fantasy export: updates your teams, bank, chips and league.</p>`;

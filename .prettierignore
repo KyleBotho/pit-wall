@@ -6,6 +6,7 @@ data/
 research/
 node_modules/
 supabase/
+web/vendor/
 backtest/practice_by_round.json
 package-lock.json
 *.md

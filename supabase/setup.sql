@@ -50,6 +50,19 @@ create table if not exists public.live_cache (
 );
 alter table public.live_cache enable row level security;
 revoke all on public.live_cache from anon, authenticated;
+-- Scoring lines live in their own column, written only by the function's background run and merged in here, so a
+-- request saving the player feed (body) and that run can never write over each other. stats_busy claims the run.
+alter table public.live_cache add column if not exists stats jsonb not null default '{}'::jsonb;
+alter table public.live_cache add column if not exists stats_busy timestamptz;
+-- p_rest: F1 refused or failed, so keep the claim (nobody asks F1 again for a few minutes) instead of releasing it.
+create or replace function public.live_stats_merge(p_gd int, p_patch jsonb, p_rest boolean default false)
+  returns void language sql set search_path = '' as $$
+  update public.live_cache
+     set stats = stats || p_patch, stats_busy = case when p_rest then now() else null end
+   where gd = p_gd
+$$;
+revoke all on function public.live_stats_merge(int, jsonb, boolean) from public, anon, authenticated;
+grant execute on function public.live_stats_merge(int, jsonb, boolean) to service_role;
 
 -- Sim lab gate (web/js/lab.js): accounts listed here see the owner-only Sim lab tab. Each signed-in user can read
 -- only their own row, so the page learns "am I an owner" and nothing about anyone else. No inserts from the page:

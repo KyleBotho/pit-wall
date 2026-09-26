@@ -25,14 +25,23 @@ const common = {
 
 export default [
   {
-    ignores: ["build/**", "build-seasonover/**", "cache/**", "node_modules/**", "history/**", "data/**", "supabase/**"],
+    ignores: [
+      "build/**",
+      "build-seasonover/**",
+      "cache/**",
+      "node_modules/**",
+      "history/**",
+      "data/**",
+      "supabase/**",
+      "web/vendor/**",
+    ],
   },
   js.configs.recommended,
   {
     files: ["web/js/**/*.js"],
     languageOptions: {
       sourceType: "script",
-      globals: { ...globals.browser, ...pageGlobals, Engine: "readonly", Hindsight: "readonly" },
+      globals: { ...globals.browser, ...pageGlobals, Engine: "readonly", Hindsight: "readonly", supabase: "readonly" },
     },
     rules: {
       ...common,

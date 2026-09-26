@@ -3,7 +3,7 @@
    turns a version-n object into version n+1. Everything read from localStorage or the account goes through
    loadState(): migrate, carry settings over from an older season, fill in defaults, drop what no longer fits. */
 const KEY = "pitwall.v1";
-const SCHEMA = 5;
+const SCHEMA = 6;
 const VIEWS = [
   "calc",
   "live",
@@ -58,7 +58,6 @@ const defaults = () => ({
   pins: [],
   xo: {},
   rivalCfg: {},
-  syncKey: true,
   // the Calculator's Simulation preset: "sim" (Monte Carlo) or a past-performance one (classic, weighted, form, ppm)
   simPreset: "sim",
   simDecay: 0.9, // weighted: each older round counts this much of the next
@@ -124,6 +123,10 @@ const MIGRATIONS = [
     const next = DATA.schedule.find((g) => !DATA.done.includes(g.gd));
     for (const t of s.teams || []) if (t && !t.example && t.asOf == null) t.asOf = next ? next.gd : 1e9;
   },
+  // 5 -> 6: the league passphrase is no longer kept in the account, so its switch is gone
+  (s) => {
+    delete s.syncKey;
+  },
 ];
 
 // Settings that mean the same in any season. The rest (teams, marks, nudges, pins, filters on points...) refer to
@@ -159,7 +162,6 @@ const CARRY = [
   "hdCap",
   "hdChip",
   "showN",
-  "syncKey",
   "simPreset",
   "simDecay",
   "simWin",

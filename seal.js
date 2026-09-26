@@ -9,7 +9,7 @@ if (!key) {
 let input = "";
 process.stdin.on("data", (c) => (input += c));
 process.stdin.on("end", () => {
-  const iter = 250000,
+  const iter = 600000, // OWASP's 2023 minimum for PBKDF2-SHA256: the sealed file is public, so it can be attacked offline
     salt = crypto.randomBytes(16),
     iv = crypto.randomBytes(12);
   const k = crypto.pbkdf2Sync(key, salt, iter, 32, "sha256");

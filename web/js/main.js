@@ -846,18 +846,6 @@ const CHANGE = [
       recompute(0);
     },
   ],
-  [
-    "synckey",
-    (d, t) => {
-      state.syncKey = t.checked;
-      save();
-      toast(
-        t.checked
-          ? "Your league passphrase will be kept in your account."
-          : "Your account no longer keeps the league passphrase; other browsers will ask for it once.",
-      );
-    },
-  ],
 ];
 document.addEventListener("change", (e) => {
   const t = e.target;
@@ -936,7 +924,8 @@ document.addEventListener("submit", (e) => {
   if (e.target.id !== "lgUnlock") return;
   e.preventDefault();
   const v = $("#lgKey").value;
-  if (v) tryUnseal(v, false);
+  $("#lgKey").value = "";
+  if (v) unlock(v, false);
 });
 document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
@@ -1060,13 +1049,7 @@ renderHeader();
 showView(state.view);
 $$("table").forEach(alignTable);
 if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
-if (DATA.leagueSealed) {
-  let k = null;
-  try {
-    k = localStorage.getItem(LK);
-  } catch (e) {}
-  if (k) tryUnseal(k, true);
-}
+if (DATA.leagueSealed) unlockSaved();
 syncInit();
 setInterval(() => {
   renderHeader();

@@ -31,6 +31,7 @@ test("a sealed payload opens with the right passphrase only", async () => {
   const payload = { leagues: [{ name: "Test", members: [{ team: "Ünïcode ✓", pts: 1 }] }] };
   const z = seal(JSON.stringify(payload), "correct horse");
   assert.deepEqual(Object.keys(z).sort(), ["ct", "iter", "iv", "salt", "v"]);
+  assert.ok(z.iter >= 600000, "PBKDF2 iterations below OWASP's minimum");
   assert.deepEqual(await unseal(z, "correct horse"), payload);
   await assert.rejects(unseal(z, "wrong horse"));
 });

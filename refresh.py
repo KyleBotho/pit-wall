@@ -21,6 +21,7 @@ Season archive (committed by the workflow, so history survives F1 changing or dr
 """
 
 import argparse
+import base64
 import glob
 import hashlib
 import json
@@ -33,7 +34,17 @@ from datetime import datetime, timezone
 
 import extras
 import practice
-from f1feeds import EV_SESSION, FeedError, ev_code, feed_time, get, get_optional, get_soft, load_config
+from f1feeds import (
+    EV_SESSION,
+    FeedError,
+    ev_code,
+    feed_time,
+    get,
+    get_optional,
+    get_soft,
+    load_config,
+    write_text,
+)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "cache")
@@ -69,8 +80,7 @@ def read_json(path):
 
 
 def write_json(path, obj, **kw):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, **kw)
+    write_text(path, json.dumps(obj, **kw))
 
 
 # ---------------------------------------------------------------- schedule
@@ -618,6 +628,33 @@ def inline_page(data):
     return DATA_MARK.sub(lambda _: js, html)
 
 
+def content_policy(html):
+    """Content-Security-Policy for the page: only its own inline scripts run (each allowed by its SHA-256 hash, so an
+    injected <script> or onclick= doesn't), and it talks only to Supabase and Google Fonts. Styles stay inline-able:
+    the views build style="" attributes."""
+    with open(os.path.join(HERE, "web", "js", "sync.js"), encoding="utf-8") as f:
+        sb = re.search(r'^const SB_URL = "(https://[^"]+)";', f.read(), re.M)
+    if not sb:
+        raise RuntimeError("SB_URL not found in web/js/sync.js")
+    hashes = " ".join(
+        "'sha256-" + base64.b64encode(hashlib.sha256(s.encode("utf-8")).digest()).decode() + "'"
+        for s in re.findall(r"<script>(.*?)</script>", html, re.S)
+    )
+    return "; ".join(
+        [
+            "default-src 'none'",
+            f"script-src {hashes}",
+            "style-src 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src https://fonts.gstatic.com",
+            "img-src 'self' data:",
+            f"connect-src {sb.group(1)}",
+            "base-uri 'none'",
+            "form-action 'self'",
+            "object-src 'none'",
+        ]
+    )
+
+
 def build_page(data, out_dir=BUILD):
     out = inline_page(data)
     os.makedirs(out_dir, exist_ok=True)
@@ -629,6 +666,7 @@ def build_page(data, out_dir=BUILD):
         f.write(
             '<!doctype html>\n<html lang="en">\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+            f'<meta http-equiv="Content-Security-Policy" content="{content_policy(out)}">\n'
             '<meta name="theme-color" content="#050505">\n'
             '<link rel="icon" type="image/svg+xml" href="brand/fantasy-pit-wall-icon.svg">\n'
             '<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">\n'
