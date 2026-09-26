@@ -213,10 +213,9 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] TO DO (user's direction, 2026-09-26): the "Team Tracking" private league (ID only in the private repo's
-      `LEAGUE_IDS` secret) is how Pit Wall finds and follows every user's teams: anyone who wants to use the tool joins
-      it, and their teams are discovered and tracked from there, not only the owner's three. Design onboarding and
-      per-user team discovery around it. It builds on team keys (below) and on the "Pit Wall" account session check.
+- [ ] NEXT: Team Tracking, planned with the user on 2026-09-26: **read `docs/team-tracking-plan.md` and build it** (phase
+      A on public data first, then phase B with the FPW account). Users join the tracking league, search their F1
+      Fantasy username once, and their teams load by themselves.
 - [x] 2026-09-26 "option 1": signing in unlocks the leagues (Supabase `league_data` behind `league_readers` RLS);
       the passphrase, `seal.js` and `data/league.sealed.json` are gone. Old sealed files stay in git history
       (encrypted; left in place rather than rewriting history). The security review's items 1-9 are done too
