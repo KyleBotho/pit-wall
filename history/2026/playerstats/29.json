@@ -714,7 +714,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 52
+            "Value": 60
           },
           {
             "Frequency": "-",
@@ -729,12 +729,12 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 27
+            "Value": 33
           },
           {
-            "Frequency": "5",
+            "Frequency": "7",
             "Event": "Race position gained",
-            "Value": 5
+            "Value": 7
           }
         ]
       }
@@ -750,7 +750,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 697
+            "Value": 705
           },
           {
             "Frequency": "23",
@@ -765,7 +765,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 245
+            "Value": 251
           },
           {
             "Frequency": "-",
@@ -798,9 +798,9 @@
             "Value": 20
           },
           {
-            "Frequency": "65",
+            "Frequency": "67",
             "Event": "Race position gained",
-            "Value": 65
+            "Value": 67
           },
           {
             "Frequency": "17",
@@ -3162,17 +3162,17 @@
               {
                 "Frequency": "-",
                 "Event": "Race Position",
-                "Value": 27
+                "Value": 33
               },
               {
-                "Frequency": "5",
+                "Frequency": "7",
                 "Event": "Race position gained",
-                "Value": 5
+                "Value": 7
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 32
+                "Value": 40
               }
             ]
           }
@@ -3181,8 +3181,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 11:36:26 AM",
-    "ISTTime": "9/26/2026 5:06:26 PM",
-    "CESTTime": "9/26/2026 1:36:26 PM"
+    "UTCTime": "9/26/2026 12:24:26 PM",
+    "ISTTime": "9/26/2026 5:54:26 PM",
+    "CESTTime": "9/26/2026 2:24:26 PM"
   }
 }

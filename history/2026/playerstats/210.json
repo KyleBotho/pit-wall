@@ -719,7 +719,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 2
+            "Value": 4
           },
           {
             "Frequency": "-",
@@ -730,6 +730,11 @@
             "Frequency": "-",
             "Event": "One Driver Q3",
             "Value": 5
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 2
           },
           {
             "Frequency": "-",
@@ -755,7 +760,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 172
+            "Value": 174
           },
           {
             "Frequency": "-",
@@ -825,7 +830,7 @@
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
-            "Value": 42
+            "Value": 44
           },
           {
             "Frequency": "137",
@@ -3176,6 +3181,11 @@
             "StatsWise": [
               {
                 "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 2
+              },
+              {
+                "Frequency": "-",
                 "Event": "Race Position",
                 "Value": 0
               },
@@ -3187,7 +3197,7 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -5
+                "Value": -3
               }
             ]
           }
@@ -3196,8 +3206,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 11:36:26 AM",
-    "ISTTime": "9/26/2026 5:06:26 PM",
-    "CESTTime": "9/26/2026 1:36:26 PM"
+    "UTCTime": "9/26/2026 12:24:27 PM",
+    "ISTTime": "9/26/2026 5:54:27 PM",
+    "CESTTime": "9/26/2026 2:24:27 PM"
   }
 }

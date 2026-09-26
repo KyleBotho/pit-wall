@@ -15,8 +15,8 @@
         "DriverTLA": "GAS",
         "DriverReference": "PIEGAS01",
         "CountryName": "Rouen, France",
-        "OverallPpints": "155.00",
-        "GamedayPoints": "7.00",
+        "OverallPpints": "141.00",
+        "GamedayPoints": "-7.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 12.2,
@@ -31,7 +31,7 @@
         "QualifyingPoints": "4",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "8.00",
+        "NoNegativePoints": "4.00",
         "F1PlayerId": "8",
         "FirstName": "Pierre",
         "LastName": "Gasly",
@@ -45,8 +45,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 3,
-            "nonegative_points": 4
+            "points": -11,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -81,8 +81,8 @@
         "DriverTLA": "COL",
         "DriverReference": "FRACOL01",
         "CountryName": "Buenos Aires, Argentina",
-        "OverallPpints": "159.00",
-        "GamedayPoints": "3.00",
+        "OverallPpints": "137.00",
+        "GamedayPoints": "-19.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 10.4,
@@ -97,7 +97,7 @@
         "QualifyingPoints": "1",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "1.00",
         "F1PlayerId": "1059",
         "FirstName": "Franco",
         "LastName": "Colapinto",
@@ -111,8 +111,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 2,
-            "nonegative_points": 2
+            "points": -20,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -147,8 +147,8 @@
         "DriverTLA": "ALO",
         "DriverReference": "FERALO01",
         "CountryName": "Oviedo, Spain",
-        "OverallPpints": "24.00",
-        "GamedayPoints": "1.00",
+        "OverallPpints": "3.00",
+        "GamedayPoints": "-20.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 7.0,
@@ -163,7 +163,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "1.00",
+        "NoNegativePoints": "0.00",
         "F1PlayerId": "2",
         "FirstName": "Fernando",
         "LastName": "Alonso",
@@ -177,8 +177,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 1,
-            "nonegative_points": 1
+            "points": -20,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -279,8 +279,8 @@
         "DriverTLA": "BOR",
         "DriverReference": "GABBOR01",
         "CountryName": "São Paulo, Brazil",
-        "OverallPpints": "83.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "87.00",
+        "GamedayPoints": "3.00",
         "SelectedPercentage": "33",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 8.6,
@@ -295,7 +295,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "3.00",
         "F1PlayerId": "1051",
         "FirstName": "Gabriel",
         "LastName": "Bortoleto",
@@ -309,8 +309,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
-            "nonegative_points": 0
+            "points": 3,
+            "nonegative_points": 3
           }
         ],
         "AdditionalStats": {
@@ -345,8 +345,8 @@
         "DriverTLA": "HUL",
         "DriverReference": "NICHUL01",
         "CountryName": "Emmerich am Rhein, Germany",
-        "OverallPpints": "-9.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "-2.00",
+        "GamedayPoints": "9.00",
         "SelectedPercentage": "37",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 4.2,
@@ -361,7 +361,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "2.00",
+        "NoNegativePoints": "9.00",
         "F1PlayerId": "11",
         "FirstName": "Nico",
         "LastName": "Hulkenberg",
@@ -375,8 +375,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 2,
-            "nonegative_points": 2
+            "points": 9,
+            "nonegative_points": 9
           }
         ],
         "AdditionalStats": {
@@ -411,8 +411,8 @@
         "DriverTLA": "PER",
         "DriverReference": "SERPER01",
         "CountryName": "Guadalajara, Mexico",
-        "OverallPpints": "9.00",
-        "GamedayPoints": "1.00",
+        "OverallPpints": "15.00",
+        "GamedayPoints": "7.00",
         "SelectedPercentage": "20",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.0,
@@ -427,7 +427,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "1.00",
+        "NoNegativePoints": "7.00",
         "F1PlayerId": "21",
         "FirstName": "Sergio",
         "LastName": "Perez",
@@ -441,8 +441,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 1,
-            "nonegative_points": 1
+            "points": 7,
+            "nonegative_points": 7
           }
         ],
         "AdditionalStats": {
@@ -477,8 +477,8 @@
         "DriverTLA": "BOT",
         "DriverReference": "VALBOT01",
         "CountryName": "Nastola, Finland",
-        "OverallPpints": "-75.00",
-        "GamedayPoints": "-2.00",
+        "OverallPpints": "-70.00",
+        "GamedayPoints": "3.00",
         "SelectedPercentage": "20",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.0,
@@ -493,7 +493,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "3.00",
         "F1PlayerId": "3",
         "FirstName": "Valtteri",
         "LastName": "Bottas",
@@ -507,8 +507,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -2,
-            "nonegative_points": 0
+            "points": 3,
+            "nonegative_points": 3
           }
         ],
         "AdditionalStats": {
@@ -543,8 +543,8 @@
         "DriverTLA": "HAM",
         "DriverReference": "LEWHAM01",
         "CountryName": "Stevenage, England",
-        "OverallPpints": "393.00",
-        "GamedayPoints": "13.00",
+        "OverallPpints": "396.00",
+        "GamedayPoints": "16.00",
         "SelectedPercentage": "18",
         "CaptainSelectedPercentage": "9",
         "OldPlayerValue": 25.2,
@@ -559,7 +559,7 @@
         "QualifyingPoints": "5",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "13.00",
+        "NoNegativePoints": "16.00",
         "F1PlayerId": "10",
         "FirstName": "Lewis",
         "LastName": "Hamilton",
@@ -573,8 +573,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 8,
-            "nonegative_points": 8
+            "points": 11,
+            "nonegative_points": 11
           }
         ],
         "AdditionalStats": {
@@ -609,8 +609,8 @@
         "DriverTLA": "LEC",
         "DriverReference": "CHALEC01",
         "CountryName": "Monte Carlo, Monaco",
-        "OverallPpints": "347.00",
-        "GamedayPoints": "16.00",
+        "OverallPpints": "350.00",
+        "GamedayPoints": "19.00",
         "SelectedPercentage": "26",
         "CaptainSelectedPercentage": "14",
         "OldPlayerValue": 24.1,
@@ -625,7 +625,7 @@
         "QualifyingPoints": "9",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "19.00",
+        "NoNegativePoints": "21.00",
         "F1PlayerId": "15",
         "FirstName": "Charles",
         "LastName": "Leclerc",
@@ -639,8 +639,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 7,
-            "nonegative_points": 10
+            "points": 10,
+            "nonegative_points": 12
           }
         ],
         "AdditionalStats": {
@@ -675,8 +675,8 @@
         "DriverTLA": "OCO",
         "DriverReference": "ESTOCO01",
         "CountryName": "Évreux, Normandy",
-        "OverallPpints": "124.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "137.00",
+        "GamedayPoints": "12.00",
         "SelectedPercentage": "13",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 9.5,
@@ -691,7 +691,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "12.00",
         "F1PlayerId": "18",
         "FirstName": "Esteban",
         "LastName": "Ocon",
@@ -705,8 +705,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
-            "nonegative_points": 0
+            "points": 12,
+            "nonegative_points": 12
           }
         ],
         "AdditionalStats": {
@@ -741,8 +741,8 @@
         "DriverTLA": "BEA",
         "DriverReference": "OLIBEA01",
         "CountryName": "Chelmsford, England",
-        "OverallPpints": "62.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "69.00",
+        "GamedayPoints": "6.00",
         "SelectedPercentage": "50",
         "CaptainSelectedPercentage": "2",
         "OldPlayerValue": 6.4,
@@ -757,7 +757,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "6.00",
         "F1PlayerId": "1031",
         "FirstName": "Oliver",
         "LastName": "Bearman",
@@ -771,8 +771,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
-            "nonegative_points": 0
+            "points": 6,
+            "nonegative_points": 6
           }
         ],
         "AdditionalStats": {
@@ -807,8 +807,8 @@
         "DriverTLA": "NOR",
         "DriverReference": "LANNOR01",
         "CountryName": "Bristol, England",
-        "OverallPpints": "349.00",
-        "GamedayPoints": "10.00",
+        "OverallPpints": "331.00",
+        "GamedayPoints": "-8.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "6",
         "OldPlayerValue": 26.7,
@@ -823,7 +823,7 @@
         "QualifyingPoints": "6",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "12.00",
+        "NoNegativePoints": "6.00",
         "F1PlayerId": "17",
         "FirstName": "Lando",
         "LastName": "Norris",
@@ -837,8 +837,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 4,
-            "nonegative_points": 6
+            "points": -14,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -873,8 +873,8 @@
         "DriverTLA": "PIA",
         "DriverReference": "OSCPIA01",
         "CountryName": "Melbourne, Victoria",
-        "OverallPpints": "255.00",
-        "GamedayPoints": "27.00",
+        "OverallPpints": "224.00",
+        "GamedayPoints": "-4.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "5",
         "OldPlayerValue": 24.0,
@@ -889,7 +889,7 @@
         "QualifyingPoints": "8",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "27.00",
+        "NoNegativePoints": "8.00",
         "F1PlayerId": "982",
         "FirstName": "Oscar",
         "LastName": "Piastri",
@@ -903,8 +903,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 19,
-            "nonegative_points": 19
+            "points": -12,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -1005,8 +1005,8 @@
         "DriverTLA": "ANT",
         "DriverReference": "ANDANT01",
         "CountryName": "Bologna, Italy",
-        "OverallPpints": "601.00",
-        "GamedayPoints": "7.00",
+        "OverallPpints": "612.00",
+        "GamedayPoints": "18.00",
         "SelectedPercentage": "38",
         "CaptainSelectedPercentage": "27",
         "OldPlayerValue": 26.3,
@@ -1021,7 +1021,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "7.00",
+        "NoNegativePoints": "18.00",
         "F1PlayerId": "1161",
         "FirstName": "Kimi",
         "LastName": "Antonelli",
@@ -1035,8 +1035,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 7,
-            "nonegative_points": 7
+            "points": 18,
+            "nonegative_points": 18
           }
         ],
         "AdditionalStats": {
@@ -1203,8 +1203,8 @@
         "DriverTLA": "LIN",
         "DriverReference": "ARVLIN01",
         "CountryName": "London, England",
-        "OverallPpints": "90.00",
-        "GamedayPoints": "0.00",
+        "OverallPpints": "98.00",
+        "GamedayPoints": "8.00",
         "SelectedPercentage": "45",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 8.0,
@@ -1219,7 +1219,7 @@
         "QualifyingPoints": "0",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "8.00",
         "F1PlayerId": "1149",
         "FirstName": "Arvid",
         "LastName": "Lindblad",
@@ -1233,8 +1233,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 0,
-            "nonegative_points": 0
+            "points": 8,
+            "nonegative_points": 8
           }
         ],
         "AdditionalStats": {
@@ -1269,8 +1269,8 @@
         "DriverTLA": "VER",
         "DriverReference": "MAXVER01",
         "CountryName": "Hasselt, Belgium",
-        "OverallPpints": "356.00",
-        "GamedayPoints": "23.00",
+        "OverallPpints": "360.00",
+        "GamedayPoints": "27.00",
         "SelectedPercentage": "18",
         "CaptainSelectedPercentage": "13",
         "OldPlayerValue": 27.4,
@@ -1285,7 +1285,7 @@
         "QualifyingPoints": "3",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "23.00",
+        "NoNegativePoints": "27.00",
         "F1PlayerId": "31",
         "FirstName": "Max",
         "LastName": "Verstappen",
@@ -1299,8 +1299,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 20,
-            "nonegative_points": 20
+            "points": 24,
+            "nonegative_points": 24
           }
         ],
         "AdditionalStats": {
@@ -1401,8 +1401,8 @@
         "DriverTLA": "HAD",
         "DriverReference": "ISAHAD01",
         "CountryName": "Paris, France",
-        "OverallPpints": "161.00",
-        "GamedayPoints": "19.00",
+        "OverallPpints": "165.00",
+        "GamedayPoints": "23.00",
         "SelectedPercentage": "27",
         "CaptainSelectedPercentage": "2",
         "OldPlayerValue": 14.5,
@@ -1417,7 +1417,7 @@
         "QualifyingPoints": "7",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "19.00",
+        "NoNegativePoints": "23.00",
         "F1PlayerId": "1032",
         "FirstName": "Isack",
         "LastName": "Hadjar",
@@ -1431,8 +1431,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 12,
-            "nonegative_points": 12
+            "points": 16,
+            "nonegative_points": 16
           }
         ],
         "AdditionalStats": {
@@ -1467,8 +1467,8 @@
         "DriverTLA": "SAI",
         "DriverReference": "CARSAI01",
         "CountryName": "Madrid, Spain",
-        "OverallPpints": "84.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "90.00",
+        "GamedayPoints": "5.00",
         "SelectedPercentage": "22",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 9.6,
@@ -1483,7 +1483,7 @@
         "QualifyingPoints": "2",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "2.00",
+        "NoNegativePoints": "5.00",
         "F1PlayerId": "25",
         "FirstName": "Carlos",
         "LastName": "Sainz",
@@ -1497,8 +1497,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -3,
-            "nonegative_points": 0
+            "points": 3,
+            "nonegative_points": 3
           }
         ],
         "AdditionalStats": {
@@ -1533,8 +1533,8 @@
         "DriverTLA": "ALB",
         "DriverReference": "ALEALB01",
         "CountryName": "London, England",
-        "OverallPpints": "28.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "21.00",
+        "GamedayPoints": "-8.00",
         "SelectedPercentage": "11",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 5.8,
@@ -1563,7 +1563,7 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
+            "points": -8,
             "nonegative_points": 0
           }
         ],
@@ -1599,8 +1599,8 @@
         "DriverTLA": "MER",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "1238.00",
-        "GamedayPoints": "57.00",
+        "OverallPpints": "1259.00",
+        "GamedayPoints": "78.00",
         "SelectedPercentage": "36",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 33.2,
@@ -1615,7 +1615,7 @@
         "QualifyingPoints": "15",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "57.00",
+        "NoNegativePoints": "78.00",
         "F1PlayerId": "8",
         "FirstName": "Mercedes",
         "LastName": "Mercedes",
@@ -1629,8 +1629,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 42,
-            "nonegative_points": 42
+            "points": 63,
+            "nonegative_points": 63
           }
         ],
         "AdditionalStats": {
@@ -1665,8 +1665,8 @@
         "DriverTLA": "MCL",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "789.00",
-        "GamedayPoints": "47.00",
+        "OverallPpints": "742.00",
+        "GamedayPoints": "0.00",
         "SelectedPercentage": "10",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 31.6,
@@ -1681,7 +1681,7 @@
         "QualifyingPoints": "24",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "48.00",
+        "NoNegativePoints": "26.00",
         "F1PlayerId": "7",
         "FirstName": "McLaren",
         "LastName": "McLaren",
@@ -1695,8 +1695,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 23,
-            "nonegative_points": 24
+            "points": -24,
+            "nonegative_points": 2
           }
         ],
         "AdditionalStats": {
@@ -1731,8 +1731,8 @@
         "DriverTLA": "RBR",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "697.00",
-        "GamedayPoints": "52.00",
+        "OverallPpints": "705.00",
+        "GamedayPoints": "60.00",
         "SelectedPercentage": "7",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 31.5,
@@ -1747,7 +1747,7 @@
         "QualifyingPoints": "20",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "52.00",
+        "NoNegativePoints": "60.00",
         "F1PlayerId": "9",
         "FirstName": "Red Bull Racing",
         "LastName": "Red Bull Racing",
@@ -1761,8 +1761,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 32,
-            "nonegative_points": 32
+            "points": 40,
+            "nonegative_points": 40
           }
         ],
         "AdditionalStats": {
@@ -1797,8 +1797,8 @@
         "DriverTLA": "FER",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "921.00",
-        "GamedayPoints": "39.00",
+        "OverallPpints": "927.00",
+        "GamedayPoints": "45.00",
         "SelectedPercentage": "41",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 27.2,
@@ -1813,7 +1813,7 @@
         "QualifyingPoints": "24",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "42.00",
+        "NoNegativePoints": "46.00",
         "F1PlayerId": "5",
         "FirstName": "Ferrari",
         "LastName": "Ferrari",
@@ -1827,8 +1827,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 15,
-            "nonegative_points": 18
+            "points": 21,
+            "nonegative_points": 22
           }
         ],
         "AdditionalStats": {
@@ -1863,8 +1863,8 @@
         "DriverTLA": "ALP",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "414.00",
-        "GamedayPoints": "20.00",
+        "OverallPpints": "395.00",
+        "GamedayPoints": "1.00",
         "SelectedPercentage": "8",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 19.2,
@@ -1879,7 +1879,7 @@
         "QualifyingPoints": "15",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "21.00",
+        "NoNegativePoints": "20.00",
         "F1PlayerId": "3",
         "FirstName": "Alpine",
         "LastName": "Alpine",
@@ -1893,8 +1893,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 5,
-            "nonegative_points": 6
+            "points": -14,
+            "nonegative_points": 5
           }
         ],
         "AdditionalStats": {
@@ -1929,8 +1929,8 @@
         "DriverTLA": "RBS",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "420.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "428.00",
+        "GamedayPoints": "10.00",
         "SelectedPercentage": "33",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 14.1,
@@ -1945,7 +1945,7 @@
         "QualifyingPoints": "3",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "10.00",
         "F1PlayerId": "636",
         "FirstName": "Racing Bulls",
         "LastName": "Racing Bulls",
@@ -1959,8 +1959,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
-            "nonegative_points": 0
+            "points": 7,
+            "nonegative_points": 7
           }
         ],
         "AdditionalStats": {
@@ -1995,8 +1995,8 @@
         "DriverTLA": "WIL",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "173.00",
-        "GamedayPoints": "3.00",
+        "OverallPpints": "174.00",
+        "GamedayPoints": "4.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 13.8,
@@ -2011,7 +2011,7 @@
         "QualifyingPoints": "7",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "7.00",
+        "NoNegativePoints": "9.00",
         "F1PlayerId": "10",
         "FirstName": "Williams",
         "LastName": "Williams",
@@ -2025,8 +2025,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -4,
-            "nonegative_points": 0
+            "points": -3,
+            "nonegative_points": 2
           }
         ],
         "AdditionalStats": {
@@ -2061,8 +2061,8 @@
         "DriverTLA": "HAA",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "225.00",
-        "GamedayPoints": "1.00",
+        "OverallPpints": "245.00",
+        "GamedayPoints": "21.00",
         "SelectedPercentage": "24",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 10.8,
@@ -2077,7 +2077,7 @@
         "QualifyingPoints": "3",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "21.00",
         "F1PlayerId": "6",
         "FirstName": "Haas F1 Team",
         "LastName": "Haas F1 Team",
@@ -2091,8 +2091,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -2,
-            "nonegative_points": 0
+            "points": 18,
+            "nonegative_points": 18
           }
         ],
         "AdditionalStats": {
@@ -2127,8 +2127,8 @@
         "DriverTLA": "AUD",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "182.00",
-        "GamedayPoints": "0.00",
+        "OverallPpints": "198.00",
+        "GamedayPoints": "16.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 8.0,
@@ -2143,7 +2143,7 @@
         "QualifyingPoints": "-1",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "1.00",
+        "NoNegativePoints": "17.00",
         "F1PlayerId": "640",
         "FirstName": "Audi",
         "LastName": "Audi",
@@ -2157,8 +2157,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 1,
-            "nonegative_points": 1
+            "points": 17,
+            "nonegative_points": 17
           }
         ],
         "AdditionalStats": {
@@ -2193,8 +2193,8 @@
         "DriverTLA": "AST",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "-78.00",
-        "GamedayPoints": "0.00",
+        "OverallPpints": "-79.00",
+        "GamedayPoints": "-1.00",
         "SelectedPercentage": "3",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 6.9,
@@ -2209,7 +2209,7 @@
         "QualifyingPoints": "-1",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "1.00",
+        "NoNegativePoints": "0.00",
         "F1PlayerId": "4",
         "FirstName": "Aston Martin",
         "LastName": "Aston Martin",
@@ -2223,8 +2223,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 1,
-            "nonegative_points": 1
+            "points": 0,
+            "nonegative_points": 0
           }
         ],
         "AdditionalStats": {
@@ -2259,8 +2259,8 @@
         "DriverTLA": "CAD",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "-69.00",
-        "GamedayPoints": "-2.00",
+        "OverallPpints": "-58.00",
+        "GamedayPoints": "9.00",
         "SelectedPercentage": "8",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.0,
@@ -2275,7 +2275,7 @@
         "QualifyingPoints": "-1",
         "RacePoints": "",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "10.00",
         "F1PlayerId": "641",
         "FirstName": "Cadillac",
         "LastName": "Cadillac",
@@ -2289,8 +2289,8 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -1,
-            "nonegative_points": 0
+            "points": 10,
+            "nonegative_points": 10
           }
         ],
         "AdditionalStats": {
@@ -2313,9 +2313,9 @@
       }
     ],
     "FeedTime": {
-      "UTCTime": "9/26/2026 11:34:39 AM",
-      "ISTTime": "9/26/2026 5:04:39 PM",
-      "CESTTime": "9/26/2026 1:34:39 PM"
+      "UTCTime": "9/26/2026 12:22:41 PM",
+      "ISTTime": "9/26/2026 5:52:41 PM",
+      "CESTTime": "9/26/2026 2:22:41 PM"
     }
   },
   "Meta": {
@@ -2323,9 +2323,9 @@
     "RetVal": 1,
     "Success": true,
     "Timestamp": {
-      "UTCTime": "9/26/2026 11:34:39 AM",
-      "ISTTime": "9/26/2026 5:04:39 PM",
-      "CESTTime": "9/26/2026 1:34:39 PM"
+      "UTCTime": "9/26/2026 12:22:41 PM",
+      "ISTTime": "9/26/2026 5:52:41 PM",
+      "CESTTime": "9/26/2026 2:22:41 PM"
     },
     "StatusCode": 200,
     "Maintenance": "0"

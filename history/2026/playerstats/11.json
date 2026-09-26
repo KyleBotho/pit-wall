@@ -522,19 +522,19 @@
             "Value": 0
           },
           {
-            "Frequency": "13th",
+            "Frequency": "20th",
             "Event": "Race Position",
             "Value": 0
           },
           {
-            "Frequency": "1",
+            "Frequency": "8",
             "Event": "Race Position lost",
-            "Value": -1
+            "Value": -8
           },
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -1
+            "Value": -8
           }
         ]
       }
@@ -550,7 +550,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 28
+            "Value": 21
           },
           {
             "Frequency": "13",
@@ -588,9 +588,9 @@
             "Value": 18
           },
           {
-            "Frequency": "5",
+            "Frequency": "12",
             "Event": "Race Position lost",
-            "Value": -5
+            "Value": -12
           },
           {
             "Frequency": "58",
@@ -2660,19 +2660,19 @@
             "IsPlayed": 0,
             "StatsWise": [
               {
-                "Frequency": "13th",
+                "Frequency": "20th",
                 "Event": "Race Position",
                 "Value": 0
               },
               {
-                "Frequency": "1",
+                "Frequency": "8",
                 "Event": "Race Position lost",
-                "Value": -1
+                "Value": -8
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -1
+                "Value": -8
               }
             ]
           }
@@ -2681,8 +2681,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 11:34:38 AM",
-    "ISTTime": "9/26/2026 5:04:38 PM",
-    "CESTTime": "9/26/2026 1:34:38 PM"
+    "UTCTime": "9/26/2026 12:22:40 PM",
+    "ISTTime": "9/26/2026 5:52:40 PM",
+    "CESTTime": "9/26/2026 2:22:40 PM"
   }
 }
