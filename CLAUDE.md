@@ -242,10 +242,13 @@ there before re-deciding something.
       `history/session-check.csv` in `../pit-wall-private` (`git pull` first). The first failing day = the session's
       lifetime; then decide with the user whether account-based tracking can run unattended.
 - [ ] After Baku (R15), the checks set up for it (details in history: Round tracking, To do, Feature plan):
-      the R15 snapshot's line-ups explain R15; score rhter's post-FP3 sims and ours against the result (private
-      `research/rhter-r15-baku-post-fp3.md`); projections vs results and the practice weights with R15 added (R15 is
-      the first frozen projection); the elite `firstSeen` times (do line-ups change at lock or after the race?);
-      live league standings against real Baku qualifying.
+      the R15 snapshot's line-ups explain R15; projections vs results (done 2026-09-26: backtest 6 and 7 on the
+      certified points) and the practice weights with R15 added (R15 is the first frozen projection); the elite
+      `firstSeen` times (do line-ups change at lock or after the race?); live league standings against real Baku
+      qualifying.
+      [x] 2026-09-26 rhter's post-FP3 sims vs ours scored against the result. Kept in the private repo only
+      (`research/rhter-comparisons.md` = running log, method and lessons; `research/score_rhter.py` scores a round);
+      never copy the numbers here.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result); `npm run fit` again after
       a few more rounds.
 - [ ] Item 9, the lap-by-lap race model (history: To do, item 9): stages 2-5 built and backtested (most off by
