@@ -7,6 +7,7 @@ import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
 import { accountTeams, mergeLeague } from "./tracking.js";
 import { linkHtml, pullLink, resetLink, step } from "./setup.js";
+import { pullAdmin, resetAdmin } from "./admin.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
 // What the page reads about leagues and teams: the owner's private leagues (league_data, league readers only) merged
 // with the linked F1 Fantasy account's teams (tracked_accounts, see setup.js). Memory only.
@@ -259,6 +260,7 @@ export async function syncInit() {
         pull();
         pullLeagues();
         pullLink();
+        pullAdmin();
       }, 0);
   });
 }
@@ -408,6 +410,7 @@ export async function signOut() {
   LEAGUE_DATA = LEAGUES = ACCOUNT = null;
   leaguesAt = null;
   resetLink();
+  resetAdmin();
   if (saved) {
     const next = defaults();
     for (const k of NOSYNC) if (state[k] !== undefined) next[k] = state[k]; // this device's place and layout stay

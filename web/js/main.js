@@ -59,6 +59,7 @@ import {
 } from "./views.js";
 import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
+import { cfgAdd, cfgDelete, cfgSave } from "./admin.js";
 
 // Each view's renderer. Only the visible view renders; the rest are marked stale and render when opened.
 const RENDER = {
@@ -335,6 +336,9 @@ const CLICK = [
   ["sync", (d) => (d.sync === "ask" ? askWhich() : syncChoose(d.sync))],
   ["setup", (d) => setupAction(d.setup)],
   ["linkacct", (d) => linkAccount(d.linkacct)],
+  ["cfgsave", (d) => cfgSave(d.cfgsave)],
+  ["cfgdel", (d) => cfgDelete(d.cfgdel)],
+  ["cfgadd", () => cfgAdd()],
   [
     "boost",
     (d) => {

@@ -8,7 +8,18 @@ import { accountTeams, likePattern, setupStep } from "./tracking.js";
 import { closeModal, openModal, refreshViews, toast } from "./main.js";
 
 // key: the linked account key (undefined = not loaded yet, null = none); row: its tracked_accounts row
-export const link = { key: undefined, row: null, at: null, code: undefined, mode: "join", q: "", hits: null, err: "" };
+// code/league: the tracking league's join code and name from app_config (code undefined = not loaded yet)
+export const link = {
+  key: undefined,
+  row: null,
+  at: null,
+  code: undefined,
+  league: "",
+  mode: "join",
+  q: "",
+  hits: null,
+  err: "",
+};
 const SEEN = "pitwall.setupSeen"; // sessionStorage: the setup has opened by itself once in this tab
 let searchTimer = null,
   searchNo = 0;
@@ -79,10 +90,12 @@ async function loadCode() {
   if (link.code !== undefined) return;
   const { data, error } = await syncState.sb
     .from("app_config")
-    .select("value")
-    .eq("key", "tracking_join_code")
-    .maybeSingle();
-  link.code = error ? undefined : data ? data.value : null;
+    .select("key, value")
+    .in("key", ["tracking_join_code", "tracking_league_name"]);
+  if (error) return;
+  const get = (k) => (data.find((r) => r.key === k) || {}).value;
+  link.code = get("tracking_join_code") || null;
+  link.league = get("tracking_league_name") || "";
 }
 
 /* ---------- the dialog ---------- */
@@ -127,7 +140,7 @@ function renderSetup() {
       (m === "missing"
         ? `<p class="note">Your linked F1 Fantasy account isn't in this season's tracking league yet.</p>`
         : "") +
-      `<ol class="setupsteps"><li>On F1 Fantasy, join Pit Wall's tracking league with <b>all</b> your teams (Leagues → Join a league). League code: ${codeHtml()}</li>` +
+      `<ol class="setupsteps"><li>On F1 Fantasy, join Pit Wall's tracking league${link.league ? ` (“${esc(link.league)}”)` : ""} with <b>all</b> your teams (Leagues → Join a league). League code: ${codeHtml()}</li>` +
       `<li>Find your F1 Fantasy username here and link it. Your teams then load by themselves and update after every race.</li></ol>` +
       `<p class="note">Pit Wall only reads F1 Fantasy's public league standings. It can't change anything in your F1 Fantasy account.</p>` +
       `<div class="chipbar"><button class="btn" data-setup="search">I've joined</button><button class="btn ghost" data-setup="close">Not now</button></div>`;

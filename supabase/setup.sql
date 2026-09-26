@@ -69,9 +69,9 @@ $$;
 revoke all on function public.live_stats_merge(int, jsonb, boolean) from public, anon, authenticated;
 grant execute on function public.live_stats_merge(int, jsonb, boolean) to service_role;
 
--- Sim lab gate (web/js/lab.js): accounts listed here see the owner-only Sim lab tab. Each signed-in user can read
--- only their own row, so the page learns "am I an owner" and nothing about anyone else. No inserts from the page:
--- add an owner here, in the SQL Editor:
+-- Owners = the site's admins (web/js/lab.js, web/js/admin.js): they see the Sim lab tab and Settings > Admin, and
+-- can change app_config (below). Each signed-in user can read only their own row, so the page learns "am I an
+-- owner" and nothing about anyone else. No inserts from the page: add an owner here, in the SQL Editor:
 --   insert into public.owners (user_id) select id from auth.users where email = '<your sign-in email>'
 --   on conflict do nothing;
 create table if not exists public.owners (
@@ -160,17 +160,37 @@ create policy "account_links: update own" on public.account_links
 create policy "account_links: delete own" on public.account_links
   for delete to authenticated using ((select auth.uid()) = user_id);
 
--- app_config: small settings the page reads once signed in, e.g. the tracking league's join code (kept out of the
--- public page source). Signed-in users read; only the SQL Editor writes. Set or change the join code:
+-- app_config: settings that change from season to season, read by the page once signed in, e.g. the tracking
+-- league's join code (kept out of the public page source). Signed-in users read; admins (accounts in owners, above)
+-- change them in Settings > Admin. Or here:
 --   insert into public.app_config (key, value) values ('tracking_join_code', '<code>')
---   on conflict (key) do update set value = excluded.value;
+--   on conflict (key) do update set value = excluded.value, updated_at = now();
 create table if not exists public.app_config (
   key   text primary key,
   value text not null
 );
+alter table public.app_config add column if not exists updated_at timestamptz not null default now();
+alter table public.app_config drop constraint if exists app_config_key_format;
+alter table public.app_config add constraint app_config_key_format check (key ~ '^[a-z][a-z0-9_]{1,62}$');
+alter table public.app_config drop constraint if exists app_config_value_size;
+alter table public.app_config add constraint app_config_value_size check (length(value) <= 2000);
 alter table public.app_config enable row level security;
 revoke all on public.app_config from anon, authenticated;
-grant select on public.app_config to authenticated;
+grant select, insert, update, delete on public.app_config to authenticated;
 drop policy if exists "app_config: signed-in read" on public.app_config;
+drop policy if exists "app_config: admins insert" on public.app_config;
+drop policy if exists "app_config: admins update" on public.app_config;
+drop policy if exists "app_config: admins delete" on public.app_config;
 create policy "app_config: signed-in read" on public.app_config
   for select to authenticated using (true);
+-- an admin is an account with an owners row (each user can see only their own, which is all this needs)
+create policy "app_config: admins insert" on public.app_config
+  for insert to authenticated
+  with check (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
+create policy "app_config: admins update" on public.app_config
+  for update to authenticated
+  using (exists (select 1 from public.owners o where o.user_id = (select auth.uid())))
+  with check (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
+create policy "app_config: admins delete" on public.app_config
+  for delete to authenticated
+  using (exists (select 1 from public.owners o where o.user_id = (select auth.uid())));
