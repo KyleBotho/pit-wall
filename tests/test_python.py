@@ -15,9 +15,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 import f1feeds  # noqa: E402
+import health  # noqa: E402
 import practice  # noqa: E402
 import refresh  # noqa: E402
 import telemetry  # noqa: E402
+
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import health_issue  # noqa: E402
 
 
 class FeedHelpers(unittest.TestCase):
@@ -169,6 +173,139 @@ class RefreshPlan(unittest.TestCase):
         p = self.plan(datetime(2026, 9, 26, 18, tzinfo=timezone.utc), d)
         self.assertFalse([w for w in p.values() if "certified" in w])
         self.assertNotIn("2026-09-25T13:20+00:00", p)  # more than 12 h ago
+
+
+class Health(unittest.TestCase):
+    # one finished round (race Sat 11:00-13:00 UTC) and the next one
+    def data(self, **kw):
+        d = {
+            "done": [15],
+            "next": 16,
+            "schedule": [
+                {
+                    "gd": 15,
+                    "name": "Azerbaijan Grand Prix",
+                    "lock": "2026-09-25T12:00:00+00:00",
+                    "raceStart": "2026-09-26T11:00:00+00:00",
+                    "certified": True,
+                    "sessions": [
+                        {
+                            "type": "Qualifying",
+                            "start": "2026-09-25T12:00:00+00:00",
+                            "end": "2026-09-25T13:00:00+00:00",
+                        },
+                        {"type": "Race", "start": "2026-09-26T11:00:00+00:00", "end": "2026-09-26T13:00:00+00:00"},
+                    ],
+                },
+                {
+                    "gd": 16,
+                    "name": "Bahrain Grand Prix",
+                    "lock": "2026-10-03T08:00:00+00:00",
+                    "raceStart": "2026-10-04T07:00:00+00:00",
+                    "sessions": [
+                        {
+                            "type": "Qualifying",
+                            "start": "2026-10-03T16:00:00+08:00",
+                            "end": "2026-10-03T17:00:00+08:00",
+                        },
+                        {"type": "Race", "start": "2026-10-04T07:00:00+00:00", "end": "2026-10-04T09:00:00+00:00"},
+                    ],
+                },
+            ],
+            "results": {"race": {"15": [{"tla": "RUS", "grid": 1}]}, "quali": {"15": []}},
+            "raceInfo": {"15": {}},
+            "weather": {"16": {}},
+            "projHist": {"15": {}},
+            "elite": {"history": [{"gd": 15, "est": False}]},
+            "evNames": [{"s": "R", "n": "Race Position", "c": "R POS"}],
+            "assets": [{"id": "1", "kind": "D", "name": "A", "team": "T", "price": 10, "active": True}],
+        }
+        d.update(kw)
+        return d
+
+    def at(self, s):
+        from datetime import datetime
+
+        return datetime.fromisoformat(s)
+
+    def ids(self, data, now):
+        return {i: lv for i, lv, _ in health.problems(data, self.at(now))}
+
+    def test_a_clean_weekend_has_no_problems(self):
+        self.assertEqual(self.ids(self.data(), "2026-09-28T12:00:00+00:00"), {})
+
+    def test_missing_results_uncertified_points_and_unknown_events(self):
+        d = self.data(
+            results={"race": {}, "quali": {"15": []}}, evNames=[{"s": "R", "n": "Pit lane bonus", "c": "R OTH"}]
+        )
+        d["schedule"][0]["certified"] = False
+        # 1 h after the race: too early for any of them
+        self.assertEqual(self.ids(d, "2026-09-26T14:00:00+00:00"), {"event:R:Pit lane bonus": "warn"})
+        got = self.ids(d, "2026-09-27T02:00:00+00:00")
+        self.assertEqual(got["results:15"], "error")
+        self.assertEqual(got["certified:15"], "warn")
+
+    def test_no_projection_frozen_at_lock_and_the_stand_in_grid(self):
+        d = self.data(projHist={"15": {}})
+        d["results"]["race"]["15"] = [{"tla": "RUS", "grid": 1, "gridFromQuali": True}]
+        got = self.ids(d, "2026-10-03T10:00:00+00:00")
+        self.assertEqual(got["projection:16"], "error")
+        self.assertEqual(got["grid:15"], "warn")
+
+    def test_notices_for_cards_and_schedule_changes(self):
+        prev = self.data()
+        now = self.data(
+            assets=[
+                {"id": "1", "kind": "D", "name": "A", "team": "U", "price": 10, "active": False},
+                {"id": "2", "kind": "D", "name": "B", "team": "T", "price": 5, "active": True},
+            ]
+        )
+        # the same moment written with another offset is not a change; a real move is
+        now["schedule"][1]["sessions"][0]["start"] = "2026-10-03T08:00:00+00:00"
+        now["schedule"][1]["sessions"][1]["start"] = "2026-10-04T08:00:00+00:00"
+        msgs = " | ".join(m for _, m in health.notices(now, prev))
+        self.assertIn("New card: B (T)", msgs)
+        self.assertIn("A (U) is now inactive", msgs)
+        self.assertIn("A moved from T to U", msgs)
+        self.assertIn("Race moved from", msgs)
+        self.assertNotIn("Qualifying moved", msgs)
+        self.assertEqual(health.notices(now, None), [])
+
+    def test_first_seen_is_kept_and_notices_expire(self):
+        prev = self.data()
+        now = self.data(
+            assets=prev["assets"] + [{"id": "2", "kind": "D", "name": "B", "team": "T", "price": 5, "active": True}]
+        )
+        now["schedule"][0]["certified"] = False
+        h, log = health.check(now, prev, {}, self.at("2026-09-27T02:00:00+00:00"))
+        self.assertEqual([i["level"] for i in h["items"]], ["warn", "notice"])
+        h, log = health.check(now, now, log, self.at("2026-09-28T02:00:00+00:00"))
+        self.assertEqual(h["items"][0]["since"], "2026-09-27T02:00+00:00")  # still the first time it was seen
+        self.assertEqual(h["items"][1]["level"], "notice")
+        h, log = health.check(now, now, log, self.at("2026-10-01T02:00:00+00:00"))
+        self.assertEqual([i["level"] for i in h["items"]], ["warn"])  # the notice is 4 days old: gone
+
+
+class HealthIssue(unittest.TestCase):
+    ITEMS = [
+        {"id": "results:15", "level": "error", "msg": "R15: no race results.", "since": "2026-09-26T16:00+00:00"},
+        {"id": "card:new:9", "level": "notice", "msg": "New card: B (T), $5m.", "since": "2026-09-26T17:00+00:00"},
+    ]
+
+    def test_render_lists_both_kinds_and_marks_the_ids(self):
+        title, body = health_issue.render(self.ITEMS)
+        self.assertEqual(title, "Data health: 1 problem, 1 notice")
+        self.assertIn("**Problems**", body)
+        self.assertIn("**Notices**", body)
+        self.assertIn("(since 2026-09-26 16:00 UTC)", body)
+        self.assertEqual(health_issue.listed(body), ["card:new:9", "results:15"])
+        self.assertEqual(health_issue.listed("no marker"), [])
+
+    def test_change_note_names_what_is_new(self):
+        note = health_issue.change_note(self.ITEMS, ["results:15", "old:1"])
+        self.assertIn("New card: B", note)
+        self.assertNotIn("no race results", note)
+        self.assertIn("Cleared: 1 item.", note)
 
 
 class Practice(unittest.TestCase):

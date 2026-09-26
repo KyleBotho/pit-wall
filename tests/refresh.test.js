@@ -82,3 +82,18 @@ test("the bundled page sets SB_URL before any load-time use of it", () => {
     [],
   );
 });
+
+test("Data health: all clear, or the problems and notices with when they started", () => {
+  const h = (x) => run(`healthHtml(${JSON.stringify(x)})`);
+  assert.match(h({ generated: iso(-5), items: [] }), /✓ All clear/);
+  const got = h({
+    generated: iso(-5),
+    items: [
+      { id: "results:15", level: "error", msg: "R15: no race results.", since: iso(-60) },
+      { id: "card:new:9", level: "notice", msg: "New card: B (T), $5m.", since: iso(-30) },
+    ],
+  });
+  assert.match(got, /class="bad">Problem:<\/span> R15: no race results\./);
+  assert.match(got, /class="muted">Notice:<\/span> New card: B \(T\)/);
+  assert.match(h(null), /No health check in this build yet/);
+});

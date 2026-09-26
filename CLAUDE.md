@@ -14,6 +14,12 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   laps/gdNN.json`; `--telemetry` also caches car/position data), `measure`, `passes` (passes from timing-line crossings
   vs the official overtake lines). Paced (30 s, `--max` 20 downloads a run), stops while any F1 session is live
   (OpenF1 401) and on any failure. Cache in `%LOCALAPPDATA%\pit-wall\fastf1` (never OneDrive or the repo).
+- `health.py` — data health checks after each build (`data.health`, `build/health.json`, log with first-seen times in
+  `history/<season>/health.json`): problems (results/practice/race data missing, points not certified, no projection
+  at lock, unknown scoring events, league history stale) and 3-day notices for mid-season oddities (new or inactive
+  cards, team moves, session/venue changes vs the previous build). Shown in Settings > Admin > Data health;
+  `tools/health_issue.py` (refresh.yml's `health` job) keeps one "Data health" GitHub issue (label `data-health`) in
+  step: opened, a comment (= email) when something new is listed, closed when clear. Public data only.
 - `f1feeds.py` — shared feed helpers: paced `get` / `get_soft` / `get_optional` raising `FeedError` (never
   `sys.exit` deep inside), `feed_time`, `ev_code`. The private repo's `leagues.py` imports it from its checkout.
 - `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
@@ -235,8 +241,8 @@ there before re-deciding something.
 
 - [ ] Autonomy steps (user's order, 2026-09-26): 1 session-aware refresh + admin Refresh now (DONE 2026-09-26:
       scheduler, function and a Refresh now run checked; refresh.yml's timer is now a 6-hourly fallback),
-      2 data health checks + alerts (incl. mid-season oddities: new/inactive cards, schedule changes, unknown scoring
-      events, missing results), 3 automatic post-round accuracy runs + a Model health panel in the Sim lab (propose
+      2 data health checks + alerts (DONE 2026-09-26: health.py + the Data health issue; first real alert still to
+      see), 3 automatic post-round accuracy runs + a Model health panel in the Sim lab (propose
       refits, the owner approves).
 - [ ] Team Tracking (`docs/team-tracking-plan.md`): phase A built 2026-09-26 (public data; see docs/history.md).
       Phase B (the FPW account's session, members visible before their first race) waits for the session-check

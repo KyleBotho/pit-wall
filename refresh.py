@@ -33,6 +33,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 import extras
+import health
 import practice
 from f1feeds import (
     EV_SESSION,
@@ -233,6 +234,7 @@ def load_results(done):
                 for r in rows:
                     if r["grid"] is None:
                         r["grid"] = qpos.get(r["tla"], 0)
+                        r["gridFromQuali"] = True  # health.py warns if Jolpica never fills it in
     for rows in results["quali"].values():
         quali_gaps(rows)
     return results
@@ -777,7 +779,8 @@ def refresh_plan(data, now):
 # ---------------------------------------------------------------- main
 
 
-def collect():
+def collect(prev=None):
+    """Fetch everything and build the page data. prev = the previous build's data (health notices compare with it)."""
     now = datetime.now(timezone.utc)
     print("Schedule…")
     schedule, done, nxt, live_gd = load_schedule(now)
@@ -837,6 +840,11 @@ def collect():
         freeze_projection(data, nxt_g)
     data["projHist"] = load_projections()
     data["projRebuilt"] = load_projections("rebuilt")
+    log_path = archived("health.json")
+    data["health"], log = health.check(data, prev, read_json(log_path) if os.path.exists(log_path) else {}, now)
+    write_json(log_path, log, indent=1, sort_keys=True)
+    for it in data["health"]["items"]:
+        print(f"  health {it['level']}: {it['msg']}")
     return data
 
 
@@ -854,13 +862,15 @@ def main():
         data["bands"] = load_bands()
         data["projRebuilt"] = load_projections("rebuilt")
     else:
+        prev = read_json(cached("data.json")) if os.path.exists(cached("data.json")) else None
         try:
-            data = collect()
+            data = collect(prev)
         except FeedError as e:
             sys.exit(f"Giving up: {e}\nIf this is a block/CAPTCHA, wait before retrying.")
         with open(cached("data.json"), "w", encoding="utf-8") as f:
             json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
     size = build_page(data, args.out)
+    write_json(os.path.join(args.out, "health.json"), data.get("health") or {"items": []}, indent=1)
     plan = refresh_plan(data, datetime.now(timezone.utc))
     write_json(os.path.join(args.out, PLAN_FILE), plan, indent=1)
     upcoming = [p for p in plan["plan"] if iso(p["at"]) > datetime.now(timezone.utc)]

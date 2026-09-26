@@ -2,12 +2,12 @@
    Shown only to admins = accounts in the Supabase `owners` table. Signed-in users read app_config (signed-out
    visitors only the site notice); only admins can change it, and only these keys (RLS, supabase/setup.sql). Also the
    site notice itself, shown to everyone. */
-import { $, esc } from "./core.js";
+import { $, DATA, esc } from "./core.js";
 import { SB_URL, syncState } from "./sync.js";
 import { link } from "./setup.js";
 import { contactLink } from "./tracking.js";
 import { toast } from "./main.js";
-import { refreshHtml } from "./refresh-view.js";
+import { healthHtml, refreshHtml } from "./refresh-view.js";
 
 // The settings the page reads: key, label, what it's for, and {long: a text box, check: which values are allowed}.
 export const CONFIG_KEYS = [
@@ -78,6 +78,7 @@ export function renderAdmin() {
   const rows = admin.rows || [];
   $("#adminBody").innerHTML =
     refreshHtml(refresh.st, refresh) +
+    healthHtml(DATA.health) +
     `<p class="note">Settings that change from season to season. Only admins see this panel and can change them; the page reads them for signed-in users.</p>` +
     (admin.err ? `<p class="note bad">${esc(admin.err)}</p>` : "") +
     CONFIG_KEYS.map(([key, label, help, o]) =>

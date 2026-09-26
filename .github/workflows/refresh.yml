@@ -26,6 +26,7 @@ jobs:
       contents: read
     outputs:
       history: ${{ steps.history.outcome == 'success' }}
+      health: ${{ steps.health.outputs.json }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -49,6 +50,9 @@ jobs:
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
       - run: python refresh.py
+      # the build's health checks (health.py), for the health job's issue
+      - id: health
+        run: echo "json=$(jq -c . build/health.json)" >> "$GITHUB_OUTPUT"
       # Free Supabase projects (Google sign-in, synced settings) pause after ~1 week idle: a tiny query each run.
       # The key is the public publishable one (it's in the page too). Never fails the build.
       - name: Keep the sign-in database awake
@@ -98,6 +102,23 @@ jobs:
             git pull --rebase -X theirs
             git push
           fi
+
+  # One "Data health" issue kept in step with the build's checks: opened when something is listed, a comment (an
+  # email to the repo's watchers) when something new is, closed when all is clear. Runs even if the tests failed.
+  health:
+    needs: refresh
+    if: ${{ !cancelled() && needs.refresh.outputs.health != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 tools/health_issue.py
+        env:
+          HEALTH: ${{ needs.refresh.outputs.health }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # Lint, formatting and types on pushes only, in their own job: a style nit never blocks a price refresh.
   check:

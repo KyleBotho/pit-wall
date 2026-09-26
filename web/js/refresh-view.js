@@ -67,3 +67,26 @@ export function refreshHtml(st, refresh) {
     `<button class="btn sm ghost" data-refreshstatus="1">Check status</button></div></div>`
   );
 }
+
+// Settings > Admin > Data health: the build's checks (health.py), newest build first. The same list is kept in the
+// repo's "Data health" issue, which emails the owner when something new appears.
+const HEALTH_ISSUES = "https://github.com/KyleBotho/pit-wall/issues?q=label%3Adata-health";
+const LEVEL = { error: ["bad", "Problem"], warn: ["bad", "Check"], notice: ["muted", "Notice"] };
+export function healthHtml(h) {
+  const items = (h && h.items) || [];
+  const rows = items
+    .map((i) => {
+      const [cls, label] = LEVEL[i.level] || ["muted", i.level];
+      return `<li><span class="${cls}">${esc(label)}:</span> ${esc(i.msg)} <span class="dim">(since ${esc(at(i.since))})</span></li>`;
+    })
+    .join("");
+  return (
+    `<div class="adminfield"><label>Data health</label>` +
+    (h
+      ? items.length
+        ? `<ul class="note">${rows}</ul>`
+        : `<p class="note"><span class="good">✓ All clear</span> at the last build (${esc(at(h.generated))}).</p>`
+      : `<p class="note">No health check in this build yet.</p>`) +
+    `<p class="note">Checked with every build: missing results or practice, points not certified, no projection at lock, unknown scoring events, league history not updating, and changes worth a look (new or inactive driver cards, team moves, session or venue changes). Problems also open a <a href="${HEALTH_ISSUES}" target="_blank" rel="noopener">Data health issue</a> on GitHub, which emails you.</p></div>`
+  );
+}
