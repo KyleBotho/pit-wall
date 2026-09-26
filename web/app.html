@@ -90,6 +90,9 @@
       <span class="busytag" id="busyTag" hidden>Updating…</span>
     </div>
   </header>
+  <div class="sitenotice" id="siteNotice" role="status" hidden>
+    <span id="siteNoticeText"></span><button class="tbtn sm" data-noticeclose="1" aria-label="Close the notice">✕</button>
+  </div>
   <nav class="subtabs" id="subTabs" hidden aria-label="Sections"></nav>
   <!-- the open group's views (main.js GROUPS) -->
 
@@ -790,7 +793,7 @@
 
   <!-- SETTINGS: account, model and the circuit calendar -->
   <main id="view-settings" data-v hidden>
-    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))">
+    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr))">
       <div class="col">
         <section class="panel" data-acct hidden>
           <h3>Account &amp; data</h3>

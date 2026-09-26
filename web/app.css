@@ -161,6 +161,30 @@ input {
   text-align: left;
   cursor: pointer;
 }
+/* the site notice an admin types (admin.js) */
+.sitenotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  outline: 1px solid rgba(168, 85, 247, 0.35);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sitenotice span {
+  flex: 1;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.adminrow textarea.inp {
+  height: auto;
+  padding: 8px 10px;
+  resize: vertical;
+  font: inherit;
+}
 /* Settings > Admin (admin.js) */
 .adminfield {
   display: flex;

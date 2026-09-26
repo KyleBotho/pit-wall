@@ -1,13 +1,21 @@
 /* ---------- Settings > Admin: the settings that change from season to season (public.app_config) ----------
-   Shown only to admins = accounts in the Supabase `owners` table. Every signed-in user can read app_config; only
-   admins can change it (RLS, supabase/setup.sql). */
+   Shown only to admins = accounts in the Supabase `owners` table. Signed-in users read app_config (signed-out
+   visitors only the site notice); only admins can change it, and only these keys (RLS, supabase/setup.sql). Also the
+   site notice itself, shown to everyone. */
 import { $, esc } from "./core.js";
 import { syncState } from "./sync.js";
 import { link } from "./setup.js";
+import { contactLink } from "./tracking.js";
 import { toast } from "./main.js";
 
-// The settings the page reads, with what each is for. Any other key in app_config is listed below them.
+// The settings the page reads: key, label, what it's for, and {long: a text box, check: which values are allowed}.
 export const CONFIG_KEYS = [
+  [
+    "site_notice",
+    "Site notice",
+    "Shown at the top of the site for everyone, signed in or not, until you clear it. Visitors can close it; a changed notice shows again.",
+    { long: true },
+  ],
   [
     "tracking_join_code",
     "Tracking league code",
@@ -17,6 +25,12 @@ export const CONFIG_KEYS = [
     "tracking_league_name",
     "Tracking league name",
     "The tracking league's name on F1 Fantasy, shown in the setup so users can check they joined the right one.",
+  ],
+  [
+    "support_contact",
+    "Help contact",
+    "An email address or a link (https://…) shown in the setup for anyone who gets stuck.",
+    { check: (v) => !!contactLink(v) || "Enter an email address or a link starting with https://." },
   ],
 ];
 export const admin = { on: false, rows: null, err: "" };
@@ -41,10 +55,14 @@ async function loadConfig() {
   admin.err = error ? "Couldn't load the settings: " + error.message : "";
 }
 const when = (t) => new Date(t).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric" });
-function field({ key, label, help, row }) {
+function field({ key, label, help, row, long }) {
+  const v = esc(row ? row.value : "");
   return (
     `<div class="adminfield"><label for="cfg-${key}">${esc(label)}</label>` +
-    `<div class="adminrow"><input id="cfg-${key}" class="inp" type="text" maxlength="2000" spellcheck="false" autocomplete="off" value="${esc(row ? row.value : "")}">` +
+    `<div class="adminrow">` +
+    (long
+      ? `<textarea id="cfg-${key}" class="inp" rows="3" maxlength="500" placeholder="No notice">${v}</textarea>`
+      : `<input id="cfg-${key}" class="inp" type="text" maxlength="2000" spellcheck="false" autocomplete="off" value="${v}">`) +
     `<button class="btn sm" data-cfgsave="${key}">Save</button></div>` +
     `<small>${esc(help)} ${row ? `Changed ${when(row.updated_at)}.` : "Not set."}</small></div>`
   );
@@ -60,7 +78,9 @@ export function renderAdmin() {
   $("#adminBody").innerHTML =
     `<p class="note">Settings that change from season to season. Only admins see this panel and can change them; the page reads them for signed-in users.</p>` +
     (admin.err ? `<p class="note bad">${esc(admin.err)}</p>` : "") +
-    CONFIG_KEYS.map(([key, label, help]) => field({ key, label, help, row: rows.find((r) => r.key === key) })).join("");
+    CONFIG_KEYS.map(([key, label, help, o]) =>
+      field({ key, label, help, ...o, row: rows.find((r) => r.key === key) }),
+    ).join("");
 }
 async function write(key, value) {
   const U = syncState.user;
@@ -79,12 +99,41 @@ async function write(key, value) {
     return false;
   }
   // the setup dialog reads these; it picks up the new values next time it opens
-  if (key === "tracking_join_code" || key === "tracking_league_name") link.code = undefined;
+  link.code = undefined;
+  if (key === "site_notice") loadNotice();
   await loadConfig();
   renderAdmin();
   return true;
 }
 export async function cfgSave(key) {
   const value = ($(`#cfg-${key}`).value || "").trim();
+  const o = (CONFIG_KEYS.find(([k]) => k === key) || [])[3] || {};
+  const ok = value && o.check ? o.check(value) : true;
+  if (ok !== true) return toast(ok);
   if (await write(key, value)) toast(value ? "Saved." : "Cleared.");
+}
+
+/* ---------- the site notice, for everyone ---------- */
+const SEEN = "pitwall.noticeSeen"; // the notice text this browser closed
+let notice = "";
+export async function loadNotice() {
+  if (!syncState.sb) return;
+  const { data, error } = await syncState.sb.from("app_config").select("value").eq("key", "site_notice").maybeSingle();
+  if (error) return;
+  notice = ((data && data.value) || "").trim();
+  renderNotice();
+}
+function renderNotice() {
+  let seen = null;
+  try {
+    seen = localStorage.getItem(SEEN);
+  } catch (e) {}
+  $("#siteNotice").hidden = !notice || seen === notice;
+  $("#siteNoticeText").textContent = notice;
+}
+export function closeNotice() {
+  try {
+    localStorage.setItem(SEEN, notice);
+  } catch (e) {}
+  renderNotice();
 }

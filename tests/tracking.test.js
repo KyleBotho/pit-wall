@@ -75,3 +75,12 @@ test("accountTeams: team-number order, at most three, only teams with a key", ()
   assert.deepEqual(run(`accountTeams(${JSON.stringify(row)}).map((t) => t.tk)`), ["a", "b", "c"]);
   assert.deepEqual(run("accountTeams(null)"), []);
 });
+
+test("contactLink: an email or an http(s) link, nothing else", () => {
+  const c = (v) => run(`contactLink(${JSON.stringify(v)})`);
+  assert.deepEqual(c(" help@example.com "), { href: "mailto:help@example.com", text: "help@example.com" });
+  assert.deepEqual(c("https://example.com/help"), { href: "https://example.com/help", text: "example.com/help" });
+  assert.equal(c("javascript:alert(1)"), null);
+  assert.equal(c("not an address"), null);
+  assert.equal(c(""), null);
+});

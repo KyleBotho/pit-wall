@@ -38,6 +38,15 @@ export function likePattern(q) {
   return t.length < 2 ? null : `%${t.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
 }
 
+// The help contact an admin sets (app_config support_contact): an email address or an http(s) link, as {href, text};
+// null for anything else, so a typo never becomes a broken or odd link.
+export function contactLink(v) {
+  const t = String(v || "").trim();
+  if (/^[^\s@<>"]+@[^\s@<>"]+\.[a-z]{2,}$/i.test(t)) return { href: "mailto:" + t, text: t };
+  if (/^https?:\/\/[^\s<>"]+\.[^\s<>"]+$/i.test(t)) return { href: t, text: t.replace(/^https?:\/\//i, "") };
+  return null;
+}
+
 // The linked account's teams in team-number order, at most three (the Calculator's slots).
 export const accountTeams = (row) =>
   ((row && row.teams) || [])

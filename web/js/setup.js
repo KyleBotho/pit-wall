@@ -4,7 +4,7 @@
    sign-in loads that account's tracked_accounts row and your teams follow it. Settings: Change or Delete. */
 import { $, esc } from "./core.js";
 import { dropAccount, renderSync, setAccount, syncState } from "./sync.js";
-import { accountTeams, likePattern, setupStep } from "./tracking.js";
+import { accountTeams, contactLink, likePattern, setupStep } from "./tracking.js";
 import { closeModal, openModal, refreshViews, toast } from "./main.js";
 
 // key: the linked account key (undefined = not loaded yet, null = none); row: its tracked_accounts row
@@ -15,6 +15,7 @@ export const link = {
   at: null,
   code: undefined,
   league: "",
+  contact: null, // {href, text}: who to ask when stuck
   mode: "join",
   q: "",
   hits: null,
@@ -91,11 +92,12 @@ async function loadCode() {
   const { data, error } = await syncState.sb
     .from("app_config")
     .select("key, value")
-    .in("key", ["tracking_join_code", "tracking_league_name"]);
+    .in("key", ["tracking_join_code", "tracking_league_name", "support_contact"]);
   if (error) return;
   const get = (k) => (data.find((r) => r.key === k) || {}).value;
   link.code = get("tracking_join_code") || null;
   link.league = get("tracking_league_name") || "";
+  link.contact = contactLink(get("support_contact"));
 }
 
 /* ---------- the dialog ---------- */
@@ -105,9 +107,13 @@ export async function openSetup(mode) {
   if (mode !== "search") link.hits = null;
   renderSetup();
   openModal("setup");
-  if (mode === "join" || mode === "missing") {
+  if (link.code === undefined) {
     await loadCode();
-    if (link.mode === mode) renderSetup();
+    if (link.mode === mode && !$("#modal").hidden) {
+      const q = $("#acctSearch") && $("#acctSearch").value;
+      renderSetup();
+      if (q != null && $("#acctSearch")) $("#acctSearch").value = q;
+    }
   }
   if (mode === "search") $("#acctSearch")?.focus();
 }
@@ -117,9 +123,13 @@ const teamNames = (row) =>
     .join(" · ") || "no teams yet";
 function codeHtml() {
   if (link.code === undefined) return '<span class="dim">loading…</span>';
-  if (!link.code) return '<span class="dim">not set yet: ask the site owner</span>';
+  if (!link.code) return '<span class="dim">not set yet</span>';
   return `<code class="joincode">${esc(link.code)}</code> <button class="tbtn sm" data-setup="copy" title="Copy the league code">Copy</button>`;
 }
+const helpHtml = () =>
+  link.contact
+    ? `<p class="note">Stuck? Contact <a href="${esc(link.contact.href)}" target="_blank" rel="noopener noreferrer">${esc(link.contact.text)}</a>.</p>`
+    : "";
 function renderSetup() {
   const m = link.mode;
   let h;
@@ -128,6 +138,7 @@ function renderSetup() {
       `<h3 id="modalTitle">Find your F1 Fantasy account</h3>` +
       `<label class="field">Your F1 Fantasy username<input id="acctSearch" class="inp" type="search" autocomplete="off" spellcheck="false" placeholder="e.g. Fantasy Pit Wall" value="${esc(link.q)}"></label>` +
       `<div id="acctHits" class="accthits">${hitsHtml()}</div>` +
+      helpHtml() +
       `<div class="chipbar"><button class="btn ghost sm" data-setup="join">Back</button></div>`;
   } else if (m === "delete") {
     h =
@@ -143,6 +154,7 @@ function renderSetup() {
       `<ol class="setupsteps"><li>On F1 Fantasy, join Pit Wall's tracking league${link.league ? ` (“${esc(link.league)}”)` : ""} with <b>all</b> your teams (Leagues → Join a league). League code: ${codeHtml()}</li>` +
       `<li>Find your F1 Fantasy username here and link it. Your teams then load by themselves and update after every race.</li></ol>` +
       `<p class="note">Pit Wall only reads F1 Fantasy's public league standings. It can't change anything in your F1 Fantasy account.</p>` +
+      helpHtml() +
       `<div class="chipbar"><button class="btn" data-setup="search">I've joined</button><button class="btn ghost" data-setup="close">Not now</button></div>`;
   }
   $("#modalBody").innerHTML = h;

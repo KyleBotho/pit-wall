@@ -7,7 +7,7 @@ import { teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { labCheck } from "./lab.js";
 import { accountTeams, mergeLeague } from "./tracking.js";
 import { linkHtml, pullLink, resetLink, step } from "./setup.js";
-import { pullAdmin, resetAdmin } from "./admin.js";
+import { loadNotice, pullAdmin, resetAdmin } from "./admin.js";
 import { closeModal, openModal, refreshViews, renderAll, rerender, toast } from "./main.js";
 // What the page reads about leagues and teams: the owner's private leagues (league_data, league readers only) merged
 // with the linked F1 Fantasy account's teams (tracked_accounts, see setup.js). Memory only.
@@ -245,6 +245,7 @@ export async function syncInit() {
     syncState.err = "Sign-in couldn't load.";
     return renderSync();
   }
+  loadNotice();
   const q = new URLSearchParams(location.search);
   if (q.get("error_description")) toast("Sign-in failed: " + q.get("error_description"));
   syncState.sb.auth.onAuthStateChange((ev, session) => {

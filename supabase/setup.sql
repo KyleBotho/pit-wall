@@ -177,18 +177,23 @@ alter table public.app_config add constraint app_config_value_size check (length
 alter table public.app_config enable row level security;
 revoke all on public.app_config from anon, authenticated;
 grant select, insert, update, delete on public.app_config to authenticated;
+grant select on public.app_config to anon;
 drop policy if exists "app_config: signed-in read" on public.app_config;
+drop policy if exists "app_config: public notice" on public.app_config;
 drop policy if exists "app_config: admins insert" on public.app_config;
 drop policy if exists "app_config: admins update" on public.app_config;
 drop policy if exists "app_config: admins delete" on public.app_config;
 create policy "app_config: signed-in read" on public.app_config
   for select to authenticated using (true);
+-- the site notice is for everyone; every other setting (the join code...) only for signed-in users
+create policy "app_config: public notice" on public.app_config
+  for select to anon using (key = 'site_notice');
 -- An admin is an account with an owners row (each user can see only their own, which is all this needs). Admins
 -- change only the settings the page knows (web/js/admin.js CONFIG_KEYS): a new setting needs code that reads it,
 -- so it's added here and there together.
 create or replace function public.app_config_admin_key(k text) returns boolean
   language sql stable set search_path = '' as $$
-  select k in ('tracking_join_code', 'tracking_league_name')
+  select k in ('site_notice', 'tracking_join_code', 'tracking_league_name', 'support_contact')
      and exists (select 1 from public.owners o where o.user_id = (select auth.uid()))
 $$;
 create policy "app_config: admins insert" on public.app_config

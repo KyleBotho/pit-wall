@@ -5,6 +5,13 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-26, Settings > Admin (admin.js): admins = accounts in `owners` (set in SQL only; the user expects
+      no other admins for now, so no appointing from the page: that would let one stolen account add more). They
+      edit only the known app_config keys (RLS allowlist `app_config_admin_key`): site notice (typed by the admin,
+      shown to everyone incl. signed out, closable per notice text), tracking league code and name, help contact
+      (email or https link, shown in the setup). No adding or deleting settings from the page. The tracking league's
+      10-team cap is only for testing; it's lifted on F1 Fantasy, no setting needed. Signing out now resets the
+      browser to a new visitor's view (everything is in the account) unless it holds unsynced changes.
 - [x] 2026-09-26, Team Tracking phase A (docs/team-tracking-plan.md): Supabase `tracked_accounts` (signed-in read,
       written by the private workflow), `account_links` (own row only, not unique on the account key), `app_config`
       (the join code, signed-in read). `f1feeds.account_key` / core.js `accountKey` (shared vector). Private repo:
