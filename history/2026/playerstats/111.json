@@ -492,19 +492,19 @@
             "Value": 0
           },
           {
-            "Frequency": "10th",
+            "Frequency": "11th",
             "Event": "Race Position",
-            "Value": 1
+            "Value": 0
           },
           {
-            "Frequency": "8",
+            "Frequency": "7",
             "Event": "Race position gained",
-            "Value": 8
+            "Value": 7
           },
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 9
+            "Value": 7
           }
         ]
       }
@@ -520,7 +520,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -2
+            "Value": -4
           },
           {
             "Frequency": "6",
@@ -535,7 +535,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 8
+            "Value": 7
           },
           {
             "Frequency": "-",
@@ -553,9 +553,9 @@
             "Value": -80
           },
           {
-            "Frequency": "19",
+            "Frequency": "18",
             "Event": "Race position gained",
-            "Value": 19
+            "Value": 18
           },
           {
             "Frequency": "2",
@@ -2620,19 +2620,19 @@
             "IsPlayed": 0,
             "StatsWise": [
               {
-                "Frequency": "10th",
+                "Frequency": "11th",
                 "Event": "Race Position",
-                "Value": 1
+                "Value": 0
               },
               {
-                "Frequency": "8",
+                "Frequency": "7",
                 "Event": "Race position gained",
-                "Value": 8
+                "Value": 7
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 9
+                "Value": 7
               }
             ]
           }
@@ -2641,8 +2641,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "9/26/2026 12:36:40 PM",
-    "ISTTime": "9/26/2026 6:06:40 PM",
-    "CESTTime": "9/26/2026 2:36:40 PM"
+    "UTCTime": "9/26/2026 12:52:38 PM",
+    "ISTTime": "9/26/2026 6:22:38 PM",
+    "CESTTime": "9/26/2026 2:52:38 PM"
   }
 }
