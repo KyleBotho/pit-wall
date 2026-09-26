@@ -54,3 +54,10 @@ test("not set up yet, and a run in progress disables the button", () => {
     /set up yet or isn/,
   );
 });
+
+test("the GitHub token's expiry: shown, and a warning three weeks ahead", () => {
+  const base = { token: true, state: {}, next: [], runs: [] };
+  assert.match(html({ ...base, tokenExpires: iso(60 * 24 * 60) }), /token valid until/);
+  assert.match(html({ ...base, tokenExpires: iso(60 * 24 * 10) }), /class="note bad">The GitHub token expires on/);
+  assert.match(html({ ...base, tokenExpires: iso(-60) }), /token expired on/);
+});

@@ -45,9 +45,13 @@ async function state(): Promise<State> {
   return { last_due: null, started_at: null, source: null, reason: null, error: null, error_at: null };
 }
 
+// when the token expires: GitHub says so on every answer to a fine-grained token ("2026-12-25 12:00:00 UTC")
+let tokenExpires: string | null = null;
 // the latest runs of the workflow (any trigger): public data for a public repo
 async function runs(n = 3) {
   const r = await gh(`/actions/workflows/${WORKFLOW}/runs?per_page=${n}`);
+  const exp = r.headers.get("github-authentication-token-expiration");
+  if (exp) tokenExpires = new Date(exp.replace(" UTC", "Z").replace(" ", "T")).toISOString();
   if (!r.ok) return [];
   return ((await r.json()).workflow_runs ?? []).map((x: Record<string, string>) => ({
     event: x.event, status: x.status, conclusion: x.conclusion, created: x.created_at, updated: x.updated_at, url: x.html_url,
@@ -120,7 +124,8 @@ async function status() {
   } catch (e) {
     planError = String(e);
   }
-  return json({ state: await state(), next, planError, runs: await runs(), token: !!TOKEN });
+  const latest = await runs();
+  return json({ state: await state(), next, planError, runs: latest, token: !!TOKEN, tokenExpires });
 }
 
 Deno.serve(async (req) => {

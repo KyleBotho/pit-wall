@@ -39,6 +39,14 @@ export function refreshHtml(st, refresh) {
     s.error && (!s.started_at || s.error_at > s.started_at)
       ? `<p class="note bad">Last problem (${esc(at(s.error_at))}): ${esc(s.error)}</p>`
       : "";
+  // the GitHub token stops the refreshes when it expires: say when, and warn three weeks ahead
+  const days = st && st.tokenExpires ? (Date.parse(st.tokenExpires) - Date.now()) / 864e5 : null;
+  const token =
+    days == null
+      ? ""
+      : days < 21
+        ? `<p class="note bad">The GitHub token ${days < 0 ? "expired" : "expires"} on ${esc(at(st.tokenExpires))}: after that the site stops refreshing itself. Make a new one (GitHub → Settings → Developer settings → Fine-grained tokens: pit-wall only, Actions read and write) and replace GITHUB_DISPATCH_TOKEN in Supabase (Edge Functions → Secrets).</p>`
+        : `<p class="note">GitHub token valid until ${esc(at(st.tokenExpires))}.</p>`;
   const next = ((st && st.next) || [])
     .slice(0, 3)
     .map((e) => `<li>${esc(at(e.at))}: ${esc(e.why)}</li>`)
@@ -50,6 +58,7 @@ export function refreshHtml(st, refresh) {
     (st && !st.token
       ? `<p class="note bad">Not set up yet: the GitHub token (GITHUB_DISPATCH_TOKEN) is missing in Supabase.</p>`
       : "") +
+    token +
     (st
       ? `<p class="note">${last}${why ? "<br>" + why : ""}</p>${err}` +
         (next ? `<p class="note">Next planned:</p><ul class="note">${next}</ul>` : "")
