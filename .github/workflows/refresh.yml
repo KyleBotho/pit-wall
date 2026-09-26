@@ -1,10 +1,12 @@
 name: Refresh data and publish
 
 on:
+  # Refreshes are started when new data is due by the Supabase function "refresh" (the plan refresh.py publishes:
+  # after each session, before lock, until the race's points are certified, daily) and by admins' Refresh now.
+  # This timer is only the fallback if that stops (it's at :47, away from the plan's :17 daily run).
   schedule:
-    - cron: "*/30 * * * 4,5,6,0" # Thu-Sun every 30 min: practice, quali and race updates
-    - cron: "17 */6 * * 1,2,3" # Mon-Wed every 6 h: price changes settle after the race
-  workflow_dispatch: # "Run workflow" button for a manual refresh
+    - cron: "47 */6 * * *"
+  workflow_dispatch: # started by the refresh function, or by hand from the Actions tab
   push:
     branches: [main]
 
