@@ -400,19 +400,10 @@
     speedMin: 5,
     speedVar: 0, // 0: the fitted median level; 1: the mean (adds half the residual variance on the log scale)
   };
-  /** @param {Data} data @param {Partial<typeof TRACK> & { noPriors?: boolean }} [opt] */
-  function trackModel(data, opt) {
-    const o = { ...TRACK, ...opt };
-    const byGd = Object.fromEntries(data.schedule.map((g) => [g.gd, g]));
-    const season = seasonRounds(data);
-    const rounds = Object.keys(season)
-      .map(Number)
-      .filter((gd) => season[gd].ov != null);
-    const P = !o.noPriors && data.priors && data.priors.races && data.priors.races.length ? data.priors.races : null;
-    // features by circuit id and name (the id wins: 2026's "Bahrain GP" ran at Sepang)
-    const featOf = (/** @type {string} */ name) => circuitFor(name, data.cfg).feat;
-
-    // ---- per-circuit priors from past seasons
+  /** Per-circuit priors from past seasons (data.priors, from priors.py): each measure recency-weighted and shrunk to
+   * the all-circuit average; a circuit with no history gets the average of circuits with similar features.
+   * @param {PriorRow[] | null} P @param {(name: string) => number[]} featOf @param {typeof TRACK} o */
+  function circuitPriors(P, featOf, o) {
     /** @type {Record<string, (x: PriorRow) => number | null>} */
     const METRIC = {
       ov: (x) => x.ovt ?? null, // OpenF1 overtakes per starter (2023 on); `move` stands in before that (scaled below)
@@ -522,11 +513,14 @@
       const v = F.y + F.b.reduce((s, bj, j) => s + bj * (f[j] - F.mean[j]), 0);
       return m === "corr" ? clamp(v, 0.2, 0.95) : Math.max(0, v);
     }
-
-    // ---- this season vs the priors: trend per metric, residuals on features
-    const cid = (/** @type {number} */ gd) => byGd[gd] && byGd[gd].circuit;
-    const nm = (/** @type {number} */ gd) =>
-      ((byGd[gd] && byGd[gd].circuit) || "") + " " + ((byGd[gd] && byGd[gd].name) || "");
+    return { globalMean, priorOf };
+  }
+  /** This season against the priors of the circuits raced so far: each measure's level and trend, and a circuit's own
+   * profile relative to them. @param {ReturnType<typeof seasonRounds>} season @param {PriorRow[] | null} P
+   * @param {(cid: string | undefined, name: string) => Record<string, number | null>} priorOf
+   * @param {Record<string, number>} globalMean @param {(gd: number) => string | undefined} cid
+   * @param {(gd: number) => string} nm @param {typeof TRACK} o */
+  function seasonTrend(season, P, priorOf, globalMean, cid, nm, o) {
     const seasonMean = (/** @type {"ov" | "move" | "dnf" | "corr" | "sc"} */ m) => {
       const v = Object.values(season)
         .map((x) => x[m])
@@ -586,6 +580,13 @@
     // a circuit's own profile relative to the circuits raced so far, weighted by alpha (0 = none, 1 = all of it)
     const prof = (/** @type {"ov" | "dnf" | "sc"} */ m, /** @type {number | null | undefined} */ pr) =>
       pr == null || !(lvl[m].pm > 0) ? 1 : Math.pow(Math.max(0.05, pr) / lvl[m].pm, o.alpha[m]);
+    return { ovMean, dnfMean, corrMean, lvl, trend, trendN, prof };
+  }
+  /** Without priors: this season's rounds regressed on track features (overtakes and retirements).
+   * @param {ReturnType<typeof seasonRounds>} season @param {number[]} rounds @param {PriorRow[] | null} P
+   * @param {(name: string) => number[]} featOf @param {(gd: number) => string} nm @param {number} ovMean
+   * @param {number} dnfMean @param {typeof TRACK} o */
+  function featureResiduals(season, rounds, P, featOf, nm, ovMean, dnfMean, o) {
     // without priors: the old fit of this season's rounds on track features
     const fitted = rounds.length >= o.minRounds;
     const xcMean = [0, 1, 2].map((j) =>
@@ -614,7 +615,10 @@
     };
     const bOv = fitted && !P ? residFit("ov", o.ovLambda * 8) : [0, 0, 0];
     const bDnf = fitted && !P ? residFit("dnf", o.dnfLambda * 8) : [0, 0, 0];
-    // overtakes under a safety car vs without (restarts), from past seasons and this one
+    return { fitted, xc, bOv, bDnf };
+  }
+  /** Overtakes under a safety car vs without (restarts), from past seasons. @param {PriorRow[] | null} P */
+  function scOvertakes(P) {
     let scOv = 1.25;
     {
       let a = 0,
@@ -633,8 +637,12 @@
         }
       if (na >= 5 && nb >= 5) scOv = clamp(a / na / (b / nb), 1, 2);
     }
-
-    // team-specific pace by track features (off by default: no better than none in the backtest)
+    return scOv;
+  }
+  /** Team-specific pace by track features (off by default: no better than none in the backtest).
+   * @param {Data} data @param {number[]} rounds @param {boolean} fitted @param {(f: number[]) => number[]} xc
+   * @param {(name: string) => number[]} featOf @param {(gd: number) => string} nm @param {typeof TRACK} o */
+  function teamTrackPace(data, rounds, fitted, xc, featOf, nm, o) {
     /** @type {Record<string, number[]>} */
     const bTeam = {};
     if (o.teamPace && fitted) {
@@ -664,6 +672,64 @@
         );
       }
     }
+    return bTeam;
+  }
+  /** The round's overtake level against the track's average speed (km/h): log overtakes per starter, ridge on the
+   * standardised speed. Null with fewer than speedMin rounds. @param {ReturnType<typeof seasonRounds>} season
+   * @param {number[]} rounds @param {Data} data @param {(gd: number) => string | undefined} cid
+   * @param {(id: string | undefined, lap: number | null | undefined) => number | null} kmh @param {typeof TRACK} o */
+  function speedFit(season, rounds, data, cid, kmh, o) {
+    const pts = [];
+    for (const gd of rounds) {
+      const v = kmh(cid(gd), data.trackStats && data.trackStats[gd] && data.trackStats[gd].lap);
+      const ob = season[gd].ov;
+      if (v != null && ob != null && ob > 0) pts.push([v, Math.log(ob)]);
+    }
+    if (pts.length < o.speedMin) return null;
+    const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length,
+      my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    const sx = Math.sqrt(pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0) / pts.length) || 1;
+    let sxy = 0,
+      szz = 0;
+    for (const [x, y] of pts) {
+      sxy += ((x - mx) / sx) * (y - my);
+      szz += ((x - mx) / sx) ** 2;
+    }
+    const b = sxy / (szz + o.speedLambda);
+    const res = pts.reduce((a, [x, y]) => a + (y - my - (b * (x - mx)) / sx) ** 2, 0) / Math.max(1, pts.length - 2);
+    return { b, mx, sx, my, res, n: pts.length };
+  }
+  /** @param {Data} data @param {Partial<typeof TRACK> & { noPriors?: boolean }} [opt] */
+  function trackModel(data, opt) {
+    const o = { ...TRACK, ...opt };
+    const byGd = Object.fromEntries(data.schedule.map((g) => [g.gd, g]));
+    const season = seasonRounds(data);
+    const rounds = Object.keys(season)
+      .map(Number)
+      .filter((gd) => season[gd].ov != null);
+    const P = !o.noPriors && data.priors && data.priors.races && data.priors.races.length ? data.priors.races : null;
+    // features by circuit id and name (the id wins: 2026's "Bahrain GP" ran at Sepang)
+    const featOf = (/** @type {string} */ name) => circuitFor(name, data.cfg).feat;
+
+    // ---- per-circuit priors from past seasons
+    const { globalMean, priorOf } = circuitPriors(P, featOf, o);
+
+    // ---- this season vs the priors: trend per metric, residuals on features
+    const cid = (/** @type {number} */ gd) => byGd[gd] && byGd[gd].circuit;
+    const nm = (/** @type {number} */ gd) =>
+      ((byGd[gd] && byGd[gd].circuit) || "") + " " + ((byGd[gd] && byGd[gd].name) || "");
+    const { ovMean, dnfMean, corrMean, lvl, trend, trendN, prof } = seasonTrend(
+      season,
+      P,
+      priorOf,
+      globalMean,
+      cid,
+      nm,
+      o,
+    );
+    const { fitted, xc, bOv, bDnf } = featureResiduals(season, rounds, P, featOf, nm, ovMean, dnfMean, o);
+    const scOv = scOvertakes(P);
+    const bTeam = teamTrackPace(data, rounds, fitted, xc, featOf, nm, o);
     const dot = (/** @type {number[]} */ b, /** @type {number[]} */ x) => b[0] * x[0] + b[1] * x[1] + b[2] * x[2];
 
     // average speed (km/h) -> the round's overtake level
@@ -671,27 +737,7 @@
     const kmh = (/** @type {string | undefined} */ id, /** @type {number | null | undefined} */ lap) =>
       id && km[id] && lap ? (km[id] * 3600) / lap : null;
     const nextGd = (data.schedule.find((x) => !(data.done || []).includes(x.gd)) || {}).gd;
-    const sp = (() => {
-      const pts = [];
-      for (const gd of rounds) {
-        const v = kmh(cid(gd), data.trackStats && data.trackStats[gd] && data.trackStats[gd].lap);
-        const ob = season[gd].ov;
-        if (v != null && ob != null && ob > 0) pts.push([v, Math.log(ob)]);
-      }
-      if (pts.length < o.speedMin) return null;
-      const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length,
-        my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
-      const sx = Math.sqrt(pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0) / pts.length) || 1;
-      let sxy = 0,
-        szz = 0;
-      for (const [x, y] of pts) {
-        sxy += ((x - mx) / sx) * (y - my);
-        szz += ((x - mx) / sx) ** 2;
-      }
-      const b = sxy / (szz + o.speedLambda);
-      const res = pts.reduce((a, [x, y]) => a + (y - my - (b * (x - mx)) / sx) ** 2, 0) / Math.max(1, pts.length - 2);
-      return { b, mx, sx, my, res, n: pts.length };
-    })();
+    const sp = speedFit(season, rounds, data, cid, kmh, o);
 
     return {
       fitted: fitted || !!P,
@@ -766,32 +812,9 @@
 
   /* ---------- model: pace, reliability, overtaking, pit stops from this season's results ---------- */
   /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number }} DriverModel */
-  /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
-  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovSprint: number, slopeQ: number, slopeR: number }} Model */
-  /**
-   * @param {Data} data
-   * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
-   *   opt.model overrides MODEL settings (the backtests use it to try other values)
-   * @returns {Model}
-   */
-  function buildModel(data, opt) {
-    const o = { halfLife: 4, adj: {}, practice: [], practiceWeight: 1, teamShift: {}, ...opt };
-    const M = { ...MODEL, ...(opt && opt.model) };
-    /** @type {Record<string, number>} */
-    const adjBy = o.adj;
-    /** @type {Record<string, number>} */
-    const shiftBy = o.teamShift;
-    const F = fieldOf(data);
-    const decay = Math.pow(0.5, 1 / o.halfLife);
-    const drivers = data.assets.filter((a) => a.kind === "D" && a.active);
-    const cons = data.assets.filter((a) => a.kind === "C");
-    const rounds = Object.keys(data.results.race)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const last = rounds.length ? rounds[rounds.length - 1] : 0;
-    const info = (/** @type {number} */ r) => (data.raceInfo && data.raceInfo[r]) || {};
-
-    // reliability: retirements per car-race, shrunk toward the grid rate
+  /** Reliability: retirements per car-race (recency-weighted by dnfHalfLife), per team and grid-wide.
+   * @param {Data} data @param {number[]} rounds @param {number} last @param {typeof MODEL} M */
+  function reliability(data, rounds, last, M) {
     let gD = 0,
       gN = 0;
     /** @type {Record<string, number>} */
@@ -810,9 +833,14 @@
         }
       }
     const gRate = gN ? gD / gN : M.dnfFallback;
-
-    // pace: % off the fastest in qualifying (lap times) and race (median clean lap; else finishing order)
-    const cap = (/** @type {number} */ v) => Math.min(M.gapCap, Math.max(0, v));
+    return { tD, tN, gRate };
+  }
+  /** Each driver's pace observations: % off the fastest in qualifying (lap times) and race (median clean lap; else
+   * finishing order), recency-weighted, for rounds driven for his current team.
+   * @param {Data} data @param {Asset[]} drivers @param {number[]} rounds @param {number} last @param {number} decay
+   * @param {typeof MODEL} M @param {(v: number) => number} cap @param {number} F */
+  function paceObservations(data, drivers, rounds, last, decay, M, cap, F) {
+    const info = (/** @type {number} */ r) => (data.raceInfo && data.raceInfo[r]) || {};
     const raw = drivers.map((a) => {
       let qs = 0,
         qw = 0,
@@ -860,6 +888,13 @@
       }
       return { a, qs, qw, qw2, rs, rw, rw2, qObs, rObs };
     });
+    return raw;
+  }
+  /** Pace means (mixed with the team-mate, or car + driver offset), shrunk to the field median; the % per grid place
+   * and the uncertainty of each mean. @param {ReturnType<typeof paceObservations>} raw @param {Data} data
+   * @param {Asset[]} drivers @param {number[]} rounds @param {number} last @param {number} decay
+   * @param {typeof MODEL} M @param {(v: number) => number} cap @param {number} F */
+  function paceEstimates(raw, data, drivers, rounds, last, decay, M, cap, F) {
     /** @type {Record<string, { qs: number, qw: number, rs: number, rw: number }>} */
     const team = {};
     for (const d of raw) {
@@ -909,6 +944,125 @@
     };
     const sdQ = pooled("qObs", paceQ),
       sdR = pooled("rObs", paceR);
+    return { paceQ, paceR, slopeQ, slopeR, sdQ, sdR };
+  }
+  /** Practice pace for this weekend: short runs into qualifying pace, long runs into race pace, both as % gaps
+   * relative to the field (practice runs spread wider, so they're rescaled to the model's spread first); then each
+   * driver's expected finishing positions. @param {DriverModel[]} dModels
+   * @param {{ practice?: PracticeSession[], practiceWeight: number }} o @param {number} F @param {typeof MODEL} M */
+  function applyPractice(dModels, o, F, M) {
+    const pr = practiceRanks(
+      o.practice || [],
+      dModels.map((d) => d.tla),
+      F,
+      M,
+    );
+    const wq = Math.min(1, M.practiceQ * o.practiceWeight),
+      wr = Math.min(1, M.practiceR * o.practiceWeight);
+    /** @param {Record<string, number>} gaps @param {"qPace" | "rPace"} k @param {number} w */
+    const blendPractice = (gaps, k, w) => {
+      const ds = dModels.filter((d) => gaps[d.tla] != null);
+      if (ds.length < M.practiceMinDrivers || !w) return;
+      const pg = ds.map((d) => gaps[d.tla]),
+        mg = ds.map((d) => d[k]);
+      const iqr = (/** @type {number[]} */ v) => quantile(v, 0.75) - quantile(v, 0.25);
+      const scale = iqr(pg) > 0 ? iqr(mg) / iqr(pg) : 1;
+      const pm = quantile(pg, 0.5),
+        mm = quantile(mg, 0.5);
+      for (const d of ds) {
+        const target = (gaps[d.tla] - pm) * scale,
+          now = d[k] - mm;
+        d[k] += w * clamp(target - now, -M.practicePull, M.practicePull);
+      }
+    };
+    blendPractice(pr.gapQ, "qPace", wq);
+    blendPractice(pr.gapR, "rPace", wr);
+    for (const d of dModels) {
+      d.practiceQ = pr.q[d.tla] ?? null;
+      d.practiceR = pr.r[d.tla] ?? null;
+    }
+    finishPositions(dModels);
+  }
+  /** Pit stops: the team's actual pit-stop scoring lines (band points + fastest-stop bonus) over its recent races,
+   * resampled. Real stop times (OpenF1, kept in raceInfo) match the bands only ~2/3 of the time: they're rounded
+   * and aren't DHL's official timing. Without scoring lines: the points left over from the constructor's race
+   * score (bias-corrected for the floor at 0). @param {Data} data @param {Asset[]} cons @param {typeof MODEL} M */
+  function constructorModels(data, cons, M) {
+    const pitIdx = new Set(
+      (data.evNames || []).map((e, i) => (/^R (FP|FP2|WRFP|PIT)$/.test(e.c) ? i : -1)).filter((i) => i >= 0),
+    );
+    /** @type {ConsModel[]} */
+    const cModels = cons.map((c) => {
+      /** @type {number[]} */
+      const lines = [];
+      for (const h of c.hist)
+        if (h && h.ev && h.ev.length && data.results.race[h.gd])
+          lines.push(h.ev.reduce((s, [i, v]) => s + (pitIdx.has(i) ? v : 0), 0));
+      /** @type {number[]} */
+      const res = [];
+      c.hist.forEach((h, i) => {
+        if (!h || h.r == null) return;
+        let s = 0;
+        for (const d of data.assets) {
+          if (d.kind !== "D") continue;
+          const dh = d.hist[i];
+          if (dh && dh.team === c.team && dh.r != null) s += dh.r;
+        }
+        res.push(h.r - s);
+      });
+      const recent = res.slice(-M.pitRecent);
+      const m = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 3;
+      const sd = recent.length > 1 ? Math.sqrt(recent.reduce((a, b) => a + (b - m) ** 2, 0) / (recent.length - 1)) : 4;
+      const sdC = clamp(sd, SIM.pitSd[0], SIM.pitSd[1]);
+      return {
+        id: c.id,
+        team: c.team,
+        pitMu: floorMean(Math.max(0, m + M.pitDotd), sdC),
+        pitSd: sdC,
+        stops: pitIdx.size ? lines.slice(-M.pitRecent) : [],
+      };
+    });
+    return cModels;
+  }
+  /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
+  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovSprint: number, slopeQ: number, slopeR: number }} Model */
+  /**
+   * @param {Data} data
+   * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
+   *   opt.model overrides MODEL settings (the backtests use it to try other values)
+   * @returns {Model}
+   */
+  function buildModel(data, opt) {
+    const o = { halfLife: 4, adj: {}, practice: [], practiceWeight: 1, teamShift: {}, ...opt };
+    const M = { ...MODEL, ...(opt && opt.model) };
+    /** @type {Record<string, number>} */
+    const adjBy = o.adj;
+    /** @type {Record<string, number>} */
+    const shiftBy = o.teamShift;
+    const F = fieldOf(data);
+    const decay = Math.pow(0.5, 1 / o.halfLife);
+    const drivers = data.assets.filter((a) => a.kind === "D" && a.active);
+    const cons = data.assets.filter((a) => a.kind === "C");
+    const rounds = Object.keys(data.results.race)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const last = rounds.length ? rounds[rounds.length - 1] : 0;
+
+    const { tD, tN, gRate } = reliability(data, rounds, last, M);
+    const cap = (/** @type {number} */ v) => Math.min(M.gapCap, Math.max(0, v));
+    const raw = paceObservations(data, drivers, rounds, last, decay, M, cap, F);
+    const { paceQ, paceR, slopeQ, slopeR, sdQ, sdR } = paceEstimates(
+      raw,
+      data,
+      drivers,
+      rounds,
+      last,
+      decay,
+      M,
+      cap,
+      F,
+    );
+    const P = M.prior;
 
     /** @type {DriverModel[]} */
     const dModels = raw.map((d, i) => {
@@ -952,40 +1106,7 @@
       d.formQ = posQ[i];
       d.formR = posR[i];
     });
-
-    // Practice pace for this weekend: short runs into qualifying pace, long runs into race pace, both as % gaps
-    // relative to the field (practice runs spread wider, so they're rescaled to the model's spread first).
-    const pr = practiceRanks(
-      o.practice || [],
-      dModels.map((d) => d.tla),
-      F,
-      M,
-    );
-    const wq = Math.min(1, M.practiceQ * o.practiceWeight),
-      wr = Math.min(1, M.practiceR * o.practiceWeight);
-    /** @param {Record<string, number>} gaps @param {"qPace" | "rPace"} k @param {number} w */
-    const blendPractice = (gaps, k, w) => {
-      const ds = dModels.filter((d) => gaps[d.tla] != null);
-      if (ds.length < M.practiceMinDrivers || !w) return;
-      const pg = ds.map((d) => gaps[d.tla]),
-        mg = ds.map((d) => d[k]);
-      const iqr = (/** @type {number[]} */ v) => quantile(v, 0.75) - quantile(v, 0.25);
-      const scale = iqr(pg) > 0 ? iqr(mg) / iqr(pg) : 1;
-      const pm = quantile(pg, 0.5),
-        mm = quantile(mg, 0.5);
-      for (const d of ds) {
-        const target = (gaps[d.tla] - pm) * scale,
-          now = d[k] - mm;
-        d[k] += w * clamp(target - now, -M.practicePull, M.practicePull);
-      }
-    };
-    blendPractice(pr.gapQ, "qPace", wq);
-    blendPractice(pr.gapR, "rPace", wr);
-    for (const d of dModels) {
-      d.practiceQ = pr.q[d.tla] ?? null;
-      d.practiceR = pr.r[d.tla] ?? null;
-    }
-    finishPositions(dModels);
+    applyPractice(dModels, o, F, M);
 
     // Overtakes: Poisson regression per driver-race on grid slot and places moved (gained or lost: in 2026 most
     // overtakes are swaps back and forth, so net places gained alone predicts little), with the round's overtaking
@@ -999,45 +1120,7 @@
     // Driver of the Day is a fan vote, not just results: each driver's votes won vs what his finishes would earn
     const pop = dotdPopularity(data, M);
     for (const d of dModels) d.dotdPop = pop[d.tla] ?? 1;
-
-    // Pit stops: the team's actual pit-stop scoring lines (band points + fastest-stop bonus) over its recent races,
-    // resampled. Real stop times (OpenF1, kept in raceInfo) match the bands only ~2/3 of the time: they're rounded
-    // and aren't DHL's official timing. Without scoring lines: the points left over from the constructor's race
-    // score (bias-corrected for the floor at 0).
-    const pitIdx = new Set(
-      (data.evNames || []).map((e, i) => (/^R (FP|FP2|WRFP|PIT)$/.test(e.c) ? i : -1)).filter((i) => i >= 0),
-    );
-    /** @type {ConsModel[]} */
-    const cModels = cons.map((c) => {
-      /** @type {number[]} */
-      const lines = [];
-      for (const h of c.hist)
-        if (h && h.ev && h.ev.length && data.results.race[h.gd])
-          lines.push(h.ev.reduce((s, [i, v]) => s + (pitIdx.has(i) ? v : 0), 0));
-      /** @type {number[]} */
-      const res = [];
-      c.hist.forEach((h, i) => {
-        if (!h || h.r == null) return;
-        let s = 0;
-        for (const d of data.assets) {
-          if (d.kind !== "D") continue;
-          const dh = d.hist[i];
-          if (dh && dh.team === c.team && dh.r != null) s += dh.r;
-        }
-        res.push(h.r - s);
-      });
-      const recent = res.slice(-M.pitRecent);
-      const m = recent.length ? recent.reduce((a, b) => a + b, 0) / recent.length : 3;
-      const sd = recent.length > 1 ? Math.sqrt(recent.reduce((a, b) => a + (b - m) ** 2, 0) / (recent.length - 1)) : 4;
-      const sdC = clamp(sd, SIM.pitSd[0], SIM.pitSd[1]);
-      return {
-        id: c.id,
-        team: c.team,
-        pitMu: floorMean(Math.max(0, m + M.pitDotd), sdC),
-        pitSd: sdC,
-        stops: pitIdx.size ? lines.slice(-M.pitRecent) : [],
-      };
-    });
+    const cModels = constructorModels(data, cons, M);
     return {
       drivers: dModels,
       cons: cModels,
@@ -1541,448 +1624,473 @@
   }
   /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, wet: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
   /** @typedef {{ known?: Record<string, string[]>, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
-  /**
-   * Simulate one weekend N times, scored with the official rules. tot/nn hold every sample per asset
-   * (asset a, sample s at a * N + s); nn is the No Negative score (negative events floored at 0).
-   * opt.known: orders already decided this weekend (q = qualifying, sq = sprint qualifying, s = sprint; TLAs in
-   * order); opt.pen: grid penalties in places (99 = back of the grid) for the race; opt.unc scales the per-weekend
-   * redraw of pace and reliability within their uncertainty (default SIM.unc).
+  const SIM_CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"]; // scoring categories per driver
+  /** Driver of the Day vote weight for a finishing position and places gained. @param {number} pos @param {number} g */
+  const dotdWeight = (pos, g) =>
+    (pos === 1
+      ? SIM.dotd[0]
+      : pos === 2
+        ? SIM.dotd[1]
+        : pos === 3
+          ? SIM.dotd[2]
+          : pos <= 6
+            ? SIM.dotd[3]
+            : SIM.dotd[4]) + (pos <= 8 ? SIM.dotdGain * Math.max(0, g - 4) : 0);
+  /** How likely a car at this grid slot is caught in a multi-car incident (the midfield most). @param {number} g */
+  const incidentWeight = (g) => (g <= 3 ? 0.6 : g <= 16 ? 1.2 : 1);
+
+  /** Everything one simulate() call shares between its stages: the model as arrays, the circuit's numbers, the random
+   * stream, each sample's scratch arrays and the tallies over all samples.
    * @param {Model} model @param {Circuit} circuit @param {boolean} sprint @param {number} N @param {number} seed
-   * @param {SimOpts} [opt]
-   * @returns {Sim}
-   */
-  function simulate(model, circuit, sprint, N, seed, opt = {}) {
+   * @param {SimOpts} opt */
+  function simState(model, circuit, sprint, N, seed, opt) {
     const D = model.drivers,
       C = model.cons,
       nd = D.length,
       nc = C.length,
       A = nd + nc;
     const F = Math.max(model.field || 22, nd);
-    const r = mulberry32(seed);
-    const tot = new Float32Array(A * N),
-      nn = new Float32Array(A * N);
-    const cOf = D.map((d) => C.findIndex((c) => c.team === d.team));
     const teamIdx = /** @type {Record<string, number>} */ ({});
     D.forEach((d) => {
       if (teamIdx[d.team] == null) teamIdx[d.team] = Object.keys(teamIdx).length;
     });
-    const tOf = D.map((d) => teamIdx[d.team]),
-      nt = Object.keys(teamIdx).length;
-    const unc = opt.unc ?? SIM.unc;
-    const flOddsW = D.some((d) => d.flMk != null) ? SIM.flOddsW : 0;
-    const known = opt.known || {};
-    const pen = opt.pen || {};
-    const tlaIdx = Object.fromEntries(D.map((d, i) => [d.tla, i]));
-    const rain = circuit.rain || {};
-    const ovB = model.ovB || [0, 0, 0];
+    const nt = Object.keys(teamIdx).length;
     const ovMean = circuit.ovMean ?? 4;
-    const tau = tauFor(circuit.grid ?? DEFAULT_CIRCUIT.grid);
     const pSc = circuit.sc ?? 0.5;
     const scOv = circuit.scOv ?? 1;
     // overtake level with and without a safety car, averaging to the circuit's level
     const ovLvl = ovMean * (circuit.ov ?? 1);
-    const ovNoSc = ovLvl / (1 + pSc * (scOv - 1)),
-      ovSc = ovNoSc * scOv;
-
-    const pts = new Float64Array(A),
-      neg = new Float64Array(A);
-    const qpos = new Int32Array(nd),
-      sgrid = new Int32Array(nd),
-      rgrid = new Int32Array(nd);
-    const qp = new Float64Array(nd),
-      rp = new Float64Array(nd),
-      dnfP = new Float64Array(nd),
-      shock = new Float64Array(nd),
-      tShock = new Float64Array(nt),
-      out = new Uint8Array(nd);
-    const qCount = new Uint32Array(nd * F),
-      rCount = new Uint32Array(nd * (F + 1)); // last column = DNF
-    const flC = new Uint32Array(nd),
-      dotdC = new Uint32Array(nd),
-      ovSum = new Float64Array(nd),
-      pitSum = new Float64Array(nc);
-    let scN = 0,
-      wetN = 0;
-    // per-driver points by scoring category (race weekend main events), for calibration and breakdowns
-    const CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"],
-      NC = CATS.length;
-    const cat = new Float64Array(nd * NC);
-    const addCat = (/** @type {number} */ i, /** @type {string} */ c, /** @type {number} */ v) => {
-      cat[i * NC + CATS.indexOf(c)] += v;
-    };
-    const dotdW = (/** @type {number} */ pos, /** @type {number} */ g) =>
-      (pos === 1
-        ? SIM.dotd[0]
-        : pos === 2
-          ? SIM.dotd[1]
-          : pos === 3
-            ? SIM.dotd[2]
-            : pos <= 6
-              ? SIM.dotd[3]
-              : SIM.dotd[4]) + (pos <= 8 ? SIM.dotdGain * Math.max(0, g - 4) : 0);
-    // team reliability: Beta around the team's rate with its effective number of races
-    const teamRate = D.map((d) => d.dnf),
-      teamN = D.map((d) => d.dnfN || 20);
-
-    /** A fixed order (known result) as positions; drivers missing from it go to the back in pace order. */
-    const fixedOrder = (/** @type {string[]} */ order, /** @type {Int32Array} */ outArr) => {
-      const seen = new Set();
-      let k = 0;
-      for (const t of order) {
-        const i = tlaIdx[t];
-        if (i == null || seen.has(i)) continue;
-        seen.add(i);
-        outArr[i] = ++k;
-      }
-      const rest = D.map((d, i) => i)
-        .filter((i) => !seen.has(i))
-        .sort((a, b) => qp[a] - qp[b]);
-      for (const i of rest) outArr[i] = ++k;
-    };
-
-    const qualiOrder = (
-      /** @type {Int32Array} */ outArr,
-      /** @type {boolean} */ withPoints,
-      /** @type {boolean} */ wet,
-      /** @type {string[] | undefined} */ fixed,
-    ) => {
-      /** @type {{ i: number, s: number, noTime: boolean }[]} */
-      const arr = [];
-      if (fixed) {
-        fixedOrder(fixed, outArr);
-        for (let i = 0; i < nd; i++) arr.push({ i, s: outArr[i], noTime: false });
-      } else {
-        const sd = SIM.qSd * (wet ? SIM.rainNoise : 1);
-        for (let i = 0; i < nd; i++) {
-          const noTime = r() < SIM.qualiNoTime * (wet ? 1.5 : 1);
-          arr.push({
-            i,
-            s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.qSkew) * sd,
-            noTime,
-          });
-        }
-      }
-      arr.sort((a, b) => a.s - b.s);
-      arr.forEach((x, k) => {
-        outArr[x.i] = k + 1;
-        if (!withPoints) return;
-        qCount[x.i * F + Math.min(k, F - 1)]++;
-        if (x.noTime) {
-          // no time: starts last; the -5 is waived in a wet session (the 107% rule doesn't apply)
-          if (!wet) {
-            pts[x.i] -= 5;
-            neg[x.i] -= 5;
-            addCat(x.i, "q", -5);
-          }
-        } else if (k < 10) {
-          pts[x.i] += QPTS[k];
-          addCat(x.i, "q", QPTS[k]);
-        }
-      });
-    };
-
-    // lap-by-lap race (SIM.raceModel "laps"): the pass level theta is set so that the simulated passes per starter
-    // match the circuit's overtake level (race) and its sprint share (sprint), from pilot races at the model's pace
+    const ovNoSc = ovLvl / (1 + pSc * (scOv - 1));
+    // the lap-by-lap race (SIM.raceModel "laps" or "segments")
     const lapMode = SIM.raceModel === "laps" || SIM.raceModel === "segments";
-    const runRace = SIM.raceModel === "segments" ? raceSegs : raceLaps;
-    const lapT = circuit.lapT || 90,
-      lapN = circuit.laps || 57,
-      lapNs = Math.max(5, Math.round((lapN * 100) / 305));
-    // lap race only: each driver's position and gap to the leader at every lap end, summed over the races (opt.trace)
-    const trace =
-      opt.trace && lapMode
-        ? { pos: new Float64Array(nd * lapN), gap: new Float64Array(nd * lapN), cnt: new Float64Array(nd * lapN) }
-        : null;
-    const lapPass = new Float64Array(nd),
-      lapBase = new Float64Array(nd),
-      ovUs = D.map((d) => d.ovU || 0);
-    const lapCalib = (/** @type {boolean} */ isSprint, /** @type {number} */ target) => {
-      const rc = mulberry32(seed ^ 0x5bd1e995),
-        g = new Int32Array(nd),
-        none = new Uint8Array(nd), // retirements in the pilot races
-        ts = new Float64Array(nt),
-        M = 150,
-        rhoT = circuit.grid ?? DEFAULT_CIRCUIT.grid;
-      let th = 1,
-        ka = 1;
-      for (let it = 0; it < 8; it++) {
-        let tot = 0,
-          rho = 0;
-        for (let m = 0; m < M; m++) {
-          // a weekend like the main loop's: pace uncertainty, team and driver form, session noise
-          for (let t = 0; t < nt; t++) ts[t] = gauss(rc) * SIM.teamSd;
-          const qs = D.map((d, i) => {
-            const sh = ts[tOf[i]] + gauss(rc) * SIM.drvSd;
-            lapBase[i] = (lapT * (d.rPace + gauss(rc) * d.rSe * unc + sh + gauss(rc) * SIM.rSd)) / 100;
-            return { i, s: d.qPace + gauss(rc) * d.qSe * unc + sh + gauss(rc) * SIM.qSd };
-          });
-          qs.sort((a, b) => a.s - b.s).forEach((x, k) => (g[x.i] = k + 1));
-          const scDraw = rc() < pSc * (isSprint ? SIM.sprintSc : 1);
-          for (let i = 0; i < nd; i++)
-            none[i] = rc() < D[i].dnf * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) ? 1 : 0;
-          const ord = runRace(
-            {
-              grid: g,
-              base: lapBase,
-              out: none,
-              ovU: ovUs,
-              laps: isSprint ? lapNs : lapN,
-              T: lapT,
-              sc: scDraw,
-              wet: false,
-              sprint: isSprint,
-              theta: th,
-              kappa: ka,
-            },
-            rc,
-            lapPass,
-          );
-          for (let i = 0; i < nd; i++) tot += lapPass[i];
-          rho +=
-            spearman(
-              ord.map((i) => g[i]),
-              ord.map((_, k) => k),
-            ) ?? rhoT;
-        }
-        th += 1.2 * Math.log(Math.max(0.05, target) / Math.max(0.05, tot / (M * nd)));
-        if (SIM.lapGrid && !isSprint) ka = clamp(ka * Math.exp(4 * (rho / M - rhoT)), 0.05, 5);
-      }
-      return { th, ka };
+    const lapN = circuit.laps || 57;
+    return {
+      model,
+      circuit,
+      sprint,
+      N,
+      seed,
+      D,
+      C,
+      nd,
+      nc,
+      A,
+      F,
+      nt,
+      r: mulberry32(seed),
+      cOf: D.map((d) => C.findIndex((c) => c.team === d.team)),
+      tOf: D.map((d) => teamIdx[d.team]),
+      unc: opt.unc ?? SIM.unc,
+      flOddsW: D.some((d) => d.flMk != null) ? SIM.flOddsW : 0,
+      known: opt.known || {},
+      pen: opt.pen || {},
+      tlaIdx: Object.fromEntries(D.map((d, i) => [d.tla, i])),
+      rain: circuit.rain || {},
+      ovB: model.ovB || [0, 0, 0],
+      tau: tauFor(circuit.grid ?? DEFAULT_CIRCUIT.grid),
+      pSc,
+      ovLvl,
+      ovNoSc,
+      ovSc: ovNoSc * scOv,
+      // team reliability: Beta around the team's rate with its effective number of races
+      teamRate: D.map((d) => d.dnf),
+      teamN: D.map((d) => d.dnfN || 20),
+      // one sample's scratch
+      pts: new Float64Array(A),
+      neg: new Float64Array(A),
+      qpos: new Int32Array(nd),
+      sgrid: new Int32Array(nd),
+      rgrid: new Int32Array(nd),
+      qp: new Float64Array(nd),
+      rp: new Float64Array(nd),
+      dnfP: new Float64Array(nd),
+      shock: new Float64Array(nd),
+      tShock: new Float64Array(nt),
+      out: new Uint8Array(nd),
+      qb: new Float64Array(nc),
+      qbNeg: new Float64Array(nc),
+      pitPts: new Float64Array(nc),
+      // tallies over the samples
+      tot: new Float32Array(A * N),
+      nn: new Float32Array(A * N),
+      qCount: new Uint32Array(nd * F),
+      rCount: new Uint32Array(nd * (F + 1)), // last column = DNF
+      flC: new Uint32Array(nd),
+      dotdC: new Uint32Array(nd),
+      ovSum: new Float64Array(nd),
+      pitSum: new Float64Array(nc),
+      cat: new Float64Array(nd * SIM_CATS.length), // points by scoring category, for calibration and breakdowns
+      scN: 0,
+      wetN: 0,
+      // the lap-by-lap race
+      lapMode,
+      runRace: SIM.raceModel === "segments" ? raceSegs : raceLaps,
+      lapT: circuit.lapT || 90,
+      lapN,
+      lapNs: Math.max(5, Math.round((lapN * 100) / 305)),
+      // each driver's position and gap to the leader at every lap end, summed over the races (opt.trace)
+      trace:
+        opt.trace && lapMode
+          ? { pos: new Float64Array(nd * lapN), gap: new Float64Array(nd * lapN), cnt: new Float64Array(nd * lapN) }
+          : null,
+      lapPass: new Float64Array(nd),
+      lapBase: new Float64Array(nd),
+      ovUs: D.map((d) => d.ovU || 0),
+      calR: { th: 0, ka: 1 },
+      calS: { th: 0, ka: 1 },
     };
-    const calR = lapMode ? lapCalib(false, ovLvl) : { th: 0, ka: 1 },
-      calS = lapMode && sprint ? lapCalib(true, ovLvl * (model.ovSprint || MODEL.sprintOvertakeShare)) : calR;
-
-    const midW = (/** @type {number} */ g) => (g <= 3 ? 0.6 : g <= 16 ? 1.2 : 1);
-    const race = (
-      /** @type {Int32Array} */ grid,
-      /** @type {boolean} */ isSprint,
-      /** @type {{ i: number }} */ dotdOut,
-      /** @type {boolean} */ wet,
-      /** @type {string[] | undefined} */ fixed,
-    ) => {
-      out.fill(0);
-      // retirements: individual, plus multi-car incidents (a share of the same total risk)
-      let pSum = 0;
+  }
+  /** @typedef {ReturnType<typeof simState>} SimState */
+  /** @param {SimState} S @param {number} i @param {string} c @param {number} v */
+  function addCat(S, i, c, v) {
+    S.cat[i * SIM_CATS.length + SIM_CATS.indexOf(c)] += v;
+  }
+  /** A fixed order (known result) as positions; drivers missing from it go to the back in pace order.
+   * @param {SimState} S @param {string[]} order @param {Int32Array} outArr */
+  function fixedOrder(S, order, outArr) {
+    const { D, tlaIdx, qp } = S;
+    const seen = new Set();
+    let k = 0;
+    for (const t of order) {
+      const i = tlaIdx[t];
+      if (i == null || seen.has(i)) continue;
+      seen.add(i);
+      outArr[i] = ++k;
+    }
+    const rest = D.map((d, i) => i)
+      .filter((i) => !seen.has(i))
+      .sort((a, b) => qp[a] - qp[b]);
+    for (const i of rest) outArr[i] = ++k;
+  }
+  /** A qualifying session: its order into outArr, and (withPoints) its points and position counts.
+   * @param {SimState} S @param {Int32Array} outArr @param {boolean} withPoints @param {boolean} wet
+   * @param {string[] | undefined} fixed */
+  function qualiOrder(S, outArr, withPoints, wet, fixed) {
+    const { nd, r, qp, tShock, tOf, shock, qCount, F, pts, neg } = S;
+    /** @type {{ i: number, s: number, noTime: boolean }[]} */
+    const arr = [];
+    if (fixed) {
+      fixedOrder(S, fixed, outArr);
+      for (let i = 0; i < nd; i++) arr.push({ i, s: outArr[i], noTime: false });
+    } else {
+      const sd = SIM.qSd * (wet ? SIM.rainNoise : 1);
       for (let i = 0; i < nd; i++) {
-        const p = Math.min(
-          0.9,
-          dnfP[i] * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) * (wet ? SIM.rainDnf : 1),
-        );
-        pSum += p;
-        if (!fixed && r() < (1 - SIM.incident) * p) out[i] = 1;
+        const noTime = r() < SIM.qualiNoTime * (wet ? 1.5 : 1);
+        arr.push({
+          i,
+          s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.qSkew) * sd,
+          noTime,
+        });
       }
-      if (!fixed) {
-        const k = poisson((SIM.incident * pSum) / 1.5, r);
-        for (let n = 0; n < k; n++) {
-          const cars = r() < 0.5 ? 2 : 1;
-          for (let c = 0; c < cars; c++) {
-            const w = [];
-            for (let i = 0; i < nd; i++) w.push(out[i] ? 0 : dnfP[i] * midW(grid[i]));
-            if (w.some((v) => v > 0)) out[pick(w, r)] = 1;
-          }
+    }
+    arr.sort((a, b) => a.s - b.s);
+    arr.forEach((x, k) => {
+      outArr[x.i] = k + 1;
+      if (!withPoints) return;
+      qCount[x.i * F + Math.min(k, F - 1)]++;
+      if (x.noTime) {
+        // no time: starts last; the -5 is waived in a wet session (the 107% rule doesn't apply)
+        if (!wet) {
+          pts[x.i] -= 5;
+          neg[x.i] -= 5;
+          addCat(S, x.i, "q", -5);
         }
-      } else {
-        // a known sprint result: whoever isn't in it retired
-        const inIt = new Set(fixed.map((t) => tlaIdx[t]));
-        for (let i = 0; i < nd; i++) if (!inIt.has(i)) out[i] = 1;
+      } else if (k < 10) {
+        pts[x.i] += QPTS[k];
+        addCat(S, x.i, "q", QPTS[k]);
       }
-      let nOut = 0;
-      for (let i = 0; i < nd; i++) nOut += out[i];
-      // safety car: each retirement brings one out with chance scPerDnf; other causes (debris, a stranded car that
-      // still classifies) make up the circuit's rate: 1 - (1 - base) * (1 - q)^retirements averages to that rate
-      const p = pSc * (isSprint ? SIM.sprintSc : 1),
-        q = SIM.scPerDnf,
-        viaDnf = Math.exp(Math.log(1 - q) * pSum),
-        base = clamp(1 - (1 - p) / Math.max(1e-9, viaDnf), 0, p);
-      const sc = r() < 1 - (1 - base) * Math.pow(1 - q, nOut);
-      if (!isSprint && sc) scN++;
-      const fin = [];
-      const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
-      const tauNow = tau * (sc ? SIM.scTau : 1);
-      const laps = lapMode && !fixed;
-      for (let i = 0; i < nd; i++) {
-        if (out[i]) {
-          const pen = isSprint ? 10 : 20;
-          pts[i] -= pen;
-          neg[i] -= pen;
-          addCat(i, isSprint ? "sprint" : "dnf", -pen);
-          if (!isSprint) rCount[i * (F + 1) + F]++;
-          continue;
-        }
-        if (laps) continue;
-        const s = fixed
-          ? fixed.indexOf(D[i].tla)
-          : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd;
-        fin.push({ i, s });
-      }
-      if (laps) {
-        // the race lap by lap: race-long form and noise as a lap-time offset; the grid costs time on track
+    });
+  }
+  /** The lap race's pass level theta (and grid weight kappa), set so that pilot races at the model's pace make the
+   * circuit's overtakes per starter (race) or its sprint share (sprint).
+   * @param {SimState} S @param {boolean} isSprint @param {number} target */
+  function lapCalib(S, isSprint, target) {
+    const { seed, nd, nt, circuit, D, tOf, lapBase, lapT, unc, pSc, runRace, ovUs, lapNs, lapN, lapPass } = S;
+    const rc = mulberry32(seed ^ 0x5bd1e995),
+      g = new Int32Array(nd),
+      none = new Uint8Array(nd), // retirements in the pilot races
+      ts = new Float64Array(nt),
+      M = 150,
+      rhoT = circuit.grid ?? DEFAULT_CIRCUIT.grid;
+    let th = 1,
+      ka = 1;
+    for (let it = 0; it < 8; it++) {
+      let tot = 0,
+        rho = 0;
+      for (let m = 0; m < M; m++) {
+        // a weekend like the main loop's: pace uncertainty, team and driver form, session noise
+        for (let t = 0; t < nt; t++) ts[t] = gauss(rc) * SIM.teamSd;
+        const qs = D.map((d, i) => {
+          const sh = ts[tOf[i]] + gauss(rc) * SIM.drvSd;
+          lapBase[i] = (lapT * (d.rPace + gauss(rc) * d.rSe * unc + sh + gauss(rc) * SIM.rSd)) / 100;
+          return { i, s: d.qPace + gauss(rc) * d.qSe * unc + sh + gauss(rc) * SIM.qSd };
+        });
+        qs.sort((a, b) => a.s - b.s).forEach((x, k) => (g[x.i] = k + 1));
+        const scDraw = rc() < pSc * (isSprint ? SIM.sprintSc : 1);
         for (let i = 0; i < nd; i++)
-          lapBase[i] = (lapT * (rp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.rSkew) * sd)) / 100;
+          none[i] = rc() < D[i].dnf * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) ? 1 : 0;
         const ord = runRace(
           {
-            grid,
+            grid: g,
             base: lapBase,
-            out,
+            out: none,
             ovU: ovUs,
             laps: isSprint ? lapNs : lapN,
             T: lapT,
-            sc,
-            wet,
+            sc: scDraw,
+            wet: false,
             sprint: isSprint,
-            theta: isSprint ? calS.th : calR.th,
-            trace: isSprint ? undefined : trace || undefined,
-            kappa: calR.ka,
+            theta: th,
+            kappa: ka,
           },
-          r,
+          rc,
           lapPass,
         );
-        ord.forEach((i, k) => fin.push({ i, s: k }));
-        // a retired car keeps the passes it made before it stopped
-        for (let i = 0; i < nd; i++)
-          if (out[i] && lapPass[i] && SIM.lapOv === "passes") {
-            pts[i] += lapPass[i];
-            ovSum[i] += lapPass[i];
-            addCat(i, isSprint ? "sprint" : "ovt", lapPass[i]);
-          }
-      } else fin.sort((a, b) => a.s - b.s);
-      /** @type {number[]} */
-      const flW = [];
-      /** @type {number[]} */
-      const dW = [];
-      const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
-      fin.forEach((x, k) => {
-        const pos = k + 1,
-          i = x.i;
-        const pp = isSprint ? SPTS[k] || 0 : RPTS[k] || 0;
-        pts[i] += pp;
-        let g = grid[i] - pos;
-        if (isSprint && g < -10) g = -10; // sprint losses are capped at -10
-        pts[i] += g;
-        if (g < 0) neg[i] += g;
-        if (isSprint) addCat(i, "sprint", pp + g);
-        else {
-          addCat(i, "rpos", pp);
-          addCat(i, g >= 0 ? "gain" : "lost", g);
-        }
-        const lam =
-          lvl *
-          Math.exp(
-            ovB[0] + ovB[1] * Math.log1p(Math.abs(grid[i] - pos)) + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU,
-          );
-        const ov =
-          laps && SIM.lapOv === "passes"
-            ? lapPass[i]
-            : poisson(
-                model.ovB && SIM.ovModel
-                  ? lam
-                  : D[i].ov * (circuit.ov ?? 1) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1),
-                r,
-              );
-        pts[i] += ov;
-        ovSum[i] += ov;
-        addCat(i, isSprint ? "sprint" : "ovt", ov);
-        if (!isSprint) rCount[i * (F + 1) + Math.min(k, F - 1)]++;
-        flW.push(Math.exp(-(pos - 1) / SIM.flDecay));
-        dW.push(dotdW(pos, g) * (D[i].dotdPop ?? 1));
-      });
-      if (fin.length) {
-        // a share of races take the fastest lap from the market (among the finishers), the rest from the model
-        const mkFl = !isSprint && flOddsW > 0 && r() < flOddsW ? fin.map((x) => D[x.i].flMk ?? 0) : null;
-        const f = fin[mkFl && mkFl.some((v) => v > 0) ? pick(mkFl, r) : pick(flW, r)].i;
-        pts[f] += isSprint ? 5 : 10;
-        addCat(f, isSprint ? "sprint" : "fl", isSprint ? 5 : 10);
-        if (!isSprint) {
-          flC[f]++;
-          const d = fin[pick(dW, r)].i;
-          pts[d] += 10;
-          dotdOut.i = d;
-          dotdC[d]++;
-          addCat(d, "dotd", 10);
+        for (let i = 0; i < nd; i++) tot += lapPass[i];
+        rho +=
+          spearman(
+            ord.map((i) => g[i]),
+            ord.map((_, k) => k),
+          ) ?? rhoT;
+      }
+      th += 1.2 * Math.log(Math.max(0.05, target) / Math.max(0.05, tot / (M * nd)));
+      if (SIM.lapGrid && !isSprint) ka = clamp(ka * Math.exp(4 * (rho / M - rhoT)), 0.05, 5);
+    }
+    return { th, ka };
+  }
+  /** A race or sprint from the grid: retirements, safety car, finishing order and every driver's points.
+   * @param {SimState} S @param {Int32Array} grid @param {boolean} isSprint @param {{ i: number }} dotdOut
+   * @param {boolean} wet @param {string[] | undefined} fixed */
+  function raceSession(S, grid, isSprint, dotdOut, wet, fixed) {
+    const { out, nd, dnfP, circuit, r, tlaIdx, pSc, tau, lapMode, pts, neg, rCount, F, rp, tShock, tOf, shock, D } = S;
+    const { lapBase, lapT, runRace, ovUs, lapNs, lapN, calS, calR, trace, lapPass, ovSum, ovSc, ovNoSc, model, ovB } =
+      S;
+    const { flOddsW, flC, dotdC } = S;
+    out.fill(0);
+    // retirements: individual, plus multi-car incidents (a share of the same total risk)
+    let pSum = 0;
+    for (let i = 0; i < nd; i++) {
+      const p = Math.min(
+        0.9,
+        dnfP[i] * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) * (wet ? SIM.rainDnf : 1),
+      );
+      pSum += p;
+      if (!fixed && r() < (1 - SIM.incident) * p) out[i] = 1;
+    }
+    if (!fixed) {
+      const k = poisson((SIM.incident * pSum) / 1.5, r);
+      for (let n = 0; n < k; n++) {
+        const cars = r() < 0.5 ? 2 : 1;
+        for (let c = 0; c < cars; c++) {
+          const w = [];
+          for (let i = 0; i < nd; i++) w.push(out[i] ? 0 : dnfP[i] * incidentWeight(grid[i]));
+          if (w.some((v) => v > 0)) out[pick(w, r)] = 1;
         }
       }
-    };
-
-    const qb = new Float64Array(nc),
-      qbNeg = new Float64Array(nc),
-      pitPts = new Float64Array(nc);
-    for (let s = 0; s < N; s++) {
-      pts.fill(0);
-      neg.fill(0);
-      const dotd = { i: -1 };
-      // this weekend's draw: pace and reliability within their uncertainty, then team and driver form
-      const rel = new Float64Array(nt).fill(-1);
-      for (let i = 0; i < nd; i++) {
-        qp[i] = D[i].qPace + (unc ? gauss(r) * D[i].qSe * unc : 0);
-        rp[i] = D[i].rPace + (unc ? gauss(r) * D[i].rSe * unc : 0);
-        shock[i] = gauss(r) * SIM.drvSd;
-        const t = tOf[i];
-        if (rel[t] < 0) {
-          const k = teamN[i] / Math.max(0.2, unc || 0.2);
-          rel[t] = unc ? beta(Math.max(0.05, teamRate[i] * k), Math.max(0.05, (1 - teamRate[i]) * k), r) : teamRate[i];
+    } else {
+      // a known sprint result: whoever isn't in it retired
+      const inIt = new Set(fixed.map((t) => tlaIdx[t]));
+      for (let i = 0; i < nd; i++) if (!inIt.has(i)) out[i] = 1;
+    }
+    let nOut = 0;
+    for (let i = 0; i < nd; i++) nOut += out[i];
+    // safety car: each retirement brings one out with chance scPerDnf; other causes (debris, a stranded car that
+    // still classifies) make up the circuit's rate: 1 - (1 - base) * (1 - q)^retirements averages to that rate
+    const p = pSc * (isSprint ? SIM.sprintSc : 1),
+      q = SIM.scPerDnf,
+      viaDnf = Math.exp(Math.log(1 - q) * pSum),
+      base = clamp(1 - (1 - p) / Math.max(1e-9, viaDnf), 0, p);
+    const sc = r() < 1 - (1 - base) * Math.pow(1 - q, nOut);
+    if (!isSprint && sc) S.scN++;
+    const fin = [];
+    const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
+    const tauNow = tau * (sc ? SIM.scTau : 1);
+    const laps = lapMode && !fixed;
+    for (let i = 0; i < nd; i++) {
+      if (out[i]) {
+        const pen = isSprint ? 10 : 20;
+        pts[i] -= pen;
+        neg[i] -= pen;
+        addCat(S, i, isSprint ? "sprint" : "dnf", -pen);
+        if (!isSprint) rCount[i * (F + 1) + F]++;
+        continue;
+      }
+      if (laps) continue;
+      const s = fixed
+        ? fixed.indexOf(D[i].tla)
+        : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd;
+      fin.push({ i, s });
+    }
+    if (laps) {
+      // the race lap by lap: race-long form and noise as a lap-time offset; the grid costs time on track
+      for (let i = 0; i < nd; i++)
+        lapBase[i] = (lapT * (rp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.rSkew) * sd)) / 100;
+      const ord = runRace(
+        {
+          grid,
+          base: lapBase,
+          out,
+          ovU: ovUs,
+          laps: isSprint ? lapNs : lapN,
+          T: lapT,
+          sc,
+          wet,
+          sprint: isSprint,
+          theta: isSprint ? calS.th : calR.th,
+          trace: isSprint ? undefined : trace || undefined,
+          kappa: calR.ka,
+        },
+        r,
+        lapPass,
+      );
+      ord.forEach((i, k) => fin.push({ i, s: k }));
+      // a retired car keeps the passes it made before it stopped
+      for (let i = 0; i < nd; i++)
+        if (out[i] && lapPass[i] && SIM.lapOv === "passes") {
+          pts[i] += lapPass[i];
+          ovSum[i] += lapPass[i];
+          addCat(S, i, isSprint ? "sprint" : "ovt", lapPass[i]);
         }
-        dnfP[i] = rel[t];
+    } else fin.sort((a, b) => a.s - b.s);
+    /** @type {number[]} */
+    const flW = [];
+    /** @type {number[]} */
+    const dW = [];
+    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
+    fin.forEach((x, k) => {
+      const pos = k + 1,
+        i = x.i;
+      const pp = isSprint ? SPTS[k] || 0 : RPTS[k] || 0;
+      pts[i] += pp;
+      let g = grid[i] - pos;
+      if (isSprint && g < -10) g = -10; // sprint losses are capped at -10
+      pts[i] += g;
+      if (g < 0) neg[i] += g;
+      if (isSprint) addCat(S, i, "sprint", pp + g);
+      else {
+        addCat(S, i, "rpos", pp);
+        addCat(S, i, g >= 0 ? "gain" : "lost", g);
       }
-      for (let t = 0; t < nt; t++) tShock[t] = gauss(r) * SIM.teamSd;
-      const wetQ = r() < (rain.q ?? 0),
-        wetS = r() < (rain.s ?? rain.r ?? 0),
-        wetR = r() < (rain.r ?? 0);
-      if (wetR) wetN++;
-      qualiOrder(qpos, true, wetQ, known.q);
-      // constructor qualifying bonus: both in Q3 +10, one +5; both in Q2 +3, one +1; neither -1
-      for (let c = 0; c < nc; c++) {
-        let q2 = 0,
-          q3 = 0;
-        for (let i = 0; i < nd; i++)
-          if (cOf[i] === c) {
-            if (qpos[i] <= 16) q2++;
-            if (qpos[i] <= 10) q3++;
-          }
-        const b = q3 === 2 ? 10 : q3 === 1 ? 5 : q2 === 2 ? 3 : q2 === 1 ? 1 : -1;
-        qb[c] = b;
-        qbNeg[c] = b < 0 ? b : 0;
-      }
-      if (sprint) {
-        qualiOrder(sgrid, false, wetS, known.sq);
-        race(sgrid, true, { i: -1 }, wetS, known.s);
-      }
-      // race grid: qualifying order with grid penalties applied
-      if (Object.keys(pen).length) {
-        const g = D.map((d, i) => ({
-          i,
-          k: qpos[i] + (pen[d.tla] ? (pen[d.tla] >= 99 ? 100 + qpos[i] / 100 : pen[d.tla] + 0.5) : 0),
-        }));
-        g.sort((a, b) => a.k - b.k).forEach((x, k) => (rgrid[x.i] = k + 1));
-      } else rgrid.set(qpos);
-      race(rgrid, false, dotd, wetR, undefined);
-      // pit stops: one of the team's recent races' pit points (bonus included), else the leftover model
-      for (let c = 0; c < nc; c++) {
-        const st = C[c].stops;
-        pitPts[c] =
-          SIM.pitStops && st && st.length >= 3
-            ? st[Math.floor(r() * st.length)]
-            : Math.max(0, Math.round(C[c].pitMu + gauss(r) * C[c].pitSd));
-      }
-      // constructors: their drivers' points (Driver of the Day excluded), the qualifying bonus and pit stops
-      for (let c = 0; c < nc; c++) {
-        let t = qb[c],
-          n = qbNeg[c];
-        for (let i = 0; i < nd; i++)
-          if (cOf[i] === c) {
-            t += pts[i] - (dotd.i === i ? 10 : 0);
-            n += neg[i];
-          }
-        t += pitPts[c];
-        pitSum[c] += pitPts[c];
-        pts[nd + c] = t;
-        neg[nd + c] = n;
-      }
-      for (let a = 0; a < A; a++) {
-        tot[a * N + s] = pts[a];
-        nn[a * N + s] = pts[a] - neg[a];
+      const lam =
+        lvl *
+        Math.exp(ovB[0] + ovB[1] * Math.log1p(Math.abs(grid[i] - pos)) + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU);
+      const ov =
+        laps && SIM.lapOv === "passes"
+          ? lapPass[i]
+          : poisson(
+              model.ovB && SIM.ovModel
+                ? lam
+                : D[i].ov * (circuit.ov ?? 1) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1),
+              r,
+            );
+      pts[i] += ov;
+      ovSum[i] += ov;
+      addCat(S, i, isSprint ? "sprint" : "ovt", ov);
+      if (!isSprint) rCount[i * (F + 1) + Math.min(k, F - 1)]++;
+      flW.push(Math.exp(-(pos - 1) / SIM.flDecay));
+      dW.push(dotdWeight(pos, g) * (D[i].dotdPop ?? 1));
+    });
+    if (fin.length) {
+      // a share of races take the fastest lap from the market (among the finishers), the rest from the model
+      const mkFl = !isSprint && flOddsW > 0 && r() < flOddsW ? fin.map((x) => D[x.i].flMk ?? 0) : null;
+      const f = fin[mkFl && mkFl.some((v) => v > 0) ? pick(mkFl, r) : pick(flW, r)].i;
+      pts[f] += isSprint ? 5 : 10;
+      addCat(S, f, isSprint ? "sprint" : "fl", isSprint ? 5 : 10);
+      if (!isSprint) {
+        flC[f]++;
+        const d = fin[pick(dW, r)].i;
+        pts[d] += 10;
+        dotdOut.i = d;
+        dotdC[d]++;
+        addCat(S, d, "dotd", 10);
       }
     }
-
+  }
+  /** One simulated weekend (sample s): this weekend's draw, the sessions and every asset's score.
+   * @param {SimState} S @param {number} s */
+  function simSample(S, s) {
+    const { pts, neg, nt, nd, qp, D, unc, r, rp, shock, tOf, teamN, teamRate, dnfP, tShock, rain, qpos, nc, cOf } = S;
+    const { qb, qbNeg, sprint, sgrid, known, pen, rgrid, C, pitPts, pitSum, A, tot, nn, N } = S;
+    pts.fill(0);
+    neg.fill(0);
+    const dotd = { i: -1 };
+    // this weekend's draw: pace and reliability within their uncertainty, then team and driver form
+    const rel = new Float64Array(nt).fill(-1);
+    for (let i = 0; i < nd; i++) {
+      qp[i] = D[i].qPace + (unc ? gauss(r) * D[i].qSe * unc : 0);
+      rp[i] = D[i].rPace + (unc ? gauss(r) * D[i].rSe * unc : 0);
+      shock[i] = gauss(r) * SIM.drvSd;
+      const t = tOf[i];
+      if (rel[t] < 0) {
+        const k = teamN[i] / Math.max(0.2, unc || 0.2);
+        rel[t] = unc ? beta(Math.max(0.05, teamRate[i] * k), Math.max(0.05, (1 - teamRate[i]) * k), r) : teamRate[i];
+      }
+      dnfP[i] = rel[t];
+    }
+    for (let t = 0; t < nt; t++) tShock[t] = gauss(r) * SIM.teamSd;
+    const wetQ = r() < (rain.q ?? 0),
+      wetS = r() < (rain.s ?? rain.r ?? 0),
+      wetR = r() < (rain.r ?? 0);
+    if (wetR) S.wetN++;
+    qualiOrder(S, qpos, true, wetQ, known.q);
+    // constructor qualifying bonus: both in Q3 +10, one +5; both in Q2 +3, one +1; neither -1
+    for (let c = 0; c < nc; c++) {
+      let q2 = 0,
+        q3 = 0;
+      for (let i = 0; i < nd; i++)
+        if (cOf[i] === c) {
+          if (qpos[i] <= 16) q2++;
+          if (qpos[i] <= 10) q3++;
+        }
+      const b = q3 === 2 ? 10 : q3 === 1 ? 5 : q2 === 2 ? 3 : q2 === 1 ? 1 : -1;
+      qb[c] = b;
+      qbNeg[c] = b < 0 ? b : 0;
+    }
+    if (sprint) {
+      qualiOrder(S, sgrid, false, wetS, known.sq);
+      raceSession(S, sgrid, true, { i: -1 }, wetS, known.s);
+    }
+    // race grid: qualifying order with grid penalties applied
+    if (Object.keys(pen).length) {
+      const g = D.map((d, i) => ({
+        i,
+        k: qpos[i] + (pen[d.tla] ? (pen[d.tla] >= 99 ? 100 + qpos[i] / 100 : pen[d.tla] + 0.5) : 0),
+      }));
+      g.sort((a, b) => a.k - b.k).forEach((x, k) => (rgrid[x.i] = k + 1));
+    } else rgrid.set(qpos);
+    raceSession(S, rgrid, false, dotd, wetR, undefined);
+    // pit stops: one of the team's recent races' pit points (bonus included), else the leftover model
+    for (let c = 0; c < nc; c++) {
+      const st = C[c].stops;
+      pitPts[c] =
+        SIM.pitStops && st && st.length >= 3
+          ? st[Math.floor(r() * st.length)]
+          : Math.max(0, Math.round(C[c].pitMu + gauss(r) * C[c].pitSd));
+    }
+    // constructors: their drivers' points (Driver of the Day excluded), the qualifying bonus and pit stops
+    for (let c = 0; c < nc; c++) {
+      let t = qb[c],
+        n = qbNeg[c];
+      for (let i = 0; i < nd; i++)
+        if (cOf[i] === c) {
+          t += pts[i] - (dotd.i === i ? 10 : 0);
+          n += neg[i];
+        }
+      t += pitPts[c];
+      pitSum[c] += pitPts[c];
+      pts[nd + c] = t;
+      neg[nd + c] = n;
+    }
+    for (let a = 0; a < A; a++) {
+      tot[a * N + s] = pts[a];
+      nn[a * N + s] = pts[a] - neg[a];
+    }
+  }
+  /** Per-asset statistics over all samples, and the lap traces. @param {SimState} S @returns {Sim} */
+  function simSummary(S) {
+    const { D, C, N, tot, nn, nd, rCount, F, flC, dotdC, ovSum, qCount, cat, pitSum, trace, lapN, scN, wetN } = S;
+    const CATS = SIM_CATS,
+      NC = CATS.length;
     const ids = D.map((d) => d.id).concat(C.map((c) => c.id));
     const stats = ids.map((id, a) => {
       const sl = Array.from(tot.subarray(a * N, a * N + N)).sort((x, y) => x - y);
@@ -2034,6 +2142,25 @@
         }
       : null;
     return { ids, N, field: F, tot, nn, stats, sc: scN / N, wet: wetN / N, laps };
+  }
+  /**
+   * Simulate one weekend N times, scored with the official rules. tot/nn hold every sample per asset
+   * (asset a, sample s at a * N + s); nn is the No Negative score (negative events floored at 0).
+   * opt.known: orders already decided this weekend (q = qualifying, sq = sprint qualifying, s = sprint; TLAs in
+   * order); opt.pen: grid penalties in places (99 = back of the grid) for the race; opt.unc scales the per-weekend
+   * redraw of pace and reliability within their uncertainty (default SIM.unc).
+   * @param {Model} model @param {Circuit} circuit @param {boolean} sprint @param {number} N @param {number} seed
+   * @param {SimOpts} [opt]
+   * @returns {Sim}
+   */
+  function simulate(model, circuit, sprint, N, seed, opt = {}) {
+    const S = simState(model, circuit, sprint, N, seed, opt);
+    if (S.lapMode) {
+      S.calR = lapCalib(S, false, S.ovLvl);
+      S.calS = sprint ? lapCalib(S, true, S.ovLvl * (model.ovSprint || MODEL.sprintOvertakeShare)) : S.calR;
+    }
+    for (let s = 0; s < N; s++) simSample(S, s);
+    return simSummary(S);
   }
 
   /* ---------- the betting market (next race) ---------- */

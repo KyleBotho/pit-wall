@@ -725,42 +725,60 @@ const CLICK_ID = {
     $("#menuBtn").focus();
   },
 };
-document.addEventListener("click", (e) => {
-  const tg = e.target;
+// Clicks on things that aren't buttons (table cells, sortable headers): the first selector the click is inside wins. Buttons dispatch through CLICK_ID (by id) and CLICK (by data attribute).
+const CLICK_ON = [
+  [
+    "[data-stcell]",
+    (el) => {
+      const [id, g] = el.dataset.stcell.split(":");
+      stCell(id, +g);
+    },
+  ],
+  ["[data-lvcell]", (el) => lvCell(el.dataset.lvcell)],
+  [
+    "th[data-bsort]",
+    (el) => {
+      const k = el.dataset.bsort,
+        cur = bestSort();
+      // ascending first for cost and retirements, descending for the rest (negative points are negative numbers);
+      // points columns only rank highest first: the optimiser's Boost and penalties assume you want the best team
+      const pts = k === "x" || k === "xsp" || GOAL_COLS.includes(k);
+      state.bsort = { k, d: pts ? -1 : cur.k === k ? -cur.d : k === "cost" || k === "dnf" ? 1 : -1 };
+      state.showN = 20;
+      rerender();
+    },
+  ],
+  [
+    "th[data-stsort]",
+    (el) => {
+      const k = el.dataset.stsort,
+        cur = state.stSort || { k: "avg", d: -1 };
+      state.stSort = { k, d: String(cur.k) === k ? -cur.d : ["qpos", "rpos"].includes(state.stMetric) ? 1 : -1 };
+      saveAnd(renderStats);
+    },
+  ],
+  [
+    "th.sort",
+    (el) => {
+      const k = el.dataset.sort;
+      state.sort = { k, d: state.sort.k === k ? -state.sort.d : -1 };
+      rerender();
+    },
+  ],
+];
+// an outside click closes popovers, the row menu and open ⓘ notes
+function closePopovers(tg) {
   if (!tg.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
   if (!tg.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
-  for (const d of $$("details.info[open]")) if (!d.contains(tg)) d.open = false; // ⓘ popovers close on an outside click
-  const cell = tg.closest("[data-stcell]");
-  if (cell) {
-    const [id, g] = cell.dataset.stcell.split(":");
-    return stCell(id, +g);
-  }
-  const lcell = tg.closest("[data-lvcell]");
-  if (lcell) return lvCell(lcell.dataset.lvcell);
+  for (const d of $$("details.info[open]")) if (!d.contains(tg)) d.open = false;
+}
+document.addEventListener("click", (e) => {
+  const tg = e.target;
+  closePopovers(tg);
   if (tg.id === "modal") return closeModal(); // the backdrop
-  const bth = tg.closest("th[data-bsort]");
-  if (bth) {
-    const k = bth.dataset.bsort,
-      cur = bestSort();
-    // ascending first for cost and retirements, descending for the rest (negative points are negative numbers);
-    // points columns only rank highest first: the optimiser's Boost and penalties assume you want the best team
-    const pts = k === "x" || k === "xsp" || GOAL_COLS.includes(k);
-    state.bsort = { k, d: pts ? -1 : cur.k === k ? -cur.d : k === "cost" || k === "dnf" ? 1 : -1 };
-    state.showN = 20;
-    return rerender();
-  }
-  const sth = tg.closest("th[data-stsort]");
-  if (sth) {
-    const k = sth.dataset.stsort,
-      cur = state.stSort || { k: "avg", d: -1 };
-    state.stSort = { k, d: String(cur.k) === k ? -cur.d : ["qpos", "rpos"].includes(state.stMetric) ? 1 : -1 };
-    return saveAnd(renderStats);
-  }
-  const th = tg.closest("th.sort");
-  if (th) {
-    const k = th.dataset.sort;
-    state.sort = { k, d: state.sort.k === k ? -state.sort.d : -1 };
-    return rerender();
+  for (const [sel, fn] of CLICK_ON) {
+    const el = tg.closest(sel);
+    if (el) return fn(el);
   }
   const t = tg.closest("button");
   if (!t || t.disabled) return;
