@@ -27,6 +27,15 @@ teams by themselves.
   stored data goes after the season.
 - **Google sign-in stays in testing mode** (only test users can sign in) until the tool is published.
 - **Two phases** for seeing members (below): public data first, then the FPW account.
+- **The tracking league is the source of users' teams.** The global top 500 only covers the top 500, so it is
+  never used to find or follow a user's teams (it stays what it is today: the Elite view and, later, rivals).
+- **Without a link the tool has no starting team** (signed out, or signed in but not set up): the Calculator
+  starts from "No starting team" (the existing `NO_TEAM` / `calcStart.type = "none"`: a maximum budget,
+  every seat free) instead of today's example team. Setup is only needed to see your own teams; everything else
+  works without it.
+- **Username + team names are enough to tell accounts apart** (no points or other hints needed in search).
+- **Each new season** the FPW account makes a new tracking league; when F1 Fantasy opens the season, linked users
+  are prompted to join it with their teams. Links carry over (they're by account, not by league).
 
 ## How it works
 
@@ -81,12 +90,12 @@ Page (this repo):
    `state.teams[i]` get `tk` and names from `teams`, then `fillFromLineups` / `applyTracked` / `tracked()` as today.
    Generalise the existing `LEAGUE_DATA` path rather than adding a parallel one (`tracked()` reads `rounds`, `seen`,
    `lineups` by team key; merge the linked account's body into what it reads).
-5. Settings: the linked username + teams, Change (search again) and Delete (removes the row, clears the teams back to
-   the example, shows the setup next time).
+5. Settings: the linked username + teams, Change (search again) and Delete (removes the row, back to no starting
+   team, shows the setup next time).
 6. Deleting the Pit Wall account (auth user) cascades the link.
 
 Done when: a test user (Google test list) signs in with no link, sees the setup with the join code, finds "Fantasy
-Pit Wall" by typing part of it, sees its team names, links it; the Calculator shows those teams; a reload doesn't ask
+Pit Wall" by typing part of it, sees its team names, links it; the Calculator shows those teams (and "No starting team" before linking); a reload doesn't ask
 again; Delete brings the setup back; the owner's private leagues stay hidden from a user who isn't a reader.
 Tests: account-key vector (Python + page), `tracked_accounts` builder from snapshot fixtures, page setup state logic.
 
@@ -118,8 +127,8 @@ Done when: a member who joined the league after the last race can be found and l
 
 ## Later: rivals
 
-Compare your teams with chosen rivals from the tracking league (any `tracked_accounts` row) or the global top 500
-(`data/elite_top100.json` / elite history). The Calculator's "rival" start team and goal already take a rival's
+Compare your teams with chosen rivals, mainly from the tracking league (any `tracked_accounts` row); the global
+top 500 (`data/elite_top100.json` / elite history) can add the elite template as a rival. The Calculator's "rival" start team and goal already take a rival's
 line-up; rivals would come from these sources instead of only imported/sealed leagues.
 
 ## Why not automate the login
@@ -131,13 +140,27 @@ line-up; rivals would come from these sources instead of only imported/sealed le
 - It raises the stakes under F1's terms on automated access; reading with a session a person started keeps the
   footprint small.
 
-So: the user signs in by hand when the session check reports an expired session, and updates the secret.
+So the user signs in by hand when F1 asks for it; "Keeping the FPW login going" (below) is how that stays rare.
 
-## Open questions (ask the user when building)
+## Keeping the FPW login going without daily chores (to design after the session-lifetime data)
 
-1. Does a signed-in user **have** to finish the setup before using the tool, or is it only needed for their own
-   teams (anonymous visitors keep the example-team view either way)?
-2. F1 usernames may not be unique and can change: the link uses the account key, so this only affects search. Show
-   the team names (and the league's current points) in results so two identical usernames can be told apart.
-3. Next season: a new tracking league. Links carry over (they're by account, not league); users re-join the new
-   league with their teams.
+The user's requirement: signing in by hand and pasting a new secret every day is not acceptable. Whatever we build
+has to keep F1's bot protection intact: a person signs in in a real browser; nothing scripts the login, solves
+CAPTCHAs or disguises automation. Options, cheapest first:
+
+1. **Measure first.** `history/session-check.csv` (daily since 2026-09-25) shows how long one sign-in lasts while
+   the check makes one ordinary request a day. If it lasts weeks or months, a rare manual refresh is fine and the
+   options below are only conveniences.
+2. **One-step refresh.** When the check reports an expiry (a phone notification, not just a red run), the user
+   signs in on the FPW account in their normal browser and runs one local command (or clicks a small browser
+   extension) that reads the FPW cookies from that browser and updates the GitHub secret through the GitHub API.
+   No copying cookies by hand. Needs a fine-grained token with "Secrets: write" on pit-wall-private only, kept
+   on the user's machine.
+3. **A browser that stays signed in.** The FPW account stays signed in ("remember me") in a dedicated browser
+   profile on an always-on machine, used like a person would; a scheduled task exports its current cookies to
+   the secret as in option 2. The sign-in itself is still done by a person, only when F1 asks for it.
+4. **Ask.** F1FT does this with its own teams: the user can ask them how they keep their session, and whether F1
+   Fantasy offers any sanctioned access.
+
+Not options: scripting the login, CAPTCHA-solving services, stealth/headless browsers built to look human, or
+studying how the site renews its session in order to imitate it.
