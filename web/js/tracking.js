@@ -55,25 +55,42 @@ export const accountTeams = (row) =>
     .sort((a, b) => (a.no ?? 9) - (b.no ?? 9))
     .slice(0, 3);
 
-/* ---------- Rivals: tracking-league teams the user picked to compare with ----------
-   state.rivals = [{ak, tk}]: the account key (to load its tracked_accounts row) and the team key. Nobody becomes a
-   rival by joining the league: only teams picked here are listed. */
+/* ---------- Rivals: teams the user picked to compare with ----------
+   state.rivals holds three kinds of pick: {ak, tk} a tracking-league team (the account key loads its tracked_accounts
+   row; tk = team key), {lg, tk} a member of one of your private leagues (league readers only; lg = the league's name)
+   and {tpl} the global top-100 or top-500 template. Nobody becomes a rival by joining a league: only picks are listed. */
 
-// a saved list, cleaned: well-formed picks, each team once
+export const TEMPLATES = { top100: "Top-100 template", top500: "Top-500 template" };
+const str = (v) => typeof v === "string" && v !== "";
+// what identifies a pick: the template, else the team key (a team picked from two places is one rival)
+export const pickKey = (p) => (p.tpl ? "tpl:" + p.tpl : p.tk);
+// a saved list, cleaned: well-formed picks, each rival once
 export function rivalPicks(list) {
   const out = [];
-  for (const p of Array.isArray(list) ? list : [])
-    if (p && typeof p.ak === "string" && typeof p.tk === "string" && p.ak && p.tk && !out.some((x) => x.tk === p.tk))
-      out.push({ ak: p.ak, tk: p.tk });
+  for (const p of Array.isArray(list) ? list : []) {
+    const c = !p
+      ? null
+      : p.tpl != null
+        ? p.tpl in TEMPLATES
+          ? { tpl: p.tpl }
+          : null
+        : str(p.tk) && str(p.ak)
+          ? { ak: p.ak, tk: p.tk }
+          : str(p.tk) && str(p.lg)
+            ? { lg: p.lg, tk: p.tk }
+            : null;
+    if (c && !out.some((x) => pickKey(x) === pickKey(c))) out.push(c);
+  }
   return out;
 }
-// the list with that team added, or taken out if it was there
-export function toggleRival(list, ak, tk) {
-  const l = rivalPicks(list);
-  return l.some((p) => p.tk === tk) ? l.filter((p) => p.tk !== tk) : [...l, { ak, tk }];
+// the list with that pick added, or taken out if it was there
+export function toggleRival(list, pick) {
+  const l = rivalPicks(list),
+    k = pickKey(pick);
+  return l.some((p) => pickKey(p) === k) ? l.filter((p) => pickKey(p) !== k) : rivalPicks([...l, pick]);
 }
-// the accounts whose rows the picks need
-export const rivalAccounts = (list) => [...new Set(rivalPicks(list).map((p) => p.ak))];
+// the tracking-league accounts whose rows the picks need
+export const rivalAccounts = (list) => [...new Set(rivalPicks(list).flatMap((p) => (p.ak ? [p.ak] : [])))];
 
 // One rival account's body cut down to the picked teams (null when none of them is picked), so the page never
 // holds data on teams nobody picked.
@@ -86,22 +103,37 @@ export function rivalBody(row, tks) {
   const seen = pick(b.seen);
   return Object.keys(names).length || rounds.length || Object.keys(seen).length ? { names, rounds, seen } : null;
 }
-// the league payload with the picked rivals' teams merged in (after your own data, which wins where both know a value)
+// the league payload with the picked tracking-league teams merged in (after your own data, which wins where both
+// know a value); private-league members are in it already
 export function mergeRivals(base, rows, list) {
-  const tks = rivalPicks(list).map((p) => p.tk);
+  const tks = rivalPicks(list).flatMap((p) => (p.ak ? [p.tk] : []));
   if (!tks.length) return base || null;
   return (rows || []).reduce((acc, row) => mergeLeague(acc, rivalBody(row, tks)), base || null);
 }
-// The picked rivals for the dialog: team name, username, and whether the team is still in the tracking league
-// (rows: the loaded tracked_accounts rows; null = not loaded yet). own: your own team keys, never listed.
-export function rivalList(list, rows, own = []) {
+// The picks for the dialog: name, where it's from (username, league or "F1 Fantasy"), and whether it's gone (a team
+// no longer in the tracking league or your leagues). rows: the loaded tracked_accounts rows, leagues: your private
+// leagues [{name, members: [{key, name}]}] (null = not loaded yet: nothing is called gone). own: your team keys.
+export function rivalList(list, rows, own = [], leagues = null) {
   return rivalPicks(list)
-    .filter((p) => !own.includes(p.tk))
+    .filter((p) => p.tpl || !own.includes(p.tk))
     .map((p) => {
+      if (p.tpl) return { ...p, key: pickKey(p), name: TEMPLATES[p.tpl], user: "F1 Fantasy global", missing: false };
+      if (p.lg) {
+        const lg = (leagues || []).find((l) => (l.members || []).some((m) => m.key === p.tk));
+        const m = lg && lg.members.find((x) => x.key === p.tk);
+        return {
+          ...p,
+          key: p.tk,
+          name: m ? m.name : "Unknown team",
+          user: lg ? lg.name : p.lg,
+          missing: !!leagues && !m,
+        };
+      }
       const row = (rows || []).find((r) => r.account_key === p.ak);
       const team = row && (row.teams || []).find((t) => t && t.tk === p.tk);
       return {
         ...p,
+        key: p.tk,
         name: (team && team.name) || (row && row.body && row.body.names && row.body.names[p.tk]) || "Unknown team",
         user: row ? row.username : "",
         missing: rows != null && !team,

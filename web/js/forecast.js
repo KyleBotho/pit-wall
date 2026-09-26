@@ -1,7 +1,8 @@
 /* ---------- computation ---------- */
 import { DATA, NEXT, SEASON_OVER, byId, code, col, esc, f1, isDriver, money, sgn, teamCode, upcoming } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { nextIds, teamKey, teamLabel, tracked, usedChips } from "./league.js";
+import { leagueList, mkey, nextIds, teamKey, teamLabel, tracked, usedChips } from "./league.js";
+import { TEMPLATES, pickKey } from "./tracking.js";
 import { rivalRows } from "./sync.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
@@ -127,12 +128,36 @@ export const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 
 
 /* ---------- the calculator's starting team ---------- */
 // One of your teams (state.active), a manual team, a rival's current line-up, or none (then only a maximum budget).
-// Rivals are the tracking-league teams you picked (state.rivals, rivals.js), known by team key; one whose line-up
-// isn't known yet (no race since it joined) or that left the league isn't listed.
+// Rivals are what you picked (state.rivals, rivals.js): tracking-league teams, members of your private leagues (league
+// readers only) and the top-100/500 templates, each known by its pick key. A team whose line-up isn't known yet (no
+// race since it joined) or that left its league isn't listed.
 export function rivalTeams() {
   const out = [];
+  const leagues = leagueList();
   for (const p of state.rivals) {
+    if (p.tpl) {
+      const t = templateTeam(p.tpl);
+      if (t) out.push({ ...t, key: pickKey(p), user: "F1 Fantasy global", bank: null, free: null, chips: {} });
+      continue;
+    }
     if (state.teams.some((t) => teamKey(t) === p.tk)) continue; // your own team
+    if (p.lg) {
+      const lg = leagues.find((l) => l.auto && l.members.some((m) => mkey(m) === p.tk && m.ids));
+      const m = lg && lg.members.find((x) => mkey(x) === p.tk);
+      if (m)
+        out.push({
+          key: p.tk,
+          tk: p.tk,
+          name: m.name,
+          user: lg.name,
+          ids: m.ids,
+          bank: m.bank,
+          free: m.free,
+          boost: m.boost,
+          chips: m.chips,
+        });
+      continue;
+    }
     const row = rivalRows().find((r) => r.account_key === p.ak);
     if (!row || !(row.teams || []).some((t) => t && t.tk === p.tk)) continue;
     const tr = tracked(p.tk),
@@ -151,6 +176,23 @@ export function rivalTeams() {
     });
   }
   return out;
+}
+// The top-100 or top-500 template (tpl "top100" / "top500"): the 5 drivers and 2 constructors that part of the
+// global top 500 owns most, with its most common Boost; null without elite data.
+export function templateTeam(tpl) {
+  const own = (DATA.elite && DATA.elite.own) || null;
+  if (!own || !TEMPLATES[tpl]) return null;
+  const tier = tpl === "top500" ? 2 : 1; // own[id] = [top 10, top 100, top 500]
+  const o = (id) => (own[id] ? own[id][tier] : 0);
+  const by = (kind) =>
+    DATA.assets.filter((a) => a.kind === kind && (a.active || kind === "C")).sort((x, y) => o(y.id) - o(x.id));
+  const ids = by("D")
+    .slice(0, 5)
+    .concat(by("C").slice(0, 2))
+    .map((a) => a.id);
+  const top = DATA.elite.top100 && DATA.elite.top100.boost;
+  const b = top ? Object.entries(top).sort((x, y) => y[1] - x[1])[0][0] : null;
+  return { name: TEMPLATES[tpl], ids, boost: b && ids.includes(b) ? b : "" };
 }
 const findRival = (c) => rivalTeams().find((x) => x.key === c.key);
 const rivalDefaults = (r) => ({

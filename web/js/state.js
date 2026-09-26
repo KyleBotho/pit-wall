@@ -48,7 +48,7 @@ export const defaults = () => ({
   pen: {}, // grid penalties you set for the next race: TLA -> places (99 = back of the grid)
   goal: "pts", // the Calculator's goal: "pts" (expected points), "template" / "template500" or "rival"
   goalRival: null, // the rival's team key for goal "rival"
-  rivals: [], // tracking-league teams picked as rivals: [{ak: account key, tk: team key}] (rivals.js)
+  rivals: [], // picked rivals (rivals.js): tracking-league teams {ak, tk}, private-league members {lg, tk}, templates {tpl}
   adj: {},
   marks: {},
   circuits: {},
@@ -130,8 +130,8 @@ const MIGRATIONS = [
   (s) => {
     delete s.syncKey;
   },
-  // 6 -> 7: rivals are tracking-league teams the user picks (they were every member of the private leagues, keyed
-  // "league / team"), so a rival picked before, and the settings entered for it, go
+  // 6 -> 7: rivals are teams the user picks (they were every member of the private leagues, keyed "league / team"),
+  // so a rival picked before, and the settings entered for it, go
   (s) => {
     s.rivals = [];
     s.rivalCfg = {};

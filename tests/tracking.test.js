@@ -103,21 +103,43 @@ const RIVAL_ROW = {
   },
 };
 
-test("rivalPicks: only well-formed picks, each team once", () => {
-  const list = [{ ak: "a", tk: "t" }, { ak: "a", tk: "t" }, { ak: "a" }, null, { ak: "b", tk: "u", x: 1 }, "t"];
+test("rivalPicks: the three kinds of pick, well-formed only, each rival once", () => {
+  const list = [
+    { ak: "a", tk: "t" },
+    { ak: "a", tk: "t" },
+    { ak: "a" },
+    null,
+    { ak: "b", tk: "u", x: 1 },
+    "t",
+    { lg: "Private", tk: "m1" },
+    { lg: "Other", tk: "t" }, // the same team as a tracking pick: one rival
+    { lg: "", tk: "m2" },
+    { tpl: "top100" },
+    { tpl: "top100", tk: "x" },
+    { tpl: "top1000" },
+  ];
   assert.deepEqual(run(`rivalPicks(${JSON.stringify(list)})`), [
     { ak: "a", tk: "t" },
     { ak: "b", tk: "u" },
+    { lg: "Private", tk: "m1" },
+    { tpl: "top100" },
   ]);
   assert.deepEqual(run("rivalPicks(undefined)"), []);
 });
 
-test("toggleRival adds a team or takes it out; rivalAccounts lists each account once", () => {
-  const one = run(`toggleRival([], "a", "t1")`);
+test("toggleRival adds a pick or takes it out; rivalAccounts lists each tracking account once", () => {
+  const one = run(`toggleRival([], { ak: "a", tk: "t1" })`);
   assert.deepEqual(one, [{ ak: "a", tk: "t1" }]);
-  const two = run(`toggleRival(${JSON.stringify(one)}, "a", "t2")`);
-  assert.deepEqual(run(`rivalAccounts(${JSON.stringify(two)})`), ["a"]);
-  assert.deepEqual(run(`toggleRival(${JSON.stringify(two)}, "a", "t1")`), [{ ak: "a", tk: "t2" }]);
+  const two = run(`toggleRival(${JSON.stringify(one)}, { ak: "a", tk: "t2" })`);
+  const all = run(`toggleRival(toggleRival(${JSON.stringify(two)}, { tpl: "top500" }), { lg: "P", tk: "m" })`);
+  assert.deepEqual(run(`rivalAccounts(${JSON.stringify(all)})`), ["a"]);
+  assert.deepEqual(run(`toggleRival(${JSON.stringify(all)}, { ak: "a", tk: "t1" })`), [
+    { ak: "a", tk: "t2" },
+    { tpl: "top500" },
+    { lg: "P", tk: "m" },
+  ]);
+  assert.deepEqual(run(`toggleRival(${JSON.stringify(all)}, { tpl: "top500" }).length`), 3);
+  assert.deepEqual(run(`toggleRival(${JSON.stringify(all)}, { lg: "", tk: "m" }).length`), 3); // removed by key
 });
 
 test("rivalBody: only the picked teams of an account, with its latest team names", () => {
@@ -164,6 +186,28 @@ test("rivalList: names and usernames, teams no longer in the league, your own te
       ["x1", "Unknown team", "", true],
     ],
   );
+  // private-league members and templates
+  const more = [
+    { lg: "Private", tk: "m1" },
+    { lg: "Gone League", tk: "m9" },
+    { tpl: "top500" },
+    { lg: "P", tk: "mine" },
+  ];
+  const leagues = [{ name: "Private", members: [{ key: "m1", name: "Member One" }] }];
+  assert.deepEqual(
+    run(`rivalList(${JSON.stringify(more)}, [], ["mine"], ${JSON.stringify(leagues)})`).map((r) => [
+      r.key,
+      r.name,
+      r.user,
+      r.missing,
+    ]),
+    [
+      ["m1", "Member One", "Private", false],
+      ["m9", "Unknown team", "Gone League", true],
+      ["tpl:top500", "Top-500 template", "F1 Fantasy global", false],
+    ],
+  );
+  assert.ok(run(`rivalList(${JSON.stringify(more)}, [], [], null)`).every((r) => !r.missing)); // leagues not loaded
   // rows not loaded yet: nothing is called missing
   assert.ok(run(`rivalList(${JSON.stringify(picks)}, null)`).every((r) => !r.missing));
 });

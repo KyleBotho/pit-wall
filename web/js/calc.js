@@ -42,6 +42,7 @@ import {
   sprintNext,
   startKind,
   startTeam,
+  templateTeam,
   teamDist,
   teamSamples,
   teamValue,
@@ -408,28 +409,15 @@ const visCols = () =>
   );
 
 /* ---------- goals: beat a rival or the top-100 template ---------- */
-// The team to beat for goal "rival" (a league rival) or "template" (the 5 drivers and 2 constructors the global
-// top 100 own most, with their most common Boost); null for goal "pts".
+// The team to beat for goal "rival" (one you picked in Manage rivals) or "template" / "template500" (forecast.js
+// templateTeam); null for goal "pts".
 function goalTarget() {
   if (state.goal === "rival") {
     const r = rivalTeams().find((x) => x.key === state.goalRival);
     return r ? { name: r.name, ids: r.ids, boost: r.boost } : null;
   }
-  if (state.goal === "template" || state.goal === "template500") {
-    const own = (DATA.elite && DATA.elite.own) || null;
-    if (!own) return null;
-    const tier = state.goal === "template500" ? 2 : 1; // own[id] = [top 10, top 100, top 500]
-    const o = (id) => (own[id] ? own[id][tier] : 0);
-    const by = (kind) =>
-      DATA.assets.filter((a) => a.kind === kind && (a.active || kind === "C")).sort((x, y) => o(y.id) - o(x.id));
-    const ids = by("D")
-      .slice(0, 5)
-      .concat(by("C").slice(0, 2))
-      .map((a) => a.id);
-    const top = DATA.elite.top100 && DATA.elite.top100.boost;
-    const b = top ? Object.entries(top).sort((x, y) => y[1] - x[1])[0][0] : null;
-    return { name: tier === 2 ? "Top-500 template" : "Top-100 template", ids, boost: b && ids.includes(b) ? b : null };
-  }
+  if (state.goal === "template" || state.goal === "template500")
+    return templateTeam(state.goal === "template500" ? "top500" : "top100");
   return null;
 }
 // the target's simulated next-race scores (Boost as set, else its best projected driver), for P(beat)
