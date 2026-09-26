@@ -15,7 +15,8 @@ test("the price rule reproduces this season's price changes", opt, () => {
     for (let k = 2; k < h.length; k++) {
       // rounds where the asset raced and has three rounds of points (inactive assets keep their price)
       if (!h[k] || !h[k].active || !h[k - 1] || !h[k - 2]) continue;
-      const next = k + 1 < h.length ? h[k + 1] : { price: a.price };
+      // the current price is the next round's, unless F1 hasn't published that yet (right after a race)
+      const next = k + 1 < h.length ? h[k + 1] : D.pricesPending ? null : { price: a.price };
       if (!next) continue;
       const avg = (h[k].pts + h[k - 1].pts + h[k - 2].pts) / 3;
       const pred = Math.round((h[k].price + E.priceStep(h[k].price, avg)) * 10) / 10;

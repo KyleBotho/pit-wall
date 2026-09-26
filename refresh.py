@@ -135,6 +135,11 @@ def load_player_feeds(done, nxt):
         path = archived("players", f"gd{g:02d}.json") if g in done else cached(f"players{g}.json")
         d = get(f"{F1}/drivers/{g}_en.json", path, reuse=(g in done[:-1]))["Data"]
         feeds[g], times[g] = d["Value"], feed_time(d)
+    # Right after a race F1's feed for the next gameday can still be empty (seen 2026-09-26 after Baku): until it's
+    # published, the next gameday starts from the last round's players and prices, so the page never has no assets.
+    if nxt and not feeds[nxt] and done:
+        print(f"  ! gameday {nxt}'s player feed is empty so far: using gameday {done[-1]}'s until F1 publishes it")
+        feeds[nxt], times[nxt] = feeds[done[-1]], times[done[-1]]
     return feeds, times
 
 
@@ -690,6 +695,8 @@ def collect():
 
     print("Fantasy player feeds…")
     feeds, feed_times = load_player_feeds(done, nxt)
+    # the next gameday's prices aren't published yet (load_player_feeds used the last round's)
+    prices_pending = bool(nxt and done and feeds[nxt] is feeds[done[-1]])
     assets = build_assets(feeds, done, nxt or done[-1])
 
     print("Jolpica results…")
@@ -723,6 +730,7 @@ def collect():
         "season": SEASON,
         "cfg": CFG,
         "next": nxt,
+        "pricesPending": prices_pending,
         "done": done,
         "schedule": schedule,
         "assets": assets,
