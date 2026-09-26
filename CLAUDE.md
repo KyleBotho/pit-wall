@@ -249,8 +249,10 @@ there before re-deciding something.
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result); `npm run fit` again after
       a few more rounds.
 - [ ] Item 9, the lap-by-lap race model (history: To do, item 9): stages 2-5 built and backtested (most off by
-      default; see Model decisions), the Sim lab tab is live. Still to do there: the Sim lab's server-side locks
-      (owner-only results table, rerun via an edge function) and the later stages in the plan.
+      default; see Model decisions), the Sim lab tab is live. Still to do there: the later stages in the plan. The
+      server-side locks (owner-only results table, rerun via an edge function) aren't needed while the lab runs in the
+      browser (design change 2026-09-25, history: item 9 stage 6); revisit if a slow model is adopted (runs move to
+      CI) or the lab's results/code should go private.
 
 Private league IDs are never written into this public repo: anyone holding one can read that league's feed,
 manager names included. They live in the `LEAGUE_IDS` secret and the private repo.
