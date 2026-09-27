@@ -2,7 +2,7 @@
 import { $, $$, CHIPS, DATA, NEXT, byId, code, esc, infoTip, f0, f1, sgn } from "./core.js";
 import { state } from "./state.js";
 import { SB_URL, needSync } from "./sync.js";
-import { chip, heat, heatKey, who } from "./forecast.js";
+import { chip, forecast, heat, heatKey, simStage, who, withLive } from "./forecast.js";
 import { leagueList, mkey, teamKey } from "./league.js";
 import { SESSN } from "./filters.js";
 import { lineups } from "./hindsight-view.js";
@@ -37,7 +37,16 @@ const lvCat = (c) => {
         : "OTH";
 };
 const lvPts = (id) => (DATA.live.assets[id] || {}).pts || 0;
-const lvProj = (id) => ((DATA.projHist || {})[DATA.live.gd] || {})[id];
+// xPts: while this round is still the next race, the live sim (sessions scored so far counted as scored, the rest
+// simulated; the whole view runs inside withLive, as My rivals, the user's call 2026-09-27); after it, our projection
+// frozen at lock
+const lvSim = () => !!NEXT && DATA.live.gd === NEXT.gd && !!forecast && !!forecast.proj[0];
+const lvProj = (id) => {
+  if (!lvSim()) return ((DATA.projHist || {})[DATA.live.gd] || {})[id];
+  const p = forecast.proj[0][id];
+  return p && !p.out ? p.st.mean : undefined;
+};
+const lvProjWhen = () => (lvSim() ? simStage() : "at lock");
 // the line-up that scores this weekend: the export's (after the round) or, for the round in progress, your current team
 function lvTeam(team) {
   const gd = DATA.live.gd,
@@ -74,7 +83,8 @@ function lvScore(t, f) {
       : f(id);
   return t.ids.reduce((s, id) => s + one(id) * (id === t.x3 ? 3 : id === t.boost ? 2 : 1), 0);
 }
-export function renderLive() {
+export const renderLive = () => withLive(draw);
+function draw() {
   const live = DATA.live;
   $("#lvTeams").hidden = !live;
   $("#lvTable").closest("section").hidden = !live;
@@ -131,7 +141,7 @@ export function renderLive() {
           hasProj = t.ids.some((id) => lvProj(id) != null);
         const chipName = t.chip ? (CHIPS.find(([k]) => k === t.chip) || [])[2] : "";
         return `<section class="panel"><h3>${esc(team.name)} <small>T${i + 1} · ${esc(t.src)}</small></h3>
-      <div class="lvbig"><b>${f0(live)}</b><span class="muted">pts${hasProj ? ` · projected ${f0(proj)} at lock` : ""}${chipName ? ` · ${esc(chipName)}` : ""}</span></div>
+      <div class="lvbig"><b>${f0(live)}</b><span class="muted">pts${hasProj ? ` · projected ${f0(proj)} ${lvProjWhen()}` : ""}${chipName ? ` · ${esc(chipName)}` : ""}</span></div>
       <div class="chips">${t.ids.map((id) => chip(id, { a: f0(lvPts(id)), b: lvProj(id) != null ? `<span class="dim">x${f0(lvProj(id))}</span>` : "", x: id === t.x3 ? "3×" : id === t.boost ? (t.autoB ? "2×?" : "2×") : "" })).join("")}</div>
       ${t.autoB ? '<p class="note">Boost is set to auto, so 2×? marks the driver we projected highest. Set your real Boost in the Calculator.</p>' : ""}</section>`;
       })
@@ -173,7 +183,7 @@ export function renderLive() {
   const lo = Math.min(0, ...rows.map((r) => r.pts)),
     hi = Math.max(0, ...rows.map((r) => r.pts));
   $("#lvTable").innerHTML =
-    `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th><th>Yours</th>${cols.map(([, n]) => `<th>${esc(n)}</th>`).join("")}<th>Total</th><th title="Our projection at lock">xPts</th>${over ? '<th title="Total minus projection">Δ</th>' : '<th title="Points still needed to reach the projection">To go</th>'}</tr></thead><tbody>` +
+    `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th><th>Yours</th>${cols.map(([, n]) => `<th>${esc(n)}</th>`).join("")}<th>Total</th><th title="Our projection ${lvProjWhen()}">xPts</th>${over ? '<th title="Total minus projection">Δ</th>' : '<th title="Points still needed to reach the projection">To go</th>'}</tr></thead><tbody>` +
     rows
       .map(
         (r) =>
@@ -196,7 +206,8 @@ export function renderLive() {
     "</tbody>";
   $("#lvKey").innerHTML = heatKey("fewer points", "more points");
   $("#lvTNote").textContent =
-    "Click a total for its scoring lines. xPts is our projection for the whole weekend, frozen at lock; " +
+    "Click a total for its scoring lines. xPts is our projection for the whole weekend, " +
+    (lvSim() ? `from the sim ${simStage()} (sessions already scored count as scored); ` : "frozen at lock; ") +
     (over ? "Δ is the final total minus it." : "To go is what's still needed to reach it (✓ = already there).");
 }
 // Live feed: the Supabase function "live" reads F1's feeds for the page (they have no CORS), cached for a minute

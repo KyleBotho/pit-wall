@@ -78,7 +78,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `state.maxPen`; the chip played is `activeChip()`.
 - Sim after lock (user, 2026-09-27): `compute()` runs the live sim (known qualifying/sprint orders, live market) only
   for owners/admins (`labOwner`); everyone else gets it as at lock (`atLock`: practice only, `DATA.oddsLock`), except
-  My rivals, which always uses the live one (`withLive`). The Pit Wall preset's label names the race and stage
+  My rivals and Live Scoring, which always use the live one (`withLive`; Live Scoring's xPts = the live sim while its
+  round is the next race, else the projection frozen at lock). The Pit Wall preset's label names the race and stage
   ("Pit Wall sim · Monaco post FP2").
 - `web/brand/` — logo (renamed "Fantasy Pit Wall" 2026-09-24; repo/URL stay `pit-wall`). Icon SVG = favicon; its
   mark is also the `#pwMark` symbol in app.html (rail/app bar/menu); banner PNG = link preview (og:image);

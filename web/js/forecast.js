@@ -121,6 +121,16 @@ function build(data) {
   forecast = { model: models[0], setup: setups[0], races, sims, idx, form, proj, price: {} };
   forecast.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
 }
+// how far into the next weekend the sim is: the latest session it uses (known or scored order, else practice)
+export function simStage() {
+  const so = (forecast.setup && forecast.setup.simOpt) || {},
+    has = (k) => !!((so.known && so.known[k]) || (so.locked && so.locked[k]));
+  if (has("q") || has("race")) return "post quali";
+  if (has("s")) return "post sprint";
+  if (has("sq")) return "post SQ";
+  const fp = (DATA.practice || []).filter((x) => x.done).pop();
+  return fp ? "post " + fp.name.replace("Practice ", "FP") : "early";
+}
 // the next race as a sprint weekend: as the Simulation panel's toggle says for that race, else the calendar
 export const sprintNext = () =>
   state.simSprint && NEXT && state.simSprint.gd === NEXT.gd ? !!state.simSprint.v : !!(NEXT && NEXT.sprint);
