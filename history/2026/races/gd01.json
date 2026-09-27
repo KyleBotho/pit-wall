@@ -1,4 +1,13 @@
 {
+ "quali": {
+  "wx": {
+   "air": 20.5,
+   "humidity": 63.7,
+   "n": 95,
+   "rainMin": 0,
+   "track": 34.3
+  }
+ },
  "race": {
   "pace": {
    "ALB": 2.753,
@@ -179,6 +188,13 @@
    }
   },
   "sc": 0,
-  "vsc": 0
+  "vsc": 0,
+  "wx": {
+   "air": 24.2,
+   "humidity": 54.0,
+   "n": 148,
+   "rainMin": 0,
+   "track": 36.1
+  }
  }
 }

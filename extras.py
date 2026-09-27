@@ -118,6 +118,26 @@ def _of(get_soft, cached, kind, key):
     return d if isinstance(d, list) else []
 
 
+def wx_summary(wx):
+    """A session's observed weather (OpenF1, about one reading a minute): mean air / track temperature and humidity,
+    and the minutes with rain reported. For track-wetness calibration against the forecasts kept in collect.py."""
+    rows = [w for w in wx or [] if w.get("air_temperature") is not None]
+    if not rows:
+        return None
+
+    def mean(k):
+        v = [w[k] for w in rows if w.get(k) is not None]
+        return round(sum(v) / len(v), 1) if v else None
+
+    return {
+        "air": mean("air_temperature"),
+        "track": mean("track_temperature"),
+        "humidity": mean("humidity"),
+        "rainMin": sum(1 for w in rows if w.get("rainfall")),
+        "n": len(rows),
+    }
+
+
 def _race_block(get_soft, cached, s, num2, results=None, archive=None):
     """One race session: SC/VSC/red/rain, pit stops by team, pace by driver TLA (median clean lap, and the
     contextual model: laps.py), and for the race each retirement's cause. archive(canon) keeps the canonical laps."""
@@ -145,6 +165,7 @@ def _race_block(get_soft, cached, s, num2, results=None, archive=None):
         "rain": int(sum(1 for w in wx if w.get("rainfall")) >= 3),
         "pits": {t: sorted(v) for t, v in stops.items()},
         "pace": {num2[n][0]: v for n, v in pace.items() if n in num2},
+        "wx": wx_summary(wx),
     }
     # batch 3: every lap with its context, the pace model on it, retirement causes (fail-soft: extras)
     try:
@@ -195,6 +216,9 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
                 if s:
                     rows = (race_rows or {}).get(gd) if key == "race" else None
                     rec[key] = _race_block(get_soft, cached, s, num2, rows, lap_rec.setdefault(key, {}).update)
+            q = _session_for(sessions, "Qualifying", g["raceStart"])
+            if q:
+                rec["quali"] = {"wx": wx_summary(_of(get_soft, cached, "weather", q["session_key"]))}
             if "race" in rec:
                 write_json(path, rec, indent=1, sort_keys=True)
                 if len(lap_rec) > 1:
@@ -208,9 +232,13 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
 # ---------------------------------------------------------------- weather forecast
 
 
-def weather(get_soft, cached, races, now):
+def weather(get_soft, cached, races, now, keep=None):
     """Rain probability (max hourly %) over qualifying and the race for each coming race Open-Meteo can forecast
-    (16 days). races: [{gd, lat, lon, sessions: [{type, start}]}]."""
+    (16 days), and from the ECMWF ensemble the share of members wet in each session and in qualifying and the race
+    together (`ens`, collect.py). keep(g, forecast, ensemble) archives the vintage. races: [{gd, lat, lon,
+    sessions: [{type, start}]}]."""
+    import collect
+
     out = {}
     for g in races:
         if g.get("lat") is None:
@@ -241,6 +269,25 @@ def weather(get_soft, cached, races, now):
         for typ, key, h in (("Qualifying", "q", 1), ("Sprint", "s", 1), ("Race", "r", 2)):
             if typ in starts:
                 rec[key] = window(starts[typ], h)
+        ens = None
+        try:
+            ens = collect.ensemble_sessions(collect.ensemble(get_soft, cached, g), g)
+        except Exception as e:  # noqa: BLE001
+            _warn(f"weather ensemble for gameday {g['gd']}", e)
+        if ens:
+            p = ens["p"]
+            rec["ens"] = {
+                "q": p.get("Qualifying"),
+                "s": p.get("Sprint Qualifying", p.get("Sprint")),
+                "r": p.get("Race"),
+                "qr": ens.get("pQR"),
+                "n": ens["n"],
+            }
+        if keep:
+            try:
+                keep(g, d, ens)
+            except Exception as e:  # noqa: BLE001
+                _warn(f"weather archive for gameday {g['gd']}", e)
         out[g["gd"]] = rec
     return out
 
@@ -288,7 +335,7 @@ def _mid(m):
     return float(last) if last else (a or None)
 
 
-def odds(get_soft, cached, name, season, tlas, field=22):
+def odds(get_soft, cached, name, season, tlas, field=22, keep=None):
     """Market probabilities for the next race: {win, podium, top10, pole: {TLA: p}} (only drivers we know)."""
     try:
         suffix = kalshi_suffix(_kalshi_events(get_soft, cached), name, season)
@@ -297,7 +344,10 @@ def odds(get_soft, cached, name, season, tlas, field=22):
         return None
     if not suffix:
         return None
+    import collect
+
     out = {"event": suffix}
+    books = {}
     for key, (series, total) in KALSHI_SERIES.items():
         try:
             d = get_soft(
@@ -312,8 +362,15 @@ def odds(get_soft, cached, name, season, tlas, field=22):
             p = _mid(m)
             if tla in tlas and p is not None:
                 raw[tla] = p
+            if tla in tlas:
+                books.setdefault(key, {})[tla] = collect.quote_row(m)
         if len(raw) >= 10:
             out[key] = _norm(raw, total, field)
+    if keep and books:
+        try:
+            keep(suffix, books)
+        except Exception as e:  # noqa: BLE001
+            _warn("Kalshi quotes archive", e)
     return out if len(out) > 1 else None
 
 
@@ -350,6 +407,16 @@ def weekend(get_soft, cached, season, g, now):
                 out["penalties"][t] = out["penalties"].get(t, 0) + int(p.group(2))
             elif b and num2.get(int(b.group(1))):
                 out["penalties"][num2[int(b.group(1))]] = 99  # back of the grid / pit lane
+        # the official race grid once published (penalties and pit-lane starts applied): what the race starts from
+        rs = race if race and _dt(race["date_start"]) - timedelta(hours=2) <= now else None
+        if rs:
+            sg = get_soft(
+                f"{OPENF1}/starting_grid?session_key={rs['session_key']}", cached(f"of_grid_{rs['session_key']}.json")
+            )
+            rows = sorted((r for r in sg or [] if r.get("position")), key=lambda r: r["position"])
+            order = [num2.get(r["driver_number"]) for r in rows]
+            if len(order) >= 10 and all(order):
+                out["grid"]["race"] = order
         for name, key in (("Qualifying", "q"), ("Sprint Qualifying", "sq"), ("Sprint Shootout", "sq"), ("Sprint", "s")):
             s = _session_for(sessions, name, g["raceStart"])
             if not s or _dt(s["date_end"]) > now:

@@ -285,7 +285,7 @@ function raceInputs() {
     locked = Object.keys((su.simOpt && su.simOpt.locked) || {}),
     known = Object.keys((su.simOpt && su.simOpt.known) || {}).filter((k) => !locked.includes(k)),
     pens = Object.entries((su.simOpt && su.simOpt.pen) || {}).filter(([, v]) => v);
-  const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint" };
+  const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint", race: "race grid (official)" };
   const bits = [
     su.odds
       ? `Betting market at ${Math.round(state.oddsW * 100)}%${oddsFitText(su.model.oddsFit)}.`
@@ -1009,8 +1009,12 @@ function planStages(ctx, H) {
         e: pk(a.id, k) + (k === 0 ? vp(a.id) : 0),
         boostE: a.kind === "D" ? pk(a.id, k) : 0,
       }));
-    // price changes: the simulated next race's; later races' aren't simulated per sample, so they count as none
-    stages.push({ cand, dPrice: k === 0 ? Object.fromEntries(cand.map((c) => [c.id, priceEv(c.id)])) : {} });
+    // price changes: each race's expected change on the price paths (the races share each sample's future)
+    const dp = (id) => {
+      const pa = forecast.price[id] && forecast.price[id].path;
+      return k === 0 ? priceEv(id) : pa && pa.d[k] != null ? pa.d[k] : 0;
+    };
+    stages.push({ cand, dPrice: Object.fromEntries(cand.map((c) => [c.id, dp(c.id)])) });
   }
   return stages;
 }

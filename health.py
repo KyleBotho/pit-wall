@@ -73,6 +73,17 @@ def problems(data, now):
             out.append(
                 (f"raceinfo:{g['gd']}", "warn", f"{name(g)}: no OpenF1 race data (safety cars, rain, race pace).")
             )
+        # review batch 3: the lap records' pace model and retirement causes (laps.py, retried for 4 days)
+        rb = ((data.get("raceInfo") or {}).get(str(g["gd"])) or {}).get("race") or {}
+        if race and now > race + 24 * H and rb and ("paceCtx" not in rb or "retirements" not in rb):
+            out.append(
+                (
+                    f"laps:{g['gd']}",
+                    "warn",
+                    f"{name(g)}: no lap-model pace or retirement causes a day after the race (OpenF1 stints or "
+                    "Jolpica's classification missing).",
+                )
+            )
         hist = [h["gd"] for h in (data.get("elite") or {}).get("history") or [] if not h.get("est")]
         if race and now > race + 24 * H and hist and max(hist) < g["gd"]:
             out.append(
@@ -93,8 +104,17 @@ def problems(data, now):
         if now > lock + H and str(nxt) not in (data.get("projHist") or {}):
             out.append((f"projection:{nxt}", "error", f"{name(g)}: no projection was frozen at lock."))
         start = _iso(g["raceStart"]) if g.get("raceStart") else None
-        if start and now > start - timedelta(days=10) and str(nxt) not in (data.get("weather") or {}):
+        wx = (data.get("weather") or {}).get(str(nxt))
+        if start and now > start - timedelta(days=10) and wx is None:
             out.append((f"weather:{nxt}", "warn", f"{name(g)}: no rain forecast from Open-Meteo."))
+        elif start and now > start - timedelta(days=10) and not wx.get("ens"):
+            out.append(
+                (
+                    f"ensemble:{nxt}",
+                    "warn",
+                    f"{name(g)}: no ensemble forecast (weather sessions linked at the default).",
+                )
+            )
     for e in data.get("evNames") or []:
         if e["c"].endswith("OTH") or e["c"].startswith("?"):
             out.append(

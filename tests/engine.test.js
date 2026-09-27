@@ -545,6 +545,100 @@ test("oddsKnown: the qualifying order conditions the market only if the quote ca
   assert.deepEqual(E.oddsKnown(simOpt, {}, g), { pen: { VER: 5 }, known: {} });
 });
 
+test("simulate: the weekend's weather is one regime: marginals as forecast, sessions wet together", () => {
+  const m = toyModel();
+  const run = (rain) => E.simulate(m, { ...circuit, rain }, false, 40000, 2, { unc: 0 });
+  for (const rho of [0, 0.6]) {
+    const sim = run({ q: 0.4, r: 0.5, s: 0.5, rho });
+    assert.ok(Math.abs(sim.wetQ - 0.4) < 0.01 && Math.abs(sim.wet - 0.5) < 0.01, `${sim.wetQ} ${sim.wet}`);
+    const want = E.biNormCdf(E.normInv(0.4), E.normInv(0.5), rho);
+    assert.ok(Math.abs(sim.wetQR - want) < 0.01, `rho ${rho}: ${sim.wetQR} vs ${want}`);
+  }
+  // the ensemble's joint wet share back as a correlation
+  assert.ok(Math.abs(E.latentCorr(0.4, 0.5, E.biNormCdf(E.normInv(0.4), E.normInv(0.5), 0.6)) - 0.6) < 0.02);
+  const c = E.withWeather({ ...circuit, rain: {} }, { q: 0.4, r: 0.5, ens: { q: 0.4, r: 0.5, qr: 0.2 } });
+  assert.ok(Math.abs(c.rain.rho) < 0.03); // 0.4 x 0.5: independent
+});
+
+test("simulate: the race's fastest-stop bonus goes to one team a race, among the best stop bands", () => {
+  const m = toyModel();
+  m.cons.forEach((c, k) =>
+    Object.assign(c, { stops: [7, 7, 7], bands: k === 0 ? [10, 10, 10] : [2, 2, 2], bonusW: 1 }),
+  );
+  const sim = E.simulate(m, circuit, false, 2000, 1);
+  const pit = sim.stats.slice(m.drivers.length).map((st) => st.pit);
+  assert.equal(pit[0], 15); // the best band every time: the +5 every time
+  assert.ok(pit.slice(1).every((v) => v === 2));
+  // all on the same band: exactly one +5 a race, shared by the bonus weights
+  m.cons.forEach((c, k) => Object.assign(c, { bands: [5, 5, 5], bonusW: k === 1 ? 9 : 0.1 }));
+  const even = E.simulate(m, circuit, false, 4000, 1).stats.slice(m.drivers.length);
+  assert.ok(Math.abs(even.reduce((a, st) => a + st.pit, 0) - (5 * m.cons.length + 5)) < 1e-9);
+  assert.ok(even[1].pit > 8.5);
+});
+
+test("simulate: with a persist seed, races share each sample's car strength (the horizon keeps its uncertainty)", () => {
+  const m = toyModel();
+  m.drivers.forEach((d) => (d.qSe = d.rSe = 1)); // big pace uncertainty: it dominates a driver's weekend
+  const race = (seed, persist) => E.simulate(m, circuit, false, 3000, seed, { persist });
+  const corr = (a, b, i, N) => {
+    const x = a.tot.subarray(i * N, (i + 1) * N),
+      y = b.tot.subarray(i * N, (i + 1) * N);
+    const mx = x.reduce((u, v) => u + v, 0) / N,
+      my = y.reduce((u, v) => u + v, 0) / N;
+    let sxy = 0,
+      sxx = 0,
+      syy = 0;
+    for (let k = 0; k < N; k++) {
+      sxy += (x[k] - mx) * (y[k] - my);
+      sxx += (x[k] - mx) ** 2;
+      syy += (y[k] - my) ** 2;
+    }
+    return sxy / Math.sqrt(sxx * syy);
+  };
+  const shared = corr(race(1, 77), race(2, 77), 5, 3000),
+    apart = corr(race(1, 0), race(2, 0), 5, 3000);
+  assert.ok(shared > 0.2 && Math.abs(apart) < 0.06, `${shared} vs ${apart}`);
+  // the stream of sample s doesn't depend on how many samples run
+  const a = race(3, 5),
+    b = E.simulate(m, circuit, false, 1000, 3, { persist: 5 });
+  for (let k = 0; k < 1000; k++) assert.equal(a.tot[k], b.tot[k]);
+});
+
+test("pricePath: the price carried race to race on the races in each one's last three rounds", () => {
+  const a = {
+    price: 10,
+    hist: [
+      { gd: 1, pts: 12, active: true },
+      { gd: 2, pts: 0, active: false },
+    ],
+  };
+  // after R2: the next race averages R1 (12) with its own points; R2 was sat out (not a zero)
+  const one = (x) => E.pricePath(a, [1, 2], [[x], [x], [x]]);
+  const p = one(12);
+  // 1.2 pts per $m: the big rise; then 12 / 10.6 and 12 / 10.8 are just rises (the price catches up)
+  assert.deepEqual(
+    p.d.map((v) => Math.round(v * 10) / 10),
+    [0.6, 0.2, 0.2],
+  );
+  assert.equal(Math.round(p.cum * 10) / 10, 1);
+  const q = one(0);
+  // (12 + 0) / 2 = 0.6 per $m: under 0.605, the big drop; then nothing: big drops
+  assert.deepEqual(
+    q.d.map((v) => Math.round(v * 10) / 10),
+    [-0.6, -0.6, -0.6],
+  );
+});
+
+test("simulate: the official race grid, once published, is the race's grid (penalties already in it)", () => {
+  const m = toyModel();
+  const order = m.drivers.map((d) => d.tla);
+  const race = order.slice(1).concat(order[0]); // the fastest car starts last (a pit-lane start, say)
+  const a = E.simulate(m, circuit, false, 3000, 4, { known: { q: order, race }, pen: { D00: 5 } });
+  const b = E.simulate(m, circuit, false, 3000, 4, { known: { q: order }, pen: { D00: 5 } });
+  // from the back it gains more places than from 6th on the grid
+  assert.ok(a.stats[0].cat.gain > b.stats[0].cat.gain + 3, `${a.stats[0].cat.gain} vs ${b.stats[0].cat.gain}`);
+});
+
 test("simulate: team-mates share their weekend form (it widens a constructor's range)", () => {
   const m = toyModel(),
     keep = E.SIM.teamSd,

@@ -50,6 +50,7 @@
     practiceMinLaps: 6, // hand-set: fewer laps than this in a session = no signal
     practiceMinDrivers: 6, // hand-set: fewer drivers with a time than this = no comparison
     pitRecent: 8, // hand-set: races of pit-stop points used per constructor
+    pitBonusPrior: 0.5, // hand-set: pseudo-bonuses per team when weighing who wins the race's fastest stop
     dotdShrink: 2, // hand-set: pseudo-votes "as expected" behind each driver's Driver of the Day popularity
     pitDotd: 0.9, // measured: Driver of the Day points per race that the pit residual leaves out (fallback model)
     // item 9 stage 4 (off: telemetry.py bands): a team's fast-corner loss (200-260 km/h, the only speed band stable
@@ -81,6 +82,9 @@
     scTau: 0.75, // hand-set: grid slot cost under a safety car (the field bunches up)
     rainNoise: 1.6, // measured (priors.py wet vs dry races): noise in a wet session
     rainDnf: 1.4, // measured: retirements in a wet race
+    // hand-set (review batch 4): latent correlation of the weekend's wet sessions (one weather regime), used when
+    // no ensemble forecast gives it (circuit.rain.rho). The marginal chances don't change.
+    rainCorr: 0.3,
     flDecay: 2.2, // fitted: fastest-lap weight by finishing position, exp(-(pos-1)/flDecay)
     dotd: [12, 4, 3, 0.4, 0.03], // hand-set: Driver of the Day weight for P1, P2, P3, P4-6, P7+
     dotdGain: 0.4, // hand-set: extra DotD weight per place gained beyond four, for a top-8 finisher
@@ -88,6 +92,14 @@
     oddsW: 0.5, // backtested (R5-R14 Kalshi at lock): market weight; 0.25-0.5 tie on CRPS, 0.5 best on MAE
     ovModel: 1, // backtested: 1 = overtakes from the grid / places-moved regression, 0 = each driver's season rate
     pitStops: 1, // backtested: 1 = resample the team's real pit scoring lines, 0 = its leftover race points
+    // review batch 4: the race's fastest-stop bonus ("R FP2", +5) goes to exactly one team per simulated race, among
+    // those with the best stop band that weekend (weighted by bonuses won + pitBonusPrior), instead of riding along
+    // in each team's resampled line (which gave none or several). Same expected total. 0 = the old way.
+    pitBonus: 1,
+    // review batch 4: a race-wide overtaking factor drawn once a weekend, lognormal with mean 1 and the circuit's
+    // ovSd (trackModel), so a race can run high or low for everyone (and the tails of overtake points widen).
+    // 0 = the fixed forecast level. See docs/history.md for the backtest.
+    ovEnv: 0,
     qSkew: 0, // backtested (section 9, 2026-09-25): skew-normal shape of the qualifying noise; 2-5 tie with 0
     rSkew: 0, // backtested: the same for the race; 5 slightly worse. (Noise in 1/t² space skews by only ~0.02: a no-op)
     flOddsW: 0, // backtested: share of races whose fastest lap is drawn from Kalshi's market; worse at every weight
@@ -130,7 +142,7 @@
   ];
   const PIT_FASTEST = 5;
 
-  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
+  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
   /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
@@ -141,7 +153,7 @@
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -242,6 +254,14 @@
     return Math.log(q / (1 - q));
   };
 
+  /** Sample s's own random stream under a master seed (a splitmix-style hash of the two), independent of how many
+   * samples run or in what order. @param {number} seed @param {number} s @returns {Rng} */
+  function streamFor(seed, s) {
+    let h = (seed ^ Math.imul(s + 1, 0x9e3779b1)) | 0;
+    h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
+    h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+    return mulberry32((h ^ (h >>> 16)) >>> 0);
+  }
   /** Seeded uniform random numbers in [0, 1). @param {number} a */
   function mulberry32(a) {
     return function () {
@@ -754,6 +774,18 @@
     const rounds = Object.keys(season)
       .map(Number)
       .filter((gd) => season[gd].ov != null);
+    // the season's spread of log overtakes between rounds (the level's uncertainty for a race without practice)
+    const logOv = rounds
+      .map((gd) => /** @type {number} */ (season[gd].ov))
+      .filter((v) => v > 0)
+      .map(Math.log);
+    const ovLogSd =
+      logOv.length >= 4
+        ? Math.sqrt(
+            logOv.reduce((a, v) => a + (v - logOv.reduce((x, y) => x + y, 0) / logOv.length) ** 2, 0) /
+              (logOv.length - 1),
+          )
+        : NaN;
     const P = !o.noPriors && data.priors && data.priors.races && data.priors.races.length ? data.priors.races : null;
     // features by circuit id and name (the id wins: 2026's "Bahrain GP" ran at Sepang)
     const featOf = (/** @type {string} */ name) => circuitFor(name, data.cfg).feat;
@@ -830,6 +862,10 @@
         c.lapT = lap || (kmC && sp ? (kmC * 3600) / sp.mx : 90);
         if (o.speed && sp && v != null && Number.isFinite(ovMean) && ovMean > 0)
           c.ov = clamp(Math.exp(sp.my + (sp.b * (v - sp.mx)) / sp.sx + (o.speedVar * sp.res) / 2) / ovMean, 0.25, 2.5);
+        // how far a race's overtaking strays from its forecast level (log sd): the speed fit's residual where it
+        // applies, else the season's spread between rounds (SIM.ovEnv draws it once a weekend)
+        c.ovSd =
+          o.speed && sp && v != null ? Math.sqrt(Math.max(0, sp.res)) : Number.isFinite(ovLogSd) ? ovLogSd : 0.35;
         c.rain = { r: pr && pr.rain != null ? clamp(pr.rain, 0.02, 0.8) : 0.1 };
         c.rain.q = c.rain.r;
         c.rain.s = c.rain.r;
@@ -848,13 +884,85 @@
     return refs.length ? Math.min(...refs) : null;
   }
   /** A circuit with this weekend's forecast rain on top of its climatology (the forecast wins where it exists).
-   * @param {Circuit} c @param {{ q?: number | null, s?: number | null, r?: number | null } | undefined} wx @returns {Circuit} */
+   * @param {Circuit} c @param {{ q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, r?: number | null, qr?: number | null } } | undefined} wx @returns {Circuit} */
   function withWeather(c, wx) {
     if (!wx) return c;
     const rain = { ...(c.rain || {}) };
     for (const k of /** @type {const} */ (["q", "s", "r"]))
       if (wx[k] != null) rain[k] = clamp(/** @type {number} */ (wx[k]), 0, 1);
+    // how strongly the weekend's sessions share their weather: from the ECMWF ensemble's joint wet share for
+    // qualifying and the race (collect.py), as a latent correlation (SIM.rainCorr when there's none)
+    const e = wx.ens;
+    if (e && e.q != null && e.r != null && e.qr != null) rain.rho = latentCorr(e.q, e.r, e.qr);
     return { ...c, rain };
+  }
+  /** Bivariate normal P(X <= a, Y <= b) with correlation rho (Owen's integral over the correlation, 16-point
+   * Gauss-Legendre). @param {number} a @param {number} b @param {number} rho */
+  function biNormCdf(a, b, rho) {
+    const X = [
+      0.0950125098, 0.2816035508, 0.4580167777, 0.6178762444, 0.7554044084, 0.8656312024, 0.9445750231, 0.989400935,
+    ];
+    const W = [
+      0.1894506105, 0.182603415, 0.1691565194, 0.1495959888, 0.1246289713, 0.0951585117, 0.0622535239, 0.0271524594,
+    ];
+    let s = 0;
+    for (let k = 0; k < 8; k++)
+      for (const sg of [-1, 1]) {
+        const r = (rho * (1 + sg * X[k])) / 2,
+          q = 1 - r * r;
+        s += (W[k] * Math.exp(-(a * a - 2 * r * a * b + b * b) / (2 * q))) / Math.sqrt(q);
+      }
+    return normCdf(a) * normCdf(b) + ((rho / 2) * s) / (2 * Math.PI);
+  }
+  /** Standard normal quantile (Acklam's rational approximation, |error| < 1.2e-9 after one Newton step).
+   * @param {number} p */
+  function normInv(p) {
+    const q = clamp(p, 1e-9, 1 - 1e-9);
+    const a = [
+      -39.69683028665376, 220.9460984245205, -275.9285104469687, 138.357751867269, -30.66479806614716,
+      2.506628277459239,
+    ];
+    const b = [-54.47609879822406, 161.5858368580409, -155.6989798598866, 66.80131188771972, -13.28068155288572];
+    const c = [
+      -0.007784894002430293, -0.3223964580411365, -2.400758277161838, -2.549732539343734, 4.374664141464968,
+      2.938163982698783,
+    ];
+    const d = [0.007784695709041462, 0.3224671290700398, 2.445134137142996, 3.754408661907416];
+    const lo = 0.02425;
+    let x;
+    if (q < lo) {
+      const t = Math.sqrt(-2 * Math.log(q));
+      x =
+        (((((c[0] * t + c[1]) * t + c[2]) * t + c[3]) * t + c[4]) * t + c[5]) /
+        ((((d[0] * t + d[1]) * t + d[2]) * t + d[3]) * t + 1);
+    } else if (q > 1 - lo) {
+      const t = Math.sqrt(-2 * Math.log(1 - q));
+      x =
+        -(((((c[0] * t + c[1]) * t + c[2]) * t + c[3]) * t + c[4]) * t + c[5]) /
+        ((((d[0] * t + d[1]) * t + d[2]) * t + d[3]) * t + 1);
+    } else {
+      const t = q - 0.5,
+        u = t * t;
+      x =
+        ((((((a[0] * u + a[1]) * u + a[2]) * u + a[3]) * u + a[4]) * u + a[5]) * t) /
+        (((((b[0] * u + b[1]) * u + b[2]) * u + b[3]) * u + b[4]) * u + 1);
+    }
+    return x;
+  }
+  /** The latent correlation that makes two events of chances p1, p2 happen together with chance p12 (a Gaussian
+   * copula), clamped to [-0.5, 0.95]. @param {number} p1 @param {number} p2 @param {number} p12 */
+  function latentCorr(p1, p2, p12) {
+    const a = normInv(p1),
+      b = normInv(p2);
+    let lo = -0.5,
+      hi = 0.95;
+    if (p1 <= 0 || p2 <= 0 || p1 >= 1 || p2 >= 1) return SIM.rainCorr;
+    for (let k = 0; k < 40; k++) {
+      const m = (lo + hi) / 2;
+      if (biNormCdf(a, b, m) < p12) lo = m;
+      else hi = m;
+    }
+    return Math.round(((lo + hi) / 2) * 100) / 100;
   }
 
   /* ---------- model: pace, reliability, overtaking, pit stops from this season's results ---------- */
@@ -1067,13 +1175,21 @@
     const pitIdx = new Set(
       (data.evNames || []).map((e, i) => (/^R (FP|FP2|WRFP|PIT)$/.test(e.c) ? i : -1)).filter((i) => i >= 0),
     );
+    // the fastest stop of the race: exactly one team a race (2026 lines, checked R1-R15)
+    const bonusIdx = new Set((data.evNames || []).map((e, i) => (e.c === "R FP2" ? i : -1)).filter((i) => i >= 0));
     /** @type {ConsModel[]} */
     const cModels = cons.map((c) => {
       /** @type {number[]} */
       const lines = [];
+      /** @type {number[]} the same without the fastest-stop bonus */
+      const bands = [];
+      let bonuses = 0;
       for (const h of c.hist)
-        if (h && h.ev && h.ev.length && data.results.race[h.gd])
+        if (h && h.ev && h.ev.length && data.results.race[h.gd]) {
           lines.push(h.ev.reduce((s, [i, v]) => s + (pitIdx.has(i) ? v : 0), 0));
+          bands.push(h.ev.reduce((s, [i, v]) => s + (pitIdx.has(i) && !bonusIdx.has(i) ? v : 0), 0));
+          bonuses += h.ev.some(([i]) => bonusIdx.has(i)) ? 1 : 0;
+        }
       /** @type {number[]} */
       const res = [];
       c.hist.forEach((h, i) => {
@@ -1096,11 +1212,13 @@
         pitMu: floorMean(Math.max(0, m + M.pitDotd), sdC),
         pitSd: sdC,
         stops: pitIdx.size ? lines.slice(-M.pitRecent) : [],
+        bands: bonusIdx.size ? bands.slice(-M.pitRecent) : [],
+        bonusW: bonuses + M.pitBonusPrior,
       };
     });
     return cModels;
   }
-  /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
+  /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[], bands?: number[], bonusW?: number }} ConsModel stops = recent races' pit points (bands: without the fastest-stop bonus) */
   /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, settled: boolean }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
@@ -1777,8 +1895,8 @@
     }
     return order;
   }
-  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, scOver?: number, wet: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
-  /** @typedef {{ known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
+  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, scOver?: number, wet: number, wetQ?: number, wetQR?: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
+  /** @typedef {{ persist?: number, known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
   const SIM_CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"]; // scoring categories per driver
   /** Driver of the Day vote weight for a finishing position and places gained. @param {number} pos @param {number} g */
   const dotdWeight = (pos, g) =>
@@ -1839,6 +1957,9 @@
       flOddsW: D.some((d) => d.flMk != null) ? SIM.flOddsW : 0,
       known: opt.known || {},
       pen: opt.pen || {},
+      persist: opt.persist || 0,
+      order: D.map((_, i) => i),
+      byTla: D.map((_, i) => i).sort((a, b) => (D[a].tla < D[b].tla ? -1 : D[a].tla > D[b].tla ? 1 : 0)),
       // a finished sprint's classification (TLA -> "dnf" | "dns" | "dsq") while its points aren't scored yet
       status: opt.status || {},
       // points already scored: asset id -> [points, negative part] per finished session (q, s = the sprint)
@@ -1883,7 +2004,10 @@
       cat: new Float64Array(nd * SIM_CATS.length), // points by scoring category, for calibration and breakdowns
       scN: 0,
       scOver: 0, // races whose retirements alone make more safety cars than the circuit's rate
+      ovMult: 1, // this weekend's overtaking factor (SIM.ovEnv)
       wetN: 0,
+      wetQN: 0, // wet qualifying
+      wetQRN: 0, // wet qualifying and race
       // the lap-by-lap race
       lapMode,
       runRace: SIM.raceModel === "segments" ? raceSegs : raceLaps,
@@ -2099,7 +2223,7 @@
     const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
     const tauNow = tau * (sc ? SIM.scTau : 1);
     const laps = lapMode && !fixed;
-    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
+    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1) * S.ovMult;
     const ret = model.ovRet;
     for (let i = 0; i < nd; i++) {
       if (out[i]) {
@@ -2223,24 +2347,40 @@
     pts.fill(0);
     neg.fill(0);
     const dotd = { i: -1 };
-    // this weekend's draw: pace and reliability within their uncertainty, then team and driver form
+    // this weekend's draw: pace and reliability within their uncertainty, then team and driver form. With
+    // opt.persist the uncertainty draws come from sample s's own stream (drivers in TLA order), so simulations of
+    // several races with the same persist seed share each sample's car and driver strength: what isn't known about
+    // a car stays unknown across the horizon instead of averaging out
     const rel = new Float64Array(nt).fill(-1);
-    for (let i = 0; i < nd; i++) {
-      qp[i] = D[i].qPace + (unc ? gauss(r) * D[i].qSe * unc : 0);
-      rp[i] = D[i].rPace + (unc ? gauss(r) * D[i].rSe * unc : 0);
-      shock[i] = gauss(r) * SIM.drvSd;
+    const ru = S.persist ? streamFor(S.persist, s) : r;
+    for (const i of S.persist ? S.byTla : S.order) {
+      qp[i] = D[i].qPace + (unc ? gauss(ru) * D[i].qSe * unc : 0);
+      rp[i] = D[i].rPace + (unc ? gauss(ru) * D[i].rSe * unc : 0);
       const t = tOf[i];
       if (rel[t] < 0) {
         const k = teamN[i] / Math.max(0.2, unc || 0.2);
-        rel[t] = unc ? beta(Math.max(0.05, teamRate[i] * k), Math.max(0.05, (1 - teamRate[i]) * k), r) : teamRate[i];
+        rel[t] = unc ? beta(Math.max(0.05, teamRate[i] * k), Math.max(0.05, (1 - teamRate[i]) * k), ru) : teamRate[i];
       }
       dnfP[i] = rel[t];
     }
+    for (let i = 0; i < nd; i++) shock[i] = gauss(r) * SIM.drvSd;
     for (let t = 0; t < nt; t++) tShock[t] = gauss(r) * SIM.teamSd;
-    const wetQ = r() < (rain.q ?? 0),
-      wetS = r() < (rain.s ?? rain.r ?? 0),
-      wetR = r() < (rain.r ?? 0);
+    if (SIM.ovEnv) {
+      const sd = S.circuit.ovSd ?? 0.35;
+      S.ovMult = Math.exp(sd * gauss(r) - (sd * sd) / 2);
+    }
+    // wet sessions: a Gaussian copula, one weekend draw shared by the sessions with correlation rho, so a wet
+    // qualifying makes a wet race likelier while each session's own chance stays as forecast
+    const rho = clamp(rain.rho ?? SIM.rainCorr, -0.5, 0.95),
+      zc = gauss(r) * Math.sqrt(Math.max(0, rho)),
+      e = Math.sqrt(1 - Math.max(0, rho));
+    const wet = (/** @type {number} */ p) => p > 0 && normCdf(zc + e * gauss(r)) < p;
+    const wetQ = wet(rain.q ?? 0),
+      wetS = wet(rain.s ?? rain.r ?? 0),
+      wetR = wet(rain.r ?? 0);
     if (wetR) S.wetN++;
+    if (wetQ) S.wetQN++;
+    if (wetQ && wetR) S.wetQRN++;
     qualiOrder(S, qpos, true, wetQ, known.q);
     // constructor qualifying bonus: both in Q3 +10, one +5; both in Q2 +3, one +1; neither -1
     for (let c = 0; c < nc; c++) {
@@ -2285,8 +2425,10 @@
       qualiOrder(S, sgrid, false, wetS, known.sq);
       raceSession(S, sgrid, true, { i: -1 }, wetS, known.s);
     }
-    // race grid: qualifying order with grid penalties applied
-    if (Object.keys(pen).length) {
+    // race grid: the official one once published (OpenF1 starting_grid: penalties and pit-lane starts in), else the
+    // qualifying order with grid penalties applied
+    if (known.race) fixedOrder(S, known.race, rgrid);
+    else if (Object.keys(pen).length) {
       const g = D.map((d, i) => ({
         i,
         k: qpos[i] + (pen[d.tla] ? (pen[d.tla] >= 99 ? 100 + qpos[i] / 100 : pen[d.tla] + 0.5) : 0),
@@ -2294,13 +2436,21 @@
       g.sort((a, b) => a.k - b.k).forEach((x, k) => (rgrid[x.i] = k + 1));
     } else rgrid.set(qpos);
     raceSession(S, rgrid, false, dotd, wetR, undefined);
-    // pit stops: one of the team's recent races' pit points (bonus included), else the leftover model
+    // pit stops: one of the team's recent races' pit points, else the leftover model. With pitBonus, the band
+    // points only, and the race's fastest-stop bonus to one team among the best bands
+    const race1 = SIM.pitBonus && C.every((c) => c.bands && c.bands.length >= 3);
+    let best = -1;
     for (let c = 0; c < nc; c++) {
-      const st = C[c].stops;
+      const st = race1 ? C[c].bands : C[c].stops;
       pitPts[c] =
         SIM.pitStops && st && st.length >= 3
-          ? st[Math.floor(r() * st.length)]
+          ? /** @type {number[]} */ (st)[Math.floor(r() * st.length)]
           : Math.max(0, Math.round(C[c].pitMu + gauss(r) * C[c].pitSd));
+      if (pitPts[c] > best) best = pitPts[c];
+    }
+    if (race1 && best > 0) {
+      const w = C.map((c, k) => (pitPts[k] === best ? c.bonusW || 1 : 0));
+      pitPts[pick(w, r)] += PIT_FASTEST;
     }
     // constructors: their drivers' points (Driver of the Day excluded), the qualifying bonus and pit stops
     for (let c = 0; c < nc; c++) {
@@ -2377,7 +2527,20 @@
           run: D.map((_, i) => Array.from({ length: lapN }, (_, l) => trace.cnt[i * lapN + l] / N)),
         }
       : null;
-    return { ids, N, field: F, tot, nn, stats, sc: scN / N, scOver: scOver / N, wet: wetN / N, laps };
+    return {
+      ids,
+      N,
+      field: F,
+      tot,
+      nn,
+      stats,
+      sc: scN / N,
+      scOver: scOver / N,
+      wet: wetN / N,
+      wetQ: S.wetQN / N,
+      wetQR: S.wetQRN / N,
+      laps,
+    };
   }
   /**
    * Simulate one weekend N times, scored with the official rules. tot/nn hold every sample per asset
@@ -2521,6 +2684,52 @@
     while (pts.length < 2) pts.unshift(null);
     const [p2, p1] = pts;
     return { p1, p2, sum2: (p1 ?? 0) + (p2 ?? 0), n: 1 + (p1 != null ? 1 : 0) + (p2 != null ? 1 : 0) };
+  }
+
+  /** An asset's price path over the next races, sample by sample (the races simulated with the same persist seed,
+   * so sample s is one coherent future): each race's change from the game's rule on the races in its last three
+   * rounds, the price carried from race to race. pts[k] = its points in race k per sample. Returns the expected
+   * change per race, and over all of them the mean, the 10-90% range and the chance it ends up.
+   * @param {Asset} a @param {number[]} done @param {ArrayLike<number>[]} pts
+   * @returns {{ d: number[], cum: number, p10: number, p90: number, up: number, down: number }} */
+  function pricePath(a, done, pts) {
+    const H = pts.length,
+      N = H ? pts[0].length : 0;
+    const base = priceBase(a, done);
+    const d = new Array(H).fill(0),
+      cum = new Float64Array(N);
+    for (let s = 0; s < N; s++) {
+      let price = a.price;
+      // the two rounds before the next race (null = sat out), then the simulated races
+      const hist = [base.p2, base.p1];
+      for (let k = 0; k < H; k++) {
+        const x = pts[k][s];
+        const last = [hist[hist.length - 2], hist[hist.length - 1]].filter((v) => v != null);
+        const avg = (last.reduce((u, v) => u + /** @type {number} */ (v), 0) + x) / (last.length + 1);
+        const step = Math.round(priceStep(price, avg) * 10) / 10;
+        price = Math.round((price + step) * 10) / 10;
+        d[k] += step;
+        hist.push(x);
+      }
+      cum[s] = Math.round((price - a.price) * 10) / 10;
+    }
+    const sorted = Array.from(cum).sort((u, v) => u - v);
+    let up = 0,
+      down = 0,
+      m = 0;
+    for (const v of cum) {
+      m += v;
+      if (v > 0) up++;
+      if (v < 0) down++;
+    }
+    return {
+      d: d.map((v) => v / Math.max(1, N)),
+      cum: m / Math.max(1, N),
+      p10: sorted[Math.floor(0.1 * N)] ?? 0,
+      p90: sorted[Math.floor(0.9 * N)] ?? 0,
+      up: up / Math.max(1, N),
+      down: down / Math.max(1, N),
+    };
   }
 
   /* ---------- optimiser ---------- */
@@ -3017,11 +3226,17 @@
     const known = simOpt.known || {};
     const q = (g.sessions || []).find((x) => x.type === "Qualifying");
     const after = !!(odds.at && q && q.end && Date.parse(odds.at) >= Date.parse(q.end));
-    return { pen: simOpt.pen, known: known.q && after ? { q: known.q } : {} };
+    /** @type {Record<string, string[]>} */
+    const k = {};
+    if (after && known.q) k.q = known.q;
+    if (after && known.race) k.race = known.race;
+    return { pen: simOpt.pen, known: k };
   }
   // the random stream behind every simulation: bump when mulberry32, gauss or the order of draws changes, so a
   // stored forecast says which sequence produced it
-  const RNG_VERSION = "mulberry32+box-muller-cos/1";
+  // 2: the weekend's weather drawn as a copula; 3: pace / reliability redraws before the driver form draws, and
+  // opt.persist per-sample streams (review batch 4)
+  const RNG_VERSION = "mulberry32+box-muller-cos/3";
   /** Run fn() with some engine settings changed ({"SIM.qSkew": 2, ...}), then put the shipped values back.
    * @template T @param {Record<string, unknown>} set @param {() => T} fn @returns {T} */
   function withSettings(set, fn) {
@@ -3066,6 +3281,12 @@
       label: "Retirements by cause (team mechanical + field incidents)",
       set: { "MODEL.dnfModel": "causes", "MODEL.incShrink": 1e6 },
       why: "review batch 3: retirement log loss 0.4690 vs 0.4711 walk-forward R4-R15 (small)",
+    },
+    {
+      id: "ovenv",
+      label: "Race-wide overtaking factor (a race runs high or low for everyone)",
+      set: { "SIM.ovEnv": 1 },
+      why: "review batch 4: joint risk; asset CRPS R5-R15 +0.002 +/- 0.014 (tie: it can't show in per-asset scores)",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */
@@ -3315,6 +3536,9 @@
     ridge,
     poissonGlm,
     normCdf,
+    normInv,
+    biNormCdf,
+    latentCorr,
     spearman,
     buildModel,
     expectedPositions,
@@ -3326,6 +3550,8 @@
     applyOdds,
     priceStep,
     priceBase,
+    pricePath,
+    streamFor,
     optimise,
     budgetCurve,
     planHorizon,

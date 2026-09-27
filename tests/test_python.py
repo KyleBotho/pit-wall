@@ -232,7 +232,7 @@ class Health(unittest.TestCase):
             ],
             "results": {"race": {"15": [{"tla": "RUS", "grid": 1}]}, "quali": {"15": []}},
             "raceInfo": {"15": {}},
-            "weather": {"16": {}},
+            "weather": {"16": {"ens": {"q": 0.1, "r": 0.1, "qr": 0.02, "n": 51}}},
             "projHist": {"15": {}},
             "elite": {"history": [{"gd": 15, "est": False}]},
             "evNames": [{"s": "R", "n": "Race Position", "c": "R POS"}],
@@ -251,6 +251,13 @@ class Health(unittest.TestCase):
 
     def test_a_clean_weekend_has_no_problems(self):
         self.assertEqual(self.ids(self.data(), "2026-09-28T12:00:00+00:00"), {})
+
+    def test_the_automatic_data_of_batches_3_and_4_is_watched(self):
+        # a race block without the lap model a day after the race; a forecast without the ensemble
+        d = self.data(raceInfo={"15": {"race": {"pace": {}}}}, weather={"16": {"q": 0.2}})
+        self.assertEqual(self.ids(d, "2026-09-28T12:00:00+00:00"), {"laps:15": "warn", "ensemble:16": "warn"})
+        ok = {"race": {"pace": {}, "paceCtx": {}, "retirements": {}}}
+        self.assertEqual(self.ids(self.data(raceInfo={"15": ok}), "2026-09-28T12:00:00+00:00"), {})
 
     def test_missing_results_uncertified_points_and_unknown_events(self):
         d = self.data(
@@ -574,3 +581,70 @@ class LapModel(unittest.TestCase):
         got = laps.retirements(rows, rc, {"CRA": 7, "ENG": 8, "DNS": 5}, canon)
         self.assertEqual({t: v["cause"] for t, v in got.items()}, {"CRA": "incident", "ENG": "other", "DNS": "dns"})
         self.assertEqual(got["CRA"]["share"], 0.4)
+
+
+class Collect(unittest.TestCase):
+    """collect.py: data kept as it happens (review batch 4)."""
+
+    G = {
+        "gd": 16,
+        "lat": 1.0,
+        "lon": 2.0,
+        "sessions": [
+            {"type": "Qualifying", "start": "2026-10-03T08:00:00+00:00"},
+            {"type": "Race", "start": "2026-10-04T07:00:00+00:00"},
+        ],
+    }
+
+    def test_ensemble_wet_shares_per_session_and_together(self):
+        import collect
+
+        times = [f"2026-10-03T{h:02d}:00" for h in range(24)] + [f"2026-10-04T{h:02d}:00" for h in range(24)]
+        hourly = {"time": times}
+        # 4 members: wet in qualifying (07-09 h on the 3rd) / the race (06-09 h on the 4th): [Q, R] = TT, TF, FT, FF
+        for m, (q, r) in enumerate([(1, 1), (1, 0), (0, 1), (0, 0)]):
+            hourly[f"precipitation_member{m:02d}"] = [
+                (0.6 if (d == 3 and 7 <= h <= 9 and q) or (d == 4 and 6 <= h <= 9 and r) else 0)
+                for d in (3, 4)
+                for h in range(24)
+            ]
+        e = collect.ensemble_sessions({"hourly": hourly}, self.G)
+        self.assertEqual(e["p"], {"Qualifying": 0.5, "Race": 0.5})
+        self.assertEqual(e["pQR"], 0.25)
+        self.assertEqual(e["n"], 4)
+
+    def test_vintages_are_kept_only_when_they_change(self):
+        import collect
+
+        store = {}
+        read = lambda p: json.loads(json.dumps(store[p]))  # noqa: E731
+        write = lambda p, obj, **kw: store.__setitem__(p, obj)  # noqa: E731
+        with tempfile.TemporaryDirectory() as d:
+            arch = lambda *parts: os.path.join(d, *parts)  # noqa: E731
+            real_exists = os.path.exists
+            with mock.patch("os.path.exists", lambda p: p in store or real_exists(p)):
+                f = {
+                    "hourly": {"time": ["2026-10-03T08:00"], "precipitation_probability": [40], "precipitation": [0.1]}
+                }
+                from datetime import datetime, timezone
+
+                now = datetime(2026, 9, 28, tzinfo=timezone.utc)
+                self.assertTrue(collect.weather_vintage(arch, read, write, self.G, f, None, now))
+                self.assertFalse(collect.weather_vintage(arch, read, write, self.G, f, None, now))
+                f["hourly"]["precipitation_probability"] = [55]
+                self.assertTrue(collect.weather_vintage(arch, read, write, self.G, f, None, now))
+                self.assertEqual(len(store[arch("weather", "gd16.json")]["vintages"]), 2)
+
+    def test_fia_rows_parse_with_utc_times(self):
+        import collect
+
+        html = (
+            '<li class="document-row key-58"><a href="/system/files/decision-document/'
+            '2026_azerbaijan_grand_prix_-_final_starting_grid.pdf" download><div class="file-type"></div>'
+            '<div class="title"> Doc 58 - Final Starting Grid </div><div class="published"> Published on '
+            '<span class="date-display-single">26.09.26 12:00</span> CET </div></a></li>'
+        )
+        [r] = collect.parse_fia(html)
+        self.assertEqual(r["event"], "2026_azerbaijan_grand_prix")
+        self.assertEqual(r["doc"], 58)
+        self.assertEqual(r["published"], "2026-09-26T10:00+00:00")  # Paris summer time

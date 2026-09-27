@@ -34,13 +34,17 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 
+import collect as gather  # collect.py (refresh.py has its own collect())
 import extras
 import health
 import practice
 from f1feeds import (
     EV_SESSION,
+    PAUSE,
+    UA,
     FeedError,
     ev_code,
     feed_time,
@@ -461,11 +465,22 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     }
     print(f"  OpenF1 race data: {len(out['raceInfo'])}/{len(done)} rounds")
     coming = [g for g in schedule if g["gd"] not in done][:3]
-    out["weather"] = {str(k): v for k, v in extras.weather(get_soft, cached, coming, now).items()}
+    kept = []
+
+    def keep_weather(g, forecast, ens):
+        if gather.weather_vintage(archived, read_json, write_json, g, forecast, ens, now):
+            kept.append(f"R{g['gd']} forecast")
+
+    out["weather"] = {str(k): v for k, v in extras.weather(get_soft, cached, coming, now, keep_weather).items()}
     print(f"  rain forecasts: {', '.join(f'R{k}' for k in out['weather']) or 'none in range'}")
     if nxt_g:
         tlas = {a["tla"] for a in assets if a["kind"] == "D"}
-        out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas, CFG["field"])
+
+        def keep_quotes(event, books):
+            if gather.quotes_vintage(archived, read_json, write_json, nxt_g["gd"], event, books, now):
+                kept.append("market quotes")
+
+        out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas, CFG["field"], keep_quotes)
         if out["odds"]:
             out["odds"]["gd"] = nxt_g["gd"]
             out["odds"]["at"] = now.isoformat(timespec="minutes")
@@ -480,7 +495,27 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
         out["weekend"]["gd"] = nxt_g["gd"]
         w = out["weekend"]
         print(f"  weekend: {len(w['penalties'])} grid penalties, known orders: {', '.join(w['grid']) or 'none'}")
+    # the FIA's decision documents (index only: title, PDF link, published, first seen), around race weekends (from
+    # three days before lock to a day after the race; its server takes ~30 s to answer)
+    busy = any(iso(g["lock"]) - timedelta(days=3) <= now <= iso(g["raceStart"]) + timedelta(days=1) for g in schedule)
+    try:
+        n = gather.fia_documents(fia_text, archived, read_json, write_json, now) if busy else 0
+        if n:
+            kept.append(f"{n} FIA documents")
+    except Exception as e:  # noqa: BLE001 - collection only; never blocks a build
+        print(f"  ! FIA documents: {e}")
+    print(f"  archived: {', '.join(kept) or 'nothing new'}")
     return out
+
+
+def fia_text(url):
+    """An FIA documents page (HTML), one paced request."""
+    import urllib.request
+
+    time.sleep(PAUSE)
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html"})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return r.read().decode("utf-8", "replace")
 
 
 # ---------------------------------------------------------------- global leaderboard (anonymous aggregates)
@@ -772,6 +807,8 @@ def content_policy(html):
             "font-src https://fonts.gstatic.com",
             "img-src 'self' data:",
             f"connect-src {sb.group(1)}",
+            # the Sim lab's worker: built in the page from its own (hash-allowed) engine script
+            "worker-src blob:",
             "base-uri 'none'",
             "form-action 'self'",
             "object-src 'none'",

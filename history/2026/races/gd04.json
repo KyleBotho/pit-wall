@@ -1,4 +1,13 @@
 {
+ "quali": {
+  "wx": {
+   "air": 33.9,
+   "humidity": 30.3,
+   "n": 81,
+   "rainMin": 0,
+   "track": 51.9
+  }
+ },
  "race": {
   "pace": {
    "ALB": 2.025,
@@ -164,7 +173,14 @@
    }
   },
   "sc": 1,
-  "vsc": 0
+  "vsc": 0,
+  "wx": {
+   "air": 27.1,
+   "humidity": 70.4,
+   "n": 168,
+   "rainMin": 3,
+   "track": 37.0
+  }
  },
  "sprint": {
   "pace": {
@@ -197,8 +213,8 @@
    },
    "base": "M",
    "compound": {
-    "H": 0.0,
-    "S": 0.0
+    "H": -0.0,
+    "S": -0.0
    },
    "fuelFullRace": -1.309,
    "laps": 358,
@@ -279,6 +295,13 @@
   "rain": 0,
   "red": 0,
   "sc": 0,
-  "vsc": 0
+  "vsc": 0,
+  "wx": {
+   "air": 31.7,
+   "humidity": 51.4,
+   "n": 80,
+   "rainMin": 0,
+   "track": 49.0
+  }
  }
 }

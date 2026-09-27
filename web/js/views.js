@@ -277,12 +277,17 @@ export function renderGrid() {
 }
 
 /* ---------- budget builder ---------- */
+// the price change over the simulated races, with its 10-90% range and the chances it ends up / down
+const pathCell = (pa) =>
+  pa
+    ? `<td class="${pa.cum >= 0 ? "good" : "bad"}" title="10–90%: ${sgn(pa.p10, 1)} to ${sgn(pa.p90, 1)}; up ${pct(pa.up)}, down ${pct(pa.down)}; per race ${pa.d.map((v) => sgn(v, 2)).join(" · ")}">${sgn(pa.cum, 2)}</td>`
+    : "<td>—</td>";
 export function renderPrices() {
   const binLbl = ["−0.6", "−0.3", "−0.2", "−0.1", "0", "+0.1", "+0.2", "+0.3", "+0.6"];
   const group = (title, list) =>
     !list.length
       ? ""
-      : `<tr class="tier"><td colspan="11">${title}</td></tr>` +
+      : `<tr class="tier"><td colspan="12">${title}</td></tr>` +
         list
           .map((a) => {
             const pi = forecast.price[a.id],
@@ -295,7 +300,7 @@ export function renderPrices() {
       <td>${f1(a.price)}</td><td class="muted" title="Points in the last two rounds; — = didn't race (doesn't count in the price average)">${f0(pi.p2)} · ${f0(pi.p1)}</td><td><b>${f1(p.mean)}</b></td>
       ${needCell(pi.need[0])}${needCell(pi.need[1])}${needCell(pi.need[2])}
       <td class="good">${pct(pi.up)}</td><td class="bad">${pct(pi.down)}</td><td>${dist}</td>
-      <td${heat(pi.ev, -0.6, 0.6)} class="${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td></tr>`;
+      <td${heat(pi.ev, -0.6, 0.6)} class="${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td>${pathCell(pi.path)}</tr>`;
           })
           .join("");
   const act = DATA.assets
@@ -305,7 +310,7 @@ export function renderPrices() {
     lo = (k) => act.filter((a) => a.kind === k && a.price < 18.5);
   $("#priceKey").innerHTML = heatKey("price falls", "price rises");
   $("#priceTable").innerHTML =
-    `<thead><tr><th>Asset</th><th>$</th><th title="Points in the last two races">Last 2</th><th>xPts</th><th title="Points needed to avoid the big drop">≥0.605</th><th title="Points needed for a rise">≥0.9</th><th title="Points needed for the big rise">≥1.195</th><th>P(rise)</th><th>P(drop)</th><th title="Distribution from −0.6 to +0.6">Spread</th><th>xΔ$</th></tr></thead><tbody>` +
+    `<thead><tr><th>Asset</th><th>$</th><th title="Points in the last two races">Last 2</th><th>xPts</th><th title="Points needed to avoid the big drop">≥0.605</th><th title="Points needed for a rise">≥0.9</th><th title="Points needed for the big rise">≥1.195</th><th>P(rise)</th><th>P(drop)</th><th title="Distribution from −0.6 to +0.6">Spread</th><th>xΔ$</th><th title="Expected price change over the next ${forecast.sims.length} races, each simulated future carried race to race (hover for its range)">xΔ$ ${forecast.sims.length}R</th></tr></thead><tbody>` +
     group("Drivers · $18.5m+", hi("D")) +
     group("Drivers · under $18.5m", lo("D")) +
     group("Constructors · $18.5m+", hi("C")) +

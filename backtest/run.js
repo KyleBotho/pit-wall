@@ -464,6 +464,10 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // review batch 4: a race-wide overtaking factor (SIM.ovEnv), and the fastest-stop bonus the old way (pitBonus 0)
+  ovenv: [["race-wide overtaking factor", [[E.SIM, "ovEnv", 1]]]],
+  pitbonus: [["fastest-stop bonus in each team's line (old)", [[E.SIM, "pitBonus", 0]]]],
+  raincorr: [["weather sessions independent (old)", [[E.SIM, "rainCorr", 0]]]],
   // review batch 3 (2026-09-27): race pace from the contextual lap model (laps.py) instead of the median lap
   racepace: [["race pace from the lap model (tyres, fuel, traffic)", [[E.MODEL, "racePace", "ctx"]]]],
   // review batch 2 (2026-09-27): the season's overtake level weighted towards recent rounds (TRACK.ovHalfLife)

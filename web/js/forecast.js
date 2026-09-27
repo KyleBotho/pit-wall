@@ -34,15 +34,14 @@ export function compute() {
   const races = upcoming.slice(0, 3);
   const setups = races.map((g, k) => Engine.raceSetup(DATA, g, setupOpts(g, k)));
   const models = setups.map((x) => x.model);
+  // one persist seed for the three races: sample s is one coherent future (the same car strength each race), so
+  // price paths and horizon totals keep what isn't known about a car
+  const persist = races.length ? races[0].gd * 104729 + 1 : 0;
   const sims = races.map((g, k) =>
-    Engine.simulate(
-      models[k],
-      setups[k].circuit,
-      k === 0 ? sprintNext() : g.sprint,
-      state.sims,
-      g.gd * 7919 + 13,
-      setups[k].simOpt,
-    ),
+    Engine.simulate(models[k], setups[k].circuit, k === 0 ? sprintNext() : g.sprint, state.sims, g.gd * 7919 + 13, {
+      ...setups[k].simOpt,
+      persist,
+    }),
   );
   const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
   const proj = sims.map((sim) => {
@@ -119,7 +118,29 @@ function priceInfo(a) {
     if (k < 0) k = BINS.reduce((b, v, j) => (Math.abs(v - d) < Math.abs(BINS[b] - d) ? j : b), 0);
     dist[k]++;
   }
-  return { sum2, p1, p2, need, dist: dist.map((v) => v / N), ev: ev / N, up: up / N, down: down / N };
+  return {
+    sum2,
+    p1,
+    p2,
+    need,
+    dist: dist.map((v) => v / N),
+    ev: ev / N,
+    up: up / N,
+    down: down / N,
+    path: pricePathOf(a),
+  };
+}
+// the asset's price path over the simulated races (Engine.pricePath on the aligned samples, shifts included)
+function pricePathOf(a) {
+  const pts = forecast.sims.map((sim, k) => {
+    const i = sim.ids.indexOf(a.id),
+      N = sim.N,
+      sh = (forecast.proj[k][a.id] || {}).shift || 0;
+    const x = new Float64Array(N);
+    if (i >= 0) for (let s = 0; s < N; s++) x[s] = sim.tot[i * N + s] + sh;
+    return x;
+  });
+  return pts.length ? Engine.pricePath(a, DATA.done, pts) : null;
 }
 export const priceEv = (id) => (forecast.price[id] && forecast.price[id].ev) || 0;
 

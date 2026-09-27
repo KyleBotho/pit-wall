@@ -5,6 +5,42 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, review batch 4: data collection and the deferred model items (user: build them even if they
+      only pay off next season; every new source must arrive on its own after a race weekend).
+  - `collect.py` (run by refresh.py, fail-soft, all timestamped for honest replays): every Open-Meteo forecast
+    for the coming races' session windows plus the ECMWF ensemble's rain per member per session (51 members;
+    wet = 0.5 mm+) -> `history/<season>/weather/gdNN.json`, kept when it changes; every Kalshi quote (bid, ask,
+    last, volume, open interest) -> `quotes/gdNN.json`; the FIA decision documents index (title, PDF, published
+    in UTC, first seen; Pirelli preview, grids, penalties, PU elements) from the landing page around race weekends
+    (its server takes ~30 s) -> `fia/<event>.json`. Observed session weather (OpenF1: air / track temperature,
+    humidity, rain minutes) for qualifying, sprint and race in the race blocks (R1-R15 backfilled). OpenF1's
+    official `starting_grid` becomes `weekend.grid.race`: the sim's race grid once published (penalties and
+    pit-lane starts in; the Calculator lists it as known). health.py warns when the lap model / causes or the
+    ensemble are missing.
+  - Coherent weather: the weekend's wet sessions drawn from a Gaussian copula (one weekend draw, correlation rho;
+    each session's chance unchanged). rho from the ensemble's joint qualifying + race wet share (`latentCorr`;
+    R16 -0.21, R17 0.15), else SIM.rainCorr 0.3 (hand-set). Section 9: independent sessions +0.015 +/- 0.008
+    CRPS (with climatology only). RNG_VERSION 2 then 3.
+  - Pit stops: "R FP" is the team's band, "R FP2" (+5) the race's fastest stop, one team a race (checked). The
+    sim now samples each team's band and gives the +5 to one team among the best bands that weekend (weighted by
+    bonuses won + MODEL.pitBonusPrior 0.5): same expected total (42.0 vs 42.1 a race), no more races with none
+    or several. SIM.pitBonus 1 (0 = the old lines; tie +0.002 +/- 0.010).
+  - Race-wide overtaking factor (SIM.ovEnv, off; lognormal mean 1, sd = the speed fit's residual or the season's
+    spread): a tie on asset CRPS (+0.002 +/- 0.014), where joint risk can't show. Challenger `ovenv`.
+  - Persistent car strength: `opt.persist` gives each sample its own stream (`streamFor`, splitmix-hashed, drivers
+    in TLA order) for the pace / reliability redraws, so the Calculator's three races share each sample's car and
+    driver strength (test: correlation between races 0.2+ vs ~0; sample streams don't depend on N). On that,
+    `Engine.pricePath`: each asset's price carried race to race per sample (the game's rule on each race's last
+    three rounds). Budget shows xΔ$ over 3 races with its range; the planner's stage prices now include the
+    expected change after races 2 and 3 (it assumed none after race 1).
+  - Sim lab runs in a Web Worker (the page's own engine script + the lab's runJob, `worker-src blob:` in the
+    CSP; falls back to running in the page); runs are plain jobs under `Engine.withSettings` (no more lab-only
+    settings juggling), and the status shows setup and market-fit time apart from the sims. Checked in the
+    browser: the worker starts under the CSP and runs the engine (the lab itself needs the owner's sign-in).
+  - Section 6 with the new defaults: CRPS 8.686, MAE 11.947 (8.681 / 11.959 before: seed-level).
+  - Not built: SC/VSC/red-flag event mechanisms (the review: only when data supports timing effects), a fully
+    stochastic transfer planner (the beam search now sees expected price paths; a sampled-path planner is future
+    work), explicit config objects in every engine function (withSettings scopes and restores them instead).
 - [x] 2026-09-27, review batch 3: lap/stint data, contextual race pace, retirements by cause (plan 4A-4C).
   - `laps.py`: canonical lap records per race / sprint from OpenF1 (laps + stints + race control + weather: lap,
     start, time, sectors, compound, tyre age, stint, pit in / out, neutralised (SC / VSC / red windows, also the

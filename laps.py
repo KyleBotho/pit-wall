@@ -361,8 +361,14 @@ def backfill(args):
             if fit:
                 rec[key]["paceCtx"], rec[key]["paceSe"] = fit["pace"], fit["se"]
                 rec[key]["paceN"], rec[key]["paceCoef"] = fit["n"], fit["coef"]
+            rec[key]["wx"] = extras.wx_summary(f("weather"))
             if key == "race":
                 rec[key]["retirements"] = retirements(rows, f("race_control"), {v: k for k, v in num2.items()}, canon)
+        q = extras._session_for(sessions, "Qualifying", g["raceStart"])
+        if q:
+            rec["quali"] = {
+                "wx": extras.wx_summary(extras._of(refresh.get_soft, refresh.cached, "weather", q["session_key"]))
+            }
         refresh.write_json(refresh.archived("laps", f"gd{gd:02d}.json"), lap_rec, separators=(",", ":"))
         refresh.write_json(path, rec, indent=1, sort_keys=True)
         r = rec.get("race", {})
