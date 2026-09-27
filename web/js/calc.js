@@ -331,9 +331,24 @@ const SIM_NOTES = {
   form: "<b>Form</b>: each asset's average over the last few rounds only.",
   ppm: "<b>Equal PPM</b>: each asset's price times the points per $1m of its kind (driver / constructor) and price tier (under / from $18.5m) this season.",
 };
+const SHORT_LOC = { "United States": "Austin", "Great Britain": "Silverstone", "Barcelona-Catalunya": "Barcelona" };
+// how far into the next weekend the sim is: the latest session it uses (known or scored order, else practice)
+function simStage() {
+  const so = (forecast.setup && forecast.setup.simOpt) || {},
+    has = (k) => !!((so.known && so.known[k]) || (so.locked && so.locked[k]));
+  if (has("q") || has("race")) return "post quali";
+  if (has("s")) return "post sprint";
+  if (has("sq")) return "post SQ";
+  const fp = (DATA.practice || []).filter((x) => x.done).pop();
+  return fp ? "post " + fp.name.replace("Practice ", "FP") : "early";
+}
 function renderSim() {
   const P = state.simPreset,
     past = P !== "sim";
+  // the Pit Wall option names the race and the stage, e.g. "Pit Wall sim · Monaco post FP2" (short enough to fit)
+  $("#simPreset").querySelector('option[value="sim"]').textContent = NEXT
+    ? `Pit Wall sim · ${SHORT_LOC[NEXT.loc] || NEXT.loc} ${simStage()}`
+    : "Pit Wall sim";
   $("#simPreset").value = P;
   $("#simSprint").checked = sprintNext();
   $("#simSprintL").textContent =
