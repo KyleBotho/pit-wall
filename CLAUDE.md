@@ -123,7 +123,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   harness (`asOf(r)` rebuilds the data as it stood before round r; exact CRPS). `backtest/fit.js` (`npm run fit`) =
   coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
-  settled events need the `historical/` API, one request per driver).
+  settled events need the `historical/` API, one request per driver). `backtest/weather_rounds.py` ->
+  `weather_by_round.json` (rain at each past lock, Open-Meteo previous runs), used by walk.js `asOf` with the
+  stewards' penalties published before lock. fit.js holds the last 3 rounds out and scores its proposal on them.
 - `tools/presim.js` — the page's default-settings sims, run by `build_page` (Engine.forecastRaces; variants "lock" =
   Engine.atLock and, after lock, "live", whose later races are shared with "lock"): summaries into `DATA.presim`, the
   simulated weekends next to index.html as `presim-<hash>-a.bin` (first 4,000) and `-b.bin` (the other 6,000), one
@@ -208,10 +210,11 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - Open-Meteo `api.open-meteo.com/v1/forecast` (no key): hourly precipitation probability; `ensemble-api.open-meteo.com`
   (ECMWF IFS, 51 members) for the joint wet chance of the weekend's sessions.
 - FIA documents (`fia.com/documents/championships/fia-formula-one-world-championship-14`, HTML, slow ~30 s): the
-  decision documents index, fetched around race weekends (collect.py).
+  decision documents index, fetched around race weekends (collect.py). The car-infringement PDFs are read once each
+  (pypdf) for GRID PENALTIES: race control (OpenF1) announced none in 2026, so this is the only source.
 - FastF1 (pip) reads `livetiming.formula1.com/static` — the fallback for practice when OpenF1 is locked.
-- Not automated: FIA stewards' PDFs (grid penalties come from race control messages plus the manual picker in
-  Settings > Circuits).
+- Grid penalties: stewards' decisions (collect.fia_penalties) + race control + the manual picker in Settings >
+  Circuits. Not automated: PU mileage / tyre sets from the FIA documents.
 - OpenF1 `api.openf1.org/v1/{sessions,laps,stints,drivers}` (practice; free data lands shortly after sessions).
   While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
   for it: one attempt, cached copy on failure, never aborts the build (seen 2026-09-24 during Baku FP1).
@@ -285,9 +288,9 @@ there before re-deciding something.
 
 - [ ] Second review (`docs/reviews/2026-09-27/F1-post-upgrade-review.md`, 7.5/10): findings A-G fixed
       2026-09-27 (history). Open from it: the market fit is still MOVING after 4 steps (0.3-0.4 log-odds off the
-      targets, the Calculator now says so): more steps = a higher effective market weight, decide with a backtest;
-      plus sections 4-8 (provisional sessions, pit bonus edges, solver flags, adaptive sampling, planner,
-      performance). Don't retune on the same R5-R15: wait for frozen rounds.
+      targets, the Calculator now says so): more steps = a higher effective market weight, decide with a backtest.
+      Sections 4-8 done the same day (history); left: adaptive sampling, a Calculator worker, a stochastic chip /
+      transfer policy, hierarchical pace + survival models. Don't retune on the same R5-R15: wait for frozen rounds.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap

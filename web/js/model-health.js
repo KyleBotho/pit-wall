@@ -15,7 +15,11 @@ function fitHtml(fit) {
   const head =
     `<p class="note"><b>Weekly settings fit</b> (${esc(fit.generated.replace("T", " ").replace("Z", " UTC"))}, rounds ` +
     `R${fit.rounds[0]}–R${fit.rounds[fit.rounds.length - 1]}, ${fit.N.toLocaleString()} sims): CRPS ${f2(fit.shipped.crps)} as shipped → ${f2(fit.fitted.crps)} fitted` +
-    ` (${gain > 0 ? "−" : "+"}${Math.abs(gain).toFixed(3)}), MAE ${f2(fit.shipped.mae)} → ${f2(fit.fitted.mae)}.</p>`;
+    ` (${gain > 0 ? "−" : "+"}${Math.abs(gain).toFixed(3)}), MAE ${f2(fit.shipped.mae)} → ${f2(fit.fitted.mae)}.` +
+    (fit.holdout
+      ? ` <b>On rounds it wasn't fitted to</b> (R${fit.holdout.rounds.join(", R")}): ${f2(fit.holdout.shipped)} → ${f2(fit.holdout.fitted)}, ${fit.holdout.dCrps <= -2 * fit.holdout.se ? "a gain beyond noise" : "within noise (" + (fit.holdout.dCrps > 0 ? "+" : "−") + Math.abs(fit.holdout.dCrps).toFixed(3) + " ± " + fit.holdout.se.toFixed(3) + ")"}.`
+      : "") +
+    `</p>`;
   if (!fit.changes.length)
     return head + `<p class="note">The shipped settings are still the best fit: nothing to change.</p>`;
   const rows = fit.changes
@@ -28,7 +32,7 @@ function fitHtml(fit) {
     head +
     `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Setting</th><th>Shipped</th><th>Fitted</th></tr></thead><tbody>${rows}</tbody></table></div>` +
     `<p class="note">${gain < 0.1 ? "<b>Within noise:</b> a gain under about 0.1 CRPS can't be told from chance with this many rounds, so keep the shipped settings. " : ""}` +
-    `The fit is scored on the same rounds it was fitted on, so expect less on new ones. To adopt a change, ask for it to be applied in engine.js and checked with the backtest; it's worth it only if it holds over the next weeks too.</p>`
+    `The first figures are on the rounds it was fitted on (flattering); the held-out ones are the test. To adopt a change, ask for it to be applied in engine.js and checked with the backtest; it's worth it only if it holds over the next weeks too.</p>`
   );
 }
 

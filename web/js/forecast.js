@@ -34,6 +34,29 @@ export function compute() {
   build(labOwner ? "live" : "lock");
   if (PRE && !pre.loading && simDefault()) presimLoad(); // back on the defaults: the build's sims, once they're in
 }
+// An independent run of the next race (other seeds, the same setup and size), to judge near-ties among the teams the
+// main run picked without the winner's curse (second review): picking the best of many teams on the same samples
+// flatters the pick. Built once per forecast, after the page has drawn (onReady redraws); null until then.
+export function checkSim(onReady) {
+  const fc = forecast;
+  if (!fc || !fc.setup || !fc.sims.length) return null;
+  if (fc.check) return fc.check;
+  if (!fc.checkPending) {
+    fc.checkPending = true;
+    setTimeout(() => {
+      if (forecast !== fc) return;
+      const g = fc.races[0],
+        su = fc.setup,
+        { seed, persist } = Engine.raceSeeds(g, g);
+      fc.check = Engine.simulate(su.model, su.circuit, sprintNext(), fc.sims[0].N, seed + 1, {
+        ...su.simOpt,
+        persist: persist + 1,
+      });
+      if (onReady) onReady();
+    }, 60);
+  }
+  return null;
+}
 // fn runs with the live forecast in place of the one at lock, which is put back after
 export function withLive(fn) {
   if (labOwner || SEASON_OVER || !Engine.pastLock(DATA)) return fn();
@@ -393,9 +416,8 @@ export function teamDist(ids, boost, chip, boost2) {
   };
 }
 // joint next-race score of a team across the simulated weekends
-export function teamSamples(ids, boost, chip, boost2) {
-  const sim = forecast.sims[0],
-    N = sim.N,
+export function teamSamples(ids, boost, chip, boost2, sim = forecast.sims[0]) {
+  const N = sim.N,
     arr = new Float64Array(N);
   const ds = ids.filter(isDriver);
   for (const id of ids) {

@@ -165,6 +165,79 @@ class MarketOdds(unittest.TestCase):
         self.assertEqual(list(kept[0]), ["win"])  # only fresh quotes go into the archive
 
 
+class SessionClassification(unittest.TestCase):
+    def test_flags_follow_the_classification_not_openf1s_dnf(self):
+        import extras
+
+        num2 = {1: "AAA", 2: "BBB", 3: "CCC", 4: "DDD", 5: "EEE"}
+        sprint = [
+            {"driver_number": 1, "position": 1, "number_of_laps": 24},
+            {"driver_number": 2, "position": 2, "number_of_laps": 22, "dnf": True},  # retired, still classified
+            {"driver_number": 3, "position": 3, "number_of_laps": 21},  # under 90% of 24 (21.6 -> 21 laps: in)
+            {"driver_number": 4, "position": 4, "number_of_laps": 20},  # not classified, though not flagged
+            {"driver_number": 5, "position": None, "number_of_laps": 7, "dsq": True},
+        ]
+        self.assertEqual(extras.session_flags(sprint, num2, "s"), {"DDD": "dnf", "EEE": "dsq"})
+        quali = [
+            {"driver_number": 1, "duration": [90.1, 89.9, 89.5]},
+            {"driver_number": 2, "duration": [91.0, None, None], "dnf": True},  # crashed after setting a time
+            {"driver_number": 3, "duration": [None, None, None]},
+            {"driver_number": 4, "duration": [90.5, None, None], "dsq": True},
+        ]
+        self.assertEqual(extras.session_flags(quali, num2, "q"), {"CCC": "notime", "DDD": "dsq"})
+        laps = [{"driver_number": 1, "lap_duration": 92.1}, {"driver_number": 3, "lap_duration": 91.7}, {}]
+        self.assertEqual(extras.fastest_lap(laps, num2), "CCC")
+
+
+class FiaPenalties(unittest.TestCase):
+    def test_decisions_to_grid_places(self):
+        import collect
+
+        head = "Stewards Decision Document 20 From The Stewards To The Team Manager "
+        self.assertEqual(
+            collect.parse_decision(
+                head + "Decision Drop of 25 grid positions for the next Race in which the driver participates "
+                "Reason The penalty is imposed in accordance with Article B8.2.8 ... a 10 grid place penalty ..."
+            ),
+            25,
+        )
+        self.assertEqual(collect.parse_decision(head + "Decision Required to start the race from the pit lane."), 99)
+        self.assertEqual(collect.parse_decision(head + "Decision Reprimand (driving) Reason ... 5 grid places"), 0)
+        self.assertEqual(collect.parse_decision(head + "Decision 3 place grid penalty for the next Sprint."), 0)
+        self.assertEqual(collect.event_slug("Azerbaijan Grand Prix", 2026), "2026_azerbaijan_grand_prix")
+
+    def test_decisions_add_up_and_each_pdf_is_read_once(self):
+        import collect
+
+        rec = {
+            "event": "e",
+            "docs": [
+                {"title": "Doc 20 - Infringement - Car 14 - PU elements", "url": "a", "published": "T1"},
+                {"title": "Doc 34 - Infringement - Car 14 - PU element", "url": "b", "published": "T2"},
+                {"title": "Doc 48 - Infringement - Car 11 - Impeding Car 81", "url": "c", "published": "T3"},
+                {"title": "Doc 52 - Provisional Starting Grid", "url": "d", "published": "T4"},
+            ],
+        }
+        store, reads = {"x": rec}, []
+        texts = {
+            "a": "Decision Drop of 25 grid positions",
+            "b": "Decision Drop of 5 grid positions",
+            "c": "Decision Reprimand",
+        }
+
+        def read_bytes(url):
+            reads.append(url)
+            return texts[url]
+
+        with mock.patch.object(collect, "pdf_text", lambda b: b), mock.patch("os.path.exists", return_value=True):
+            args = (lambda *p: "x", lambda p: store[p], lambda p, v, **k: store.__setitem__(p, v), "e", read_bytes)
+            pen, at = collect.fia_penalties(*args)
+            self.assertEqual(pen, {14: 30})
+            self.assertEqual(at, {14: "T2"})
+            collect.fia_penalties(*args)
+        self.assertEqual(reads, ["a", "b", "c"])
+
+
 class ForecastRecord(unittest.TestCase):
     def test_input_hashes_show_which_input_changed(self):
         data = {"assets": [{"id": "1"}], "odds": {"win": {"NOR": 0.3}}, "generated": "x"}

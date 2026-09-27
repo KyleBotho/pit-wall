@@ -48,6 +48,7 @@ import {
   templateTeam,
   teamDist,
   teamSamples,
+  checkSim,
   teamValue,
   xpts,
 } from "./forecast.js";
@@ -312,7 +313,12 @@ function raceInputs() {
     bits.push(
       `<b>Known ${known.map((k) => names[k] || k).join(", ")}: simulated from the actual order` +
         (known.some((k) => k === "q" || k === "s") ? " (provisional until F1 Fantasy scores it)" : "") +
-        ".</b>",
+        ".</b>" +
+        (known.includes("s")
+          ? ` Sprint: positions, places and classification as run${
+              (su.simOpt.fl || {}).s ? `, fastest lap ${esc(su.simOpt.fl.s)}` : ""
+            }; overtakes estimated.`
+          : ""),
     );
   return bits.join(" ") + " ";
 }
@@ -673,7 +679,7 @@ export function runOptimiser() {
     );
   if (mc)
     bits.push(
-      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip.`,
+      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip${mc.checked ? " (judged on a second, independent set of weekends: the set that picked #1 flatters it)" : ""}.`,
     );
   if (near)
     bits.push(
@@ -709,7 +715,8 @@ export function runOptimiser() {
 }
 // Monte Carlo error of the next race's xPts (one race, ranked by xPts): each shown team's standard error and, on the
 // same simulated weekends as #1 (shared assets cancel), whether its gap to #1 is inside twice the gap's standard error
-// (marked ≈). Returns the typical 95% half-width, or null when it doesn't apply.
+// (marked ≈). The gap is measured on an independent run (checkSim) once it's in: on the samples that picked #1 it
+// looks bigger than it is. Returns the typical 95% half-width and whether the check run was used, or null.
 function simNoise(rows, chipK, H, sortK) {
   const all = [rows.cur, ...rows.pin, ...rows.best.slice(0, state.showN || 20)].filter(Boolean);
   all.forEach((r) => {
@@ -717,9 +724,14 @@ function simNoise(rows, chipK, H, sortK) {
     r.st.near1 = false;
   });
   if (H !== 1 || sortK !== "x" || !rows.best.length) return null;
-  const N = forecast.sims[0].N,
+  const chk = checkSim(() => {
+    if (state.view === "calc") runOptimiser();
+  });
+  const sim = chk || forecast.sims[0],
+    N = sim.N,
     top = rows.best[0];
-  const s0 = teamSamples(top.ids, top.boost, chipK, top.boost2);
+  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const s0 = teamSamples(top.ids, top.boost, chipK, top.boost2, sim);
   const sd = (xs) => {
     let m = 0,
       m2 = 0;
@@ -732,16 +744,16 @@ function simNoise(rows, chipK, H, sortK) {
   };
   const ses = [];
   for (const r of all) {
-    const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2);
+    const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2, sim);
     r.st.se = sd(si) / Math.sqrt(N);
     ses.push(r.st.se);
     if (r === top) continue;
     const d = new Float64Array(N);
     for (let k = 0; k < N; k++) d[k] = s0[k] - si[k];
-    r.st.near1 = top.st.x - r.st.x < 2 * (sd(d) / Math.sqrt(N));
+    r.st.near1 = (chk ? mean(d) : top.st.x - r.st.x) < 2 * (sd(d) / Math.sqrt(N));
   }
   ses.sort((a, b) => a - b);
-  return { se95: 1.96 * ses[Math.floor(ses.length / 2)] };
+  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk };
 }
 function renderBestTable(ctx) {
   const { chipK, T: team, vp, tilePts } = ctx,
@@ -1046,12 +1058,22 @@ export function openPlan() {
     locks,
     bans,
     beam: 10,
+    priceSteps: Object.fromEntries(
+      Object.entries(forecast.price)
+        .filter(([, v]) => v && v.path)
+        .map(([id, v]) => [id, v.path.steps]),
+    ),
+    priceN: forecast.sims[0].N,
   });
   const keep = bestRows.best[0];
   const p = plans[0];
   const races = forecast.races.slice(0, H);
   const body = p
-    ? `<p class="note">Expected <b>${f1(p.total)}</b> pts over ${H} races${keep ? ` (the best team kept for all ${H}: ${f1(keep.st.x + (keep.st.xdp || 0))})` : ""}. Transfers beyond the free ones cost −10 each.</p>` +
+    ? `<p class="note">Expected <b>${f1(p.total)}</b> pts over ${H} races${keep ? ` (the best team kept for all ${H}: ${f1(keep.st.x + (keep.st.xdp || 0))})` : ""}. Transfers beyond the free ones cost −10 each.${
+        p.afford != null && p.afford < 0.995
+          ? ` <span class="${p.afford < 0.9 ? "warn" : "muted"}">Affordable in ${Math.round(p.afford * 100)}% of the simulated price paths: in the rest a later transfer no longer fits the budget.</span>`
+          : ""
+      }</p>` +
       p.steps
         .map((st, k) => {
           const g = races[k],
@@ -1067,7 +1089,7 @@ export function openPlan() {
         .join("")
     : `<p class="note">No legal plan within the budget and transfer limits.</p>`;
   $("#modalBody").innerHTML =
-    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race. Price changes after the next race are simulated; later ones aren't counted.</p>`;
+    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race. Every race's price changes are simulated (the same futures race to race). Plans are made on the expected price changes and checked against every simulated price path (those that fit in 90%+ of them first).</p>`;
   openModal("plan");
 }
 

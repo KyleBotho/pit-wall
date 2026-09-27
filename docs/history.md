@@ -5,6 +5,48 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, the second review's sections 4-8 (user: "tackle the open items from sections 4-8").
+  - Provisional sessions (a session run but not scored): classification from OpenF1 by the FIA rule, not its
+    `dnf` flag (a car with 7 of 24 laps had dnf false; one with 21 of 24 classifies): not classified = under 90% of
+    the winner's laps, DSQ, DNS; qualifying "no time" = no time in any segment (a crash after setting one isn't).
+    The sprint's fastest lap from OpenF1 laps (`weekend.fl.s`, refetched until settled) goes to that driver; the
+    Calculator says what's actual (positions, classification, fastest lap) and what's estimated (overtakes).
+  - Pit bonus edges: a team with under 3 races of bands draws from the field's (`pitPool`), and the race always has
+    exactly one fastest stop, also when every band is 0 (was: none). Unchanged in normal races.
+  - Solver health: `solve` reports dropped (rank-deficient) directions and a rough condition number; `ridge` and
+    `poissonGlm` note themselves in a fit log (`Engine.withFitLog`); IRLS halves a step that lowers the penalised
+    likelihood and says whether it converged. The frozen record keeps `fits` and Data health warns on a bad one.
+    The overtake phi grid logs only the chosen phi (phi 0 makes a retired car's overtakes impossible: -inf).
+    Today: 7 fits, none bad. Output unchanged.
+  - Distributions: Poisson above rate 30 exact (sum of Poisson(30) chunks; the normal approximation had no skew);
+    the reliability Beta's spread scales with unc like the pace draws (k = races / unc^2: no jump just above 0;
+    identical at the default 1). The 0.4% logit floor documented (Kalshi's tick after de-vig; 10 of 2,500 sims).
+  - Winner's curse: the Calculator's near-tie markers (≈) are judged on an independent run of the next race (other
+    seeds, `checkSim`, built once after the page draws), not on the samples that picked #1.
+  - Evaluation: `asOf` now has each round's rain at lock (the frozen projection's, else
+    `backtest/weather_by_round.json` from Open-Meteo's previous-runs archive: older-run probabilities exist only for
+    R4-R5, elsewhere the latest run, `lead` 0) and the grid penalties the stewards had published before lock.
+    Section 6 with them: CRPS 8.693, MAE 11.89 (before 8.686 / 11.95: no real change). The weekly fit is nested:
+    it searches on all but the last 3 rounds and scores the proposal against the shipped settings on those
+    (paired, other seeds; `holdout` in fit.json, shown in Model health). Smoke run at N 300: held out +0.065 +/-
+    0.092, i.e. the in-sample "gain" didn't carry.
+  - FOUND: race control announced no grid penalties at all in 2026 (OpenF1, all 15 meetings), so the live sim's
+    automatic penalties had no source this season. Now from the stewards' decisions: `collect.fia_penalties` reads
+    each car-infringement PDF once (pypdf, in requirements.txt; "Drop of 25 grid positions ...", back of the grid /
+    pit lane = 99; reprimands and sprint-only ones 0), adds them up per car and merges them into
+    `weekend.penalties` with their publication time (`penAt`). Baku: #14 30, #18 20, #43 5.
+  - Planner: `pricePath` keeps every sample's change per race (`steps`, int8 tenths); `planHorizon` checks each final
+    plan against them (`afford`: the share of futures in which every later transfer still fits the budget) and
+    ranks plans that fit in 90%+ first. The modal says so. Seen: the best fresh-$100m 3-race plan fits 54%.
+  - Market quote quality: Kalshi bid-ask spreads kept per line (`odds.spread`); SIM.oddsQuality (off) divides a
+    line's pull towards the market by 1 + q x spread / price. Challenger `oddsq`: judged on rounds from R17 on.
+  - Performance (same Node machine): the market fit 166 -> 116 ms, a 10k-weekend race 163 -> 120 ms. Typed-array
+    sorts for the quantiles (identical output), lean runs inside the market fit (no quantiles; identical), and both
+    Box-Muller halves (RNG_VERSION 5: a new stream; section 6 CRPS 8.722 vs 8.693, MAE 11.93 vs 11.89, within
+    one seed's noise).
+  - Not done: adaptive sample counts / sequential stopping, quantile precision display, a worker for the
+    Calculator's own runs (the build's presim already covers default settings), a fully stochastic transfer / chip
+    policy, the hierarchical pace and survival models, and extracting PU mileage / tyre sets from FIA documents.
 - [x] 2026-09-27, second independent review (`docs/reviews/2026-09-27/F1-post-upgrade-review.md` + evidence JSON;
       7.5/10, up from 7). Its seven confirmed findings fixed the same day:
   - A. Negative weather correlation: `simSample` clamped rho to >= 0, so R16's -0.21 ran as independent. Now the

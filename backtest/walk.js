@@ -49,6 +49,38 @@ if (D) {
       ODDS[o.gd] = o;
     }
 }
+// rain forecasts at lock: the frozen projection's (the site's own, from R15) or rebuilt (backtest/weather_rounds.py)
+const WX = read("weather_by_round.json");
+/** Round r's rain as at lock ({q, s, r}), or null. */
+function wxAt(r) {
+  const fz = (D.projHist || {})[r];
+  if (fz && fz.rain && !fz.rebuilt) return fz.rain;
+  const w = WX[r];
+  return w ? { q: w.q, s: w.s ?? w.r, r: w.r } : null;
+}
+/** Grid penalties the stewards had published by round r's lock (history/<season>/fia, parsed decisions), as TLAs. */
+function penAt(r) {
+  const g = D.schedule.find((x) => x.gd === r);
+  if (!g) return {};
+  const slug =
+    `${D.season}_` +
+    g.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "");
+  const f = path.join(__dirname, "..", "history", String(D.season), "fia", `${slug}.json`);
+  if (!fs.existsSync(f)) return {};
+  const num = Object.fromEntries((D.results.race[r] || []).filter((x) => x.num).map((x) => [x.num, x.tla]));
+  /** @type {Record<string, number>} */
+  const pen = {};
+  for (const d of JSON.parse(fs.readFileSync(f, "utf8")).docs) {
+    const m = /(?:Infringement|Decision|Offence) - Car (\d+)\b/i.exec(d.title || "");
+    const t = m && num[+m[1]];
+    if (!t || !d.grid || !(Date.parse(d.published) < Date.parse(g.lock))) continue;
+    pen[t] = d.grid >= 99 || pen[t] === 99 ? 99 : (pen[t] || 0) + d.grid;
+  }
+  return pen;
+}
 const codes = (...cs) =>
   D ? new Set(D.evNames.map((e, i) => (cs.includes(e.c) ? i : -1)).filter((i) => i >= 0)) : new Set();
 const OVC = codes("R OV", "S OV");
@@ -90,8 +122,9 @@ function asOf(r, drop = []) {
     ),
     raceInfo: cut(D.raceInfo),
     practice: PRACTICE[r] || [],
-    weather: {},
-    weekend: null,
+    // this round's rain forecast and grid penalties as at lock (second review: they used to be left out)
+    weather: wxAt(r) ? { [r]: wxAt(r) } : {},
+    weekend: { gd: r, penalties: penAt(r), grid: {} },
     live: null, // the live weekend's scored sessions: not known at lock
     odds: ODDS[r] ? { ...ODDS[r], gd: r } : null,
   };

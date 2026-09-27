@@ -104,6 +104,17 @@ def problems(data, now):
                     f"Global and league history stop at R{max(hist)}: the private league workflow may be failing.",
                 )
             )
+    fits = (data.get("fitHealth") or {}).get("bad") or []
+    if fits:
+        names = ", ".join(sorted({f["name"].split(" (")[0] for f in fits}))
+        out.append(
+            (
+                "fits",
+                "warn",
+                f"{len(fits)} model fit(s) didn't converge or couldn't pin a term down ({names}): their output is "
+                "finite but may not mean much.",
+            )
+        )
     if nxt and nxt in sched:
         g = sched[nxt]
         for p in data.get("practice") or []:

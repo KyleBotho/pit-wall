@@ -5,6 +5,9 @@
 // random numbers), so differences are the settings', not the dice's.
 // --save: also write the result to history/<season>/fit.json as a proposal (the weekly fit workflow), shown in the
 // Sim lab's Model health panel; the owner decides, and a change goes into engine.js by hand.
+// Held out (second review: fitting and judging on the same rounds flatters the fit): the search runs on all but the
+// last FIT_HOLDOUT rounds (default 3), and the proposal is then scored against the shipped settings on those,
+// round by round (paired, other seeds): `holdout` in fit.json. Adopt only with a gain there beyond ~2 SE.
 const fs = require("node:fs");
 const path = require("node:path");
 const W = require("./walk.js");
@@ -13,6 +16,10 @@ const SAVE = process.argv.includes("--save");
 
 const N = +(process.env.FIT_N || 4000);
 const PASSES = +(process.env.FIT_PASSES || 1);
+const HOLD = +(process.env.FIT_HOLDOUT ?? 3);
+const ALL = W.D.done.filter((g) => g >= 5);
+const INNER = HOLD > 0 && ALL.length > HOLD + 3 ? ALL.slice(0, -HOLD) : ALL;
+const OUTER = INNER.length < ALL.length ? ALL.slice(INNER.length) : [];
 // [object, key, candidate values]
 const SPACE = [
   [E.MODEL, "paceShrink", [0.5, 0.6, 0.7, 0.8, 0.9, 1]],
@@ -34,7 +41,7 @@ const SPACE = [
   [E.SIM, "pitStops", [0, 1]],
 ];
 
-const score = () => W.evaluate({ N, seed: 3 });
+const score = () => W.evaluate({ N, seed: 3, rounds: INNER });
 const fmt = (r) =>
   `CRPS ${r.crps.toFixed(3)}  MAE ${r.mae.toFixed(3)}  rho ${r.rho.toFixed(3)}  80% ${(100 * r.cover80).toFixed(1)}%  50% ${(100 * r.cover50).toFixed(1)}%  logQ ${r.lsQ.toFixed(3)}  logR ${r.lsR.toFixed(3)}`;
 
@@ -61,6 +68,29 @@ for (let pass = 0; pass < PASSES; pass++)
   }
 console.log("\nbest settings:");
 for (const [obj, key] of SPACE) console.log(`  ${obj === E.SIM ? "SIM" : "MODEL"}.${key} = ${obj[key]}`);
+// the held-out rounds: fitted vs shipped, the same seeds for both, per-round CRPS differences
+let holdout = null;
+if (OUTER.length) {
+  const fitted = SPACE.map(([obj, key]) => obj[key]);
+  const run = (vals) => {
+    SPACE.forEach(([obj, key], i) => (obj[key] = vals[i]));
+    return [11, 12].map((seed) => W.evaluate({ N, seed, rounds: OUTER }));
+  };
+  const a = run(shipped),
+    b = run(fitted);
+  const d = OUTER.map((_, k) => W.mean(b.map((x, j) => x.byRound[k].crps - a[j].byRound[k].crps)));
+  const m = W.mean(d),
+    se = d.length > 1 ? Math.sqrt(d.reduce((t, x) => t + (x - m) ** 2, 0) / (d.length - 1) / d.length) : NaN;
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  holdout = {
+    rounds: OUTER,
+    shipped: r3(W.mean(a.map((x) => x.crps))),
+    fitted: r3(W.mean(b.map((x) => x.crps))),
+    dCrps: r3(m),
+    se: r3(se),
+  };
+  console.log(`held out R${OUTER.join(", R")}: fitted - shipped CRPS ${m.toFixed(3)} ± ${se.toFixed(3)}`);
+}
 if (SAVE) {
   const r3 = (x) => Math.round(x * 1000) / 1000;
   const sum = (r) => ({
@@ -74,7 +104,8 @@ if (SAVE) {
     generated: new Date().toISOString().slice(0, 16) + "Z",
     N,
     passes: PASSES,
-    rounds: W.D.done.filter((g) => g >= 5),
+    rounds: INNER,
+    holdout,
     shipped: sum(start),
     fitted: sum(best),
     changes: SPACE.map(([obj, key], i) => ({

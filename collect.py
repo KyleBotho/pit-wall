@@ -193,6 +193,77 @@ def parse_fia(html):
     return out
 
 
+PEN_TITLE = re.compile(r"(?:Infringement|Decision|Offence) - Car (\d+)\b", re.I)
+DROP = re.compile(r"drop of (\d+) grid (?:positions?|places?)|(\d+)[ -](?:grid )?places? grid penalty", re.I)
+BACK_OF_GRID = re.compile(r"back of the (?:starting )?grid|from the pit ?lane", re.I)
+
+
+def parse_decision(text):
+    """A stewards' decision (PDF text) -> grid places for the next race: the drop, 99 = back of the grid / pit lane,
+    0 = no grid penalty (a reprimand, a fine, a time penalty) or one for a sprint only."""
+    t = re.sub(r"\s+", " ", text)
+    i = t.find("Decision")
+    dec = t[i : i + 400] if i >= 0 else t[:400]
+    j = dec.find("Reason")
+    dec = dec[:j] if j > 0 else dec
+    if re.search(r"\bsprint\b", dec, re.I) and not re.search(r"\bnext race\b", dec, re.I):
+        return 0
+    if BACK_OF_GRID.search(dec):
+        return 99
+    m = DROP.search(dec)
+    return int(m.group(1) or m.group(2)) if m else 0
+
+
+def pdf_text(data):
+    """The text of a PDF (bytes), or None without pypdf."""
+    try:
+        import io
+
+        import pypdf
+    except ImportError:
+        return None
+    return "\n".join(p.extract_text() or "" for p in pypdf.PdfReader(io.BytesIO(data)).pages)
+
+
+def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
+    """The event's grid penalties from the stewards' decisions: each car-infringement document's PDF read once (at
+    most `most` a run; the result kept in the index as `grid`) -> ({car number: places}, {car number: published}).
+    Several decisions add up (the FIA's "accumulation"); 99 (back of the grid) wins."""
+    import os
+
+    path = archived("fia", f"{slug}.json")
+    if not os.path.exists(path):
+        return {}, {}
+    rec = read_json(path)
+    fetched = 0
+    for d in rec["docs"]:
+        if "grid" in d or not PEN_TITLE.search(d.get("title") or ""):
+            continue
+        if fetched >= most:
+            break
+        text = pdf_text(read_bytes(d["url"]))
+        fetched += 1
+        if text is None:
+            break
+        d["grid"] = parse_decision(text)
+    if fetched:
+        write_json(path, rec, indent=1)
+    pen, at = {}, {}
+    for d in rec["docs"]:
+        m = PEN_TITLE.search(d.get("title") or "")
+        if not m or not d.get("grid"):
+            continue
+        car = int(m.group(1))
+        pen[car] = 99 if d["grid"] >= 99 or pen.get(car) == 99 else pen.get(car, 0) + d["grid"]
+        at[car] = max(at.get(car, ""), d.get("published") or "")
+    return pen, at
+
+
+def event_slug(name, season):
+    """The FIA's event slug for a meeting name: "Azerbaijan Grand Prix" -> "2026_azerbaijan_grand_prix"."""
+    return f"{season}_" + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
 def fia_documents(read_text, archived, read_json, write_json, now):
     """The FIA's current event's documents (its landing page), merged into history/<season>/fia/<event>.json with
     the time each was first seen. Returns how many were new."""

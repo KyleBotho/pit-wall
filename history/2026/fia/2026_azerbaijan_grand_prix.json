@@ -125,21 +125,24 @@
    "title": "Doc 19 - Infringement - Car 77 - Overtaking under yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_77_-_overtaking_under_yellow_flags.pdf",
    "published": "2026-09-24T11:31+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 20,
    "title": "Doc 20 - Infringement - Car 14 - PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_14_-_pu_elements.pdf",
    "published": "2026-09-24T12:10+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 25
   },
   {
    "doc": 21,
    "title": "Doc 21 - Infringement - Car 18 - PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_18_-_pu_elements.pdf",
    "published": "2026-09-24T12:10+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 20
   },
   {
    "doc": 22,
@@ -195,7 +198,8 @@
    "title": "Doc 29 - Infringement - Car 44 - Impeding car 30",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_44_-_impeding_car_30.pdf",
    "published": "2026-09-24T16:05+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 31,
@@ -223,7 +227,8 @@
    "title": "Doc 34 - Infringement - Car 14 - PU element",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_14_-_pu_element.pdf",
    "published": "2026-09-25T09:21+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 5
   },
   {
    "doc": 35,
@@ -258,14 +263,16 @@
    "title": "Doc 39 - Infringement - Car 55 - Failure to slow for yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_55_-_failure_to_slow_for_yellow_flags.pdf",
    "published": "2026-09-25T11:35+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 40,
    "title": "Doc 40 - Infringement - Car 41 - Leaving the track in turn 15",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_41_-_leaving_the_track_in_turn_15.pdf",
    "published": "2026-09-25T11:38+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 41,
@@ -321,14 +328,16 @@
    "title": "Doc 48 - Infringement - Car 11 - Impeding Car 81",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_11_-_impeding_car_81.pdf",
    "published": "2026-09-25T15:09+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 49,
    "title": "Doc 49 - Infringement - Car 55 - Failure to slow for yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_55_-_failure_to_slow_for_yellow_flags_0.pdf",
    "published": "2026-09-25T15:17+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 50,
@@ -440,42 +449,48 @@
    "title": "Doc 65 - Decision - Car 41 - Collision with Car 30 in turn 1",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_decision_-_car_41_-_collision_with_car_30_in_turn_1.pdf",
    "published": "2026-09-26T15:29+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 66,
    "title": "Doc 66 - Infringement - Car 43 - Collision with Car 10 in Turn 1",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_43_-_collision_with_car_10_in_turn_1.pdf",
    "published": "2026-09-26T15:30+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 5
   },
   {
    "doc": 67,
    "title": "Doc 67 - Decision - Car 77 - Turn 15 Incident",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_decision_-_car_77_-_turn_15_incident.pdf",
    "published": "2026-09-26T15:40+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 68,
    "title": "Doc 68 - Infringement - Car 5 - Overtaking under yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_5_-_overtaking_under_yellow_flags.pdf",
    "published": "2026-09-26T15:52+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 69,
    "title": "Doc 69 - Infringement - Car 6 - Failing to follow Race Directors Instructions - Practice Start",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_6_-_failing_to_follow_race_directors_instructions_-_practice_start.pdf",
    "published": "2026-09-26T15:54+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 70,
    "title": "Doc 70 - Infringement - Car 55 - Failing to follow Race Directors Instructions - Practice Start",
    "url": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_55_-_failing_to_follow_race_directors_instructions_-_practice_start.pdf",
    "published": "2026-09-26T15:54+00:00",
-   "firstSeen": "2026-09-27T14:26+00:00"
+   "firstSeen": "2026-09-27T14:26+00:00",
+   "grid": 0
   },
   {
    "doc": 71,

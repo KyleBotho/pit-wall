@@ -12,6 +12,7 @@ Every function takes the caller's paced fetchers (f1feeds.get / get_soft) and ca
 (a missing extra never blocks a price refresh) and returns plain JSON for DATA.
 """
 
+import math
 import re
 import statistics
 from datetime import datetime, timedelta, timezone
@@ -350,6 +351,14 @@ def _mid(m):
     return float(last) if last else (a or None)
 
 
+def _spread(m):
+    try:
+        b, a = float(m.get("yes_bid_dollars") or 0), float(m.get("yes_ask_dollars") or 0)
+    except ValueError:
+        return None
+    return round(a - b, 4) if a > 0 and b > 0 and a >= b else None
+
+
 def odds(get_soft, cached, name, season, tlas, field=22, keep=None):
     """Market probabilities for the next race: {win, podium, top10, pole: {TLA: p}} (only drivers we know)."""
     try:
@@ -375,19 +384,25 @@ def odds(get_soft, cached, name, season, tlas, field=22, keep=None):
         except Exception as e:  # noqa: BLE001
             _warn(f"Kalshi {series}", e)
             continue
-        raw = {}
+        raw, spread = {}, {}
         for m in d.get("markets") or []:
             tla = m["ticker"].rsplit("-", 1)[-1]
             p = _mid(m)
             if tla in tlas and p is not None:
                 raw[tla] = p
+                sp = _spread(m)
+                if sp is not None:
+                    spread[tla] = sp
             if tla in tlas:
                 books.setdefault(key, {})[tla] = collect.quote_row(m)
         if len(raw) >= 10:
             out[key] = _norm(raw, total, field)
+            # bid-ask spread per line (dollars, before de-vigging): how sure the market is of it (SIM.oddsQuality)
+            if spread:
+                out.setdefault("spread", {})[key] = spread
     # when each book was fetched (a cached copy after a failed request keeps its own time); at = the oldest, which
     # decides what the market can have known (engine.js oddsKnown: the qualifying order only if at is after it)
-    used = [k for k in KALSHI_SERIES if k in out]
+    used = [k for k in KALSHI_SERIES if k in out and k != "spread"]
     out["asOf"] = {k: got[k].get("at") for k in used}
     stale = [k for k in used if not got[k].get("fresh")]
     if stale:
@@ -411,6 +426,63 @@ PEN = re.compile(r"CAR (\d+) \([A-Z]{3}\).*?(\d+) PLACE GRID PENALTY")
 BACK = re.compile(r"CAR (\d+) \([A-Z]{3}\).*?(BACK OF THE GRID|PIT ?LANE)")
 
 
+def grid_penalties(rc, num2, before=None):
+    """Race control's grid penalties: ({TLA: places, 99 = back of the grid / pit lane}, {TLA: when announced (the
+    latest message)}). before (datetime): only messages before then (what was known at lock, for the backtest)."""
+    pen, at = {}, {}
+    for m in rc or []:
+        msg = (m.get("message") or "").upper()
+        if "GRID" not in msg and "PIT LANE" not in msg and "PITLANE" not in msg:
+            continue
+        if before and m.get("date") and _dt(m["date"]) >= before:
+            continue
+        p, b = PEN.search(msg), BACK.search(msg)
+        t = num2.get(int((p or b).group(1))) if p or b else None
+        if not t:
+            continue
+        pen[t] = pen.get(t, 0) + int(p.group(2)) if p else 99
+        # a market quoted before the announcement didn't know it
+        if m.get("date"):
+            at[t] = max(at.get(t, ""), m["date"])
+    return pen, at
+
+
+def session_flags(res, num2, key):
+    """Who a finished session's classification leaves without points, until F1 Fantasy has scored it: in qualifying
+    ("q", "sq") no time in any segment ("notime") or disqualified; in a sprint or race, disqualified, didn't start,
+    or not classified: under 90% of the winner's laps (FIA rule; OpenF1's `dnf` means only "didn't finish", and a
+    car can retire and still classify). A car without a position isn't in the order at all (the sim retires it)."""
+    flags = {}
+    if key in ("q", "sq"):
+        for r in res:
+            t = num2.get(r.get("driver_number"))
+            d = r.get("duration")
+            times = [x for x in (d if isinstance(d, list) else [d]) if x]
+            f = "dsq" if r.get("dsq") else "notime" if r.get("dns") or not times else None
+            if t and f:
+                flags[t] = f
+        return flags
+    lead = max((r.get("number_of_laps") or 0 for r in res), default=0)
+    need = math.floor(0.9 * lead)
+    for r in res:
+        t = num2.get(r.get("driver_number"))
+        if not t:
+            continue
+        if r.get("dsq"):
+            flags[t] = "dsq"
+        elif r.get("dns"):
+            flags[t] = "dns"
+        elif r.get("position") and (r.get("number_of_laps") or 0) < need:
+            flags[t] = "dnf"
+    return flags
+
+
+def fastest_lap(laps, num2):
+    """The TLA with the session's fastest lap (OpenF1 laps), or None."""
+    best = min((x for x in laps or [] if x.get("lap_duration")), key=lambda x: x["lap_duration"], default=None)
+    return best and num2.get(best.get("driver_number"))
+
+
 def weekend(get_soft, cached, season, g, now):
     """Race-control grid penalties this weekend and, once run, the qualifying / sprint qualifying / sprint order."""
     out = {"penalties": {}, "grid": {}}
@@ -427,21 +499,9 @@ def weekend(get_soft, cached, season, g, now):
         drv = get_soft(f"{OPENF1}/drivers?meeting_key={meeting}", cached(f"of_drivers_m{meeting}.json"))
         num2 = {d["driver_number"]: d["name_acronym"] for d in drv or []}
         rc = get_soft(f"{OPENF1}/race_control?meeting_key={meeting}", cached(f"of_rc_m{meeting}.json"))
-        for m in rc or []:
-            msg = (m.get("message") or "").upper()
-            if "GRID" not in msg and "PIT LANE" not in msg and "PITLANE" not in msg:
-                continue
-            p, b = PEN.search(msg), BACK.search(msg)
-            t = num2.get(int((p or b).group(1))) if p or b else None
-            if not t:
-                continue
-            if p:
-                out["penalties"][t] = out["penalties"].get(t, 0) + int(p.group(2))
-            else:
-                out["penalties"][t] = 99  # back of the grid / pit lane
-            # when race control announced it (the latest message): a market quoted before then didn't know it
-            if m.get("date"):
-                out.setdefault("penAt", {})[t] = max(out.get("penAt", {}).get(t, ""), m["date"])
+        out["penalties"], pen_at = grid_penalties(rc, num2)
+        if pen_at:
+            out["penAt"] = pen_at
         # the official race grid once published (penalties and pit-lane starts applied): what the race starts from
         rs = race if race and _dt(race["date_start"]) - timedelta(hours=2) <= now else None
         if rs:
@@ -463,16 +523,17 @@ def weekend(get_soft, cached, season, g, now):
             order = [num2.get(r["driver_number"]) for r in rows]
             if len(order) >= 10 and all(order):
                 out["grid"][key] = order
-                # not classified / didn't start / disqualified (a car can be in the order and still not
-                # classify); in qualifying, no time set. The sim scores these until F1 Fantasy has scored the session
-                flags = {}
-                for r in res or []:
-                    t = num2.get(r.get("driver_number"))
-                    f = next((k for k in ("dsq", "dns", "dnf") if r.get(k)), None)
-                    if t and f:
-                        flags[t] = f
+                flags = session_flags(res or [], num2, key)
                 if flags:
                     out.setdefault("status", {})[key] = flags
+                if key == "s":
+                    # refetched each time (not _of's cache-for-good): the first laps may land before the rest
+                    laps = get_soft(
+                        f"{OPENF1}/laps?session_key={s['session_key']}", cached(f"of_laps_live_{s['session_key']}.json")
+                    )
+                    fl = fastest_lap(laps if isinstance(laps, list) else [], num2)
+                    if fl:
+                        out.setdefault("fl", {})["s"] = fl
     except Exception as e:  # noqa: BLE001
         _warn("OpenF1 weekend", e)
     return out

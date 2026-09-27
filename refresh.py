@@ -510,8 +510,37 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
             kept.append(f"{n} FIA documents")
     except Exception as e:  # noqa: BLE001 - collection only; never blocks a build
         print(f"  ! FIA documents: {e}")
+    # grid penalties from the stewards' decisions (race control announces none in 2026): the PDFs of this
+    # weekend's car infringements, read once each; car numbers to TLAs from the last race's classification
+    if nxt_g and out.get("weekend") is not None and busy:
+        try:
+            pen, at = gather.fia_penalties(
+                archived, read_json, write_json, gather.event_slug(nxt_g["name"], SEASON), fia_bytes
+            )
+            last = max((int(k) for k in results["race"]), default=None)
+            num = {r["num"]: r["tla"] for r in (results["race"].get(last) or []) if r.get("num")} if last else {}
+            w = out["weekend"]
+            for car, places in pen.items():
+                t = num.get(car)
+                if t and places:
+                    w["penalties"][t] = places
+                    w.setdefault("penAt", {})[t] = at[car]
+            if pen:
+                print(f"  FIA grid penalties: {', '.join(f'#{c} {p}' for c, p in pen.items() if p) or 'none'}")
+        except Exception as e:  # noqa: BLE001
+            print(f"  ! FIA grid penalties: {e}")
     print(f"  archived: {', '.join(kept) or 'nothing new'}")
     return out
+
+
+def fia_bytes(url):
+    """An FIA document (PDF bytes), one paced request."""
+    import urllib.request
+
+    time.sleep(PAUSE)
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return r.read()
 
 
 def fia_text(url):
@@ -712,6 +741,8 @@ def freeze_projection(data, g):
         }
     )
     name = f"gd{g['gd']:02d}.json"
+    # the fits behind it that didn't converge or couldn't pin a term down (health.py warns)
+    data["fitHealth"] = proj["record"].get("fits")
     write_json(archived("projections", name), proj, indent=1, sort_keys=True)
     if out.get("challengers"):
         write_json(

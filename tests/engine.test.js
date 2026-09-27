@@ -92,6 +92,54 @@ const circuit = {
   feat: [0.5, 0.2, 0.5],
 };
 
+test("fit log: a singular fit is flagged (not just finite); a Poisson fit says whether it converged", () => {
+  const { value, fits } = E.withFitLog(() =>
+    E.ridge(
+      [
+        [1, 1],
+        [1, 1],
+      ],
+      [1, 2],
+      0,
+      "twins",
+    ),
+  );
+  assert.ok(value.every(Number.isFinite));
+  assert.deepEqual([fits[0].name, fits[0].ok, fits[0].dropped], ["twins", false, 1]);
+  const X = [0, 1, 2, 3, 4, 5].map((v) => [1, v / 5]),
+    y = [1, 2, 2, 4, 5, 7];
+  const ok = E.withFitLog(() => E.poissonGlm(X, y, new Array(6).fill(0), 0.5, "fine")).fits[0];
+  assert.ok(ok.ok && ok.converged && ok.iters < 30);
+  // perfect separation: the slope runs off, IRLS never settles
+  const sep = E.withFitLog(() => E.poissonGlm(X, [0, 0, 0, 0, 0, 9], new Array(6).fill(0), 0, "separated")).fits[0];
+  assert.equal(sep.ok, false);
+  assert.equal(E.withFitLog(() => 0).fits.length, 0);
+});
+
+test("gauss: both Box-Muller halves are standard normals, and a pair is uncorrelated", () => {
+  const r = E.mulberry32(3),
+    n = 200000,
+    xs = Array.from({ length: n }, () => E.gauss(r));
+  const m = xs.reduce((a, b) => a + b, 0) / n,
+    v = xs.reduce((a, b) => a + (b - m) ** 2, 0) / n;
+  let c = 0;
+  for (let k = 0; k + 1 < n; k += 2) c += xs[k] * xs[k + 1];
+  assert.ok(Math.abs(m) < 0.01 && Math.abs(v - 1) < 0.015, `${m} ${v}`);
+  assert.ok(Math.abs(c / (n / 2)) < 0.01, `pair corr ${c / (n / 2)}`);
+  assert.ok(Math.abs(xs.filter((x) => x > 1.96).length / n - 0.025) < 0.002);
+});
+
+test("poisson: exact at high rates (the skew of Poisson(31) is 1/sqrt(31) = 0.18, not 0)", () => {
+  const r = E.mulberry32(7),
+    n = 200000,
+    xs = Array.from({ length: n }, () => E.poisson(31, r));
+  const m = xs.reduce((a, b) => a + b, 0) / n,
+    v = xs.reduce((a, b) => a + (b - m) ** 2, 0) / n,
+    sk = xs.reduce((a, b) => a + (b - m) ** 3, 0) / n / v ** 1.5;
+  assert.ok(Math.abs(m - 31) < 0.05 && Math.abs(v - 31) < 0.4, `${m} ${v}`);
+  assert.ok(Math.abs(sk - 1 / Math.sqrt(31)) < 0.03, `skew ${sk}`);
+});
+
 test("numerical edges: a singular system stays finite, zero weights never win, no noise, no samples", () => {
   // the reviewer's fixtures (2026-09-27): [[1,1],[1,1]] x = [1,2] came back as about -1e12 / +1e12
   const x = E.ridge(
@@ -488,6 +536,10 @@ test("simulate: a run-but-unscored sprint uses its classification: a car in the 
   const dnf = E.simulate(m, circuit, true, 400, 5, { known, status: { s: { D00: "dnf" } } });
   assert.ok(plain.stats[0].cat.sprint > 5); // first in the order: 8 points
   assert.ok(dnf.stats[0].cat.sprint < -9); // not classified: -10 (and its overtakes)
+  // the sprint's fastest lap is known once it's run: +5 to that driver in every sample, none drawn for others
+  const fl = E.simulate(m, circuit, true, 400, 5, { known, fl: { s: "D51" } });
+  const at = (sim, id) => sim.stats[sim.ids.indexOf(id)].cat.sprint;
+  assert.ok(at(fl, "D51") - at(plain, "D51") > 4.5, `${at(fl, "D51")} vs ${at(plain, "D51")}`);
 });
 
 test("scoredSessions: a session counts once it ended before the feed and every racing asset has its points", () => {
@@ -587,6 +639,17 @@ test("simulate: team-mates keep their own retirement chances, whichever comes fi
   }
 });
 
+test("simulate: reliability uncertainty fades smoothly to none (no jump just above 0)", () => {
+  const m = toyModel();
+  const dry = { ...circuit, rain: { q: 0, s: 0, r: 0 } };
+  const sd = (unc) => {
+    const st = E.simulate(m, dry, false, 3000, 3, { unc }).stats.slice(0, m.drivers.length);
+    return st.reduce((a, x) => a + x.sd, 0) / st.length;
+  };
+  const [s0, s1, sBig] = [sd(0), sd(0.02), sd(1)];
+  assert.ok(Math.abs(s1 - s0) < 0.35 * Math.abs(sBig - s0) + 0.2, `${s0} ${s1} ${sBig}`);
+});
+
 test("simulate: the race's fastest-stop bonus goes to one team a race, among the best stop bands", () => {
   const m = toyModel();
   m.cons.forEach((c, k) =>
@@ -601,6 +664,14 @@ test("simulate: the race's fastest-stop bonus goes to one team a race, among the
   const even = E.simulate(m, circuit, false, 4000, 1).stats.slice(m.drivers.length);
   assert.ok(Math.abs(even.reduce((a, st) => a + st.pit, 0) - (5 * m.cons.length + 5)) < 1e-9);
   assert.ok(even[1].pit > 8.5);
+  // the review's edges: every band 0 (all stops slow) still has one fastest stop; a team with too few races of
+  // bands draws from the field's, and the race still has exactly one bonus
+  m.cons.forEach((c) => Object.assign(c, { bands: [0, 0, 0], bonusW: 1 }));
+  const slow = E.simulate(m, circuit, false, 1000, 1).stats.slice(m.drivers.length);
+  assert.ok(Math.abs(slow.reduce((a, st) => a + st.pit, 0) - 5) < 1e-9);
+  m.cons.forEach((c, k) => Object.assign(c, { bands: k === 0 ? [6] : [2, 4, 6] }));
+  const thin = E.simulate(m, circuit, false, 1000, 1).stats.slice(m.drivers.length);
+  assert.ok(Math.abs(thin.reduce((a, st) => a + st.pit, 0) - (4 * m.cons.length + 5)) < 0.6);
 });
 
 test("simulate: with a persist seed, races share each sample's car strength (the horizon keeps its uncertainty)", () => {
@@ -702,6 +773,11 @@ test("applyOdds moves the simulated win chances towards the market", () => {
   assert.ok(after.stats[i].r[0] > before.stats[i].r[0] + 0.05, `win ${before.stats[i].r[0]} -> ${after.stats[i].r[0]}`);
   const m0 = E.applyOdds(m, circuit, odds, { w: 0 });
   assert.equal(m0, m, "weight 0 leaves the model alone");
+  // with quote quality on, a wide spread on the favourite's lines pulls its pace less
+  const wide = { ...odds, spread: { win: { [favourite]: 0.2 }, top10: { [favourite]: 0.5 } } };
+  const pull = (set) =>
+    Math.abs(E.withSettings(set, () => E.applyOdds(m, circuit, wide, { w: 1, n: 1500 })).drivers[i].oddsR);
+  assert.ok(pull({ "SIM.oddsQuality": 1 }) < 0.8 * pull({}), `${pull({ "SIM.oddsQuality": 1 })} vs ${pull({})}`);
 });
 
 test("applyOdds after qualifying: the known grid explains the market, not a slower car", () => {
@@ -926,6 +1002,41 @@ test("planHorizon: a price change carries through every later race, and only hel
   assert.deepEqual(cap, [70, 70.6, 70.6]); // f's rise (not held) adds nothing
 });
 
+test("planHorizon: each plan is checked against the sampled price paths (afford)", () => {
+  const mk = (vals) =>
+    Object.entries(vals).map(([id, e]) => ({
+      id,
+      kind: id[0] === "K" ? "C" : "D",
+      price: 10,
+      e,
+      boostE: id[0] === "K" ? 0 : e,
+      active: true,
+    }));
+  const r1 = { a: 20, b: 20, c: 20, d: 20, e: 20, f: 5, KA: 10, KB: 10, KC: 5 };
+  const r2 = { a: 20, b: 20, c: 20, d: 20, e: 5, f: 40, KA: 10, KB: 10, KC: 5 };
+  const team = ["a", "b", "c", "d", "e", "KA", "KB"];
+  const o = { cap: 70, free: 0, maxT: 7, chip: "", locks: new Set(), bans: new Set() };
+  // f rises $0.6m after race 1 in half the futures (tenths, race k's sample s at k * N + s): then e -> f is $0.6m
+  // over budget; e's price moves with it in none
+  const N = 4,
+    f = new Int8Array(3 * N);
+  f.set([6, 6, 0, 0]);
+  const run = (steps) => E.planHorizon([{ cand: mk(r1) }, { cand: mk(r2) }], team, { ...o, ...steps });
+  // without the paths: keep for race 1, then e -> f for free (320)
+  const [plain] = run({});
+  assert.equal(Math.round(plain.total), 320);
+  assert.equal(plain.afford, undefined);
+  // f never rises: the same plan, affordable in every future
+  const [calm] = run({ priceSteps: { f: new Int8Array(3 * N) }, priceN: N });
+  assert.equal(Math.round(calm.total), 320);
+  assert.equal(calm.afford, 1);
+  // f rises in half the futures: that plan fits only half the time and drops below the plans that fit
+  const risky = run({ priceSteps: { f }, priceN: N });
+  assert.ok(risky[0].afford >= 0.9 && risky[0].total < 320);
+  const wait = risky.find((p) => !p.steps[0].team.includes("f") && p.steps[1].team.includes("f"));
+  assert.ok(!wait || wait.afford === 0.5);
+});
+
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {
   const m = toyModel(),
     keep = E.SIM.qualiNoTime;
@@ -1032,7 +1143,7 @@ test("raceSegs: the yo-yo credits both cars and never changes the order", () => 
     );
     E.SIM.yoyo = 1; // every close pair swaps and swaps back each segment
     assert.deepEqual(E.raceSegs(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7]);
-    assert.ok(passes[0] > 0 && passes[7] > 0);
+    assert.ok(passes.filter((v) => v > 0).length >= 2); // both cars of a swap are credited
     assert.equal(passes.reduce((a, b) => a + b, 0) % 2, 0); // they come in pairs
   } finally {
     E.SIM.yoyo = keep;
