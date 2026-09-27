@@ -143,4 +143,13 @@ test("Model health: season summary, rounds newest first, misses, and the fit pro
   assert.match(h, /SIM\.qSd<\/td><td>0\.2<\/td><td>0\.25/);
   assert.match(h, /Within noise/);
   assert.match(mh({ accuracy: acc, fit: { ...fit, changes: [] } }), /still the best fit/);
+  assert.match(h, /frozen next to the shipped model from R16/);
+  // challengers: a clear gain after enough rounds, noise otherwise
+  const ch = (dqs, dqsSe, n) => ({
+    ...acc,
+    challengers: { rounds: [], summary: [{ id: "x", label: "Skewed", n, dqs, dqsSe, dmae: -0.1 }] },
+  });
+  assert.match(mh({ accuracy: ch(-0.3, 0.1, 6) }), /Skewed<\/td><td>6<\/td><td>-0\.30 ± 0\.10.*better/);
+  assert.match(mh({ accuracy: ch(-0.1, 0.1, 6) }), /within noise/);
+  assert.match(mh({ accuracy: ch(-0.3, 0.1, 2) }), /too few rounds/);
 });

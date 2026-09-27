@@ -13,7 +13,10 @@ Requests are paced slowly on purpose (f1feeds.py); cached files are reused for l
 Season archive (committed by the workflow, so history survives F1 changing or dropping old feeds):
   history/<season>/players/gdNN.json      raw player feed per finished gameday (prices, ownership, points)
   history/<season>/playerstats/<id>.json  latest per-asset scoring events (every round so far)
-  history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock
+  history/<season>/projections/gdNN.json  this model's projection for that race, frozen at lock, with its record
+                                          (commit, settings, seeds, input hashes, the exact simulation inputs)
+  history/<season>/challengers/gdNN.json  the challengers' projections (engine CHALLENGERS), frozen alongside
+  history/<season>/samples/gdNN.json      the first 2,000 joint samples at lock (int16, gzip, base64)
   history/<season>/rebuilt/gdNN.json      projections rebuilt for the rounds before that archive (npm run rebuild)
   history/<season>/practice/gdNN.json     analysed OpenF1 practice sessions (OpenF1 closes during live sessions)
   history/<season>/elite/<feedTime>_<hash>.json  top-10/100/500 ownership each time the global line-ups change,
@@ -587,18 +590,62 @@ def elite_history(est):
 # ---------------------------------------------------------------- projections archive
 
 
+# inputs whose hashes go into a frozen forecast's record (which of them changed between two forecasts)
+RECORD_INPUTS = (
+    "assets",
+    "results",
+    "trackStats",
+    "raceInfo",
+    "practice",
+    "odds",
+    "weather",
+    "weekend",
+    "live",
+    "priors",
+    "bands",
+    "cfg",
+    "schedule",
+    "evNames",
+)
+SAMPLES_BEFORE_LOCK = timedelta(hours=6)  # joint samples only for the last builds before lock (they're ~70 KB)
+SAMPLES_N = 2000
+
+
+def git_commit():
+    """The commit this build runs (GITHUB_SHA in CI), with "+dirty" for local uncommitted changes."""
+    if os.environ.get("GITHUB_SHA"):
+        return os.environ["GITHUB_SHA"]
+    try:
+        sha = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=HERE, check=True)
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--", "engine.js", "tools", "config"],
+            capture_output=True,
+            text=True,
+            cwd=HERE,
+            check=True,
+        )
+        return sha.stdout.strip() + ("+dirty" if dirty.stdout.strip() else "")
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def input_hashes(data):
+    """sha1 (12 hex) of each model input, so two frozen forecasts show which inputs differed."""
+    return {k: hashlib.sha1(json.dumps(data.get(k), sort_keys=True).encode()).hexdigest()[:12] for k in RECORD_INPUTS}
+
+
 def freeze_projection(data, g):
-    """Before lock, save this build's default-settings projection for the coming race. After lock the last one
-    stands: that is what the model said going in, for checking against the result later."""
-    if datetime.now(timezone.utc) >= iso(g["lock"]):
+    """Before lock, save this build's default-settings projection for the coming race, with its record (commit,
+    settings, seeds, input hashes and the exact simulation inputs: enough to rerun it), the challengers' projections
+    and, in the last hours before lock, the first joint samples. After lock the last one stands: what the model said
+    going in, for checking against the result later."""
+    now = datetime.now(timezone.utc)
+    if now >= iso(g["lock"]):
         return
-    script = (
-        "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>"
-        "process.stdout.write(JSON.stringify(require('./engine.js').project(JSON.parse(s)))))"
-    )
+    samples = SAMPLES_N if iso(g["lock"]) - now <= SAMPLES_BEFORE_LOCK else 0
     try:
         res = subprocess.run(
-            ["node", "-e", script],
+            ["node", os.path.join("tools", "freeze.js"), "--samples", str(samples)],
             input=json.dumps(data),
             capture_output=True,
             text=True,
@@ -606,12 +653,38 @@ def freeze_projection(data, g):
             check=True,
             cwd=HERE,
         )
-        proj = json.loads(res.stdout)
+        out = json.loads(res.stdout)
     except Exception as e:  # noqa: BLE001 - a bonus; never block a price refresh on it
         print(f"  ! projection not frozen: {e}")
         return
-    write_json(archived("projections", f"gd{g['gd']:02d}.json"), proj, indent=1, sort_keys=True)
-    print(f"  projection for gameday {g['gd']} saved (practice: {', '.join(proj['practice']) or 'none'})")
+    if not out:
+        return
+    proj = out["projection"]
+    proj["record"].update(
+        {
+            "commit": git_commit(),
+            "built": now.isoformat(timespec="seconds"),
+            "dataGenerated": data.get("generated"),
+            "lock": g["lock"],
+            "inputs": input_hashes(data),
+        }
+    )
+    name = f"gd{g['gd']:02d}.json"
+    write_json(archived("projections", name), proj, indent=1, sort_keys=True)
+    if out.get("challengers"):
+        write_json(
+            archived("challengers", name),
+            {"gd": g["gd"], "built": proj["record"]["built"], "challengers": out["challengers"]},
+            indent=1,
+            sort_keys=True,
+        )
+    if out.get("joint"):
+        write_json(archived("samples", name), {**out["joint"], "built": proj["record"]["built"]}, sort_keys=True)
+    print(
+        f"  projection for gameday {g['gd']} saved (practice: {', '.join(proj['practice']) or 'none'}"
+        f"{', challengers: ' + ', '.join(out['challengers']) if out.get('challengers') else ''}"
+        f"{f', {samples} joint samples' if out.get('joint') else ''})"
+    )
 
 
 def load_projections(kind="projections"):

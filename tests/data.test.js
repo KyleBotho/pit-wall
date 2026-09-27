@@ -83,6 +83,35 @@ test("the projection for the next race is sane", opt, () => {
   assert.ok(Math.abs(m(drv) - m(hist)) < 6, `projected ${m(drv).toFixed(1)} vs actual ${m(hist).toFixed(1)}`);
 });
 
+test("a frozen forecast's record reruns to the same samples", opt, () => {
+  const p = E.project(D, { detail: true, samples: 500, sims: 2000 });
+  if (!p) return;
+  // as stored: through JSON, Infinity as a string
+  const rec = JSON.parse(JSON.stringify(p.record), (_, v) => (v === "Infinity" ? Infinity : v));
+  const { model, circuit, simOpt } = rec.setup;
+  const sim = E.simulate(model, circuit, rec.sprint, 2000, rec.seed, simOpt);
+  sim.ids.forEach((id, i) => {
+    for (let k = 0; k < 500; k++) assert.equal(Math.round(sim.tot[i * 2000 + k]), p.joint.tot[i * 500 + k]);
+    const mean = sim.tot.subarray(i * 2000, (i + 1) * 2000).reduce((a, b) => a + b, 0) / 2000;
+    assert.equal(Math.round(mean * 10) / 10, p.assets[id].x);
+  });
+  assert.equal(rec.rng, E.RNG_VERSION);
+  assert.equal(p.record.settings.MODEL.dnfHalfLife, "Infinity");
+});
+
+test("challengers: every one projects under its own settings, and the shipped ones come back", opt, () => {
+  const before = JSON.stringify([E.MODEL, E.SIM, E.TRACK]);
+  const c = E.projectChallengers(D, { sims: 1000 });
+  if (!c) return;
+  assert.deepEqual(
+    Object.keys(c),
+    E.CHALLENGERS.map((x) => x.id),
+  );
+  for (const v of Object.values(c)) assert.ok(Object.values(v.assets).every((a) => a.q.length === 19));
+  assert.equal(JSON.stringify([E.MODEL, E.SIM, E.TRACK]), before);
+  assert.throws(() => E.withSettings({ "SIM.noSuchThing": 1 }, () => 0));
+});
+
 test("a finished season projects nothing and still models", opt, () => {
   const over = { ...D, schedule: D.schedule.filter((g) => D.done.includes(g.gd)) };
   assert.equal(E.project(over), null);

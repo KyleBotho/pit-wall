@@ -123,6 +123,24 @@ class FeedHelpers(unittest.TestCase):
             self.assertEqual(os.listdir(d), ["x.json"])
 
 
+class ForecastRecord(unittest.TestCase):
+    def test_input_hashes_show_which_input_changed(self):
+        data = {"assets": [{"id": "1"}], "odds": {"win": {"NOR": 0.3}}, "generated": "x"}
+        a = refresh.input_hashes(data)
+        b = refresh.input_hashes({**data, "odds": {"win": {"NOR": 0.31}}, "generated": "y"})
+        self.assertEqual(set(a), set(refresh.RECORD_INPUTS))
+        self.assertEqual([k for k in a if a[k] != b[k]], ["odds"])
+
+    def test_partial_kalshi_book_keeps_room_for_missing_drivers(self):
+        import extras
+
+        full = extras._norm({t: 0.2 for t in "ABCDEFGHIJ"}, 3, field=10)
+        self.assertAlmostEqual(sum(full.values()), 3, places=3)
+        part = extras._norm({t: 0.2 for t in "ABCDEF"}, 3, field=10)
+        self.assertLess(sum(part.values()), 3)  # the 4 missing drivers keep a share
+        self.assertAlmostEqual(part["A"], 3 * 0.2 / (1.2 + 4 * 0.1), places=3)
+
+
 class Config(unittest.TestCase):
     def test_jolpica_map_covers_old_and_new_names(self):
         self.assertEqual(refresh.JOLPICA_TEAM["sauber"], "Audi")

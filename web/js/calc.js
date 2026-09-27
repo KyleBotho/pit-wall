@@ -270,6 +270,13 @@ export function renderSettings() {
   if (modalKind === "editor") openTeamEditor();
 }
 
+// how closely the pace calibration met the market (Engine.applyOdds diagnostics)
+const oddsFitText = (f) =>
+  !f
+    ? ""
+    : f.settled
+      ? ` (matched within simulation noise after ${f.iters} steps)`
+      : ` (only partly matched: ${f.resid[f.resid.length - 1].toFixed(2)} log-odds off vs noise ${f.noise.toFixed(2)}; the model's pace can't fully reach the market)`;
 // what else shapes the next race's simulation: the market, rain, safety car, grid penalties, results already in
 function raceInputs() {
   const su = forecast.setup;
@@ -280,7 +287,9 @@ function raceInputs() {
     pens = Object.entries((su.simOpt && su.simOpt.pen) || {}).filter(([, v]) => v);
   const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint" };
   const bits = [
-    su.odds ? `Betting market at ${Math.round(state.oddsW * 100)}%.` : "No market odds.",
+    su.odds
+      ? `Betting market at ${Math.round(state.oddsW * 100)}%${oddsFitText(su.model.oddsFit)}.`
+      : "No market odds.",
     `Rain ${Math.round(((c.rain || {}).r || 0) * 100)}%, safety car ${Math.round((c.sc ?? 0) * 100)}%.`,
   ];
   if (pens.length)
@@ -630,6 +639,7 @@ export function runOptimiser() {
     bestRows.best.sort((a, b) => b.st[k] - a.st[k]);
     bestRows.best.length = Math.min(bestRows.best.length, 60);
   }
+  const mc = simNoise(bestRows, chipK, H, sort.k);
 
   const bits = [
     H > 1 ? `Summed over the next ${H} races, keeping the team (the chip plays in the first).` : `For ${NEXT.name}.`,
@@ -643,6 +653,10 @@ export function runOptimiser() {
   if (state.xdp)
     bits.push(
       `xΔ$Pts: ${(+state.valW).toFixed(1)} pts per $1m per race over ${ctx.rem} races; ranked by xSPts = xPts + xΔ$Pts.`,
+    );
+  if (mc)
+    bits.push(
+      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip.`,
     );
   if (near)
     bits.push(
@@ -676,6 +690,42 @@ export function runOptimiser() {
   }).join("");
   renderBestTable(ctx);
 }
+// Monte Carlo error of the next race's xPts (one race, ranked by xPts): each shown team's standard error and, on the
+// same simulated weekends as #1 (shared assets cancel), whether its gap to #1 is inside twice the gap's standard error
+// (marked ≈). Returns the typical 95% half-width, or null when it doesn't apply.
+function simNoise(rows, chipK, H, sortK) {
+  const all = [rows.cur, ...rows.pin, ...rows.best.slice(0, state.showN || 20)].filter(Boolean);
+  all.forEach((r) => {
+    r.st.se = null;
+    r.st.near1 = false;
+  });
+  if (H !== 1 || sortK !== "x" || !rows.best.length) return null;
+  const N = forecast.sims[0].N,
+    top = rows.best[0];
+  const s0 = teamSamples(top.ids, top.boost, chipK, top.boost2);
+  const sd = (xs) => {
+    let m = 0,
+      m2 = 0;
+    for (const v of xs) {
+      m += v;
+      m2 += v * v;
+    }
+    m /= xs.length;
+    return Math.sqrt(Math.max(0, m2 / xs.length - m * m));
+  };
+  const ses = [];
+  for (const r of all) {
+    const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2);
+    r.st.se = sd(si) / Math.sqrt(N);
+    ses.push(r.st.se);
+    if (r === top) continue;
+    const d = new Float64Array(N);
+    for (let k = 0; k < N; k++) d[k] = s0[k] - si[k];
+    r.st.near1 = top.st.x - r.st.x < 2 * (sd(d) / Math.sqrt(N));
+  }
+  ses.sort((a, b) => a - b);
+  return { se95: 1.96 * ses[Math.floor(ses.length / 2)] };
+}
 function renderBestTable(ctx) {
   const { chipK, T: team, vp, tilePts } = ctx,
     cols = visCols(),
@@ -698,7 +748,13 @@ function renderBestTable(ctx) {
     if (k === "dx") return `<td class="${v >= 0 ? "good" : "bad"}">${sgn(v, 1)}</td>`;
     if (k === "dr") return `<td class="muted">${sgn(st.dlo, 0)} … ${sgn(st.dhi, 0)}</td>`;
     if (k === "dnf" || k === "ov" || k === "neg") return `<td class="muted">${f1(v)}</td>`;
-    return `<td class="muted">${pct(v)}</td>`;
+    // a chance from N simulated weekends: ± its 95% simulation error
+    const N = forecast.sims[0].N;
+    const moe =
+      v == null
+        ? ""
+        : ` title="± ${(196 * Math.sqrt((v * (1 - v)) / N)).toFixed(1)} points of % (simulation error, 95%)"`;
+    return `<td class="muted"${moe}>${pct(v)}</td>`;
   };
   const pinned = (ids) => state.pins.findIndex((p) => sameTeam(p.ids, ids));
   const rankCell = (kind, i, r) => {
@@ -725,7 +781,7 @@ function renderBestTable(ctx) {
     return `<tr><td class="rk">${rankCell(kind, i, r)}<br><button class="tbtn mobonly" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td>
       <td class="tl cr">${tiles(cons)}</td><td class="tl">${tiles(boostsIn)}</td><td class="tl dr">${tiles(drs)}</td>
       <td>${pill(st.cost.toFixed(1), sortK === "cost", over ? "bad" : "", over ? "Over budget" : "Total cost")}</td>
-      <td data-vc="1">${pill(f1(st.x), sortK === "x")}${pen}</td>${cols.map(([k]) => cell(k, st).replace("<td", '<td data-vc="1"')).join("")}
+      <td data-vc="1">${pill(f1(st.x), sortK === "x", "", st.se != null ? `± ${(1.96 * st.se).toFixed(1)} (simulation error, 95%)` : "")}${st.near1 ? '<span class="dim" title="Within simulation noise of #1: the order could flip with another set of simulated weekends"> ≈</span>' : ""}${pen}</td>${cols.map(([k]) => cell(k, st).replace("<td", '<td data-vc="1"')).join("")}
       <td class="mv">${mv}${pen}</td>
       <td class="dots"><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
   };

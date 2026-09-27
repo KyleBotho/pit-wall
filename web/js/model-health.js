@@ -32,6 +32,31 @@ function fitHtml(fit) {
   );
 }
 
+// the challengers frozen next to the shipped model at every lock (engine CHALLENGERS), scored per certified round
+function challengersHtml(ch) {
+  const list = (ch && ch.summary) || [];
+  if (!list.length)
+    return `<p class="note"><b>Challengers:</b> frozen next to the shipped model from R16; scored once a round they were frozen for is certified.</p>`;
+  const rows = list
+    .map((c) => {
+      const clear = c.dqsSe != null && Math.abs(c.dqs) > 2 * c.dqsSe;
+      const verdict =
+        c.n < 5
+          ? "too few rounds"
+          : !clear
+            ? "within noise"
+            : c.dqs < 0
+              ? "<b class=good>better</b>"
+              : "<span class=bad>worse</span>";
+      return `<tr><td style="text-align:left">${esc(c.label)}</td><td>${c.n}</td><td>${c.dqs > 0 ? "+" : ""}${f2(c.dqs)}${c.dqsSe != null ? ` ± ${f2(c.dqsSe)}` : ""}</td><td>${sg(c.dmae)}</td><td>${verdict}</td></tr>`;
+    })
+    .join("");
+  return (
+    `<p class="note"><b>Challengers</b> (frozen at lock next to the shipped model, scored on the rounds they hadn't seen): score difference, lower is better; ± is the standard error over rounds.</p>` +
+    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Challenger</th><th>Rounds</th><th title="Quantile score (≈ CRPS) minus the shipped model's">Δ score</th><th title="MAE minus the shipped model's">Δ MAE</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`
+  );
+}
+
 export function modelHealthHtml(mh, schedule = []) {
   const acc = mh && mh.accuracy;
   if (!acc || !acc.rounds || !acc.rounds.length)
@@ -61,7 +86,7 @@ export function modelHealthHtml(mh, schedule = []) {
         : "–";
       return (
         `<tr><td style="text-align:left">R${r.gd} ${esc(name(r.gd))}</td><td>${bar}</td><td>${f1(w.mae)}</td><td>${sg(w.bias)}</td><td>${f2(w.rho)}</td>` +
-        `<td>${f1(fz.mae)}</td><td>${f2(fz.rho)}</td><td>${pc(fz.in50)}</td></tr>`
+        `<td>${f2(fz.crps)}</td><td>${f1(fz.mae)}</td><td>${f2(fz.rho)}</td><td>${pc(fz.in50)}</td></tr>`
       );
     })
     .join("");
@@ -74,9 +99,10 @@ export function modelHealthHtml(mh, schedule = []) {
   return (
     summary +
     `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Round</th><th title="Walk-forward CRPS: lower is better">CRPS</th><th title="Mean absolute error, points">MAE</th><th title="Projected minus actual, points (+ = too high)">Bias</th><th title="Rank correlation">Rank</th>` +
-    `<th title="What the site showed at lock vs the result">Frozen MAE</th><th title="Frozen projection, rank correlation">Frozen rank</th><th title="Share of assets inside the frozen 25–75% range (50% is honest)">In 25–75%</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `<th title="Exact CRPS of the forecast frozen at lock (from its stored samples, R16 on)">Frozen CRPS</th><th title="What the site showed at lock vs the result">Frozen MAE</th><th title="Frozen projection, rank correlation">Frozen rank</th><th title="Share of assets inside the frozen 25–75% range (50% is honest)">In 25–75%</th></tr></thead><tbody>${rows}</tbody></table></div>` +
     miss +
-    `<p class="note">Recomputed when a round's points are certified or the engine changes (last ${esc(acc.generated.replace("T", " ").replace("Z", " UTC"))}). One round is mostly noise: judge trends over several.</p>` +
+    `<p class="note">Recomputed when a round's points are certified or any input or the engine changes (last ${esc(acc.generated.replace("T", " ").replace("Z", " UTC"))}). One round is mostly noise: judge trends over several.</p>` +
+    challengersHtml(acc.challengers) +
     fitHtml(mh.fit)
   );
 }

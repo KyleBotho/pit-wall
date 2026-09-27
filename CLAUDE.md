@@ -109,6 +109,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
   settled events need the `historical/` API, one request per driver).
+- `tools/freeze.js` — what refresh.py freezes before lock: the projection with its record (commit, settings, seeds,
+  input hashes, exact simulate() inputs), the challengers (`Engine.CHALLENGERS`) and, in the last 6 h, 2,000 joint
+  samples -> `history/<season>/{projections,challengers,samples}/gdNN.json`. Scored by backtest/accuracy.js.
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
@@ -252,9 +255,9 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] Independent review (`docs/reviews/2026-09-27/`), user's order 2026-09-27: batch 1 correctness DONE (history);
-      batch 2 evidence (full forecast record at lock, all inputs in the accuracy cache key, champion/challenger
-      logging, Monte Carlo error and "too close to call"); batch 3 research (lap/stint dataset + pace model,
+- [ ] Independent review (`docs/reviews/2026-09-27/`), user's order 2026-09-27: batch 1 correctness and batch 2
+      evidence DONE (history). Watch from R16: the first frozen record + samples, challengers (qskew2, ovhl6) scored in
+      Model health after certification; adopt one only after 5+ rounds and a gain beyond 2 SE. Next: batch 3 research (lap/stint dataset + pace model,
       cause-specific retirements); batch 4 the deferred items, built even if they only pay off next season
       (weather paths, race-wide pit bonuses, sampled price paths, persistent car strength, random streams/config,
       Web Worker, extra data collection: forecast vintages, Pirelli compounds, FIA documents, Kalshi quote history).

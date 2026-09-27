@@ -411,7 +411,19 @@
     speedLambda: 2, // backtested: 2 best CRPS; 5 ties (-0.19); 0 worse in leave-one-out
     speedMin: 5,
     speedVar: 0, // 0: the fitted median level; 1: the mean (adds half the residual variance on the log scale)
+    // the season's overtake level weighted towards recent rounds (half-life in rounds; Infinity = every round the same).
+    // Challenger from review batch 2 (2026-09-27): R1-R4 had far more overtaking than later rounds.
+    ovHalfLife: Infinity,
   };
+  /** Recency weights for this season's rounds (half-life hl rounds before the last), scaled to average 1.
+   * @param {number[]} gds @param {number} hl @returns {number[]} */
+  function recencyWeights(gds, hl) {
+    if (!gds.length || !Number.isFinite(hl)) return gds.map(() => 1);
+    const last = Math.max(...gds);
+    const w = gds.map((g) => Math.pow(0.5, (last - g) / hl));
+    const m = w.reduce((a, b) => a + b, 0) / w.length;
+    return w.map((v) => v / m);
+  }
   /** Per-circuit priors from past seasons (data.priors, from priors.py): each measure recency-weighted and shrunk to
    * the all-circuit average; a circuit with no history gets the average of circuits with similar features.
    * @param {PriorRow[] | null} P @param {(name: string) => number[]} featOf @param {typeof TRACK} o */
@@ -542,7 +554,13 @@
             v.length
         : NaN;
     };
-    const ovMean = seasonMean("ov"),
+    const ovGds = Object.keys(season)
+      .map(Number)
+      .filter((g) => season[g].ov != null);
+    const ovW = recencyWeights(ovGds, o.ovHalfLife);
+    const ovMean = Number.isFinite(o.ovHalfLife)
+        ? ovGds.reduce((a, g, k) => a + ovW[k] * /** @type {number} */ (season[g].ov), 0) / (ovGds.length || NaN)
+        : seasonMean("ov"),
       dnfMean = seasonMean("dnf"),
       corrMean = seasonMean("corr");
     // this season's level per measure, against the priors of the circuits raced so far. Ratio measures are shrunk
@@ -695,20 +713,27 @@
     for (const gd of rounds) {
       const v = kmh(cid(gd), data.trackStats && data.trackStats[gd] && data.trackStats[gd].lap);
       const ob = season[gd].ov;
-      if (v != null && ob != null && ob > 0) pts.push([v, Math.log(ob)]);
+      if (v != null && ob != null && ob > 0) pts.push([v, Math.log(ob), gd]);
     }
     if (pts.length < o.speedMin) return null;
-    const mx = pts.reduce((a, p) => a + p[0], 0) / pts.length,
-      my = pts.reduce((a, p) => a + p[1], 0) / pts.length;
-    const sx = Math.sqrt(pts.reduce((a, p) => a + (p[0] - mx) ** 2, 0) / pts.length) || 1;
+    // weighted least squares (weights 1 unless ovHalfLife is set), ridge on the standardised speed
+    const w = recencyWeights(
+      pts.map((p) => p[2]),
+      o.ovHalfLife,
+    );
+    const W = w.reduce((a, b) => a + b, 0);
+    const mx = pts.reduce((a, p, k) => a + w[k] * p[0], 0) / W,
+      my = pts.reduce((a, p, k) => a + w[k] * p[1], 0) / W;
+    const sx = Math.sqrt(pts.reduce((a, p, k) => a + w[k] * (p[0] - mx) ** 2, 0) / W) || 1;
     let sxy = 0,
       szz = 0;
-    for (const [x, y] of pts) {
-      sxy += ((x - mx) / sx) * (y - my);
-      szz += ((x - mx) / sx) ** 2;
-    }
+    pts.forEach(([x, y], k) => {
+      sxy += w[k] * ((x - mx) / sx) * (y - my);
+      szz += w[k] * ((x - mx) / sx) ** 2;
+    });
     const b = sxy / (szz + o.speedLambda);
-    const res = pts.reduce((a, [x, y]) => a + (y - my - (b * (x - mx)) / sx) ** 2, 0) / Math.max(1, pts.length - 2);
+    const res =
+      pts.reduce((a, [x, y], k) => a + w[k] * (y - my - (b * (x - mx)) / sx) ** 2, 0) / Math.max(1, pts.length - 2);
     return { b, mx, sx, my, res, n: pts.length };
   }
   /** @param {Data} data @param {Partial<typeof TRACK> & { noPriors?: boolean }} [opt] */
@@ -1037,7 +1062,7 @@
     return cModels;
   }
   /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
-  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
+  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, settled: boolean }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
    * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
@@ -2366,7 +2391,17 @@
     const RACE = ["win", "podium", "top10"];
     let sim = base;
     const iters = o.iters || 4;
+    // diagnostics (Calculator's race inputs): each step's weighted mean |target - simulated| in log-odds, the
+    // largest pace step (%), and the sampling noise of a simulated log-odds at this n (1 / sqrt(n p (1 - p)))
+    /** @type {number[]} */
+    const resid = [];
+    let maxStep = 0,
+      noise = 0,
+      nNoise = 0;
     for (let it = 0; it < iters; it++) {
+      let rs = 0,
+        rw = 0;
+      maxStep = 0;
       m.drivers.forEach((d, i) => {
         const p = probs(sim, i);
         let num = 0,
@@ -2378,8 +2413,16 @@
           const wt = Math.sqrt(clamp(mk, 0.01, 0.99) * (1 - clamp(mk, 0.01, 0.99)));
           num += wt * (target - logit(p[k]));
           den += wt;
+          rs += wt * Math.abs(target - logit(p[k]));
+          rw += wt;
+          if (it === 0) {
+            const pc = clamp(p[k], 0.004, 0.996);
+            noise += 1 / Math.sqrt(n * pc * (1 - pc));
+            nNoise++;
+          }
         }
         const step = den ? clamp(num / den, -3, 3) * 0.12 : 0;
+        maxStep = Math.max(maxStep, Math.abs(step));
         d.rPace -= step;
         d.oddsR = (d.oddsR || 0) - step;
         let qStep = qKnown ? 0 : step * 0.6;
@@ -2391,10 +2434,21 @@
         d.qPace -= qStep;
         d.oddsQ = (d.oddsQ || 0) - qStep;
       });
+      resid.push(rw ? Math.round((rs / rw) * 1000) / 1000 : 0);
       // the last step's result isn't read: no simulation after it
       if (it < iters - 1) sim = simulate(m, circuit, false, n, seed, simOpt);
     }
     finishPositions(m.drivers);
+    const nz = nNoise ? noise / nNoise : 0;
+    // settled: the last residual is within twice the sampling noise, or the last step barely moved anyone
+    m.oddsFit = {
+      iters,
+      n,
+      resid,
+      noise: Math.round(nz * 1000) / 1000,
+      lastStep: Math.round(maxStep * 1000) / 1000,
+      settled: resid[resid.length - 1] <= 2 * nz || maxStep < 0.01,
+    };
     return m;
   }
 
@@ -2922,27 +2976,84 @@
     const after = !!(odds.at && q && q.end && Date.parse(odds.at) >= Date.parse(q.end));
     return { pen: simOpt.pen, known: known.q && after ? { q: known.q } : {} };
   }
+  // the random stream behind every simulation: bump when mulberry32, gauss or the order of draws changes, so a
+  // stored forecast says which sequence produced it
+  const RNG_VERSION = "mulberry32+box-muller-cos/1";
+  /** Run fn() with some engine settings changed ({"SIM.qSkew": 2, ...}), then put the shipped values back.
+   * @template T @param {Record<string, unknown>} set @param {() => T} fn @returns {T} */
+  function withSettings(set, fn) {
+    const objs = /** @type {Record<string, Record<string, unknown>>} */ ({ MODEL, SIM, TRACK });
+    const keep = Object.keys(set).map((k) => {
+      const [o, f] = k.split(".");
+      if (!objs[o] || !(f in objs[o])) throw new Error(`withSettings: unknown setting ${k}`);
+      const old = objs[o][f];
+      objs[o][f] = set[k];
+      return () => (objs[o][f] = old);
+    });
+    try {
+      return fn();
+    } finally {
+      keep.reverse().forEach((undo) => undo());
+    }
+  }
+  /** Challengers: named variants frozen next to the shipped model at every lock (tools/freeze.js) and scored against
+   * it once the round is certified (backtest/accuracy.js, Model health). Adopt one only on evidence from rounds it
+   * hadn't seen. Keep an id once used: the archive refers to it. */
+  const CHALLENGERS = [
+    {
+      id: "qskew2",
+      label: "Qualifying noise skewed (shape 2)",
+      set: { "SIM.qSkew": 2 },
+      why: "the review's best R5-R15 variant: CRPS -0.023 +/- 0.013 (18 variants tried)",
+    },
+    {
+      id: "ovhl6",
+      label: "Overtake level weighted to recent rounds (half-life 6)",
+      set: { "TRACK.ovHalfLife": 6 },
+      why: "R1-R4 had far more overtaking than later rounds; R5-R15 CRPS -0.015 +/- 0.017",
+    },
+  ];
+  /** The engine's settings as plain JSON (Infinity kept as a string). */
+  const settingsSnapshot = () =>
+    JSON.parse(JSON.stringify({ MODEL, SIM, TRACK }, (_, v) => (v === Infinity ? "Infinity" : v)));
+  const PROJ_Q = [
+    0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,
+  ];
   /** The coming race's projection at default settings: what refresh.py freezes into the season archive at lock.
-   * Null once the season is over. @param {Data} data @param {Partial<typeof DEFAULTS>} [opt] */
+   * Null once the season is over. opt.detail adds what reproduces and scores it later: 19 quantiles and the sd per
+   * asset, and a record (seed, random-stream version, every setting, and the exact simulate() inputs, which rerun
+   * with the same engine give the same samples). opt.samples keeps the first n joint samples (sample prefixes don't
+   * depend on N) as `joint`. @param {Data} data
+   * @param {Partial<typeof DEFAULTS> & { detail?: boolean, samples?: number }} [opt] */
   function project(data, opt) {
     const o = { ...DEFAULTS, ...opt };
     const g = data.schedule.find((x) => !data.done.includes(x.gd));
     if (!g) return null;
-    const { circuit, model, simOpt, odds } = raceSetup(data, g, {
+    const setup = raceSetup(data, g, {
       next: true,
       halfLife: o.halfLife,
       pw: o.pw,
       oddsW: o.oddsW,
     });
-    const sim = simulate(model, circuit, g.sprint, o.sims, g.gd * 7919 + 13, simOpt);
-    /** @type {Record<string, { x: number, p25: number, p75: number }>} */
+    const { circuit, model, simOpt, odds } = setup;
+    const seed = g.gd * 7919 + 13;
+    const sim = simulate(model, circuit, g.sprint, o.sims, seed, simOpt);
+    /** @type {Record<string, { x: number, p25: number, p75: number, sd?: number, q?: number[] }>} */
     const assets = {};
     sim.ids.forEach((id, i) => {
       const a = /** @type {Asset} */ (data.assets.find((x) => x.id === id)),
         st = sim.stats[i];
-      assets[id] = { x: Math.round(blendMean(st, recentForm(a), o.blend) * 10) / 10, p25: st.p25, p75: st.p75 };
+      const x = Math.round(blendMean(st, recentForm(a), o.blend) * 10) / 10;
+      assets[id] = { x, p25: st.p25, p75: st.p75 };
+      if (o.detail) {
+        const sl = Array.from(sim.tot.subarray(i * sim.N, (i + 1) * sim.N)).sort((u, v) => u - v);
+        const sh = x - st.mean; // the blend moves the whole distribution
+        assets[id].sd = Math.round(st.sd * 100) / 100;
+        assets[id].q = PROJ_Q.map((p) => Math.round((sl[Math.floor(p * sim.N)] + sh) * 10) / 10);
+      }
     });
-    return {
+    /** @type {Record<string, unknown>} */
+    const out = {
       gd: g.gd,
       sims: o.sims,
       practice: (data.practice || []).filter((p) => p.done).map((p) => p.name),
@@ -2951,6 +3062,45 @@
       sc: circuit.sc,
       assets,
     };
+    if (o.detail)
+      out.record = {
+        v: 2,
+        rng: RNG_VERSION,
+        seed,
+        sprint: g.sprint,
+        defaults: o,
+        settings: settingsSnapshot(),
+        oddsFit: model.oddsFit || null,
+        scOver: sim.scOver,
+        quantiles: PROJ_Q,
+        setup: JSON.parse(JSON.stringify({ model, circuit, simOpt }, (_, v) => (v === Infinity ? "Infinity" : v))),
+      };
+    if (o.samples) {
+      const n = Math.min(o.samples, sim.N);
+      const joint = new Int16Array(sim.ids.length * n);
+      sim.ids.forEach((_, i) => {
+        for (let k = 0; k < n; k++) joint[i * n + k] = Math.round(sim.tot[i * sim.N + k]);
+      });
+      out.joint = { ids: sim.ids, n, tot: joint };
+    }
+    return out;
+  }
+  /** The challengers' projections for the coming race, each under its own settings: {id: {label, set, assets:
+   * {id: {x, q}}}}. @param {Data} data @param {Partial<typeof DEFAULTS>} [opt] */
+  function projectChallengers(data, opt) {
+    /** @type {Record<string, unknown>} */
+    const out = {};
+    for (const c of CHALLENGERS) {
+      const p = withSettings(c.set, () => project(data, { ...opt, detail: true }));
+      if (!p) return null;
+      const assets = /** @type {Record<string, { x: number, q?: number[] }>} */ (p.assets);
+      out[c.id] = {
+        label: c.label,
+        set: c.set,
+        assets: Object.fromEntries(Object.entries(assets).map(([id, a]) => [id, { x: a.x, q: a.q }])),
+      };
+    }
+    return out;
   }
 
   /* ---------- past-performance presets (the Calculator's Simulation panel) ---------- */
@@ -3129,6 +3279,10 @@
     recentForm,
     blendMean,
     raceSetup,
+    withSettings,
+    CHALLENGERS,
+    RNG_VERSION,
+    projectChallengers,
     scoredSessions,
     oddsKnown,
     project,

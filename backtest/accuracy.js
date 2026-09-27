@@ -26,14 +26,35 @@ const pts = (a, gd) => {
   const h = a.hist.find((x) => x && x.gd === gd);
   return h && h.active ? h.pts : null;
 };
-const key = crypto
-  .createHash("sha1")
-  .update(fs.readFileSync(path.join(ROOT, "engine.js")))
-  .update(fs.readFileSync(path.join(__dirname, "walk.js")))
-  .update(fs.readFileSync(__filename))
-  .update(JSON.stringify(certified.map((gd) => [gd, D.assets.map((a) => pts(a, gd))])))
-  .digest("hex")
-  .slice(0, 12);
+// Everything the result depends on: the code, and every input the walk-forward and the frozen check read (the data
+// less what changes every build without touching past rounds, the practice / odds / minisector archives, the frozen
+// projections and challengers). A change anywhere recomputes it (~3 s).
+const VOLATILE = new Set([
+  "generated",
+  "live",
+  "health",
+  "weather",
+  "weekend",
+  "odds",
+  "elite",
+  "next",
+  "pricesPending",
+]);
+const hashDir = (h, dir) => {
+  if (!fs.existsSync(dir)) return;
+  for (const f of fs.readdirSync(dir).sort()) h.update(f).update(fs.readFileSync(path.join(dir, f)));
+};
+const key = (() => {
+  const h = crypto.createHash("sha1");
+  for (const f of [path.join(ROOT, "engine.js"), path.join(__dirname, "walk.js"), __filename])
+    h.update(fs.readFileSync(f));
+  h.update(JSON.stringify(Object.entries(D).filter(([k]) => !VOLATILE.has(k))));
+  h.update(JSON.stringify(certified));
+  h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI]));
+  const arch = path.join(ROOT, "history", String(D.season));
+  for (const d of ["projections", "challengers"]) hashDir(h, path.join(arch, d));
+  return h.digest("hex").slice(0, 12);
+})();
 
 const old = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, "utf8")) : null;
 if (old && old.key === key && !process.argv.includes("--force")) {
@@ -76,6 +97,73 @@ function frozen(gd) {
   };
 }
 
+// Champion vs challengers at lock (engine CHALLENGERS, frozen by tools/freeze.js): per certified round, each one's
+// quantile score (CRPS approximated from its 19 frozen quantiles, 5%-95%: the same for every model, so they compare)
+// and MAE, and over the rounds the mean difference to the shipped model with its standard error across rounds.
+const ARCH = path.join(ROOT, "history", String(D.season));
+const readArch = (dir, gd) => {
+  const f = path.join(ARCH, dir, `gd${String(gd).padStart(2, "0")}.json`);
+  return fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")) : null;
+};
+/** Quantile score: 2 x mean pinball loss over the quantile levels (tends to CRPS as the levels fill [0, 1]). */
+function qScore(q, levels, y) {
+  let s = 0;
+  q.forEach((v, k) => (s += (y - v) * (levels[k] - (y < v ? 1 : 0)))); // pinball loss at level k
+  return (2 * s) / q.length;
+}
+function scoreRows(assets, levels, gd) {
+  const rows = [];
+  for (const [id, v] of Object.entries(assets)) {
+    const a = D.assets.find((x) => x.id === id);
+    const y = a && pts(a, gd);
+    if (y == null || !v.q) continue;
+    rows.push({ qs: qScore(v.q, levels, y), ae: Math.abs(v.x - y) });
+  }
+  return rows.length ? { qs: mean(rows.map((r) => r.qs)), mae: mean(rows.map((r) => r.ae)), n: rows.length } : null;
+}
+function challengers() {
+  const rounds = [];
+  for (const gd of certified) {
+    const p = readArch("projections", gd),
+      c = readArch("challengers", gd);
+    if (!p || !p.record || !c) continue;
+    const levels = p.record.quantiles;
+    const champ = scoreRows(p.assets, levels, gd);
+    if (!champ) continue;
+    const row = { gd, shipped: { qs: r2(champ.qs), mae: r2(champ.mae) } };
+    for (const [id, ch] of Object.entries(c.challengers)) {
+      const sc = scoreRows(ch.assets, levels, gd);
+      if (sc) row[id] = { qs: r2(sc.qs), mae: r2(sc.mae), dqs: sc.qs - champ.qs, dmae: sc.mae - champ.mae };
+    }
+    rounds.push(row);
+  }
+  const ids = [...new Set(rounds.flatMap((r) => Object.keys(r).filter((k) => k !== "gd" && k !== "shipped")))];
+  const se = (xs) =>
+    xs.length > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean(xs)) ** 2, 0) / (xs.length - 1) / xs.length) : null;
+  const summary = ids.map((id) => {
+    const ch = E.CHALLENGERS.find((x) => x.id === id);
+    const dq = rounds.filter((r) => r[id]).map((r) => r[id].dqs),
+      dm = rounds.filter((r) => r[id]).map((r) => r[id].dmae);
+    return { id, label: ch ? ch.label : id, n: dq.length, dqs: r2(mean(dq)), dqsSe: r2(se(dq)), dmae: r2(mean(dm)) };
+  });
+  rounds.forEach((r) => ids.forEach((id) => r[id] && (delete r[id].dqs, delete r[id].dmae)));
+  return { rounds, summary };
+}
+// exact CRPS of the frozen forecast from its joint samples (history/<season>/samples), where they were kept
+function frozenCrps(gd) {
+  const sm = readArch("samples", gd);
+  if (!sm) return null;
+  const buf = require("node:zlib").gunzipSync(Buffer.from(sm.data, "base64"));
+  const tot = new Int16Array(buf.buffer, buf.byteOffset, buf.byteLength / 2);
+  const out = [];
+  sm.ids.forEach((id, i) => {
+    const a = D.assets.find((x) => x.id === id);
+    const y = a && pts(a, gd);
+    if (y != null) out.push(W.crps(tot.subarray(i * sm.n, (i + 1) * sm.n), y));
+  });
+  return out.length ? r2(mean(out)) : null;
+}
+
 const t0 = Date.now();
 const rounds = certified.filter((gd) => gd >= FROM);
 const ev = rounds.length ? W.evaluate({ N, rounds, decision: true }) : null;
@@ -88,10 +176,11 @@ const out = {
     const b = byRound[gd];
     return {
       gd,
-      frozen: frozen(gd),
+      frozen: frozen(gd) && { ...frozen(gd), crps: frozenCrps(gd) },
       walk: b ? { crps: r2(b.crps), mae: r2(b.mae), bias: r2(b.bias), rho: r2(b.rho), team: b.team } : null,
     };
   }),
+  challengers: challengers(),
   season: ev
     ? {
         from: FROM,

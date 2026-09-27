@@ -5,6 +5,28 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, review batch 2: evidence (plan items B02-B04, B07, N07-N09).
+  - Forecast record at lock: `project(data, {detail})` adds 19 quantiles (5-95%) and the sd per asset, and a record:
+    RNG version (`Engine.RNG_VERSION`), seed, every setting (`settingsSnapshot`), the market-fit diagnostics and the
+    exact simulate() inputs (model, circuit, simOpt), which rerun with the same engine give the same samples (test).
+    refresh.py adds commit (GITHUB_SHA, or HEAD+dirty locally), build time, lock and sha1 per input (`input_hashes`:
+    which inputs changed between two forecasts). `tools/freeze.js` runs it; in the last 6 hours before lock it also
+    keeps the first 2,000 joint samples (`history/<season>/samples/`, int16 gzip base64, ~90 KB).
+  - Champion/challengers: `Engine.CHALLENGERS` (qskew2: qualifying skew 2, the review's best variant; ovhl6: the
+    overtake level weighted to recent rounds, new `TRACK.ovHalfLife`, section 9 `EXP=ovrecent`: half-life 6 CRPS
+    -0.015 +/- 0.017, 3 +0.033, 10 -0.007, all noise) frozen at every lock in `history/<season>/challengers/` via
+    `withSettings`. accuracy.js scores them per certified round against the shipped model by quantile score (2 x mean
+    pinball loss over the 19 levels, ~5% above exact CRPS, the same for all) and MAE; Model health shows the mean
+    difference ± SE over rounds with a verdict (too few rounds < 5, within noise < 2 SE, better / worse). Also the
+    frozen forecast's exact CRPS from its samples. First scored: R16.
+  - accuracy.js's cache key now covers every input the walk-forward and the frozen check read (the data less
+    per-build fields, the practice / odds / minisector archives, frozen projections and challengers).
+  - Market fit diagnostics (`model.oddsFit`): residual per step (weighted mean |target - simulated| log-odds), last
+    pace step, sampling noise at n = 2,500 and `settled` (last residual within 2x noise or step < 0.01%). R10 / R15:
+    0.32 -> 0.27 / 0.46 -> 0.33 with noise 0.18-0.19: settled. Shown in the Calculator's race inputs.
+  - Simulation error in the Calculator: each team's xPts ± 95% (next race, ranked by xPts: about ±0.9 at 10,000
+    weekends), and ≈ on teams whose paired gap to #1 is under 2 SE (shared assets cancel, so it's much tighter than
+    ±0.9: at R16 none of the top 20). P(beat) / P(+25) and the head-to-head win chance get their ± in a tooltip.
 - [x] 2026-09-27, independent review batch 1: correctness (review and plan in `docs/reviews/2026-09-27/`; user
       asked for batch 1 now and batches 2-4 after, including what only pays off next season). All confirmed in the
       code first. Backtest section 6 (R5-R15, 3,000 sims): CRPS 8.761 -> 8.681, MAE 12.125 -> 11.959, 10-90% range

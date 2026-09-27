@@ -443,6 +443,12 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // review batch 2 (2026-09-27): the season's overtake level weighted towards recent rounds (TRACK.ovHalfLife)
+  ovrecent: [
+    ["overtake level, half-life 3 rounds", [[E.TRACK, "ovHalfLife", 3]]],
+    ["overtake level, half-life 6 rounds", [[E.TRACK, "ovHalfLife", 6]]],
+    ["overtake level, half-life 10 rounds", [[E.TRACK, "ovHalfLife", 10]]],
+  ],
   // item 9 stage 3a: the race run lap by lap (SIM.raceModel)
   laps: [["lap-by-lap race", [[E.SIM, "raceModel", "laps"]]]],
   // item 9 stages 2-5 together vs each alone ("is the sum more than its parts"; stage 2 is in the shipped model,
