@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-27T18:11Z",
- "key": "0f591556b68e",
+ "generated": "2026-09-27T18:48Z",
+ "key": "b79750af618d",
  "N": 3000,
  "rounds": [
   {
@@ -27,9 +27,9 @@
    "gd": 5,
    "frozen": null,
    "walk": {
-    "crps": 9.42,
-    "mae": 12.82,
-    "bias": 6.62,
+    "crps": 9.15,
+    "mae": 12.12,
+    "bias": 5.58,
     "rho": 0.69,
     "team": 271
    }
@@ -38,10 +38,10 @@
    "gd": 6,
    "frozen": null,
    "walk": {
-    "crps": 10.85,
-    "mae": 14.73,
-    "bias": 6.04,
-    "rho": 0.47,
+    "crps": 10.99,
+    "mae": 14.92,
+    "bias": 6.28,
+    "rho": 0.48,
     "team": 82
    }
   },
@@ -49,9 +49,9 @@
    "gd": 7,
    "frozen": null,
    "walk": {
-    "crps": 9.33,
-    "mae": 12.75,
-    "bias": 4.38,
+    "crps": 9.43,
+    "mae": 12.82,
+    "bias": 4.43,
     "rho": 0.76,
     "team": 73
    }
@@ -60,10 +60,10 @@
    "gd": 8,
    "frozen": null,
    "walk": {
-    "crps": 7.04,
-    "mae": 8.85,
-    "bias": 2.2,
-    "rho": 0.89,
+    "crps": 7.09,
+    "mae": 8.98,
+    "bias": 1.68,
+    "rho": 0.9,
     "team": 210
    }
   },
@@ -71,10 +71,10 @@
    "gd": 9,
    "frozen": null,
    "walk": {
-    "crps": 8.35,
-    "mae": 12.86,
-    "bias": -4.78,
-    "rho": 0.77,
+    "crps": 8.24,
+    "mae": 12.56,
+    "bias": -3.84,
+    "rho": 0.76,
     "team": 273
    }
   },
@@ -82,10 +82,10 @@
    "gd": 10,
    "frozen": null,
    "walk": {
-    "crps": 7.32,
-    "mae": 9.81,
-    "bias": 0.83,
-    "rho": 0.84,
+    "crps": 7.34,
+    "mae": 9.83,
+    "bias": 0.68,
+    "rho": 0.83,
     "team": 180
    }
   },
@@ -93,9 +93,9 @@
    "gd": 11,
    "frozen": null,
    "walk": {
-    "crps": 7.23,
-    "mae": 9.69,
-    "bias": -3,
+    "crps": 7.25,
+    "mae": 9.67,
+    "bias": -2.87,
     "rho": 0.74,
     "team": 181
    }
@@ -104,9 +104,9 @@
    "gd": 12,
    "frozen": null,
    "walk": {
-    "crps": 7.92,
-    "mae": 9.8,
-    "bias": 3.59,
+    "crps": 8.04,
+    "mae": 9.83,
+    "bias": 3.5,
     "rho": 0.71,
     "team": 211
    }
@@ -115,10 +115,10 @@
    "gd": 13,
    "frozen": null,
    "walk": {
-    "crps": 10.62,
-    "mae": 15.24,
-    "bias": -6.47,
-    "rho": 0.72,
+    "crps": 10.7,
+    "mae": 15.27,
+    "bias": -6.35,
+    "rho": 0.73,
     "team": 238
    }
   },
@@ -126,9 +126,9 @@
    "gd": 14,
    "frozen": null,
    "walk": {
-    "crps": 7.32,
-    "mae": 10.03,
-    "bias": 2.56,
+    "crps": 7.42,
+    "mae": 10.16,
+    "bias": 2.87,
     "rho": 0.82,
     "team": 138
    }
@@ -176,10 +176,10 @@
     "crps": null
    },
    "walk": {
-    "crps": 10.14,
-    "mae": 14.85,
-    "bias": 1.41,
-    "rho": 0.57,
+    "crps": 10.3,
+    "mae": 15.07,
+    "bias": 1.5,
+    "rho": 0.58,
     "team": 185
    }
   }
@@ -190,13 +190,13 @@
  },
  "season": {
   "from": 5,
-  "crps": 8.69,
-  "mae": 11.95,
+  "crps": 8.72,
+  "mae": 11.93,
   "maeD": 10.43,
-  "maeC": 14.99,
+  "maeC": 14.93,
   "bias": 1.22,
   "rho": 0.73,
-  "cover80": 0.81,
+  "cover80": 0.8,
   "cover50": 0.52,
   "team": 2042,
   "best": 3170,
