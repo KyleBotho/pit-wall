@@ -510,6 +510,21 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
             kept.append(f"{n} FIA documents")
     except Exception as e:  # noqa: BLE001 - collection only; never blocks a build
         print(f"  ! FIA documents: {e}")
+    # their technical documents (PU elements, upgrades, parc-fermé changes, the Pirelli preview): text kept, summary
+    # parsed; a few PDFs a run until every archived event's are read
+    if busy:
+        try:
+            n = gather.fia_tech(archived, read_json, write_json, fia_bytes, CFG["teams"])
+            if n:
+                kept.append(f"{n} FIA technical documents")
+        except Exception as e:  # noqa: BLE001
+            print(f"  ! FIA technical documents: {e}")
+    # which kinds the last finished round has (health: none means the FIA page or its event name changed)
+    if done:
+        g = next(x for x in schedule if x["gd"] == done[-1])
+        p = archived("fia", f"{gather.event_slug(g['name'], SEASON)}.json")
+        docs = read_json(p)["docs"] if os.path.exists(p) else []
+        out["fiaRead"] = {"gd": g["gd"], "kinds": sorted({d["read"] for d in docs if d.get("read")})}
     # grid penalties from the stewards' decisions (race control announces none in 2026): the PDFs of this
     # weekend's car infringements, read once each; car numbers to TLAs from the last race's classification
     if nxt_g and out.get("weekend") is not None and busy:

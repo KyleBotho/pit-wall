@@ -86,7 +86,7 @@ function frozen(gd) {
     const a = D.assets.find((x) => x.id === id);
     const y = a && pts(a, gd);
     if (y == null) continue;
-    rows.push({ id, name: a.kind === "D" ? a.tla : a.name, x: v.x, y, in50: y >= v.p25 && y <= v.p75 });
+    rows.push({ id, kind: a.kind, name: a.kind === "D" ? a.tla : a.name, x: v.x, y, in50: y >= v.p25 && y <= v.p75 });
   }
   if (!rows.length) return null;
   const miss = rows
@@ -106,6 +106,7 @@ function frozen(gd) {
     ),
     in50: r2(rows.filter((r) => r.in50).length / rows.length),
     miss,
+    rows,
   };
 }
 
@@ -167,31 +168,55 @@ function frozenCrps(gd) {
   if (!sm) return null;
   const buf = require("node:zlib").gunzipSync(Buffer.from(sm.data, "base64"));
   const tot = new Int16Array(buf.buffer, buf.byteOffset, buf.byteLength / 2);
-  const out = [];
+  const out = {};
   sm.ids.forEach((id, i) => {
     const a = D.assets.find((x) => x.id === id);
     const y = a && pts(a, gd);
-    if (y != null) out.push(W.crps(tot.subarray(i * sm.n, (i + 1) * sm.n), y));
+    if (y != null) out[id] = W.crps(tot.subarray(i * sm.n, (i + 1) * sm.n), y);
   });
-  return out.length ? r2(mean(out)) : null;
+  return Object.keys(out).length ? out : null;
 }
+const rg = (gs) =>
+  Object.fromEntries(
+    Object.entries(gs).map(([k, g]) => [k, Object.fromEntries(Object.entries(g).map(([m, v]) => [m, r2(v)]))]),
+  );
 
 const t0 = Date.now();
 const rounds = certified.filter((gd) => gd >= FROM);
 const ev = rounds.length ? W.evaluate({ N, rounds, decision: true }) : null;
 const byRound = Object.fromEntries(((ev && ev.byRound) || []).map((b, i) => [b.gd, { ...b, team: ev.perRound[i] }]));
+// the frozen projections by group (walk.js GROUPS): per asset, pooled over the certified rounds
+const frozenRecs = [];
+const roundRows = certified.map((gd) => {
+  const b = byRound[gd];
+  const fz = frozen(gd);
+  const cr = fz && frozenCrps(gd);
+  if (fz) {
+    const tags = W.roundTags(gd);
+    for (const r of fz.rows)
+      frozenRecs.push({
+        gd,
+        kind: r.kind,
+        ...tags,
+        err: Math.abs(r.x - r.y),
+        bias: r.x - r.y,
+        in50: r.in50,
+        crps: cr?.[r.id],
+      });
+    delete fz.rows;
+  }
+  return {
+    gd,
+    frozen: fz && { ...fz, crps: cr ? r2(mean(Object.values(cr))) : null },
+    walk: b ? { crps: r2(b.crps), mae: r2(b.mae), bias: r2(b.bias), rho: r2(b.rho), team: b.team } : null,
+  };
+});
 const out = {
   generated: new Date().toISOString().slice(0, 16) + "Z",
   key,
   N,
-  rounds: certified.map((gd) => {
-    const b = byRound[gd];
-    return {
-      gd,
-      frozen: frozen(gd) && { ...frozen(gd), crps: frozenCrps(gd) },
-      walk: b ? { crps: r2(b.crps), mae: r2(b.mae), bias: r2(b.bias), rho: r2(b.rho), team: b.team } : null,
-    };
-  }),
+  rounds: roundRows,
+  frozenGroups: frozenRecs.length ? rg(W.groups(frozenRecs)) : null,
   challengers: challengers(),
   season: ev
     ? {
@@ -207,6 +232,7 @@ const out = {
         team: ev.team,
         best: ev.best,
         baselines: Object.fromEntries(Object.entries(W.baselines()).map(([k, v]) => [k, r2(v)])),
+        groups: rg(ev.groups),
       }
     : null,
 };

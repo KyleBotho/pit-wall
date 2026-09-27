@@ -95,6 +95,17 @@ def problems(data, now):
                     "any lap numbering: no lap-model pace for this race.",
                 )
             )
+        # the FIA's technical documents (collect.fia_tech, read until a day after the race)
+        fia = data.get("fiaRead") or {}
+        if race and now > race + 36 * H and fia.get("gd") == g["gd"] and len(fia.get("kinds") or []) < 3:
+            out.append(
+                (
+                    f"fia:{g['gd']}",
+                    "warn",
+                    f"{name(g)}: only {len(fia.get('kinds') or [])} of the FIA's 5 technical document kinds were read "
+                    "(PU elements, upgrades, parc fermé, Pirelli): its page or event name may have changed.",
+                )
+            )
         hist = [h["gd"] for h in (data.get("elite") or {}).get("history") or [] if not h.get("est")]
         if race and now > race + 24 * H and hist and max(hist) < g["gd"]:
             out.append(

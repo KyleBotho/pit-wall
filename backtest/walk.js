@@ -235,6 +235,7 @@ function evaluate(o = {}) {
     ovLvl: [],
     ms: 0,
     byRound: [],
+    recs: [],
   };
   for (const r of rounds) {
     const Dr = asOf(r);
@@ -259,6 +260,7 @@ function evaluate(o = {}) {
       ko = out.ov.length;
     let simOvR = 0,
       nOvR = 0;
+    const tags = roundTags(r);
     const xs = [],
       ys = [],
       pred = {};
@@ -281,6 +283,16 @@ function evaluate(o = {}) {
       if (y >= st.p25 + sh && y <= st.p75 + sh) out.c50++;
       // CRPS over every sample (exact for the empirical distribution): E|X - y| - E|X - X'| / 2
       out.crps.push(crps(sim.tot.subarray(i * N, i * N + N), y - sh));
+      out.recs.push({
+        gd: r,
+        kind: A.kind,
+        ...tags,
+        crps: out.crps[out.crps.length - 1],
+        err: Math.abs(p - y),
+        bias: p - y,
+        in80: y >= st.p10 + sh && y <= st.p90 + sh,
+        in50: y >= st.p25 + sh && y <= st.p75 + sh,
+      });
       // position log scores and per-category errors (drivers)
       if (A.kind === "D") {
         out.ov.push(Math.abs(st.xov - actualEv(A, r, OVC)));
@@ -360,7 +372,53 @@ function evaluate(o = {}) {
     ovLvlBias: mean(out.ovLvl),
     msPerRound: out.ms / rounds.length,
     byRound: out.byRound,
+    groups: groups(out.recs),
   };
+}
+
+// calibration by group (reviews' deferred evaluation item): the same scores for drivers / constructors, sprint /
+// normal weekends, wet / dry races and races with / without a safety car (race control: SC or VSC)
+const GROUPS = {
+  drivers: (x) => x.kind === "D",
+  constructors: (x) => x.kind === "C",
+  sprint: (x) => x.sprint,
+  normal: (x) => !x.sprint,
+  wet: (x) => x.wet,
+  dry: (x) => !x.wet,
+  "safety car": (x) => x.sc,
+  "no safety car": (x) => !x.sc,
+};
+
+/** What happened in round r, for grouping scores (after the fact; never a model input). */
+function roundTags(r) {
+  const g = D.schedule.find((x) => x.gd === r) || {};
+  const race = (D.raceInfo?.[r] || {}).race || {};
+  return { sprint: !!g.sprint, wet: !!race.rain, sc: (race.sc || 0) + (race.vsc || 0) > 0 };
+}
+
+/** Per-asset records {gd, kind, sprint, wet, sc, err, bias, crps?, in80?, in50?} -> {group: {rounds, n, crps, mae,
+ * bias, cover80, cover50}}; groups with no records are left out, a score no record has is null. */
+function groups(recs) {
+  const avg = (xs) => (xs.length ? mean(xs) : null);
+  const share = (xs, k) => {
+    const v = xs.filter((x) => x[k] != null);
+    return v.length ? v.filter((x) => x[k]).length / v.length : null;
+  };
+  const out = {};
+  for (const [k, f] of Object.entries(GROUPS)) {
+    const xs = recs.filter(f);
+    if (!xs.length) continue;
+    out[k] = {
+      rounds: new Set(xs.map((x) => x.gd)).size,
+      n: xs.length,
+      crps: avg(xs.filter((x) => Number.isFinite(x.crps)).map((x) => x.crps)),
+      mae: avg(xs.map((x) => x.err)),
+      bias: avg(xs.map((x) => x.bias)),
+      cover80: share(xs, "in80"),
+      cover50: share(xs, "in50"),
+    };
+  }
+  return out;
 }
 
 /** Naive baselines on the same rounds: season average, recent form, last three. */
@@ -397,4 +455,19 @@ const INPUTS = [
     path.join(SEASON_DIR, d),
   ),
 ];
-module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, MINI, mean, INPUTS };
+module.exports = {
+  D,
+  E,
+  asOf,
+  evaluate,
+  baselines,
+  crps,
+  groups,
+  roundTags,
+  roundOvertakes,
+  PRACTICE,
+  ODDS,
+  MINI,
+  mean,
+  INPUTS,
+};

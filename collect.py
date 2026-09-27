@@ -12,6 +12,7 @@ these.
                                        starting grids, penalties, power-unit elements, the Pirelli preview
 """
 
+import html
 import json
 import re
 from datetime import datetime, timedelta, timezone
@@ -165,13 +166,15 @@ def _paris_summer(t):
     return last_sunday(3) <= t < last_sunday(10)
 
 
-def parse_fia(html):
+def parse_fia(page):
     """The document rows of an FIA documents page: [{event slug, doc, title, url, published}]."""
     out = []
-    for m in ROW.finditer(html):
+    for m in ROW.finditer(page):
         file = m.group("file")
         slug = re.sub(r"_-_.*$", "", file)
-        doc = re.match(r"Doc (\d+)", m.group("title"))
+        # past events' pages wrap the title in nested field divs
+        title = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", m.group("title")))).strip()
+        doc = re.match(r"Doc (\d+)", title)
         pub = m.group("pub").strip()
         try:
             # "26.09.26 15:17 CET": Paris local time whatever the label says (Baku's provisional classification,
@@ -185,7 +188,7 @@ def parse_fia(html):
             {
                 "event": slug,
                 "doc": int(doc.group(1)) if doc else None,
-                "title": re.sub(r"\s+", " ", m.group("title")),
+                "title": title,
                 "url": "https://www.fia.com" + m.group("url"),
                 "published": pub,
             }
@@ -269,20 +272,200 @@ def event_slug(name, season):
 def fia_documents(read_text, archived, read_json, write_json, now):
     """The FIA's current event's documents (its landing page), merged into history/<season>/fia/<event>.json with
     the time each was first seen. Returns how many were new."""
+    return merge_fia(parse_fia(read_text(FIA_URL)), archived, read_json, write_json, now)
+
+
+def merge_fia(rows, archived, read_json, write_json, now, backfill=False):
+    """Document rows merged into each event's index. A backfill (past events' pages, read later) says so instead of
+    claiming a first-seen time: only `published` tells when those were known."""
     import os
 
-    rows = parse_fia(read_text(FIA_URL))
     new = 0
     for slug in sorted({r["event"] for r in rows}):
         path = archived("fia", f"{slug}.json")
         rec = read_json(path) if os.path.exists(path) else {"event": slug, "docs": []}
         seen = {d["url"] for d in rec["docs"]}
+        stamp = (
+            {"backfill": now.isoformat(timespec="minutes")}
+            if backfill
+            else {"firstSeen": now.isoformat(timespec="minutes")}
+        )
         for r in rows:
             if r["event"] == slug and r["url"] not in seen:
-                rec["docs"].append(
-                    {k: v for k, v in r.items() if k != "event"} | {"firstSeen": now.isoformat(timespec="minutes")}
-                )
+                rec["docs"].append({k: v for k, v in r.items() if k != "event"} | stamp)
                 new += 1
         rec["docs"].sort(key=lambda d: d.get("doc") or 0)
         write_json(path, rec, indent=1)
     return new
+
+
+# ---------------------------------------------------------------- FIA technical documents
+
+# Read once each, their text kept (history/<season>/fia/text/<event>/<file>.txt, ~25 KB an event; the PDFs
+# themselves are 0.1-2.5 MB) and a summary parsed into the event's index as `tech`. For models that can only be
+# tried later (power-unit age, upgrades, parc-fermé work, the tyre allocation); nothing uses them yet.
+TECH = {
+    "puUsed": re.compile(r"PU elements used per driver", re.I),
+    "puNew": re.compile(r"New PU elements", re.I),
+    "upgrades": re.compile(r"Car Presentation Submissions", re.I),
+    "parcFerme": re.compile(r"Parc Ferm", re.I),
+    "tyres": re.compile(r"Pirelli Preview", re.I),
+}
+PU_ELEMENTS = ["ICE", "TC", "EXH", "MGU-K", "ES", "PU-CE", "PU-ANC"]  # the "used up to now" table's columns
+
+
+def tech_kind(title):
+    return next((k for k, rx in TECH.items() if rx.search(title or "")), None)
+
+
+def parse_pu_used(text):
+    """ "PU elements used per driver up to now" -> {car number: {element: count}} (the season so far)."""
+    out = {}
+    for line in text.splitlines():
+        m = re.match(r"\s*(\d{1,2})\s+\D.*?((?:\s\d+){7})\s*$", line)
+        if m:
+            out[int(m.group(1))] = dict(zip(PU_ELEMENTS, (int(n) for n in m.group(2).split()), strict=True))
+    return out
+
+
+def parse_pu_new(text):
+    """ "New PU elements for this Competition" -> {car number: {element: how many of it the car had used before}}."""
+    out = {}
+    parts = re.split(r"with an? new [^()]+?\(([A-Z][A-Z\-]*)\)\s*:", text)
+    for el, body in zip(parts[1::2], parts[2::2], strict=True):
+        for line in body.splitlines():
+            m = re.match(r"\s*(\d{1,2})\s+\D.*\s(\d+)\s*$", line)
+            if m:
+                out.setdefault(int(m.group(1)), {})[el] = int(m.group(2))
+    return out
+
+
+def team_code(name, teams):
+    """A team's code from any of its names ("Oracle Red Bull Racing" -> RED): the longest config name inside it."""
+    low = (name or "").lower()
+    hits = [k for k in teams if not k.startswith("_") and k.lower() in low]
+    return teams[max(hits, key=len)]["code"] if hits else None
+
+
+def parse_upgrades(text, teams):
+    """ "Car Presentation Submissions" -> {team code (or the name as printed): {"n": updated components, "reasons":
+    {Performance / Circuit specific / Reliability: n}}}; a team with no updates gets n 0."""
+    out = {}
+    for block in re.split(r"Car Presentation\s*[–-]", text)[1:]:
+        lines = [x.strip() for x in block.splitlines() if x.strip()]
+        if len(lines) < 2:
+            continue
+        name = lines[1]
+        # the items are numbered 1, 2, ...; a wrapped line can put a number mid-line ("... effectively. 3 Front")
+        n, pos = 0, block.find(name) + len(name)
+        while m := re.compile(rf"(?:^|\s){n + 1}\s+[A-Z]").search(block, pos):
+            n, pos = n + 1, m.end()
+        reasons = {}
+        for r in re.findall(r"\b(Performance|Circuit specific|Reliability)\b", block):
+            reasons[r] = reasons.get(r, 0) + 1
+        out[team_code(name, teams) or name] = {"n": n, "reasons": reasons}
+    return out
+
+
+def parse_parc_ferme(text):
+    """ "Parts and parameters replaced ... during Parc Fermé" -> {car number: [part, ...]}. Items are the car line's
+    rest and the indented lines after it; a page break's header lines aren't indented."""
+    out, car = {}, None
+    for line in text.splitlines():
+        m = re.match(r"\s*Car (\d{1,2})\s*:\s*(.*)$", line)
+        if m:
+            car = int(m.group(1))
+            out[car] = [m.group(2).strip()] if m.group(2).strip() else []
+        elif car is not None and line.strip() and line[:1].isspace() and not line.strip().endswith(":"):
+            out[car].append(line.strip())
+        elif line.strip():
+            car = None
+    return {c: v for c, v in out.items() if v}
+
+
+def parse_tyres(text):
+    """The Pirelli preview -> {"compounds": [C.., ...], "q3": C.., "race": [C.., C..]} as far as it says."""
+    t = re.sub(r"\s+", " ", text)
+    out = {}
+    m = re.search(r"Compound((?: C\d){3})", t)
+    if m:
+        out["compounds"] = sorted(m.group(1).split())
+    m = re.search(r"Q3 tyre (C\d)", t)
+    if m:
+        out["q3"] = m.group(1)
+    m = re.search(r"Mandatory race tyres((?: C\d){1,3})", t)
+    if m:
+        out["race"] = sorted(m.group(1).split())
+    return out
+
+
+def tech_summary(kind, text, teams):
+    text = text.replace("\xa0", " ")  # some PDFs space with no-break spaces
+    if kind == "puUsed":
+        return parse_pu_used(text)
+    if kind == "puNew":
+        return parse_pu_new(text)
+    if kind == "upgrades":
+        return parse_upgrades(text, teams)
+    if kind == "parcFerme":
+        return parse_parc_ferme(text)
+    return parse_tyres(text)
+
+
+def fia_tech(archived, read_json, write_json, read_bytes, teams, most=6):
+    """Every archived event's technical documents not read yet (at most `most` PDFs a run, oldest event first): the
+    text kept, `read` set on the document, and the event's `tech` rebuilt from all its texts (the latest document
+    of a kind wins; new PU elements add up over the weekend). Returns how many were read."""
+    import glob
+    import os
+
+    fetched = 0
+    for path in sorted(glob.glob(archived("fia", "*.json"))):
+        rec = read_json(path)
+        slug = rec.get("event") or os.path.basename(path)[:-5]
+        changed = False
+        for d in rec["docs"]:
+            kind = tech_kind(d.get("title"))
+            if not kind or d.get("read"):
+                continue
+            if fetched >= most:
+                break
+            text = pdf_text(read_bytes(d["url"]))
+            fetched += 1
+            if text is None:
+                return fetched
+            out = archived("fia", "text", slug, os.path.basename(d["url"])[:-4] + ".txt")
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            with open(out, "w", encoding="utf-8") as f:
+                f.write(text)
+            d["read"] = kind
+            changed = True
+        if changed or ("tech" not in rec and any(d.get("read") for d in rec["docs"])):
+            rec["tech"] = event_tech(rec, slug, archived, teams)
+            write_json(path, rec, indent=1)
+    return fetched
+
+
+def event_tech(rec, slug, archived, teams):
+    """An event's `tech` from its kept texts, in document order."""
+    import os
+
+    tech = {}
+    for d in sorted(rec["docs"], key=lambda d: (d.get("published") or "", d.get("doc") or 0)):
+        kind = d.get("read")
+        path = archived("fia", "text", slug, os.path.basename(d["url"])[:-4] + ".txt") if kind else None
+        if not path or not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as f:
+            s = tech_summary(kind, f.read(), teams)
+        if kind == "puNew":
+            acc = tech.setdefault("puNew", {})
+            for car, els in s.items():
+                acc.setdefault(str(car), {}).update(els)
+        elif kind == "parcFerme":
+            acc = tech.setdefault("parcFerme", {})
+            for car, parts in s.items():
+                acc.setdefault(str(car), []).extend(parts)
+        elif s:
+            tech[kind] = {str(k): v for k, v in s.items()} if kind != "tyres" else s
+    return tech

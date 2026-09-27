@@ -288,8 +288,10 @@ function calibration() {
 /* ---------- 6. walk-forward: projected points vs what happened (the gate) ---------- */
 function walkForward() {
   console.log("\n6. Walk-forward, projected points vs actual (rounds 5+; lower CRPS / MAE is better)");
+  let shipped;
   const row = (label, o) => {
     const r = W.evaluate({ N: 3000, decision: true, ...o });
+    shipped ??= r;
     return {
       variant: label,
       CRPS: +r.crps.toFixed(3),
@@ -311,6 +313,20 @@ function walkForward() {
     row("no pace/reliability uncertainty", { unc: 0 }),
   ];
   table(rows);
+  // calibration by group (the shipped model): a group running hot or cold where the whole looks fine
+  console.log("   by group (model as shipped; wet / sprint rounds are few, read their rows as indications):");
+  table(
+    Object.entries(shipped.groups).map(([k, g]) => ({
+      group: k,
+      rounds: g.rounds,
+      n: g.n,
+      CRPS: +g.crps.toFixed(3),
+      MAE: +g.mae.toFixed(2),
+      bias: +g.bias.toFixed(2),
+      "in 10-90%": (100 * g.cover80).toFixed(0) + "%",
+      "in 25-75%": (100 * g.cover50).toFixed(0) + "%",
+    })),
+  );
   const b = W.baselines();
   const best = W.evaluate({ N: 1000, decision: true }).best;
   console.log(

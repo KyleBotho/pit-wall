@@ -61,6 +61,30 @@ function challengersHtml(ch) {
   );
 }
 
+// calibration by group (drivers / constructors, sprint / normal, wet / dry, safety car or not): walk-forward and,
+// pooled over the certified rounds, the frozen projections
+function groupsHtml(acc) {
+  const w = (acc.season && acc.season.groups) || {},
+    fz = acc.frozenGroups || {};
+  const keys = [...new Set([...Object.keys(w), ...Object.keys(fz)])];
+  if (!keys.length) return "";
+  const rows = keys
+    .map((k) => {
+      const a = w[k] || {},
+        b = fz[k] || {};
+      return (
+        `<tr><td style="text-align:left">${esc(k)}</td><td>${a.rounds ?? "–"}</td><td>${f2(a.crps)}</td><td>${f1(a.mae)}</td><td>${sg(a.bias)}</td><td>${pc(a.cover80)}</td><td>${pc(a.cover50)}</td>` +
+        `<td>${b.rounds ?? "–"}</td><td>${f1(b.mae)}</td><td>${sg(b.bias)}</td><td>${pc(b.cover50)}</td></tr>`
+      );
+    })
+    .join("");
+  return (
+    `<p class="note"><b>By group</b>: a group running hot or cold while the whole looks fine. Few rounds in a group (wet, sprint) = an indication only.</p>` +
+    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Group</th><th title="Walk-forward rounds">Rounds</th><th>CRPS</th><th>MAE</th><th title="Projected minus actual (+ = too high)">Bias</th><th title="80% is honest">In 10–90%</th><th title="50% is honest">In 25–75%</th>` +
+    `<th title="Frozen at lock: certified rounds">Frozen rounds</th><th>Frozen MAE</th><th>Frozen bias</th><th>Frozen in 25–75%</th></tr></thead><tbody>${rows}</tbody></table></div>`
+  );
+}
+
 export function modelHealthHtml(mh, schedule = []) {
   const acc = mh && mh.accuracy;
   if (!acc || !acc.rounds || !acc.rounds.length)
@@ -105,6 +129,7 @@ export function modelHealthHtml(mh, schedule = []) {
     `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Round</th><th title="Walk-forward CRPS: lower is better">CRPS</th><th title="Mean absolute error, points">MAE</th><th title="Projected minus actual, points (+ = too high)">Bias</th><th title="Rank correlation">Rank</th>` +
     `<th title="Exact CRPS of the forecast frozen at lock (from its stored samples, R16 on)">Frozen CRPS</th><th title="What the site showed at lock vs the result">Frozen MAE</th><th title="Frozen projection, rank correlation">Frozen rank</th><th title="Share of assets inside the frozen 25–75% range (50% is honest)">In 25–75%</th></tr></thead><tbody>${rows}</tbody></table></div>` +
     miss +
+    groupsHtml(acc) +
     `<p class="note">Recomputed when a round's points are certified or any input or the engine changes (last ${esc(acc.generated.replace("T", " ").replace("Z", " UTC"))}). One round is mostly noise: judge trends over several.</p>` +
     challengersHtml(acc.challengers) +
     fitHtml(mh.fit)

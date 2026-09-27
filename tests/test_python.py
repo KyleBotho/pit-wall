@@ -239,6 +239,134 @@ class FiaPenalties(unittest.TestCase):
         self.assertEqual(reads, ["a", "b", "c"])
 
 
+class FiaTech(unittest.TestCase):
+    TEAMS = {
+        "_comment": "",
+        "Red Bull Racing": {"code": "RED"},
+        "Racing Bulls": {"code": "VRB"},
+        "Audi": {"code": "AUD"},
+    }
+
+    def test_a_past_events_nested_title_is_plain_text(self):
+        import collect
+
+        page = (
+            '<a href="/system/files/decision-document/2026_monaco_grand_prix_-_car_presentation_submissions.pdf">'
+            '<div class="title"><div class="field"><div class="field-items"><div class="field-item even">Doc 15 - Car '
+            "Presentation Submissions</div></div></div></div>"
+            '<span class="date-display-single">05.06.26 11:00</span> CET'
+        )
+        (row,) = collect.parse_fia(page)
+        self.assertEqual((row["doc"], row["title"]), (15, "Doc 15 - Car Presentation Submissions"))
+        self.assertEqual(row["event"], "2026_monaco_grand_prix")
+        self.assertEqual(collect.tech_kind(row["title"]), "upgrades")
+
+    def test_power_unit_tables(self):
+        import collect
+
+        used = (
+            "24 - 26 September 2026\nN° Car Driver ICE TC EXH MGU\n-K ES PU-\nCE\n"
+            "14 Aston Martin Aramco Honda Fernando Alonso 4 4 2 5 6 6 8 \n"
+            "27 Audi Nico Hülkenber g 4 4 4 3 1 1 5 \n"
+        )
+        self.assertEqual(
+            collect.parse_pu_used(used)[14], {"ICE": 4, "TC": 4, "EXH": 2, "MGU-K": 5, "ES": 6, "PU-CE": 6, "PU-ANC": 8}
+        )
+        self.assertEqual(len(collect.parse_pu_used(used)), 2)
+        new = (
+            "start the fifteenth Competition of the 2026 Formula One World \nChampionship with a new internal "
+            "combustion engine (ICE): \n \nNumber Car Driver Previously used ICE \n41 Racing Bulls RB Ford Arvid "
+            "Lindblad 3 \n14 Aston Martin Aramco Honda Fernando Alonso 4 \n \nThe internal combustion engine used by "
+            "Fernando Alonso is the fifth (5th) of the four (4) new \n2026 Formula One Sporting Regulations. \n"
+            "Championship with a new energy store unit (ES): \n81 McLaren Mercedes Oscar Piastri 2 \n"
+        )
+        self.assertEqual(collect.parse_pu_new(new), {41: {"ICE": 3}, 14: {"ICE": 4}, 81: {"ES": 2}})
+
+    def test_upgrades_count_wrapped_items_and_teams_with_none(self):
+        import collect
+
+        text = (
+            "Car Presentation – Azerbaijan Grand Prix \nVisa Cash App Racing Bulls F1 Team \n  Updated \ncomponent \n"
+            "(min 20, max 100 words) \n1 Front Wing Performance - \nFlow Conditioning New front wing \n2 Front Corner "
+            "Performance - \nthe floor to perform effectively. 3 Front \nSuspension \nReliability \n"
+            "Car Presentation – Azerbaijan Grand Prix \nOracle Red Bull Racing \n \nNo updates submitted for this "
+            "event. \nCar Presentation - Azerbaijan Grand Prix \nSomeone New \n1 Floor Circuit specific \n"
+        )
+        self.assertEqual(
+            collect.parse_upgrades(text, self.TEAMS),
+            {
+                "VRB": {"n": 3, "reasons": {"Performance": 2, "Reliability": 1}},
+                "RED": {"n": 0, "reasons": {}},
+                "Someone New": {"n": 1, "reasons": {"Circuit specific": 1}},
+            },
+        )
+
+    def test_parc_ferme_parts_per_car_across_a_page_break(self):
+        import collect
+
+        text = (
+            "McLaren\xa0Mercedes:\n\xa0\nCar\xa081:\xa0\xa0\xa0Steering\xa0wheel\n\xa0\nRed Bull Racing RB Ford:\n"
+            "Car 03:           Fuel pump\n                        ICE (new)\n \nFrom The FIA Formula 1 Technical "
+            "Delegate\nDocument 57\nTime 13:50\nCar 06:           Clutch sensor\n \nFerrari:\n"
+        )
+        self.assertEqual(
+            collect.tech_summary("parcFerme", text, {}),
+            {81: ["Steering wheel"], 3: ["Fuel pump", "ICE (new)"], 6: ["Clutch sensor"]},
+        )
+
+    def test_tyres(self):
+        import collect
+
+        text = "Wet\nCompound\nC4\nC3\nC5\nQ3 tyre\nC5\nMandatory race tyres\nC3\nC4\n10\n12"
+        self.assertEqual(collect.parse_tyres(text), {"compounds": ["C3", "C4", "C5"], "q3": "C5", "race": ["C3", "C4"]})
+        self.assertEqual(collect.parse_tyres("no table"), {})
+
+    def test_each_pdf_is_read_once_and_new_pu_adds_up(self):
+        import tempfile
+
+        import collect
+
+        with tempfile.TemporaryDirectory() as tmp:
+
+            def archived(*p):
+                path = os.path.join(tmp, *p)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                return path
+
+            def read_json(p):
+                with open(p, encoding="utf-8") as f:
+                    return json.load(f)
+
+            def write_json(p, v, **k):
+                with open(p, "w", encoding="utf-8") as f:
+                    json.dump(v, f)
+
+            docs = [
+                {"doc": 14, "title": "Doc 14 - New PU Elements", "url": "u/a.pdf", "published": "T1"},
+                {"doc": 20, "title": "Doc 20 - Infringement - Car 14", "url": "u/x.pdf", "published": "T2"},
+                {"doc": 33, "title": "Doc 33 - New PU Elements", "url": "u/b.pdf", "published": "T3"},
+            ]
+            write_json(archived("fia", "e.json"), {"event": "e", "docs": docs})
+            texts = {
+                "u/a.pdf": "Championship with a new turbocharger (TC): \n14 Aston Martin Fernando Alonso 4 \n",
+                "u/b.pdf": "Championship with a new exhaust set (EXH): \n14 Aston Martin Fernando Alonso 2 \n",
+            }
+            reads = []
+
+            def read_bytes(url):
+                reads.append(url)
+                return texts[url]
+
+            with mock.patch.object(collect, "pdf_text", lambda b: b):
+                self.assertEqual(collect.fia_tech(archived, read_json, write_json, read_bytes, self.TEAMS, most=1), 1)
+                self.assertEqual(collect.fia_tech(archived, read_json, write_json, read_bytes, self.TEAMS), 1)
+                self.assertEqual(collect.fia_tech(archived, read_json, write_json, read_bytes, self.TEAMS), 0)
+            self.assertEqual(reads, ["u/a.pdf", "u/b.pdf"])
+            rec = read_json(archived("fia", "e.json"))
+            self.assertEqual(rec["tech"], {"puNew": {"14": {"TC": 4, "EXH": 2}}})
+            self.assertTrue(os.path.exists(archived("fia", "text", "e", "b.txt")))
+
+
 class LockSnapshot(unittest.TestCase):
     def test_written_until_lock_then_read_back(self):
         with (
@@ -396,6 +524,13 @@ class Health(unittest.TestCase):
         self.assertEqual(self.ids(d, "2026-09-28T12:00:00+00:00"), {"laps:15": "warn", "ensemble:16": "warn"})
         ok = {"race": {"pace": {}, "paceCtx": {}, "retirements": {}}}
         self.assertEqual(self.ids(self.data(raceInfo={"15": ok}), "2026-09-28T12:00:00+00:00"), {})
+
+    def test_unread_fia_technical_documents(self):
+        d = self.data(fiaRead={"gd": 15, "kinds": ["tyres"]})
+        self.assertEqual(self.ids(d, "2026-09-27T12:00:00+00:00"), {})  # 1 day after: still being read
+        self.assertEqual(self.ids(d, "2026-09-28T12:00:00+00:00"), {"fia:15": "warn"})
+        d = self.data(fiaRead={"gd": 15, "kinds": ["parcFerme", "puUsed", "upgrades"]})
+        self.assertEqual(self.ids(d, "2026-09-28T12:00:00+00:00"), {})
 
     def test_missing_results_uncertified_points_and_unknown_events(self):
         d = self.data(
