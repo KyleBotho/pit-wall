@@ -297,6 +297,26 @@ there before re-deciding something.
 - [ ] Third review (`docs/reviews/2026-09-27/F1-second-round-review.md`, 7.8/10): all five findings fixed
       2026-09-27 (history). Its advice: no new features now; leave this version running and judge it on the frozen
       rounds from R16 (champion vs challengers in Model health).
+- [ ] Deferred from the three reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
+      rounds show the error it addresses, and judge it as a challenger:
+  - Decision: more steps in the market fit (still "moving", 0.3-0.4 log-odds off after 4): a higher effective
+    market weight, so test on frozen R16+ rounds, not by retuning R5-R15.
+  - Models: a hierarchical race-pace model (tyres / fuel across races; laps.py fits each race alone, 6 fixed
+    reweightings); retirements by distance run, and "other" causes split into unknown vs confirmed mechanical
+    (laps.py lumps them); SC / VSC / red flag as timed events (only the experimental lap models, SIM.raceModel
+    "laps" / "segments", put the SC and retirements on a lap; VSC and red flags nowhere; the default rank model
+    is per race); a fully stochastic transfer / chip planner (planHorizon searches on expected prices, then only
+    re-ranks the plans it kept by `afford`); explicit configuration objects instead of the mutable MODEL / SIM /
+    TRACK globals (withSettings).
+  - Sampling and speed: adaptive sample counts / sequential stopping when the top teams are within noise; the
+    precision of quantile ranges; a worker for the Calculator's own runs (the Sim lab has one; the build's presim
+    covers default settings, so only custom settings run on the main thread).
+  - Evaluation: repeated walk-forward validation for the weekly fit (now one 3-round holdout); MODEL.ctxSeInflate
+    (hand-set x2) estimated from held-out stints; calibration by group (wet / dry, sprint / normal weekends,
+    drivers / constructors: section 6 splits MAE by drivers / constructors, section 5 only by scoring category);
+    a real condition number in the fit log (now a pivot ratio).
+  - Data: PU mileage, tyre-set inventory and upgrades from the FIA documents (only grid penalties are extracted);
+    the `oddsq` challenger needs Kalshi spreads, kept from R17 on.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
