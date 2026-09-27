@@ -6,8 +6,8 @@
 import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming } from "./core.js";
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
-import { BINS, codeBox, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
-import { showView } from "./main.js";
+import { BINS, codeBox, compute, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
+import { rerender, showView } from "./main.js";
 import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
 let labRun = null; // the last run: { g, N, ms, sim, setup, base (the shipped model's run, when compared), changed }
@@ -97,7 +97,13 @@ export async function labCheck() {
   labSetOwner(ok);
 }
 function labSetOwner(ok) {
+  const was = labOwner;
   labOwner = ok && !SEASON_OVER;
+  // owners and admins see the live sim, everyone else the one at lock (forecast.js atLock)
+  if (labOwner !== was && forecast) {
+    compute();
+    rerender();
+  }
   $("#labNav").hidden = !labOwner;
   const m = $("#menuList [data-view=lab]");
   if (labOwner && !m)

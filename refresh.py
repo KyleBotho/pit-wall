@@ -487,6 +487,10 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
             # frozen at lock like the projections: what the market said going in
             if now < iso(nxt_g["lock"]):
                 write_json(archived("odds", f"gd{nxt_g['gd']:02d}.json"), out["odds"], indent=1, sort_keys=True)
+        # after lock the page's everyday sim stays as it was at lock (owners see the live one): the market going in
+        at_lock = archived("odds", f"gd{nxt_g['gd']:02d}.json")
+        if now >= iso(nxt_g["lock"]) and os.path.exists(at_lock):
+            out["oddsLock"] = read_json(at_lock)
         print(
             "  market odds: "
             + (", ".join(k for k in out["odds"] if k in extras.KALSHI_SERIES) if out["odds"] else "none")

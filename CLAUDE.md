@@ -64,7 +64,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
   setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
-  `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
+  `syncState`, `LEAGUE_DATA`. `compute()` runs the live sim (known qualifying/sprint orders, live market) only for
+  owners/admins (`labOwner`); everyone else gets it as at lock (`atLock`: practice only, `DATA.oddsLock`), and the
+  Pit Wall preset's label names the race and stage ("Pit Wall sim · Monaco post FP2"; user, 2026-09-27) (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
   from `app_config`, username search, link), Settings' Change/Delete, `pullLink()` after sign-in; `tracking.js` = its
   pure helpers (tested); `rivals.js` = "Manage rivals" (`state.rivals`: tracking-league teams `{ak, tk}`, merged

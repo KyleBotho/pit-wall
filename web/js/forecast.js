@@ -4,6 +4,7 @@ import { activeTeam, state } from "./state.js";
 import { leagueList, mkey, nextIds, teamKey, teamLabel, tracked, usedChips } from "./league.js";
 import { TEMPLATES, pickKey } from "./tracking.js";
 import { rivalRows } from "./sync.js";
+import { labOwner } from "./lab.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
@@ -23,6 +24,18 @@ export const setupOpts = (g, k, track = trackFit) => ({
   pen: k === 0 ? state.pen : {},
   circuit: state.circuits[g.gd] || {},
 });
+// What everyone but the owner and admins sees: the sim as it stood at lock (the user's call, 2026-09-27): practice,
+// grid penalties and the forecast, but no session run or scored since (qualifying, sprint) and the market going in.
+// The owner and admins (labOwner) get the live one, orders and all. A UI gate: the data is in the public build.
+function atLock() {
+  const locked = !!NEXT && Date.parse(NEXT.lock) <= Date.parse(DATA.generated);
+  return {
+    ...DATA,
+    live: null,
+    weekend: DATA.weekend && { ...DATA.weekend, grid: {}, status: {} },
+    odds: locked ? DATA.oddsLock || null : DATA.odds,
+  };
+}
 export function compute() {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
@@ -32,7 +45,7 @@ export function compute() {
   // the next three races; each gets its own model: practice pace, the betting market, grid penalties and any
   // result already known (qualifying) only for the coming weekend (later races use season form alone)
   const races = upcoming.slice(0, 3);
-  const setups = races.map((g, k) => Engine.raceSetup(DATA, g, setupOpts(g, k)));
+  const setups = races.map((g, k) => Engine.raceSetup(labOwner ? DATA : atLock(), g, setupOpts(g, k)));
   const models = setups.map((x) => x.model);
   // one persist seed for the three races: sample s is one coherent future (the same car strength each race), so
   // price paths and horizon totals keep what isn't known about a car
