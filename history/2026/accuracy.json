@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-27T11:28Z",
- "key": "e9f2844409e3",
+ "generated": "2026-09-27T14:02Z",
+ "key": "37113c56b29f",
  "N": 3000,
  "rounds": [
   {
@@ -172,7 +172,8 @@
       "x": 6.8,
       "y": -18
      }
-    ]
+    ],
+    "crps": null
    },
    "walk": {
     "crps": 10.1,
@@ -183,6 +184,10 @@
    }
   }
  ],
+ "challengers": {
+  "rounds": [],
+  "summary": []
+ },
  "season": {
   "from": 5,
   "crps": 8.68,
