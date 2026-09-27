@@ -120,6 +120,12 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
   settled events need the `historical/` API, one request per driver).
+- `tools/presim.js` — the page's default-settings sims, run by `build_page` (Engine.forecastRaces; variants "lock" =
+  Engine.atLock and, after lock, "live", whose later races are shared with "lock"): summaries into `DATA.presim`, the
+  simulated weekends next to index.html as `presim-<hash>-a.bin` (first 4,000) and `-b.bin` (the other 6,000), one
+  byte each + offset, gzipped (~0.6 + 0.85 MB; ~1.9 MB after lock). The page (forecast.js, decoder `web/js/presim.js`)
+  waits for part a (max 15 s), then redraws itself once part b is in; any non-default sim setting (`simDefault`) runs
+  the sim in the browser as before. `tests/presim.test.js` checks it decodes to exactly the page's own run.
 - `tools/freeze.js` — what refresh.py freezes before lock: the projection with its record (commit, settings, seeds,
   input hashes, exact simulate() inputs), the challengers (`Engine.CHALLENGERS`) and, in the last 6 h, 2,000 joint
   samples -> `history/<season>/{projections,challengers,samples}/gdNN.json`. Scored by backtest/accuracy.js.

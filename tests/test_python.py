@@ -467,7 +467,8 @@ class PageBuild(unittest.TestCase):
         digest = lambda s: "'sha256-" + base64.b64encode(hashlib.sha256(s.encode()).digest()).decode() + "'"
         self.assertEqual(sorted(allowed), sorted(digest(s) for s in scripts))
         self.assertNotIn("unsafe-inline", re.search(r"script-src[^;]+", policy).group(0))
-        self.assertIn("connect-src https://", policy)
+        # Supabase and this site itself (the build's sims, presim-*.bin), nothing else
+        self.assertRegex(policy, r"connect-src 'self' https://[^ ;]+;")
 
     def test_season_over_builds(self):
         d = self.data()

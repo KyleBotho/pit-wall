@@ -810,7 +810,8 @@ def content_policy(html):
             "style-src 'unsafe-inline' https://fonts.googleapis.com",
             "font-src https://fonts.gstatic.com",
             "img-src 'self' data:",
-            f"connect-src {sb.group(1)}",
+            # Supabase, and this site itself for the build's sims (presim-*.bin)
+            f"connect-src 'self' {sb.group(1)}",
             # the Sim lab's worker: built in the page from its own (hash-allowed) engine script
             "worker-src blob:",
             "base-uri 'none'",
@@ -820,9 +821,32 @@ def content_policy(html):
     )
 
 
+def presim(data, out_dir):
+    """The page's default-settings sims, run here once instead of on every visitor's device (tools/presim.js): the
+    simulated weekends go next to index.html, the summaries into the page (DATA.presim). A failure leaves the page to
+    run them itself, as before."""
+    try:
+        res = subprocess.run(
+            ["node", os.path.join("tools", "presim.js"), "--out", os.path.abspath(out_dir)],
+            input=json.dumps(data),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=True,
+            cwd=HERE,
+            timeout=600,
+        )
+        return json.loads(res.stdout)
+    except Exception as e:  # noqa: BLE001 - the page can do without
+        detail = getattr(e, "stderr", "") or ""
+        print(f"  ! sims not run at build time (the page runs them): {e} {detail.strip()[-300:]}")
+        return None
+
+
 def build_page(data, out_dir=BUILD):
-    out = inline_page(data)
     os.makedirs(out_dir, exist_ok=True)
+    pre = presim({k: v for k, v in data.items() if k != "presim"}, out_dir)
+    out = inline_page({**data, "presim": pre})
     # logo files sit next to index.html; link previews need an absolute image URL
     shutil.copytree(os.path.join(HERE, "web", "brand"), os.path.join(out_dir, "brand"), dirs_exist_ok=True)
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:

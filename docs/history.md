@@ -5,6 +5,14 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, the sim by the site, not the visitor's device (user: slow phones shouldn't struggle; f1fantasytools
+      publishes finished sims). `tools/presim.js` runs the default-settings forecast at build time (0.6 s here for
+      10,000 weekends x 3 races; a mid-range phone was ~2-3 s, blocking the page). Shipped as two gzipped one-byte
+      files so the first 4,000 weekends show fast and the full 10,000 follow (user's choice: 4,000 first, then the
+      page updates itself); download 0.57 + 0.84 MB before lock, ~0.77 + 1.15 MB after (two variants; the later
+      races are identical, shipped once). Checked output-identical to the browser's own run (tests/presim.test.js).
+      Also that day: after lock the everyday sim is the one at lock (Engine.atLock, DATA.oddsLock) for all but
+      owners/admins; My rivals and Live Scoring use the live one; the Pit Wall preset names race + stage.
 - [x] 2026-09-27, review batch 4: data collection and the deferred model items (user: build them even if they
       only pay off next season; every new source must arrive on its own after a race weekend).
   - `collect.py` (run by refresh.py, fail-soft, all timestamped for honest replays): every Open-Meteo forecast

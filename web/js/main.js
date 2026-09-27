@@ -14,7 +14,16 @@ import {
   syncState,
   forgetOldKeys,
 } from "./sync.js";
-import { compute, editStart, forecast, lockedChips, rivalTeams, startKind, startTeam } from "./forecast.js";
+import {
+  compute,
+  editStart,
+  forecast,
+  lockedChips,
+  presimStart,
+  rivalTeams,
+  startKind,
+  startTeam,
+} from "./forecast.js";
 import { renderLeague } from "./league.js";
 import { renderElite, renderEliteSeason } from "./elite.js";
 import { fprops } from "./filters.js";
@@ -1140,27 +1149,34 @@ $("#menuList").innerHTML = $$("#nav button")
   )
   .join("");
 labCheck(); // ?lab=1 on this machine; signed-in owners are checked again once the account loads
-compute();
-renderHeader();
-showView(state.view);
-$$("table").forEach(alignTable);
-if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
-forgetOldKeys();
-syncInit();
-setInterval(() => {
+// on the default settings the sims come with the build (forecast.js presimStart): wait for their first part, then
+// start; the page redraws itself once the full run is in
+busy(true);
+presimStart(rerender).then(start);
+function start() {
+  busy(false);
+  compute();
   renderHeader();
-  renderSync();
-}, 30000);
-// back on this tab (say after using the site on the phone): pick up changes made elsewhere
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) return;
-  if (syncState.ready) pull();
-  pullLeagues();
-  pullLink();
-  pullRivals();
-  loadNotice();
-  if (state.view === "live") pullLive();
-});
-setInterval(() => {
-  if (state.view === "live" && !document.hidden) pullLive();
-}, 60000);
+  showView(state.view);
+  $$("table").forEach(alignTable);
+  if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
+  forgetOldKeys();
+  syncInit();
+  setInterval(() => {
+    renderHeader();
+    renderSync();
+  }, 30000);
+  // back on this tab (say after using the site on the phone): pick up changes made elsewhere
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) return;
+    if (syncState.ready) pull();
+    pullLeagues();
+    pullLink();
+    pullRivals();
+    loadNotice();
+    if (state.view === "live") pullLive();
+  });
+  setInterval(() => {
+    if (state.view === "live" && !document.hidden) pullLive();
+  }, 60000);
+}

@@ -253,7 +253,7 @@ export function renderSettings() {
     upd = `Data updated ${esc(new Date(DATA.generated).toLocaleString(undefined, shortDate))}.`;
   $("#simNote").innerHTML = infoTip(
     (P === "sim"
-      ? `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules. ` +
+      ? `Fantasy Pit Wall's race simulation: <b>${state.sims.toLocaleString()}</b> weekends per race, scored with the ${DATA.season} rules${simSource()}. ` +
         `Practice used: ${prac.length ? esc(prac.join(", ")) : "none yet"}. ` +
         raceInputs()
       : SIM_NOTES[P] + " Ranges and odds still come from the simulated weekends. ") + upd,
@@ -279,6 +279,14 @@ const oddsFitText = (f) =>
       ? ` (matched within simulation noise after ${f.iters} steps)`
       : ` (only partly matched: ${f.resid[f.resid.length - 1].toFixed(2)} log-odds off vs noise ${f.noise.toFixed(2)}; the model's pace can't fully reach the market)`;
 // what else shapes the next race's simulation: the market, rain, safety car, grid penalties, results already in
+// where the sims came from: the build's default-settings run (the first part while the rest loads) or this device
+function simSource() {
+  const n = forecast.pre;
+  if (!n) return "";
+  return n < state.sims
+    ? `, run by the site at its last update (showing the first ${n.toLocaleString()} while the rest load)`
+    : ", run by the site at its last update";
+}
 function raceInputs() {
   const su = forecast.setup;
   if (!su) return "";

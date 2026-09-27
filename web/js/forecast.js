@@ -5,6 +5,7 @@ import { leagueList, mkey, nextIds, teamKey, teamLabel, tracked, usedChips } fro
 import { TEMPLATES, pickKey } from "./tracking.js";
 import { rivalRows } from "./sync.js";
 import { labOwner } from "./lab.js";
+import { gunzip, presimSamples } from "./presim.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
@@ -24,33 +25,22 @@ export const setupOpts = (g, k, track = trackFit) => ({
   pen: k === 0 ? state.pen : {},
   circuit: state.circuits[g.gd] || {},
 });
-// past lock, so the live sim and the one at lock can differ
-const pastLock = () => !!NEXT && Date.parse(NEXT.lock) <= Date.parse(DATA.generated);
-// What everyone but the owner and admins sees: the sim as it stood at lock (the user's call, 2026-09-27): practice,
-// grid penalties and the forecast, but no session run or scored since (qualifying, sprint) and the market going in.
-// The owner and admins (labOwner) get the live one, orders and all, and so does My rivals (withLive). A UI gate: the
-// data is in the public build.
-function atLock() {
-  return {
-    ...DATA,
-    live: null,
-    weekend: DATA.weekend && { ...DATA.weekend, grid: {}, status: {} },
-    odds: pastLock() ? DATA.oddsLock || null : DATA.odds,
-  };
-}
-let liveFc = null; // the live forecast for My rivals when the page's own is the one at lock (built on first use)
+// After lock everyone but the owner and admins sees the sim as it stood at lock (Engine.atLock, the user's call,
+// 2026-09-27); the owner and admins (labOwner) get the live one, orders and all, and so do My rivals and Live Scoring
+// (withLive). A UI gate: the data is in the public build. Variants: "lock" (as at lock) and "live".
+let liveFc = null; // the live forecast for withLive when the page's own is the one at lock (built on first use)
 export function compute() {
   liveFc = null;
-  build(labOwner ? DATA : atLock());
+  build(labOwner ? "live" : "lock");
+  if (PRE && !pre.loading && simDefault()) presimLoad(); // back on the defaults: the build's sims, once they're in
 }
-// My rivals keeps the live sim for everyone (the user, 2026-09-27): fn runs with the live forecast in place of the
-// one at lock, which is put back after
+// fn runs with the live forecast in place of the one at lock, which is put back after
 export function withLive(fn) {
-  if (labOwner || SEASON_OVER || !pastLock()) return fn();
+  if (labOwner || SEASON_OVER || !Engine.pastLock(DATA)) return fn();
   const keep = forecast;
   try {
     if (!liveFc) {
-      build(DATA);
+      build("live");
       liveFc = forecast;
     }
     forecast = liveFc;
@@ -59,26 +49,86 @@ export function withLive(fn) {
     forecast = keep;
   }
 }
-function build(data) {
+
+/* The build's sims (tools/presim.js): the default-settings run, done by GitHub at build time, so a visitor on the
+   defaults doesn't run 10,000 weekends x 3 races on their own device (the user's call, 2026-09-27). Summaries come in
+   the page (DATA.presim); the weekends in two files: the first 4,000 (shown as soon as they're in), then the other
+   6,000, after which the page updates itself. Any other setting runs the sim here, as before. */
+const PRE = DATA.presim && NEXT && DATA.presim.gd === NEXT.gd ? DATA.presim : null;
+const pre = { N: 0, vars: null, loading: null, onFull: null };
+const noneSet = (o) => !o || Object.values(o).every((v) => !v);
+// every setting the simulation itself uses at its default (blend, presets and xPts edits apply afterwards)
+function simDefault() {
+  const D = Engine.DEFAULTS;
+  return (
+    state.halfLife === D.halfLife &&
+    state.pw === D.pw &&
+    state.oddsW === D.oddsW &&
+    state.sims === D.sims &&
+    noneSet(state.adj) &&
+    noneSet(state.pen) &&
+    upcoming.slice(0, 3).every((g) => !Object.keys(state.circuits[g.gd] || {}).length) &&
+    sprintNext() === !!(NEXT && NEXT.sprint)
+  );
+}
+const fetchPart = (i) =>
+  fetch(PRE.files[i]).then((r) => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.arrayBuffer().then(gunzip);
+  });
+// part a, then part b in the background; resolves once part a is in (or failed: then the sim runs here)
+function presimLoad() {
+  if (!pre.loading)
+    pre.loading = fetchPart(0)
+      .then((a) => {
+        Object.assign(pre, presimSamples(PRE, a, null));
+        fetchPart(1)
+          .then((b) => {
+            Object.assign(pre, presimSamples(PRE, a, b));
+            // the full run is in: redraw if what's on screen came from the first part
+            if (forecast && forecast.pre) {
+              compute();
+              if (pre.onFull) pre.onFull();
+            }
+          })
+          .catch(() => {});
+      })
+      .catch(() => {});
+  return pre.loading;
+}
+// start-up: on the defaults, wait for the first part (at most 15 s) before the first compute(); onFull redraws the
+// page once the rest is in
+export function presimStart(onFull) {
+  pre.onFull = onFull;
+  if (!PRE || !simDefault()) return Promise.resolve();
+  return Promise.race([presimLoad(), new Promise((r) => setTimeout(r, 15000))]);
+}
+// the forecast's races, setups and simulations: the build's when on the defaults and in, else run here
+function runRaces(v) {
+  if (pre.vars && simDefault()) {
+    const x = PRE.vars[v] || PRE.vars.lock, // before lock there's one: both are the same
+      smp = pre.vars[v] || pre.vars.lock;
+    return {
+      races: upcoming.slice(0, 3),
+      setups: [x.setup],
+      sims: x.sims.map((sim, k) => ({ ...(sim || PRE.vars.lock.sims[k]), N: pre.N, tot: smp[k].tot, nn: smp[k].nn })),
+      pre: pre.N,
+    };
+  }
+  const data = v === "live" ? DATA : Engine.atLock(DATA);
+  return { ...Engine.forecastRaces(data, { setup: setupOpts, sprint0: sprintNext(), sims: state.sims }), pre: 0 };
+}
+function build(v) {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
     forecast = { model: null, races: [], sims: [], idx: {}, form, proj: [], price: {} };
     return;
   }
   // the next three races; each gets its own model: practice pace, the betting market, grid penalties and any
-  // result already known (qualifying) only for the coming weekend (later races use season form alone)
-  const races = upcoming.slice(0, 3);
-  const setups = races.map((g, k) => Engine.raceSetup(data, g, setupOpts(g, k)));
-  const models = setups.map((x) => x.model);
-  // one persist seed for the three races: sample s is one coherent future (the same car strength each race), so
-  // price paths and horizon totals keep what isn't known about a car
-  const persist = races.length ? races[0].gd * 104729 + 1 : 0;
-  const sims = races.map((g, k) =>
-    Engine.simulate(models[k], setups[k].circuit, k === 0 ? sprintNext() : g.sprint, state.sims, g.gd * 7919 + 13, {
-      ...setups[k].simOpt,
-      persist,
-    }),
-  );
+  // result already known (qualifying) only for the coming weekend (later races use season form alone); one persist
+  // seed for the three: sample s is one coherent future (the same car strength each race), so price paths and
+  // horizon totals keep what isn't known about a car (Engine.forecastRaces)
+  const { races, setups, sims, pre: preN } = runRaces(v);
   const idx = Object.fromEntries(sims[0].ids.map((id, i) => [id, i]));
   const proj = sims.map((sim) => {
     const o = {};
@@ -118,7 +168,7 @@ function build(data) {
     p.shift += dlt;
     p.nn += dlt;
   }
-  forecast = { model: models[0], setup: setups[0], races, sims, idx, form, proj, price: {} };
+  forecast = { model: setups[0].model, setup: setups[0], races, sims, idx, form, proj, price: {}, pre: preN };
   forecast.price = Object.fromEntries(DATA.assets.map((a) => [a.id, priceInfo(a)]));
 }
 // how far into the next weekend the sim is: the latest session it uses (known or scored order, else practice)

@@ -153,7 +153,7 @@
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -3168,6 +3168,38 @@
     if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
     return { circuit: c, model, simOpt, odds: !!odds };
   }
+  /** The page's forecast: the next three races, each set up by raceSetup with setup(g, k) and simulated with one persist
+   * seed (sample s is one coherent future: the same car strength each race). The page runs it (web/js/forecast.js)
+   * and so does tools/presim.js at build time, with the default settings, for the page to use instead.
+   * @param {Data} data @param {{ setup: (g: Gameday, k: number) => Parameters<typeof raceSetup>[2], sprint0: boolean, sims: number }} o */
+  function forecastRaces(data, o) {
+    const races = data.schedule.filter((g) => !data.done.includes(g.gd)).slice(0, 3);
+    const setups = races.map((g, k) => raceSetup(data, g, o.setup(g, k)));
+    const persist = races.length ? races[0].gd * 104729 + 1 : 0;
+    const sims = races.map((g, k) =>
+      simulate(setups[k].model, setups[k].circuit, k === 0 ? o.sprint0 : g.sprint, o.sims, g.gd * 7919 + 13, {
+        ...setups[k].simOpt,
+        persist,
+      }),
+    );
+    return { races, setups, sims };
+  }
+  /** Whether the next race's team lock has passed at the data's time. @param {Data} data */
+  function pastLock(data) {
+    const next = data.schedule.find((g) => !data.done.includes(g.gd));
+    return !!next && !!data.generated && Date.parse(next.lock) <= Date.parse(data.generated);
+  }
+  /** The data as it stood at lock (the everyday sim after lock, the user's call 2026-09-27): practice, grid penalties
+   * and the forecast, but no session run or scored since (qualifying, sprint) and the market going in (oddsLock).
+   * Before lock it simulates the same as the data itself. @param {Data} data @returns {Data} */
+  function atLock(data) {
+    return {
+      ...data,
+      live: null,
+      weekend: data.weekend && { ...data.weekend, grid: {}, status: {} },
+      odds: pastLock(data) ? data.oddsLock || null : data.odds,
+    };
+  }
   /** This weekend's sessions the fantasy feed has already scored (data.live, the player feed's per-session points):
    * q = qualifying, s = the sprint (F1 Fantasy's "Sprint Qualifying" session). A session counts once it has ended
    * before the feed's time and every racing asset has points for it. Returns asset id -> [points, negative part]
@@ -3560,6 +3592,9 @@
     recentForm,
     blendMean,
     raceSetup,
+    forecastRaces,
+    pastLock,
+    atLock,
     withSettings,
     CHALLENGERS,
     RNG_VERSION,
