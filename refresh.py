@@ -483,8 +483,8 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
         out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas, CFG["field"], keep_quotes)
         if out["odds"]:
             out["odds"]["gd"] = nxt_g["gd"]
-            # at (extras.odds) = when the books were fetched, the oldest of them; checked = this attempt
-            out["odds"].setdefault("at", now.isoformat(timespec="minutes"))
+            # at (extras.odds) = when the books were fetched, the oldest of them (left out when unknown: engine.js
+            # oddsKnown then counts nothing dated as known); checked = this attempt
             out["odds"]["checked"] = now.isoformat(timespec="minutes")
             # frozen at lock like the projections: what the market said going in
             if now < iso(nxt_g["lock"]):
@@ -514,7 +514,7 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     # weekend's car infringements, read once each; car numbers to TLAs from the last race's classification
     if nxt_g and out.get("weekend") is not None and busy:
         try:
-            pen, at = gather.fia_penalties(
+            pen, at, parts = gather.fia_penalties(
                 archived, read_json, write_json, gather.event_slug(nxt_g["name"], SEASON), fia_bytes
             )
             last = max((int(k) for k in results["race"]), default=None)
@@ -525,6 +525,7 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
                 if t and places:
                     w["penalties"][t] = places
                     w.setdefault("penAt", {})[t] = at[car]
+                    w.setdefault("penParts", {})[t] = parts[car]
             if pen:
                 print(f"  FIA grid penalties: {', '.join(f'#{c} {p}' for c, p in pen.items() if p) or 'none'}")
         except Exception as e:  # noqa: BLE001
@@ -703,6 +704,34 @@ def git_commit():
 def input_hashes(data):
     """sha1 (12 hex) of each model input, so two frozen forecasts show which inputs differed."""
     return {k: hashlib.sha1(json.dumps(data.get(k), sort_keys=True).encode()).hexdigest()[:12] for k in RECORD_INPUTS}
+
+
+LOCK_KEYS = (
+    "practice",
+    "bands",
+)  # data keys the coming race's sim reads that change after lock (weather, weekend below)
+
+
+def lock_snapshot(data, g):
+    """The coming race's inputs as they stood at lock (third review: the "at lock" view used to be the live data with
+    the post-lock parts filtered out, so a later refresh could change it): rewritten every build until lock, then
+    frozen, and after lock embedded as DATA.lockSnap for Engine.atLock (and the build's "lock" sims)."""
+    path = archived("lock", f"gd{g['gd']:02d}.json")
+    now = datetime.now(timezone.utc)
+    if now < iso(g["lock"]):
+        wk = data.get("weekend") or {}
+        snap = {
+            "gd": g["gd"],
+            "built": now.isoformat(timespec="seconds"),
+            "weather": (data.get("weather") or {}).get(str(g["gd"])),
+            "penalties": wk.get("penalties") or {},
+            "penAt": wk.get("penAt") or {},
+            "penParts": wk.get("penParts") or {},
+            **{k: data.get(k) for k in LOCK_KEYS},
+        }
+        write_json(path, snap, indent=1, sort_keys=True)
+    elif os.path.exists(path):
+        data["lockSnap"] = read_json(path)
 
 
 def freeze_projection(data, g):
@@ -1039,6 +1068,7 @@ def collect(prev=None):
     }
     if nxt_g:
         freeze_projection(data, nxt_g)
+        lock_snapshot(data, nxt_g)
     data["projHist"] = load_projections()
     data["projRebuilt"] = load_projections("rebuilt")
     log_path = archived("health.json")

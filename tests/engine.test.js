@@ -129,6 +129,66 @@ test("gauss: both Box-Muller halves are standard normals, and a pair is uncorrel
   assert.ok(Math.abs(xs.filter((x) => x > 1.96).length / n - 0.025) < 0.002);
 });
 
+test("sameAgeBooks: a book fetched before qualifying ended isn't fitted with the ones fetched after", () => {
+  const g = { gd: 16, sessions: [{ type: "Qualifying", end: "2026-10-03T09:00:00Z" }] };
+  const odds = {
+    gd: 16,
+    win: { A: 0.5 },
+    pole: { A: 0.4 },
+    at: "2026-10-02T12:00+00:00",
+    asOf: { win: "2026-10-03T10:00+00:00", pole: "2026-10-02T12:00+00:00" },
+  };
+  const out = E.sameAgeBooks(odds, g);
+  assert.deepEqual(
+    [out.win, out.pole, out.at, out.dropped],
+    [{ A: 0.5 }, undefined, "2026-10-03T10:00+00:00", ["pole"]],
+  );
+  // all from the same side: unchanged
+  const same = { ...odds, asOf: { win: "2026-10-02T11:00+00:00", pole: "2026-10-02T12:00+00:00" } };
+  assert.equal(E.sameAgeBooks(same, g), same);
+});
+
+test("atLock: the snapshot frozen at lock wins over later data; without one, later penalties are left out", () => {
+  const g = { gd: 16, lock: "2026-10-03T08:00:00Z", sessions: [] };
+  const data = {
+    schedule: [g],
+    done: [],
+    generated: "2026-10-03T12:00:00Z", // after lock
+    weather: { 16: { q: 1, r: 1 } }, // turned wet after lock
+    practice: [{ name: "FP3", done: true, drivers: {} }],
+    weekend: { gd: 16, penalties: { NOR: 10, VER: 5 }, penAt: { NOR: "2026-10-03T08:30:00Z" }, grid: { q: ["X"] } },
+    odds: { gd: 16, win: {} },
+    oddsLock: { gd: 16, win: { A: 1 } },
+  };
+  const bare = E.atLock(data);
+  assert.deepEqual(bare.weekend.penalties, { VER: 5 }); // NOR's came 30 min after lock
+  assert.deepEqual(bare.weekend.grid, {});
+  assert.equal(bare.odds, data.oddsLock);
+  const snap = { gd: 16, weather: { q: 0.1, r: 0.2 }, penalties: { VER: 5 }, practice: [] };
+  const frozen = E.atLock({ ...data, lockSnap: snap });
+  assert.deepEqual(frozen.weather[16], { q: 0.1, r: 0.2 });
+  assert.deepEqual(frozen.practice, []);
+  assert.deepEqual(frozen.weekend.penalties, { VER: 5 });
+  // before lock: the data itself
+  const before = E.atLock({ ...data, generated: "2026-10-03T07:00:00Z", lockSnap: snap });
+  assert.deepEqual(before.weekend.penalties, data.weekend.penalties);
+  assert.equal(before.weather, data.weather);
+});
+
+test("pairedCompare: net of penalties, ties and reversals (the third review's fixtures)", () => {
+  const same = (v) => new Float64Array(8).fill(v);
+  // raw 110 vs 100 with penalties 10 vs 0: an exact net tie, no noise
+  const tie = E.pairedCompare(same(110), same(100), 10, 0);
+  assert.deepEqual([tie.gap, tie.near, tie.reversed], [0, true, false]);
+  // the original #1 is 10 behind on the independent run, no noise: reversed, not "near"
+  const rev = E.pairedCompare(same(100), same(110), 0, 0);
+  assert.deepEqual([rev.gap, rev.near, rev.reversed], [-10, false, true]);
+  // inside the noise
+  const a = Float64Array.from([0, 20, 0, 20]),
+    b = Float64Array.from([10, 10, 10, 10]);
+  assert.equal(E.pairedCompare(a, b, 0, 0).near, true);
+});
+
 test("poisson: exact at high rates (the skew of Poisson(31) is 1/sqrt(31) = 0.18, not 0)", () => {
   const r = E.mulberry32(7),
     n = 200000,
@@ -597,8 +657,20 @@ test("oddsKnown: the qualifying order conditions the market only if the quote ca
   assert.deepEqual(E.oddsKnown(simOpt, {}, g), { pen: { VER: 5 }, known: {} });
   // a penalty race control announced after the quote: the market didn't know it (a hand-set one always counts)
   const penAt = { VER: "2026-10-03T09:30+00:00" };
-  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T08:00+00:00" }, g, penAt), { pen: {}, known: {} });
-  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T10:00+00:00" }, g, penAt).pen, { VER: 5 });
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T08:00+00:00" }, g, { penAt }), { pen: {}, known: {} });
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T10:00+00:00" }, g, { penAt }).pen, { VER: 5 });
+  // a quote of unknown time: nothing dated counts as known (third review)
+  assert.deepEqual(E.oddsKnown(simOpt, {}, g, { penAt }).pen, {});
+  // an accumulated penalty: each part by its own time (10 before the quote, 5 after)
+  const acc = { ...simOpt, pen: { VER: 15 } };
+  const penParts = {
+    VER: [
+      [10, "2026-10-02T12:00+00:00"],
+      [5, "2026-10-03T09:30+00:00"],
+    ],
+  };
+  assert.deepEqual(E.oddsKnown(acc, { at: "2026-10-03T08:00+00:00" }, g, { penAt, penParts }).pen, { VER: 10 });
+  assert.deepEqual(E.oddsKnown(acc, { at: "2026-10-03T10:00+00:00" }, g, { penAt, penParts }).pen, { VER: 15 });
 });
 
 test("simulate: the weekend's weather is one regime: marginals as forecast, sessions wet together", () => {

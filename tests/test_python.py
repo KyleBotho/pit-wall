@@ -231,11 +231,34 @@ class FiaPenalties(unittest.TestCase):
 
         with mock.patch.object(collect, "pdf_text", lambda b: b), mock.patch("os.path.exists", return_value=True):
             args = (lambda *p: "x", lambda p: store[p], lambda p, v, **k: store.__setitem__(p, v), "e", read_bytes)
-            pen, at = collect.fia_penalties(*args)
+            pen, at, parts = collect.fia_penalties(*args)
             self.assertEqual(pen, {14: 30})
             self.assertEqual(at, {14: "T2"})
+            self.assertEqual(parts, {14: [[25, "T1"], [5, "T2"]]})
             collect.fia_penalties(*args)
         self.assertEqual(reads, ["a", "b", "c"])
+
+
+class LockSnapshot(unittest.TestCase):
+    def test_written_until_lock_then_read_back(self):
+        with (
+            tempfile.TemporaryDirectory() as d,
+            mock.patch.object(refresh, "archived", lambda *p: os.path.join(d, p[-1])),
+        ):
+            data = {
+                "weather": {"16": {"q": 0.1}},
+                "weekend": {"penalties": {"VER": 5}, "penAt": {"VER": "T"}},
+                "practice": [{"name": "FP3"}],
+                "bands": {},
+            }
+            refresh.lock_snapshot(data, {"gd": 16, "lock": "2999-01-01T00:00:00+00:00"})
+            self.assertNotIn("lockSnap", data)
+            later = {**data, "weather": {"16": {"q": 1}}}
+            refresh.lock_snapshot(later, {"gd": 16, "lock": "2000-01-01T00:00:00+00:00"})
+            snap = later["lockSnap"]
+            self.assertEqual(
+                (snap["weather"], snap["penalties"], snap["practice"]), ({"q": 0.1}, {"VER": 5}, [{"name": "FP3"}])
+            )
 
 
 class ForecastRecord(unittest.TestCase):

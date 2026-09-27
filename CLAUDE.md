@@ -80,6 +80,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `state.calcStart` (null = auto: your active team, or "No starting team" while it's only an example; `{type:
   "team"}` = picked); pins `state.pins`; xPts edits `state.xo`; xΔ$Pts = `state.xdp` + `state.valW`; max penalty
   `state.maxPen`; the chip played is `activeChip()`.
+- The "at lock" view (Engine.atLock) reads DATA.lockSnap: the coming race's weather, practice, bands and penalties
+  as frozen at lock by refresh.py `lock_snapshot` (`history/<season>/lock/gdNN.json`, rewritten until lock).
 - Sim after lock (user, 2026-09-27): `compute()` runs the live sim (known qualifying/sprint orders, live market) only
   for owners/admins (`labOwner`); everyone else gets it as at lock (`atLock`: practice only, `DATA.oddsLock`), except
   My rivals and Live Scoring, which always use the live one (`withLive`; Live Scoring's xPts = the live sim while its
@@ -235,9 +237,10 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   points within noise; better on race positions (race MAE 2.91 vs 3.05 places, from lap-time pace); qualifying about
   the same (1.737 vs 1.735). The rework's value is structure (correlated team form, SC, rain, market, uncertainty,
   penalties, known grid) and features, not a measured points gain yet. 10 rounds can't separate ±0.1.
-- Section 6 now (2026-09-27, R5-R15, after review batch 1): CRPS 8.68, MAE 11.96 (drivers 10.4, constructors 15.1),
-  bias +1.19 (the overtake level forecast, see Overtakes), rank corr 0.73, 81% / 52% inside the 10-90% / 25-75%
-  ranges; baselines: season average 13.44, recent form 13.84. Before batch 1: CRPS 8.76, MAE 12.13, 85% / 56%.
+- Section 6 now (2026-09-27, R5-R15, third review: only forecasts issued before lock, stewards' penalties published
+  before lock): CRPS 8.674, MAE 11.86 (drivers 10.36, constructors 14.87), bias +1.12 (the overtake level forecast,
+  see Overtakes), rank corr 0.73, 81% / 53% inside the 10-90% / 25-75% ranges; baselines: season average 13.44,
+  recent form 13.84. Before review batch 1: CRPS 8.76, MAE 12.13, 85% / 56%.
 - Recent-form blend: default 0 (was 0.3; +30% form is worse on every metric). State schema 4 resets it.
 - Pace: % off the fastest. Qualifying from Jolpica Q1-Q3 times (per-session gap to that session's fastest, averaged);
   race from OpenF1 median clean race lap (fallback: finishing rank x 0.1%). Team-mate prior 1.5 races, gaps capped at
@@ -291,6 +294,9 @@ there before re-deciding something.
       targets, the Calculator now says so): more steps = a higher effective market weight, decide with a backtest.
       Sections 4-8 done the same day (history); left: adaptive sampling, a Calculator worker, a stochastic chip /
       transfer policy, hierarchical pace + survival models. Don't retune on the same R5-R15: wait for frozen rounds.
+- [ ] Third review (`docs/reviews/2026-09-27/F1-second-round-review.md`, 7.8/10): all five findings fixed
+      2026-09-27 (history). Its advice: no new features now; leave this version running and judge it on the frozen
+      rounds from R16 (champion vs challengers in Model health).
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap

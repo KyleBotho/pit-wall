@@ -45,14 +45,30 @@ function run(data, first) {
     sprint0: !!next.sprint,
     sims: D.sims,
   };
-  const variants = { lock: E.forecastRaces(E.atLock(data), opts) };
-  if (E.pastLock(data)) variants.live = E.forecastRaces(data, opts);
+  const inputs = { lock: E.atLock(data) };
+  if (E.pastLock(data)) inputs.live = data;
+  const variants = Object.fromEntries(Object.entries(inputs).map(([v, d]) => [v, E.forecastRaces(d, opts)]));
+  // the same run cut at `first` weekends (the prefix of the full run: the streams don't depend on N), for the
+  // summaries the page shows while only part a is in (third review: the full run's means over part a's samples)
+  const heads = Object.fromEntries(
+    Object.entries(inputs).map(([v, d]) => [v, E.forecastRaces(d, { ...opts, sims: first })]),
+  );
   const N = D.sims;
   const parts = [[], []];
   const vars = {};
   for (const [v, f] of Object.entries(variants)) {
     vars[v] = {
       setup: f.setups[0],
+      first: heads[v].sims.map((sim, k) => {
+        const full = f.sims[k];
+        for (let i = 0; i < sim.ids.length; i++)
+          for (let s = 0; s < first; s++)
+            if (sim.tot[i * first + s] !== full.tot[i * N + s])
+              throw new Error("the short run isn't the full run's prefix");
+        if (v !== "lock" && same(full, variants.lock.sims[k])) return null;
+        const { tot, nn, ...rest } = sim;
+        return rest;
+      }),
       sims: f.sims.map((sim, k) => {
         if (sim.N !== N) throw new Error(`expected ${N} weekends, got ${sim.N}`);
         // a race the same as in "lock" (the later races: only the coming one knows about lock) isn't shipped twice

@@ -135,6 +135,13 @@ test("withSettings: a bad key or value changes nothing; nested calls and throws 
   assert.throws(() => E.withSettings({ "SIM.qSd": 0.91, "SIM.noSuchThing": 1 }, () => 0));
   assert.throws(() => E.withSettings({ "SIM.qSd": 0.91, "SIM.rSd": "0.3" }, () => 0));
   assert.throws(() => E.withSettings({ "SIM.qSd": NaN }, () => 0));
+  assert.throws(() => E.withSettings({ "SIM.qSd": Infinity }, () => 0));
+  // a half-life's "no decay" is Infinity (the third review found it rejected)
+  assert.equal(
+    E.withSettings({ "MODEL.dnfHalfLife": Infinity }, () => E.MODEL.dnfHalfLife),
+    Infinity,
+  );
+  assert.throws(() => E.withSettings({ "MODEL.dnfHalfLife": NaN }, () => 0));
   assert.equal(E.SIM.qSd, q);
   const seen = E.withSettings({ "SIM.qSd": 0.5 }, () =>
     E.withSettings({ "SIM.qSd": 0.7, "MODEL.racePace": "ctx" }, () => [E.SIM.qSd, E.MODEL.racePace]),
@@ -173,4 +180,14 @@ test("a finished season projects nothing and still models", opt, () => {
   const over = { ...D, schedule: D.schedule.filter((g) => D.done.includes(g.gd)) };
   assert.equal(E.project(over), null);
   assert.ok(E.trackModel(over).forCircuit(over.schedule[0].name));
+});
+
+test("the evaluation's input manifest names every data file asOf reads (the accuracy cache key hashes it)", opt, () => {
+  const W = require("../backtest/walk.js");
+  const names = W.INPUTS.map((p) => p.replace(/\\/g, "/"));
+  for (const want of ["weather_by_round.json", "odds_by_round.json", "practice_by_round.json", "/fia", "/projections"])
+    assert.ok(
+      names.some((n) => n.endsWith(want)),
+      want,
+    );
 });

@@ -428,8 +428,8 @@ BACK = re.compile(r"CAR (\d+) \([A-Z]{3}\).*?(BACK OF THE GRID|PIT ?LANE)")
 
 def grid_penalties(rc, num2, before=None):
     """Race control's grid penalties: ({TLA: places, 99 = back of the grid / pit lane}, {TLA: when announced (the
-    latest message)}). before (datetime): only messages before then (what was known at lock, for the backtest)."""
-    pen, at = {}, {}
+    latest message)}, {TLA: [[places, announced], ...] each message}). before (datetime): only messages before then."""
+    pen, at, parts = {}, {}, {}
     for m in rc or []:
         msg = (m.get("message") or "").upper()
         if "GRID" not in msg and "PIT LANE" not in msg and "PITLANE" not in msg:
@@ -440,11 +440,13 @@ def grid_penalties(rc, num2, before=None):
         t = num2.get(int((p or b).group(1))) if p or b else None
         if not t:
             continue
-        pen[t] = pen.get(t, 0) + int(p.group(2)) if p else 99
-        # a market quoted before the announcement didn't know it
+        places = int(p.group(2)) if p else 99
+        pen[t] = 99 if places >= 99 or pen.get(t) == 99 else pen.get(t, 0) + places
+        # a market quoted before the announcement didn't know it: each component by its own time
+        parts.setdefault(t, []).append([places, m.get("date")])
         if m.get("date"):
             at[t] = max(at.get(t, ""), m["date"])
-    return pen, at
+    return pen, at, parts
 
 
 def session_flags(res, num2, key):
@@ -499,9 +501,11 @@ def weekend(get_soft, cached, season, g, now):
         drv = get_soft(f"{OPENF1}/drivers?meeting_key={meeting}", cached(f"of_drivers_m{meeting}.json"))
         num2 = {d["driver_number"]: d["name_acronym"] for d in drv or []}
         rc = get_soft(f"{OPENF1}/race_control?meeting_key={meeting}", cached(f"of_rc_m{meeting}.json"))
-        out["penalties"], pen_at = grid_penalties(rc, num2)
+        out["penalties"], pen_at, parts = grid_penalties(rc, num2)
         if pen_at:
             out["penAt"] = pen_at
+        if parts:
+            out["penParts"] = parts
         # the official race grid once published (penalties and pit-lane starts applied): what the race starts from
         rs = race if race and _dt(race["date_start"]) - timedelta(hours=2) <= now else None
         if rs:

@@ -161,8 +161,8 @@
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
-  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], spread?: Record<string, Record<string, number>> }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
+  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -2759,6 +2759,25 @@
     return simSummary(S);
   }
 
+  /** Two teams' net scores compared weekend by weekend (the same simulated weekends: shared assets cancel): a's lead
+   * over b after their transfer penalties, and whether it's inside twice its standard error ("near", exact ties with
+   * no noise included) or convincingly the other way ("reversed": b ahead).
+   * @param {ArrayLike<number>} a @param {ArrayLike<number>} b @param {number} penA @param {number} penB
+   * @returns {{ gap: number, se: number, near: boolean, reversed: boolean }} */
+  function pairedCompare(a, b, penA, penB) {
+    const n = a.length;
+    let m = 0,
+      m2 = 0;
+    for (let k = 0; k < n; k++) {
+      const d = a[k] - penA - (b[k] - penB);
+      m += d;
+      m2 += d * d;
+    }
+    m /= n;
+    const se = Math.sqrt(Math.max(0, m2 / n - m * m) / n);
+    return { gap: m, se, near: Math.abs(m) <= 2 * se, reversed: m < -2 * se };
+  }
+
   /* ---------- the betting market (next race) ---------- */
   /** Move each driver's pace so the simulated chances of winning, a podium, a top 10 and pole move towards the
    * market's, by weight w (0 = model only, 1 = market only), in log-odds. Returns a new model; the shift per driver
@@ -3427,7 +3446,7 @@
       practiceWeight: o.pw ?? DEFAULTS.pw,
       paceShift: next && (MODEL.bandQ || MODEL.bandR) ? bandShift(data, g) || {} : {},
     });
-    const odds = data.odds && data.odds.gd === g.gd ? data.odds : null;
+    const odds = data.odds && data.odds.gd === g.gd ? sameAgeBooks(data.odds, g) : null;
     const wk = data.weekend && data.weekend.gd === g.gd ? data.weekend : null;
     /** @type {SimOpts} */
     const simOpt = {
@@ -3450,7 +3469,7 @@
       model = applyOdds(model, c, odds, {
         w: o.oddsW ?? SIM.oddsW,
         seed: g.gd * 31 + 7,
-        simOpt: oddsKnown(simOpt, odds, g, (wk && wk.penAt) || {}),
+        simOpt: oddsKnown(simOpt, odds, g, wk || {}),
       });
     const fl = next && odds && odds.fl;
     if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
@@ -3486,16 +3505,41 @@
     const next = data.schedule.find((g) => !data.done.includes(g.gd));
     return !!next && !!data.generated && Date.parse(next.lock) <= Date.parse(data.generated);
   }
-  /** The data as it stood at lock (the everyday sim after lock, the user's call 2026-09-27): practice, grid penalties
-   * and the forecast, but no session run or scored since (qualifying, sprint) and the market going in (oddsLock).
-   * Before lock it simulates the same as the data itself. @param {Data} data @returns {Data} */
+  /** The data as it stood at lock (the everyday sim after lock, the user's call 2026-09-27): no session run or scored
+   * since (qualifying, sprint), the market going in (oddsLock) and, from the snapshot refresh.py froze at lock
+   * (data.lockSnap, third review), that race's weather, practice and grid penalties as they were then, not as later
+   * refreshes have them. Without a snapshot: penalties announced after lock (penAt) are left out; the rest is the
+   * data's own. Before lock it simulates the same as the data itself. @param {Data} data @returns {Data} */
   function atLock(data) {
-    return {
+    const next = data.schedule.find((g) => !data.done.includes(g.gd));
+    const past = pastLock(data);
+    const snap = past && next && data.lockSnap && data.lockSnap.gd === next.gd ? data.lockSnap : null;
+    const wk = data.weekend && { ...data.weekend, grid: {}, status: {}, fl: {} };
+    if (wk && past && next) {
+      if (snap) {
+        wk.penalties = { ...snap.penalties };
+        wk.penAt = { ...(snap.penAt || {}) };
+        wk.penParts = { ...(snap.penParts || {}) };
+      } else {
+        // what had been announced by lock: each component of a penalty by its own time (penParts), else its latest
+        wk.penalties = oddsKnown({ pen: wk.penalties || {} }, { at: next.lock }, next, wk).pen || {};
+      }
+    }
+    /** @type {Data} */
+    const out = {
       ...data,
       live: null,
-      weekend: data.weekend && { ...data.weekend, grid: {}, status: {}, fl: {} },
-      odds: pastLock(data) ? data.oddsLock || null : data.odds,
+      weekend: wk,
+      odds: past ? data.oddsLock || null : data.odds,
     };
+    if (snap && next) {
+      out.weather = { ...(data.weather || {}) };
+      if (snap.weather) out.weather[next.gd] = snap.weather;
+      else delete out.weather[next.gd];
+      if (snap.practice) out.practice = snap.practice;
+      if (snap.bands) out.bands = snap.bands;
+    }
+    return out;
   }
   /** This weekend's sessions the fantasy feed has already scored (data.live, the player feed's per-session points):
    * q = qualifying, s = the sprint (F1 Fantasy's "Sprint Qualifying" session). A session counts once it has ended
@@ -3548,14 +3592,38 @@
     }
     return rows.length >= 10 ? rows.sort((x, y) => x.pos - y.pos).map((x) => x.tla) : null;
   }
-  /** What the market saw when it was quoted (odds.at: when its books were fetched, the oldest of them): grid
-   * penalties race control announced before then (penAt: TLA -> announcement time; one without a time, like a
-   * penalty set by hand, counts as known), and the qualifying order only if the quote is from after qualifying ended.
-   * @param {SimOpts} simOpt @param {Odds} odds @param {Gameday} g @param {Record<string, string>} [penAt]
+  /** A market whose books were fetched on both sides of the end of qualifying (a stale book from the cache next to
+   * fresh ones, asOf per book): only the books from after it, with at = the oldest of those, so the fit conditions
+   * each book on what it knew (third review) instead of one time for all. Otherwise the odds as they are.
+   * @param {Odds} odds @param {Gameday} g @returns {Odds} */
+  function sameAgeBooks(odds, g) {
+    const q = (g.sessions || []).find((x) => x.type === "Qualifying");
+    const asOf = odds.asOf || {};
+    if (!q || !q.end) return odds;
+    const end = Date.parse(q.end);
+    const books = /** @type {("win" | "podium" | "top10" | "pole" | "fl")[]} */ (Object.keys(asOf)).filter(
+      (k) => odds[k] && asOf[k],
+    );
+    const late = books.filter((k) => Date.parse(/** @type {string} */ (asOf[k])) >= end);
+    if (!late.length || late.length === books.length) return odds;
+    /** @type {Odds} */
+    const out = { ...odds, dropped: books.filter((k) => !late.includes(k)) };
+    for (const k of /** @type {string[]} */ (out.dropped)) delete out[/** @type {"win"} */ (k)];
+    out.at = late.map((k) => /** @type {string} */ (asOf[k])).sort()[0];
+    return out;
+  }
+  /** What the market saw when it was quoted (odds.at: when its books were fetched, the oldest of them; missing =
+   * unknown, and then nothing dated counts as known): the qualifying order only if the quote is from after
+   * qualifying ended; grid penalties only as far as race control or the stewards had announced them before the quote.
+   * wk.penParts (TLA -> [places, announced][], 99 = back of the grid) counts each component of an accumulated penalty
+   * by its own time; wk.penAt (TLA -> the latest announcement) is the fallback; a penalty with no time (set by hand)
+   * counts as known. @param {SimOpts} simOpt @param {Odds} odds @param {Gameday} g
+   * @param {{ penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]> }} [wk]
    * @returns {SimOpts} */
-  function oddsKnown(simOpt, odds, g, penAt = {}) {
+  function oddsKnown(simOpt, odds, g, wk = {}) {
     const known = simOpt.known || {};
     const at = odds.at ? Date.parse(odds.at) : NaN;
+    const before = (/** @type {string | null | undefined} */ t) => !t || at >= Date.parse(t);
     const q = (g.sessions || []).find((x) => x.type === "Qualifying");
     const after = !!(q && q.end && at >= Date.parse(q.end));
     /** @type {Record<string, string[]>} */
@@ -3564,7 +3632,18 @@
     if (after && known.race) k.race = known.race;
     /** @type {Record<string, number>} */
     const pen = {};
-    for (const [t, v] of Object.entries(simOpt.pen || {})) if (!penAt[t] || !(at < Date.parse(penAt[t]))) pen[t] = v;
+    const parts = wk.penParts || {},
+      penAt = wk.penAt || {};
+    for (const [t, v] of Object.entries(simOpt.pen || {})) {
+      if (parts[t]) {
+        const seen = parts[t].filter(([, a]) => before(a));
+        const n = seen.some(([p]) => p >= 99) ? 99 : seen.reduce((s, [p]) => s + p, 0);
+        // a hand-set penalty on top of the announced ones (simOpt.pen differs from their sum) stays in full
+        const all = parts[t].some(([p]) => p >= 99) ? 99 : parts[t].reduce((s, [p]) => s + p, 0);
+        const val = v !== all ? v : n;
+        if (val) pen[t] = val;
+      } else if (before(penAt[t])) pen[t] = v;
+    }
     return { pen, known: k };
   }
   // the random stream behind every simulation: bump when mulberry32, gauss or the order of draws changes, so a
@@ -3586,7 +3665,10 @@
         v = set[k];
       if (old != null && typeof old !== "object" && typeof v !== typeof old)
         throw new Error(`withSettings: ${k} must be a ${typeof old}`);
-      if (typeof v === "number" && !Number.isFinite(v)) throw new Error(`withSettings: ${k} must be finite`);
+      // Infinity is a documented value for a half-life ("no decay", MODEL.dnfHalfLife ships as it); NaN never is
+      const inf = v === Infinity && (old === Infinity || /HalfLife$/.test(f));
+      if (typeof v === "number" && !Number.isFinite(v) && !inf)
+        throw new Error(`withSettings: ${k} must be finite${/HalfLife$/.test(f) ? " or Infinity" : ""}`);
       return { obj: objs[o], f, old, v };
     });
     try {
@@ -3902,7 +3984,9 @@
     raceLaps,
     raceSegs,
     applyOdds,
+    sameAgeBooks,
     oddsCheck,
+    pairedCompare,
     withFitLog,
     priceStep,
     priceBase,

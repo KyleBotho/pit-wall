@@ -97,6 +97,20 @@ test(
           assert.deepStrictEqual(Array.from(part.vars[v][k][name]), first, `${v} R${k} ${name}: the first part`);
         }
       });
+      // while only part a is in, the page's summaries are the short run's: they describe exactly those weekends
+      const short = E.forecastRaces(v === "lock" ? E.atLock(D) : D, { ...opts, sims: meta.first });
+      short.sims.forEach((sim, k) => {
+        const { tot, nn, ...rest } = sim;
+        const shipped = meta.vars[v].first[k] || meta.vars.lock.first[k];
+        assert.deepStrictEqual(shipped, JSON.parse(JSON.stringify(rest)), `${v} R${k}: first-part summaries`);
+        const n = meta.first,
+          smp = part.vars[v][k].tot;
+        shipped.stats.forEach((st, i) => {
+          let m = 0;
+          for (let s = 0; s < n; s++) m += smp[i * n + s];
+          assert.ok(Math.abs(m / n - st.mean) < 1e-6, `${v} R${k} ${st.id}: mean of the loaded weekends`);
+        });
+      });
     }
     fs.rmSync(out, { recursive: true, force: true });
   },

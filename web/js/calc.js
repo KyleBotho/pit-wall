@@ -722,6 +722,7 @@ function simNoise(rows, chipK, H, sortK) {
   all.forEach((r) => {
     r.st.se = null;
     r.st.near1 = false;
+    r.st.rev1 = false;
   });
   if (H !== 1 || sortK !== "x" || !rows.best.length) return null;
   const chk = checkSim(() => {
@@ -730,7 +731,6 @@ function simNoise(rows, chipK, H, sortK) {
   const sim = chk || forecast.sims[0],
     N = sim.N,
     top = rows.best[0];
-  const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
   const s0 = teamSamples(top.ids, top.boost, chipK, top.boost2, sim);
   const sd = (xs) => {
     let m = 0,
@@ -743,14 +743,19 @@ function simNoise(rows, chipK, H, sortK) {
     return Math.sqrt(Math.max(0, m2 / xs.length - m * m));
   };
   const ses = [];
+  // net of each team's transfer penalty, as the ranking is (third review: raw scores tested another objective)
+  const p0 = top.st.pen || 0;
   for (const r of all) {
     const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2, sim);
     r.st.se = sd(si) / Math.sqrt(N);
     ses.push(r.st.se);
     if (r === top) continue;
-    const d = new Float64Array(N);
-    for (let k = 0; k < N; k++) d[k] = s0[k] - si[k];
-    r.st.near1 = (chk ? mean(d) : top.st.x - r.st.x) < 2 * (sd(d) / Math.sqrt(N));
+    // #1's lead on the independent run (Engine.pairedCompare: within the noise both ways = a near tie ≈; convincingly
+    // behind = the check reverses the order ↑). Until that run is in, the lead as selected, against the same noise
+    const c = Engine.pairedCompare(s0, si, p0, r.st.pen || 0);
+    const gap = chk ? c.gap : top.st.x - r.st.x;
+    r.st.near1 = Math.abs(gap) <= 2 * c.se;
+    r.st.rev1 = !!chk && c.reversed;
   }
   ses.sort((a, b) => a - b);
   return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk };
@@ -807,7 +812,7 @@ function renderBestTable(ctx) {
     return `<tr><td class="rk">${rankCell(kind, i, r)}<br><button class="tbtn mobonly" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td>
       <td class="tl cr">${tiles(cons)}</td><td class="tl">${tiles(boostsIn)}</td><td class="tl dr">${tiles(drs)}</td>
       <td>${pill(st.cost.toFixed(1), sortK === "cost", over ? "bad" : "", over ? "Over budget" : "Total cost")}</td>
-      <td data-vc="1">${pill(f1(st.x), sortK === "x", "", st.se != null ? `± ${(1.96 * st.se).toFixed(1)} (simulation error, 95%)` : "")}${st.near1 ? '<span class="dim" title="Within simulation noise of #1: the order could flip with another set of simulated weekends"> ≈</span>' : ""}${pen}</td>${cols.map(([k]) => cell(k, st).replace("<td", '<td data-vc="1"')).join("")}
+      <td data-vc="1">${pill(f1(st.x), sortK === "x", "", st.se != null ? `± ${(1.96 * st.se).toFixed(1)} (simulation error, 95%)` : "")}${st.near1 ? '<span class="dim" title="Within simulation noise of #1: the order could flip with another set of simulated weekends"> ≈</span>' : ""}${st.rev1 ? '<span class="warn" title="On a second, independent set of weekends this team beats #1 by more than the noise: #1 was flattered by the set that picked it"> ↑</span>' : ""}${pen}</td>${cols.map(([k]) => cell(k, st).replace("<td", '<td data-vc="1"')).join("")}
       <td class="mv">${mv}${pen}</td>
       <td class="dots"><button class="tbtn" data-menu="${kind}:${i}" aria-label="More actions">⋯</button></td></tr>`;
   };
@@ -1089,7 +1094,7 @@ export function openPlan() {
         .join("")
     : `<p class="note">No legal plan within the budget and transfer limits.</p>`;
   $("#modalBody").innerHTML =
-    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race. Every race's price changes are simulated (the same futures race to race). Plans are made on the expected price changes and checked against every simulated price path (those that fit in 90%+ of them first).</p>`;
+    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race. Every race's price changes are simulated (the same futures race to race). Plans are made on the expected price changes and checked against every simulated price path (those that fit in 90%+ of them first). The check ranks the plans the search kept; it doesn't look for plans that are safe from the start, and 90% is a chosen tolerance, not a tested one.</p>`;
   openModal("plan");
 }
 

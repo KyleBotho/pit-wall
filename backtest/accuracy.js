@@ -42,7 +42,17 @@ const VOLATILE = new Set([
 ]);
 const hashDir = (h, dir) => {
   if (!fs.existsSync(dir)) return;
-  for (const f of fs.readdirSync(dir).sort()) h.update(f).update(fs.readFileSync(path.join(dir, f)));
+  for (const f of fs.readdirSync(dir).sort()) {
+    const p = path.join(dir, f);
+    if (fs.statSync(p).isFile()) h.update(f).update(fs.readFileSync(p));
+  }
+};
+// a file or a folder of files, by name (a missing one hashes as missing)
+const hashPath = (h, p) => {
+  h.update(path.relative(ROOT, p));
+  if (!fs.existsSync(p)) h.update("(none)");
+  else if (fs.statSync(p).isDirectory()) hashDir(h, p);
+  else h.update(fs.readFileSync(p));
 };
 const key = (() => {
   const h = crypto.createHash("sha1");
@@ -53,6 +63,8 @@ const key = (() => {
   h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI, N]));
   const arch = path.join(ROOT, "history", String(D.season));
   for (const d of ["projections", "challengers", "samples"]) hashDir(h, path.join(arch, d));
+  // everything walk.js's asOf reads (its manifest: weather at lock, the stewards' penalties, practice, odds, ...)
+  for (const p of W.INPUTS) hashPath(h, p);
   return h.digest("hex").slice(0, 12);
 })();
 

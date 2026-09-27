@@ -227,13 +227,14 @@ def pdf_text(data):
 
 def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
     """The event's grid penalties from the stewards' decisions: each car-infringement document's PDF read once (at
-    most `most` a run; the result kept in the index as `grid`) -> ({car number: places}, {car number: published}).
-    Several decisions add up (the FIA's "accumulation"); 99 (back of the grid) wins."""
+    most `most` a run; the result kept in the index as `grid`) -> ({car number: places}, {car number: published, the
+    latest}, {car number: [[places, published], ...] each decision}). Several decisions add up (the FIA's
+    "accumulation"); 99 (back of the grid) wins."""
     import os
 
     path = archived("fia", f"{slug}.json")
     if not os.path.exists(path):
-        return {}, {}
+        return {}, {}, {}
     rec = read_json(path)
     fetched = 0
     for d in rec["docs"]:
@@ -248,7 +249,7 @@ def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
         d["grid"] = parse_decision(text)
     if fetched:
         write_json(path, rec, indent=1)
-    pen, at = {}, {}
+    pen, at, parts = {}, {}, {}
     for d in rec["docs"]:
         m = PEN_TITLE.search(d.get("title") or "")
         if not m or not d.get("grid"):
@@ -256,7 +257,8 @@ def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
         car = int(m.group(1))
         pen[car] = 99 if d["grid"] >= 99 or pen.get(car) == 99 else pen.get(car, 0) + d["grid"]
         at[car] = max(at.get(car, ""), d.get("published") or "")
-    return pen, at
+        parts.setdefault(car, []).append([d["grid"], d.get("published")])
+    return pen, at, parts
 
 
 def event_slug(name, season):

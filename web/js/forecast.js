@@ -134,7 +134,11 @@ function runRaces(v) {
     return {
       races: upcoming.slice(0, 3),
       setups: [x.setup],
-      sims: x.sims.map((sim, k) => ({ ...(sim || PRE.vars.lock.sims[k]), N: pre.N, tot: smp[k].tot, nn: smp[k].nn })),
+      // summaries of the weekends actually loaded: the short run's while only part a is in, else the full run's
+      sims: x.sims.map((sim, k) => {
+        const head = pre.N < PRE.N && x.first ? x.first[k] || PRE.vars.lock.first[k] : null;
+        return { ...(head || sim || PRE.vars.lock.sims[k]), N: pre.N, tot: smp[k].tot, nn: smp[k].nn };
+      }),
       pre: pre.N,
     };
   }

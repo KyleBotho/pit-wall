@@ -49,14 +49,29 @@ if (D) {
       ODDS[o.gd] = o;
     }
 }
-// rain forecasts at lock: the frozen projection's (the site's own, from R15) or rebuilt (backtest/weather_rounds.py)
+// rain forecasts at lock (third review: only what was known before lock): the site's own frozen projection (read from
+// its archive file: the page's projHist carries only points), else the rebuilt forecasts from runs issued before lock
+// (backtest/weather_rounds.py q / s / r). Its `latest` values were issued AFTER lock: only with WX_LATEST=1, as a
+// sensitivity run. A session without a known forecast gets the circuit's climatology, as the engine does.
 const WX = read("weather_by_round.json");
-/** Round r's rain as at lock ({q, s, r}), or null. */
+const WX_LATEST = process.env.WX_LATEST === "1";
+const PROJ_DIR = D ? path.join(__dirname, "..", "history", String(D.season), "projections") : "";
+/** Round r's rain as at lock ({q, s, r}; a session missing = unknown), or null. */
 function wxAt(r) {
-  const fz = (D.projHist || {})[r];
-  if (fz && fz.rain && !fz.rebuilt) return fz.rain;
+  const f = path.join(PROJ_DIR, `gd${String(r).padStart(2, "0")}.json`);
+  if (PROJ_DIR && fs.existsSync(f)) {
+    const p = JSON.parse(fs.readFileSync(f, "utf8"));
+    if (p.rain && !p.rebuilt) return p.rain;
+  }
   const w = WX[r];
-  return w ? { q: w.q, s: w.s ?? w.r, r: w.r } : null;
+  if (!w) return null;
+  /** @type {Record<string, number>} */
+  const out = {};
+  for (const k of ["q", "s", "r"]) {
+    const v = w[k] != null ? w[k] : WX_LATEST && w.latest ? w.latest[k] : null;
+    if (v != null) out[k] = v;
+  }
+  return Object.keys(out).length ? out : null;
 }
 /** Grid penalties the stewards had published by round r's lock (history/<season>/fia, parsed decisions), as TLAs. */
 function penAt(r) {
@@ -370,4 +385,16 @@ function baselines(from = 5) {
   return Object.fromEntries(Object.entries(e).map(([k, v]) => [k, mean(v)]));
 }
 
-module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, MINI, mean };
+// Every file and folder the evaluation reads besides cache/data.json and the code (third review): the accuracy cache
+// key hashes exactly these, so a data-only correction to any of them reruns the evaluation. Add to it when asOf reads
+// something new.
+const SEASON_DIR = D ? path.join(__dirname, "..", "history", String(D.season)) : "";
+const INPUTS = [
+  path.join(__dirname, "practice_by_round.json"),
+  path.join(__dirname, "odds_by_round.json"),
+  path.join(__dirname, "weather_by_round.json"),
+  ...["practice", "odds", "projections", "fia", path.join("telemetry", "minisectors")].map((d) =>
+    path.join(SEASON_DIR, d),
+  ),
+];
+module.exports = { D, E, asOf, evaluate, baselines, crps, roundOvertakes, PRACTICE, ODDS, MINI, mean, INPUTS };

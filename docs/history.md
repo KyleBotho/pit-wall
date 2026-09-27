@@ -5,6 +5,35 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, third review (`docs/reviews/2026-09-27/F1-second-round-review.md` + evidence JSON; 7.8/10, up from
+      7.5). Its five findings and the smaller points, the same day:
+  - 1. Time of knowledge in the backtest: `weather_rounds.py` now picks, per session, the run that was issued before
+    lock for the window's LAST hour (`lead`, `issuedBy`, asserted); the latest-run values (issued after lock) sit
+    apart under `latest` and walk.js uses them only with WX_LATEST=1. Pre-lock forecasts exist only for R4-R5 (R15:
+    the frozen record); every other round gets climatology, as the engine does without a forecast. walk.js reads
+    the frozen projection's rain from its archive file (the page's projHist only has points: that fallback never
+    worked). Section 6, headline: CRPS 8.674, MAE 11.864 (drivers 10.36, constructors 14.87), bias +1.12, 81% / 53%;
+    with the after-lock forecasts (sensitivity): 8.722 / 11.946. R4 shows why: 80% race rain before lock, 30% in
+    the latest run.
+  - 2. The "at lock" view is a snapshot: refresh.py `lock_snapshot` writes the coming race's weather, practice,
+    speed bands and penalties (penAt, penParts) to `history/<season>/lock/gdNN.json` every build until lock, then
+    embeds it as DATA.lockSnap; Engine.atLock uses it (and the build's "lock" sims). Without one, penalties
+    announced after lock are left out.
+  - 3. Near ties: `Engine.pairedCompare` compares NET scores (transfer penalties out) on the independent run; ≈ =
+    within 2 SE either way (a zero-noise exact tie included), ↑ = the check reverses the order. The reviewer's
+    fixtures are tests.
+  - 4. Partial download: the build also runs the forecast at `first` (4,000) weekends (checked to be the full run's
+    prefix) and ships those summaries; while only part a is in, the page shows them, so every mean, range and chance
+    describes the weekends actually loaded (test: means equal to 1e-6).
+  - 5. walk.js exports `INPUTS`, the files and folders asOf reads (weather, odds, practice, projections, FIA,
+    minisectors); backtest/accuracy.js hashes all of them in its cache key.
+  - Smaller: an odds quote with no known time counts nothing dated as known (and refresh no longer stamps "now" on
+    it; the page says "fetch time unknown" and names stale books); accumulated penalties keep each component's time
+    (`penParts`, race control and stewards), and oddsKnown / atLock count each part by its own time; a market whose
+    books straddle the end of qualifying fits only the later books (`sameAgeBooks`, `dropped`); withSettings accepts
+    Infinity for a half-life ("no decay"), still not NaN; the planner's note says what the affordability check isn't.
+  - Unchanged on purpose (the review agrees): the challengers stay off; the market fit's step count; the lap model
+    stays experimental. Next: leave this version running and let frozen rounds (R16 on) judge it.
 - [x] 2026-09-27, the second review's sections 4-8 (user: "tackle the open items from sections 4-8").
   - Provisional sessions (a session run but not scored): classification from OpenF1 by the FIA rule, not its
     `dnf` flag (a car with 7 of 24 laps had dnf false; one with 21 of 24 classifies): not classified = under 90% of

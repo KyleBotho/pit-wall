@@ -408,7 +408,7 @@ export function renderCal() {
         const known = wk ? Object.keys(wk.grid || {}) : [];
         const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint" };
         extra =
-          `<div class="note" style="font-size:12px">Market: ${o ? `${["win", "podium", "top10", "pole"].filter((m) => o[m]).join(", ")} odds from Kalshi (${new Date(o.at).toLocaleString(undefined, shortDate)}), weight ${Math.round(state.oddsW * 100)}%` : "no odds yet"}.` +
+          `<div class="note" style="font-size:12px">Market: ${o ? `${["win", "podium", "top10", "pole"].filter((m) => o[m]).join(", ")} odds from Kalshi (${o.at ? new Date(o.at).toLocaleString(undefined, shortDate) : "fetch time unknown"}${o.stale && o.stale.length ? `; ${o.stale.join(", ")} from an earlier fetch` : ""}), weight ${Math.round(state.oddsW * 100)}%` : "no odds yet"}.` +
           (known.length
             ? ` <b>Known: ${known.map((x) => names[x] || x).join(", ")}</b> (simulated from the actual order).`
             : "") +
