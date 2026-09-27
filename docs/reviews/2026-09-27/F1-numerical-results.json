@@ -1,0 +1,328 @@
+{
+  "date": "2026-09-27",
+  "commit": "79a45af",
+  "benchmark": "R15 asOf, archived odds/practice, Node on this machine; elapsed milliseconds",
+  "tests": {
+    "randomIsolation": {
+      "interleavingSame": true,
+      "prefixSame": true,
+      "inputsUnchanged": true,
+      "ambientRandom": "throwing Math.random did not trigger"
+    },
+    "pickZeroWeight": 0,
+    "singularSolve": [-999999999999, 1000000000000],
+    "zeroNoisePositions": ["NaN", "NaN"],
+    "zeroSamples": {
+      "mean": "NaN",
+      "p50": "undefined"
+    }
+  },
+  "timings": {
+    "rank": {
+      "sim10000ms": 158.12940000000003,
+      "setupWithMarketMs": 197.12509999999975,
+      "runs": {
+        "sims": [160.31310000000008, 158.12940000000003, 148.70579999999995],
+        "setups": [206.8655000000001, 190.16740000000004, 197.12509999999975]
+      }
+    },
+    "laps": {
+      "sim10000ms": 1057.8814000000002,
+      "setupWithMarketMs": 1753.6044999999995,
+      "runs": {
+        "sims": [980.3161, 1080.344, 1057.8814000000002],
+        "setups": [1716.1322, 1757.1760000000004, 1753.6044999999995]
+      }
+    },
+    "segments": {
+      "sim10000ms": 2607.9645999999993,
+      "setupWithMarketMs": 4403.863300000001,
+      "runs": {
+        "sims": [2607.9645999999993, 2606.6627999999982, 2667.6349999999984],
+        "setups": [4403.863300000001, 4366.4205, 4432.410100000001]
+      }
+    },
+    "optimiseTop60Ms": 20.481999999996333
+  },
+  "samplers": {
+    "normal": {
+      "n": 200000,
+      "mean": 0.0005448171872860966,
+      "variance": 1.0004884556426548,
+      "skew": -0.012505984026196916,
+      "min": -4.354108438453168,
+      "max": 4.295977718362175,
+      "nonfinite": 0
+    },
+    "poisson4": {
+      "n": 200000,
+      "mean": 4.00114,
+      "variance": 4.007628700399994,
+      "skew": 0.502397563311307,
+      "min": 0,
+      "max": 15,
+      "nonfinite": 0
+    },
+    "poisson31": {
+      "n": 200000,
+      "mean": 31.004315,
+      "variance": 31.090016380775182,
+      "skew": -0.012233679415100673,
+      "min": 7,
+      "max": 55,
+      "nonfinite": 0
+    },
+    "beta2_8": {
+      "n": 200000,
+      "mean": 0.19995251227636815,
+      "variance": 0.014561543522272707,
+      "skew": 0.8281945294352945,
+      "min": 0.00018355813951107092,
+      "max": 0.8540388284575123,
+      "nonfinite": 0
+    }
+  },
+  "covariance": {
+    "lineup": [
+      "Lance Stroll",
+      "Nico Hulkenberg",
+      "Valtteri Bottas",
+      "Sergio Perez",
+      "Charles Leclerc",
+      "Mercedes",
+      "Ferrari"
+    ],
+    "boost": "Charles Leclerc",
+    "actualTeamSD": 57.57661323280473,
+    "independentAssetSD": 53.86800452402151,
+    "covarianceContribution": 413.30447995998384,
+    "quadraticVariance": 3315.0663913599883,
+    "directVariance": 3315.066391359985,
+    "driverConstructorCorrelation": 0.6759155575187731
+  },
+  "convergence": [
+    {
+      "N": 1000,
+      "seeds": 12,
+      "mean": 162.47983333333332,
+      "betweenSeedMeanSD": 1.8924326422770121,
+      "predictedSE": 1.836295784327431,
+      "prob200": 0.26716666666666666,
+      "betweenSeedProbabilitySD": 0.012752995290867515,
+      "p10min": 73,
+      "p10max": 85
+    },
+    {
+      "N": 3000,
+      "seeds": 12,
+      "mean": 163.12905555555554,
+      "betweenSeedMeanSD": 0.9222208082318463,
+      "predictedSE": 1.060029277778922,
+      "prob200": 0.2715833333333333,
+      "betweenSeedProbabilitySD": 0.009311606656131826,
+      "p10min": 76,
+      "p10max": 84
+    },
+    {
+      "N": 10000,
+      "seeds": 12,
+      "mean": 163.25925000000004,
+      "betweenSeedMeanSD": 0.407305584502188,
+      "predictedSE": 0.5808979133868103,
+      "prob200": 0.27368333333333333,
+      "betweenSeedProbabilitySD": 0.004100372611794633,
+      "p10min": 77,
+      "p10max": 81
+    },
+    {
+      "N": 30000,
+      "seeds": 12,
+      "mean": 163.1711638888889,
+      "betweenSeedMeanSD": 0.3442318349542711,
+      "predictedSE": 0.33611868327520505,
+      "prob200": 0.27339444444444444,
+      "betweenSeedProbabilitySD": 0.002058623836150121,
+      "p10min": 78,
+      "p10max": 80
+    }
+  ],
+  "marketSeedVariation": {
+    "teamMeanMin": 162.09193333333334,
+    "teamMeanMax": 163.55063333333334,
+    "teamMeanSD": 0.451529186468202,
+    "maxAssetSD": 0.2949845556220788
+  },
+  "internalCalls": {
+    "simulate": 6,
+    "summary": 6,
+    "summaryMs": 96.57219999999506,
+    "poissonHigh": 0,
+    "poissonN": 419333,
+    "maxLambda": 6.139826588238206
+  },
+  "unprofiledTimings": {
+    "rank": {
+      "setupMs": 192.6957000000001,
+      "final10000Ms": 147.45679999999993
+    },
+    "laps": {
+      "setupMs": 1461.9697000000006,
+      "final10000Ms": 898.4646999999995
+    },
+    "segments": {
+      "setupMs": 3652.762200000001,
+      "final10000Ms": 2220.192500000001
+    }
+  },
+  "defaultProfile": {
+    "sampledSeconds": 10.241822,
+    "top": [
+      {
+        "name": "(anonymous) | engine.js:2095",
+        "seconds": 2.006377,
+        "pct": 19.590039740975776
+      },
+      {
+        "name": "gauss | engine.js:244",
+        "seconds": 1.961772,
+        "pct": 19.15452152947005
+      },
+      {
+        "name": "simSample | engine.js:2011",
+        "seconds": 1.323201,
+        "pct": 12.919585987727574
+      },
+      {
+        "name": "(anonymous) | engine.js:1960",
+        "seconds": 1.009435,
+        "pct": 9.856009995096576
+      },
+      {
+        "name": "raceSession | engine.js:1864",
+        "seconds": 0.952176,
+        "pct": 9.296939548451437
+      },
+      {
+        "name": "qualiOrder | engine.js:1768",
+        "seconds": 0.834556,
+        "pct": 8.14851107547075
+      },
+      {
+        "name": "gamma | engine.js:271",
+        "seconds": 0.57253,
+        "pct": 5.590118633188509
+      },
+      {
+        "name": "(anonymous) | engine.js:2096",
+        "seconds": 0.535914,
+        "pct": 5.232604120634004
+      },
+      {
+        "name": "poisson | engine.js:258",
+        "seconds": 0.227471,
+        "pct": 2.2210013023073434
+      },
+      {
+        "name": "(anonymous) | engine.js:1786",
+        "seconds": 0.193883,
+        "pct": 1.8930518417523756
+      },
+      {
+        "name": "(anonymous) | engine.js:1954",
+        "seconds": 0.126764,
+        "pct": 1.2377094622421674
+      },
+      {
+        "name": "(garbage collector) | :0",
+        "seconds": 0.112418,
+        "pct": 1.0976367290898046
+      },
+      {
+        "name": "pick | engine.js:292",
+        "seconds": 0.106143,
+        "pct": 1.0363683336812533
+      },
+      {
+        "name": "addCat | engine.js:1745",
+        "seconds": 0.074269,
+        "pct": 0.725154176668956
+      },
+      {
+        "name": "simState | engine.js:1646",
+        "seconds": 0.031946,
+        "pct": 0.31191715692774197
+      },
+      {
+        "name": "simulate | engine.js:2156",
+        "seconds": 0.020909,
+        "pct": 0.2041531282226932
+      },
+      {
+        "name": "(anonymous) | engine.js:234",
+        "seconds": 0.018944,
+        "pct": 0.1849670888636807
+      },
+      {
+        "name": "skewNoise | engine.js:251",
+        "seconds": 0.013831,
+        "pct": 0.1350443309793902
+      },
+      {
+        "name": "(program) | :0",
+        "seconds": 0.013545,
+        "pct": 0.13225185909304027
+      },
+      {
+        "name": "(anonymous) | engine.js:308",
+        "seconds": 0.006543,
+        "pct": 0.06388511731604006
+      },
+      {
+        "name": "fitOvertakes | engine.js:1237",
+        "seconds": 0.006216,
+        "pct": 0.06069232603339523
+      },
+      {
+        "name": "(anonymous) | engine.js:486",
+        "seconds": 0.006097,
+        "pct": 0.05953042339536852
+      },
+      {
+        "name": "priorOf | engine.js:453",
+        "seconds": 0.005061,
+        "pct": 0.04941503572313598
+      },
+      {
+        "name": "paceObservations | engine.js:842",
+        "seconds": 0.004737,
+        "pct": 0.04625153610363469
+      },
+      {
+        "name": "dotdPopularity | engine.js:1324",
+        "seconds": 0.004712,
+        "pct": 0.04600743891077193
+      }
+    ]
+  },
+  "controlledFixtures": {
+    "safetyCarFixture": {
+      "nd": 22,
+      "dnfPerDriver": 0.1,
+      "scPerDnf": 0.15,
+      "target": 0.5,
+      "base": 0.2850949452498739,
+      "analyticAchieved": 0.4873211060368934,
+      "empirical": 0.4891,
+      "n": 100000
+    },
+    "removeUnusedCalibration": {
+      "identicalModel": true
+    }
+  },
+  "notes": [
+    "Original timings include profiler overhead; use unprofiledTimings for headline wall times.",
+    "betweenSeed SDs use the population divisor for these finite sets of seeds; they are descriptive, not confidence intervals.",
+    "Market seed experiment holds final seed fixed, but branching can change random-number alignment; it is not a pure variance decomposition.",
+    "No source files in the application repository were edited."
+  ]
+}

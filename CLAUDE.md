@@ -112,6 +112,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
+- `docs/reviews/2026-09-27/` — an independent review of the simulator (7/10), its numerical/runtime follow-up and the
+  upgrade plan (phases 0-6). Batch 1 (correctness) done 2026-09-27; batches 2-4 in Open items.
 - `supabase/setup.sql` — the sign-in/sync database (item 12), the Sim lab's `owners` gate, and the private leagues:
   `league_data` (one row, the league payload) readable only by accounts in `league_readers` (RLS). Re-runnable in
   Supabase's SQL Editor. Add a reader there (see the comment in the file).
@@ -203,9 +205,9 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   points within noise; better on race positions (race MAE 2.91 vs 3.05 places, from lap-time pace); qualifying about
   the same (1.737 vs 1.735). The rework's value is structure (correlated team form, SC, rain, market, uncertainty,
   penalties, known grid) and features, not a measured points gain yet. 10 rounds can't separate ±0.1.
-- Section 6 now (2026-09-25, after item 9 stage 2): CRPS 8.62, MAE 11.84 (drivers 10.4, constructors 14.7). Before
-  it: CRPS 8.85, MAE 12.17 (drivers 10.7, constructors 15.2), bias +0.03, rank corr 0.74, 85% inside the
-  10-90% range (a bit wide), baselines: season average 13.17, recent form 13.65.
+- Section 6 now (2026-09-27, R5-R15, after review batch 1): CRPS 8.68, MAE 11.96 (drivers 10.4, constructors 15.1),
+  bias +1.19 (the overtake level forecast, see Overtakes), rank corr 0.73, 81% / 52% inside the 10-90% / 25-75%
+  ranges; baselines: season average 13.44, recent form 13.84. Before batch 1: CRPS 8.76, MAE 12.13, 85% / 56%.
 - Recent-form blend: default 0 (was 0.3; +30% form is worse on every metric). State schema 4 resets it.
 - Pace: % off the fastest. Qualifying from Jolpica Q1-Q3 times (per-session gap to that session's fastest, averaged);
   race from OpenF1 median clean race lap (fallback: finishing rank x 0.1%). Team-mate prior 1.5 races, gaps capped at
@@ -219,6 +221,10 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 - Practice: short-run 50% into qualifying pace (0.6 ties), pull cap 0.8%; long-run 0 (race pace from laps beats it).
 - Overtakes: Poisson regression on log(1 + |places moved|) and grid slot with the round's level as offset, plus each
   driver's skill (shrunk, 12 pseudo-overtakes). In 2026 overtakes track places MOVED, not net places gained (swaps).
+  Retired cars keep the ones made before stopping (2026-09-27): own intercept, exposure phi + (1 - phi) x share of the
+  race run (phi 0.35 fitted: the start counts), share drawn from this season's retirements; non-starters none. The
+  sim now hits the circuit's level; the level forecast itself runs high (+0.54 per driver R5-R15, early rounds had
+  more overtaking), within noise.
   Sprint share of race overtakes swings 0.17-0.92 between sprints: measured, shrunk to 0.4 with 3 pseudo-sprints.
 - Pit points: resample the team's own pit scoring lines (R FP/FP2) over the last 8 races. OpenF1 stop times match
   the official bands only 42/62 team-races (rounded, not DHL timing), so they're archived but not used.
@@ -230,12 +236,14 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   season: the new-regs effect may fade.
 - Overtake level of the next race (2026-09-25, item 9 stage 2): from its practice average speed (TRACK.speed, see
   the to-do list); a flat season level for races without practice yet.
-- Unchanged: price rule (390/392), DNF team rate shrink k=16 no recency (log loss 0.4608), official scoring.
+- Price rule: average over the races in the last three rounds, a round sat out isn't a zero (`Engine.priceBase`):
+  493/495 (the two misses: R8, likely points corrected after prices). Unchanged: DNF team rate shrink k=16 no recency
+  (log loss 0.4608), official scoring.
 - Tried and rejected 2026-09-25 (section 9): skewed session noise, car + driver-offset team-mates, the fastest-lap
   market. All ties or worse; see the to-do list Also the lap-by-lap and timing-segment races
   (item 9 stages 3a/3b, SIM.raceModel): ties on points, worse on race positions.
-- Known gaps (section 5): overtakes run low at a neutral track (4.05 vs 4.78), places lost too few (−0.22 vs −0.56),
-  fastest lap / DotD slightly too spread (88% / 94% to the top seven vs 100%).
+- Known gaps (section 5, 2026-09-27): places lost too few (−0.23 vs −0.56), fastest lap / DotD slightly too spread
+  (87% / 91% to the top seven vs 100% / 93%). Overtakes at a neutral track now match (4.67 vs 4.70).
 - Default 10,000 sims per race × next 3 races (~1 s in the browser). Optimiser enumerates all teams; `planHorizon`
   beam-searches race-by-race plans (~0.5 s); goals "beat a rival / the top-100 template" re-rank by P(beat).
 - vs rhter's Baku sim (f1fantasytools, old engine): MAE 4.6; we're higher on Alpine/midfield, lower on Ferrari.
@@ -243,6 +251,13 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 ## Open items — next session starts here
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
+
+- [ ] Independent review (`docs/reviews/2026-09-27/`), user's order 2026-09-27: batch 1 correctness DONE (history);
+      batch 2 evidence (full forecast record at lock, all inputs in the accuracy cache key, champion/challenger
+      logging, Monte Carlo error and "too close to call"); batch 3 research (lap/stint dataset + pace model,
+      cause-specific retirements); batch 4 the deferred items, built even if they only pay off next season
+      (weather paths, race-wide pit bonuses, sampled price paths, persistent car strength, random streams/config,
+      Web Worker, extra data collection: forecast vintages, Pirelli compounds, FIA documents, Kalshi quote history).
 
 - [x] Autonomy steps 1-3 done 2026-09-26 (docs/history.md): session-aware refresh + Refresh now, data health +
       the Data health issue, model health (accuracy per round + weekly fit proposals in the Sim lab). Still to see

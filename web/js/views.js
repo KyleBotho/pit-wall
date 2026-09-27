@@ -292,7 +292,7 @@ export function renderPrices() {
               ? `<span class="dist" title="${pi.dist.map((v, i) => binLbl[i] + ": " + Math.round(v * 100) + "%").join(" · ")}">${pi.dist.map((v, i) => `<span class="${i < 4 ? "dn" : i > 4 ? "up" : "z"}" style="height:${Math.max(1, v * 22)}px"></span>`).join("")}</span>`
               : "—";
             return `<tr><td>${who(a)}</td>
-      <td>${f1(a.price)}</td><td class="muted">${f0(pi.p2)} · ${f0(pi.p1)}</td><td><b>${f1(p.mean)}</b></td>
+      <td>${f1(a.price)}</td><td class="muted" title="Points in the last two rounds; — = didn't race (doesn't count in the price average)">${f0(pi.p2)} · ${f0(pi.p1)}</td><td><b>${f1(p.mean)}</b></td>
       ${needCell(pi.need[0])}${needCell(pi.need[1])}${needCell(pi.need[2])}
       <td class="good">${pct(pi.up)}</td><td class="bad">${pct(pi.down)}</td><td>${dist}</td>
       <td${heat(pi.ev, -0.6, 0.6)} class="${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td></tr>`;

@@ -12,20 +12,25 @@ test("the price rule reproduces this season's price changes", opt, () => {
     ok = 0;
   for (const a of D.assets) {
     const h = a.hist;
-    for (let k = 2; k < h.length; k++) {
-      // rounds where the asset raced and has three rounds of points (inactive assets keep their price)
-      if (!h[k] || !h[k].active || !h[k - 1] || !h[k - 2]) continue;
+    for (let k = 0; k < h.length; k++) {
+      // rounds the asset raced (inactive assets keep their price)
+      if (!h[k] || !h[k].active) continue;
       // the current price is the next round's, unless F1 hasn't published that yet (right after a race)
       const next = k + 1 < h.length ? h[k + 1] : D.pricesPending ? null : { price: a.price };
       if (!next) continue;
-      const avg = (h[k].pts + h[k - 1].pts + h[k - 2].pts) / 3;
+      // the rule as the page applies it: the races among the last three rounds (Engine.priceBase)
+      const { sum2, n: races } = E.priceBase(
+        a,
+        D.done.filter((g) => g < h[k].gd),
+      );
+      const avg = (sum2 + h[k].pts) / races;
       const pred = Math.round((h[k].price + E.priceStep(h[k].price, avg)) * 10) / 10;
       n++;
       if (Math.abs(pred - next.price) < 0.05) ok++;
     }
   }
   assert.ok(n > 50, `enough price changes to test (${n})`);
-  assert.ok(ok / n >= 0.97, `rule matches ${ok}/${n} real changes`);
+  assert.ok(ok / n >= 0.99, `rule matches ${ok}/${n} real changes`); // 493/495 after R15
 });
 
 test("each round's scoring lines add up to the asset's points", opt, () => {
@@ -40,6 +45,27 @@ test("each round's scoring lines add up to the asset's points", opt, () => {
     }
   assert.ok(n > 100);
   assert.ok(bad.length / n < 0.01, bad.slice(0, 5).join("; "));
+});
+
+test("retired cars' overtakes: fitted from this season's retirements", opt, () => {
+  const m = E.buildModel(D, { halfLife: 4, adj: {}, practice: [], practiceWeight: 1 });
+  const unclassified = D.done.flatMap((g) => (D.results.race[g] || []).filter((r) => !r.cls && r.laps != null));
+  if (unclassified.length < 15) return;
+  assert.equal(m.ovRet.share.length, unclassified.length);
+  assert.ok(m.ovRet.share.every((f) => f === -1 || (f >= 0 && f <= 1)));
+  assert.ok(m.ovRet.phi > 0 && m.ovRet.phi < 0.8, `phi ${m.ovRet.phi}`); // R1-R15: 0.35
+});
+
+test("the live weekend: scored qualifying counts as scored, its order from the scoring lines", opt, () => {
+  const gd = D.live && D.live.gd;
+  if (!gd || !(D.results.quali[gd] || []).length) return;
+  // the data as it stood after qualifying: this round not done, OpenF1's order not in yet
+  const Dq = { ...D, done: D.done.filter((g) => g !== gd), weekend: null, odds: null };
+  const g = D.schedule.find((x) => x.gd === gd);
+  const { simOpt } = E.raceSetup(Dq, g, { next: true });
+  assert.ok(simOpt.locked.q, "qualifying scored");
+  const jolpica = D.results.quali[gd].map((r) => r.tla);
+  assert.deepEqual(simOpt.known.q.slice(0, 10), jolpica.slice(0, 10));
 });
 
 test("the projection for the next race is sane", opt, () => {

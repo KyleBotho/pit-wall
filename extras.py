@@ -231,12 +231,15 @@ def kalshi_suffix(events, name, season):
     return None
 
 
-def _norm(raw, total):
-    """Mid prices -> probabilities that add up to the number of drivers the market pays (removes the overround)."""
+def _norm(raw, total, field=22):
+    """Mid prices -> probabilities that add up to the number of drivers the market pays (removes the overround).
+    A book without every driver (a podium market listing 12-18 of 22 was seen) can't hand all the places to the
+    listed ones: each missing driver is counted at half the longest listed price, and its share is left out."""
     s = sum(raw.values())
     if s <= 0:
         return {}
-    return {k: round(min(0.995, v * total / s), 4) for k, v in raw.items()}
+    missing = max(0, field - len(raw)) * min(raw.values()) / 2
+    return {k: round(min(0.995, v * total / (s + missing)), 4) for k, v in raw.items()}
 
 
 def _mid(m):
@@ -251,7 +254,7 @@ def _mid(m):
     return float(last) if last else (a or None)
 
 
-def odds(get_soft, cached, name, season, tlas):
+def odds(get_soft, cached, name, season, tlas, field=22):
     """Market probabilities for the next race: {win, podium, top10, pole: {TLA: p}} (only drivers we know)."""
     try:
         suffix = kalshi_suffix(_kalshi_events(get_soft, cached), name, season)
@@ -276,7 +279,7 @@ def odds(get_soft, cached, name, season, tlas):
             if tla in tlas and p is not None:
                 raw[tla] = p
         if len(raw) >= 10:
-            out[key] = _norm(raw, total)
+            out[key] = _norm(raw, total, field)
     return out if len(out) > 1 else None
 
 
@@ -324,6 +327,16 @@ def weekend(get_soft, cached, season, g, now):
             order = [num2.get(r["driver_number"]) for r in rows]
             if len(order) >= 10 and all(order):
                 out["grid"][key] = order
+                # not classified / didn't start / disqualified (a car can be in the order and still not
+                # classify); in qualifying, no time set. The sim scores these until F1 Fantasy has scored the session
+                flags = {}
+                for r in res or []:
+                    t = num2.get(r.get("driver_number"))
+                    f = next((k for k in ("dsq", "dns", "dnf") if r.get(k)), None)
+                    if t and f:
+                        flags[t] = f
+                if flags:
+                    out.setdefault("status", {})[key] = flags
     except Exception as e:  # noqa: BLE001
         _warn("OpenF1 weekend", e)
     return out

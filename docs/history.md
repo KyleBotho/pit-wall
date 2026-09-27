@@ -5,6 +5,45 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, independent review batch 1: correctness (review and plan in `docs/reviews/2026-09-27/`; user
+      asked for batch 1 now and batches 2-4 after, including what only pays off next season). All confirmed in the
+      code first. Backtest section 6 (R5-R15, 3,000 sims): CRPS 8.761 -> 8.681, MAE 12.125 -> 11.959, 10-90% range
+      85% -> 81%, 25-75% 56% -> 52% (nominal 80/50: no longer too wide), bias +0.20 -> +1.19 (see below).
+  - Retired cars keep the overtakes made before stopping (66 unclassified cars R1-R15 scored 202 overtake points;
+    the rank sim gave them none). fitOvertakes adds retirees with their own intercept and exposure phi + (1 - phi) x
+    share of the race run (Jolpica `laps`, now in the result rows with `dns`), phi by profile likelihood (0.35:
+    early retirees often had 3-6, lap 1 counts); a non-starter has none. The sim draws each retirement's share from
+    this season's retirements (`model.ovRet`). Simulated overtakes per starter at R16: 3.75 -> 4.68 vs the circuit's
+    4.70. The new bias is the overtake LEVEL forecast (+0.54 per driver walk-forward; R1-R4 averaged 5.9, later
+    rounds 4.3; per-round error ±2.4, so not significant over 11 rounds): the missing retiree overtakes used to
+    cancel it. Not retuned; a recency-weighted level is a batch-2 challenger. Places lost stay too few (known gap).
+  - Safety car: P(no SC from retirements) was (1-q)^E[N]; now E[(1-q)^N] under the actual retirement process
+    (independent cars x Poisson incidents of 1-2 cars). Reviewer's fixture 48.7% -> 50.0%. `sim.scOver` counts races
+    whose retirements alone exceed the circuit's rate.
+  - Market: `applyOdds` simulates under the known grid penalties and, when the quote (`odds.at`) is from after
+    qualifying ended, the known qualifying order (`oddsKnown`); pole and qualifying pace don't move once qualifying is
+    known. Test: a fast car qualified last was made 0.74% slower to match the market; now ~0. The last calibration
+    simulation (never read) is gone (~11% of the samples). Partial Kalshi books (podium with 12-18 of 22) no longer
+    hand all places to the listed drivers: each missing driver counts at half the longest listed price
+    (`extras._norm`); `backtest/odds_by_round.json` rebuilt from the cached candles (now includes R15).
+  - Completed sessions: F1 Fantasy's scored qualifying / sprint ("Sprint Qualifying") points are locked as scored
+    (`scoredSessions` from `data.live`; constructors' bonus = their total less their drivers'); the qualifying order
+    comes from the scoring lines' positions when OpenF1 lags. Until scored, OpenF1's classification flags
+    (`weekend.status`: dnf/dns/dsq, no time in qualifying) replace "anyone missing retired". The Calculator says
+    which sessions are scored and which are provisional. walk.js drops `live` (it leaked R15's qualifying).
+  - Planner: stage prices carried cumulatively (a rise after race 1 used to vanish at race 3, freeing $0.6m that
+    didn't exist). Sim lab: same raceSetup options as the Calculator (`setupOpts`; it applied practice at 0.25, not
+    0.5, and ignored your market weight).
+  - Price rule (review C08): the average is over the races in the last three rounds; a round sat out isn't a zero
+    (`Engine.priceBase`, used by Budget, the Lab and the tests). 493/495 real changes (was 422/425, and 70 more
+    covered: early rounds, returning cards). Hadjar and Lawson's RB card after R15 now fit. Left: Gasly and Lawson
+    after R8, opposite directions, most likely points corrected after the prices were set (unverified).
+    Unexplained: Lawson's RB card fell 10.3 -> 9.7 after R14 while inactive.
+  - Ties: P(beat) in the Calculator counted a tie as half; now strict like the head-to-heads, which show the tie
+    chance (>= 0.5%). An edited xPts is labelled a what-if (it shifts every sample).
+  - Numerical edges: `solve` leaves an unidentifiable variable at 0 (was ~1e12), `pick` never draws a zero /
+    negative / NaN weight (uniform if none positive), `expectedPositions` defines ties without noise, `simulate`
+    rejects N that isn't a positive integer.
 - [x] 2026-09-26, autonomy steps 1-3 (user's list: "make it autonomous / easy to operate and allow it to improve
       itself"). 1: session-aware refresh (refresh.py `refresh_plan` -> build/refresh-plan.json; Supabase function
       `refresh` started by pg_cron every 5 min; Settings > Admin > Data refresh with Refresh now; refresh.yml's own

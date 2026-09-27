@@ -11,6 +11,18 @@ export const trackFit = Engine.trackModel(DATA);
 // overridden by anything set in Settings
 export const circ = (g) =>
   Object.assign(Engine.withWeather(trackFit.forCircuit(g), (DATA.weather || {})[g.gd]), state.circuits[g.gd] || {});
+// raceSetup's options for upcoming race k under this page's settings (the Sim lab starts from the same ones, so its
+// baseline equals the Calculator's)
+export const setupOpts = (g, k, track = trackFit) => ({
+  next: k === 0,
+  track,
+  halfLife: state.halfLife,
+  adj: state.adj,
+  pw: state.pw,
+  oddsW: state.oddsW,
+  pen: k === 0 ? state.pen : {},
+  circuit: state.circuits[g.gd] || {},
+});
 export function compute() {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
@@ -20,18 +32,7 @@ export function compute() {
   // the next three races; each gets its own model: practice pace, the betting market, grid penalties and any
   // result already known (qualifying) only for the coming weekend (later races use season form alone)
   const races = upcoming.slice(0, 3);
-  const setups = races.map((g, k) =>
-    Engine.raceSetup(DATA, g, {
-      next: k === 0,
-      track: trackFit,
-      halfLife: state.halfLife,
-      adj: state.adj,
-      pw: state.pw,
-      oddsW: state.oddsW,
-      pen: k === 0 ? state.pen : {},
-      circuit: state.circuits[g.gd] || {},
-    }),
-  );
+  const setups = races.map((g, k) => Engine.raceSetup(DATA, g, setupOpts(g, k)));
   const models = setups.map((x) => x.model);
   const sims = races.map((g, k) =>
     Engine.simulate(
@@ -95,14 +96,10 @@ export const simWeights = () => ({
 });
 export const BINS = [-0.6, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.6];
 // price change after the next race, from the simulated weekends (the game's rule: Engine.priceStep). The average
-// is over the last three races, or only the races run so far early on (2026: no "imaginary zero" races; confirmed
-// by the community against the game), so after round 1 the next race counts half.
+// is over the races in the last three rounds, the next one included: early in the season only the races run so far,
+// and a round the asset sat out doesn't count as a zero (Engine.priceBase)
 function priceInfo(a) {
-  const h = a.hist.filter(Boolean);
-  const p1 = h.length ? h[h.length - 1].pts : 0,
-    p2 = h.length > 1 ? h[h.length - 2].pts : 0;
-  const sum2 = p1 + p2,
-    n = Math.min(3, h.length + 1); // races in the average, the next one included
+  const { p1, p2, sum2, n } = Engine.priceBase(a, DATA.done);
   const need = Engine.PRICE_BANDS.map((t) => t * n * a.price - sum2);
   const i = forecast.idx[a.id];
   if (i == null || !a.active) return { sum2, p1, p2, need, dist: null, ev: 0, up: 0, down: 0 };

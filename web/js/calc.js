@@ -258,7 +258,12 @@ export function renderSettings() {
       : SIM_NOTES[P] + " Ranges and odds still come from the simulated weekends. ") + upd,
   );
   $("#simWarn").hidden = !edits.length; // a setting that changes the numbers stays in sight
-  $("#simWarn").textContent = edits.length ? `${edits.join(", ")} active.` : "";
+  $("#simWarn").textContent = edits.length
+    ? `${edits.join(", ")} active.` +
+      (nxo
+        ? " An edited xPts shifts every simulated weekend by the same amount: its range and odds are a what-if."
+        : "")
+    : "";
   $("#xoReset").hidden = !nxo;
   renderSim();
   applySplit();
@@ -270,7 +275,8 @@ function raceInputs() {
   const su = forecast.setup;
   if (!su) return "";
   const c = su.circuit,
-    known = Object.keys((su.simOpt && su.simOpt.known) || {}),
+    locked = Object.keys((su.simOpt && su.simOpt.locked) || {}),
+    known = Object.keys((su.simOpt && su.simOpt.known) || {}).filter((k) => !locked.includes(k)),
     pens = Object.entries((su.simOpt && su.simOpt.pen) || {}).filter(([, v]) => v);
   const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint" };
   const bits = [
@@ -279,8 +285,14 @@ function raceInputs() {
   ];
   if (pens.length)
     bits.push(`Grid penalties: ${pens.map(([t, v]) => `${esc(t)} ${v >= 99 ? "back" : "+" + v}`).join(", ")}.`);
+  if (locked.length)
+    bits.push(`<b>Scored ${locked.map((k) => names[k] || k).join(", ")}: counted as F1 Fantasy scored it.</b>`);
   if (known.length)
-    bits.push(`<b>Known ${known.map((k) => names[k] || k).join(", ")}: simulated from the actual order.</b>`);
+    bits.push(
+      `<b>Known ${known.map((k) => names[k] || k).join(", ")}: simulated from the actual order` +
+        (known.some((k) => k === "q" || k === "s") ? " (provisional until F1 Fantasy scores it)" : "") +
+        ".</b>",
+    );
   return bits.join(" ") + " ";
 }
 
@@ -372,7 +384,7 @@ const BCOLS = [
   ["dotd", "DotD", "Driver of the Day odds, summed"],
   ["ov", "xOV", "Expected overtakes"],
   ["neg", "xNeg", "Expected negative points"],
-  ["pb", "P(beat)", "Chance of outscoring the team to beat (Goal) in the next race"],
+  ["pb", "P(beat)", "Chance of outscoring the team to beat (Goal) in the next race; a tie doesn't count"],
   ["pk", "P(+25)", "Chance of beating the team to beat by 25+ points in the next race (what moves your rank)"],
   ["dx", "xGap", "Expected points gained (+) or given up (-) on the team to beat"],
   ["dr", "Gap 10–90%", "Range of the points gap to the team to beat: bad weekend (10%) to good weekend (90%)"],
@@ -389,7 +401,7 @@ const BSORT = [
   ["dotd", "DotD", "Driver of the Day odds"],
   ["ov", "xOV", "Expected overtakes"],
   ["neg", "xNeg", "Expected negative points"],
-  ["pb", "P(beat)", "Chance of outscoring the team to beat"],
+  ["pb", "P(beat)", "Chance of outscoring the team to beat; a tie doesn't count"],
   ["pk", "P(+25)", "Chance of beating the team to beat by 25+"],
   ["dx", "xGap", "Expected points gained on the team to beat"],
 ];
@@ -474,7 +486,7 @@ function calcCtx() {
       sum = 0;
     for (let s = 0; s < n; s++) {
       d[s] = mine[s] - pen - tgS[s];
-      w += d[s] > 0 ? 1 : d[s] === 0 ? 0.5 : 0;
+      if (d[s] > 0) w++; // strictly more: a tie doesn't move your rank (league.js h2h counts the same way)
       if (d[s] >= GOAL_K) k++;
       sum += d[s];
     }
@@ -1062,7 +1074,8 @@ export function openChipValues() {
 // Final Fix: once qualifying (and the sprint) are known, points still to be scored = the simulated total minus what
 // qualifying (and the sprint) already paid. The swapped-in driver keeps the slot's Boost. Constructors can't be fixed.
 function finalFixHtml(team, boost) {
-  const known = (forecast.setup && forecast.setup.simOpt && forecast.setup.simOpt.known) || {};
+  const so = (forecast.setup && forecast.setup.simOpt) || {},
+    known = { ...(so.known || {}), ...(so.locked || {}) };
   if (!known.q)
     return `<h3 style="margin-top:14px">Final Fix</h3><p class="note">Available once qualifying is in: the next race is then simulated from the actual grid and this shows the best swap on the points still to be scored.</p>`;
   const pr = forecast.proj[0];

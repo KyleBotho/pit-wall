@@ -92,6 +92,47 @@ const circuit = {
   feat: [0.5, 0.2, 0.5],
 };
 
+test("numerical edges: a singular system stays finite, zero weights never win, no noise, no samples", () => {
+  // the reviewer's fixtures (2026-09-27): [[1,1],[1,1]] x = [1,2] came back as about -1e12 / +1e12
+  const x = E.ridge(
+    [
+      [1, 1],
+      [1, 1],
+    ],
+    [1, 2],
+    0,
+  );
+  assert.ok(
+    x.every((v) => Number.isFinite(v) && Math.abs(v) < 10),
+    String(x),
+  );
+  assert.equal(
+    E.pick([0, 1], () => 0),
+    1,
+  ); // u = 0 used to pick the zero weight
+  assert.equal(
+    E.pick([1, 0, 0], () => 0.9999),
+    0,
+  );
+  assert.equal(
+    E.pick([0, NaN, -1, 2], () => 0.5),
+    3,
+  );
+  assert.equal(
+    E.pick([0, 0, 0, 0], () => 0.6),
+    2,
+  ); // none positive: equally likely
+  const keep = [E.SIM.drvSd, E.SIM.teamSd];
+  try {
+    E.SIM.drvSd = E.SIM.teamSd = 0;
+    assert.deepEqual(E.expectedPositions([0, 0, 1], ["A", "B", "C"], 0), [1.5, 1.5, 3]);
+  } finally {
+    [E.SIM.drvSd, E.SIM.teamSd] = keep;
+  }
+  assert.throws(() => E.simulate(toyModel(), circuit, false, 0, 1), RangeError);
+  assert.throws(() => E.simulate(toyModel(), circuit, false, 10.5, 1), RangeError);
+});
+
 test("simulate is repeatable for a seed and its probabilities add up", () => {
   const m = toyModel();
   const a = E.simulate(m, circuit, true, 2000, 42),
@@ -348,6 +389,48 @@ test("poissonGlm recovers known coefficients with an offset", () => {
   [0.2, 0.5, -0.7].forEach((v, i) => assert.ok(Math.abs(b[i] - v) < 0.06, `coef ${i}: ${b[i]}`));
 });
 
+test("simulate: the safety-car rate matches the circuit's, with and without multi-car incidents", () => {
+  // the reviewer's fixture (2026-09-27): 22 cars at 10% retirement risk, 15% of retirements bring out a safety car,
+  // target 50%. The old (1 - q)^E[N] made 48.7%.
+  const m = toyModel();
+  m.drivers.forEach((d) => (d.dnf = 0.1));
+  const c = { ...circuit, rain: {}, sc: 0.5 };
+  const keep = E.SIM.incident;
+  try {
+    for (const inc of [0, 0.15, 0.5]) {
+      E.SIM.incident = inc;
+      const sim = E.simulate(m, c, false, 40000, 7, { unc: 0 });
+      assert.ok(Math.abs(sim.sc - 0.5) < 0.012, `incident share ${inc}: safety car ${sim.sc}`);
+      assert.equal(sim.scOver, 0);
+    }
+    // a target below what retirements alone make can't be met: counted, not hidden
+    E.SIM.incident = 0.15;
+    const low = E.simulate(m, { ...c, sc: 0.1 }, false, 4000, 7, { unc: 0 });
+    assert.ok(low.scOver > 0.9 && low.sc > 0.25, `${low.scOver} ${low.sc}`); // 1 - E[0.85^N] = 28%
+  } finally {
+    E.SIM.incident = keep;
+  }
+});
+
+test("simulate: a retired car keeps the overtakes it made before stopping; one that didn't start has none", () => {
+  const m = toyModel();
+  m.drivers.forEach((d) => (d.dnf = 1)); // capped at 90%: nearly every car retires
+  const c = { ...circuit, rain: {} };
+  const ov = (ovRet) => {
+    const sim = E.simulate({ ...m, ovRet }, c, false, 4000, 3, { unc: 0 });
+    return sim.stats.slice(0, m.drivers.length).reduce((s, st) => s + st.xov, 0) / m.drivers.length;
+  };
+  const none = ov({ b: 0, phi: 0.3, share: [-1] }), // every retirement a non-starter: only the finishers pass
+    half = ov({ b: 0, phi: 0, share: [0.5] }),
+    full = ov({ b: 0, phi: 0, share: [1] }),
+    start = ov({ b: 0, phi: 1, share: [0] }); // phi = 1: all of them, however early it stopped
+  assert.ok(none < 1, `non-starters ${none}`); // the 10% that finish
+  assert.ok(half > none + 0.5 && full > 1.7 * half - none, `${none} ${half} ${full}`);
+  assert.ok(Math.abs(start - full) < 0.15, `${start} ${full}`);
+  // with the old behaviour (no retirement overtakes) it matches the non-starters
+  assert.ok(Math.abs(ov(undefined) - none) < 0.15);
+});
+
 test("simulate: a known qualifying order is used as is; grid penalties drop a driver down the race grid", () => {
   const m = toyModel(),
     N = 400;
@@ -363,6 +446,103 @@ test("simulate: a known qualifying order is used as is; grid penalties drop a dr
     top3(pen.stats[0]) < top3(base.stats[0]) - 0.1,
     `podium odds ${top3(base.stats[0])} -> ${top3(pen.stats[0])}`,
   );
+});
+
+test("simulate: a scored sprint and qualifying count as they are, whatever the seed", () => {
+  const m = toyModel();
+  const ids = m.drivers.map((d) => d.id);
+  const s = Object.fromEntries(ids.map((id, i) => [id, [i % 5 === 0 ? -10 : 8 - (i % 9), i % 5 === 0 ? -10 : 0]]));
+  const q = Object.fromEntries(ids.map((id, i) => [id, [i < 10 ? 10 - i : i === 21 ? -5 : 0, i === 21 ? -5 : 0]]));
+  // constructors: their drivers' points, qualifying with its bonus (+10, +5, +3, +1 or -1)
+  for (const c of m.cons) {
+    const mine = ids.filter((id, i) => m.drivers[i].team === c.team);
+    s[c.id] = [mine.reduce((t, id) => t + s[id][0], 0), mine.reduce((t, id) => t + s[id][1], 0)];
+    q[c.id] = [mine.reduce((t, id) => t + q[id][0], 0) + 3, mine.reduce((t, id) => t + q[id][1], 0)];
+  }
+  const locked = { q, s };
+  const known = { q: m.drivers.map((d) => d.tla) };
+  const a = E.simulate(m, circuit, true, 500, 1, { locked, known }),
+    b = E.simulate(m, circuit, true, 500, 99, { locked, known });
+  a.stats.slice(0, ids.length).forEach((st, i) => {
+    assert.equal(st.cat.sprint, s[ids[i]][0]);
+    assert.equal(st.cat.q, q[ids[i]][0]);
+    assert.equal(b.stats[i].cat.sprint, s[ids[i]][0]);
+  });
+  // a point more in the scored sprint is a point more for the driver and his constructor in every sample
+  const s2 = { ...s, [ids[3]]: [s[ids[3]][0] + 1, 0], [m.cons[1].id]: [s[m.cons[1].id][0] + 1, s[m.cons[1].id][1]] };
+  const c = E.simulate(m, circuit, true, 500, 1, { locked: { q, s: s2 }, known });
+  const k = ids.length + 1;
+  for (let n = 0; n < 500; n++) {
+    assert.equal(c.tot[3 * 500 + n] - a.tot[3 * 500 + n], 1);
+    assert.equal(c.tot[k * 500 + n] - a.tot[k * 500 + n], 1);
+  }
+  // the constructor's qualifying bonus comes through: its total less its drivers' is the same fixed +3 plus race
+  assert.ok(a.stats[ids.length].mean > 0);
+});
+
+test("simulate: a run-but-unscored sprint uses its classification: a car in the order can still not classify", () => {
+  const m = toyModel();
+  const order = m.drivers.map((d) => d.tla);
+  const known = { s: order, sq: order };
+  const plain = E.simulate(m, circuit, true, 400, 5, { known });
+  const dnf = E.simulate(m, circuit, true, 400, 5, { known, status: { s: { D00: "dnf" } } });
+  assert.ok(plain.stats[0].cat.sprint > 5); // first in the order: 8 points
+  assert.ok(dnf.stats[0].cat.sprint < -9); // not classified: -10 (and its overtakes)
+});
+
+test("scoredSessions: a session counts once it ended before the feed and every racing asset has its points", () => {
+  const g = {
+    gd: 16,
+    sessions: [
+      { type: "Sprint Qualifying", end: "2026-10-10T10:00:00Z" },
+      { type: "Qualifying", end: "2026-10-10T14:00:00Z" },
+    ],
+  };
+  const evNames = [
+    { c: "Q POS", s: "Q" },
+    { c: "S NC", s: "S" },
+    { c: "S POS", s: "S" },
+  ];
+  const live = (feedTime, sess2) => ({
+    gd: 16,
+    feedTime,
+    assets: {
+      1: {
+        act: true,
+        sess: { "Sprint Qualifying": -10, Qualifying: 3 },
+        ev: [
+          [1, -10],
+          [0, 3],
+        ],
+      },
+      2: { act: true, sess: sess2, ev: [[2, 8]] },
+      3: { act: false, sess: {} },
+    },
+  });
+  const both = E.scoredSessions(
+    { evNames, live: live("2026-10-10T15:00:00Z", { "Sprint Qualifying": 8, Qualifying: 0 }) },
+    g,
+  );
+  assert.deepEqual(both.s, { 1: [-10, -10], 2: [8, 0] });
+  assert.deepEqual(both.q, { 1: [3, 0], 2: [0, 0] });
+  // before qualifying ended, or while an asset has no qualifying points yet: only the sprint
+  const early = E.scoredSessions({ evNames, live: live("2026-10-10T13:00:00Z", { "Sprint Qualifying": 8 }) }, g);
+  assert.deepEqual(Object.keys(early), ["s"]);
+  const missing = E.scoredSessions({ evNames, live: live("2026-10-10T15:00:00Z", { "Sprint Qualifying": 8 }) }, g);
+  assert.deepEqual(Object.keys(missing), ["s"]);
+  // another gameday's feed: nothing
+  assert.deepEqual(E.scoredSessions({ evNames, live: { ...live("2026-10-10T15:00:00Z", {}), gd: 15 } }, g), {});
+});
+
+test("oddsKnown: the qualifying order conditions the market only if the quote came after qualifying", () => {
+  const g = { gd: 16, sessions: [{ type: "Qualifying", end: "2026-10-03T09:00:00Z" }] };
+  const simOpt = { pen: { VER: 5 }, known: { q: ["NOR"], sq: ["PIA"] } };
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T10:00+00:00" }, g), {
+    pen: { VER: 5 },
+    known: { q: ["NOR"] },
+  });
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T08:00+00:00" }, g), { pen: { VER: 5 }, known: {} });
+  assert.deepEqual(E.oddsKnown(simOpt, {}, g), { pen: { VER: 5 }, known: {} });
 });
 
 test("simulate: team-mates share their weekend form (it widens a constructor's range)", () => {
@@ -401,6 +581,33 @@ test("applyOdds moves the simulated win chances towards the market", () => {
   assert.ok(after.stats[i].r[0] > before.stats[i].r[0] + 0.05, `win ${before.stats[i].r[0]} -> ${after.stats[i].r[0]}`);
   const m0 = E.applyOdds(m, circuit, odds, { w: 0 });
   assert.equal(m0, m, "weight 0 leaves the model alone");
+});
+
+test("applyOdds after qualifying: the known grid explains the market, not a slower car", () => {
+  // the fastest car qualified last; the market prices that in. Matched against a sim that doesn't know the grid,
+  // its pace had to drop 0.74%; matched against the known grid it stays put.
+  const m = toyModel();
+  const q = m.drivers
+    .map((d) => d.tla)
+    .slice(1)
+    .concat("D00");
+  const simOpt = { known: { q } };
+  const sim = E.simulate(m, circuit, false, 20000, 1, simOpt);
+  const odds = { win: {}, podium: {}, top10: {} };
+  sim.stats.slice(0, m.drivers.length).forEach((st, i) => {
+    const t = m.drivers[i].tla;
+    odds.win[t] = st.r[0];
+    odds.podium[t] = st.r[0] + st.r[1] + st.r[2];
+    odds.top10[t] = st.r.slice(0, 10).reduce((a, b) => a + b, 0);
+  });
+  const known = E.applyOdds(m, circuit, odds, { w: 1, simOpt });
+  const blind = E.applyOdds(m, circuit, odds, { w: 1 });
+  assert.ok(Math.max(...known.drivers.map((d) => Math.abs(d.oddsR))) < 0.05);
+  assert.ok(
+    known.drivers.every((d) => d.oddsQ === 0),
+    "qualifying is settled: its pace doesn't move",
+  );
+  assert.ok(blind.drivers[0].oddsR > 0.4);
 });
 
 test("trackModel: circuit priors scaled by this season's trend", () => {
@@ -574,6 +781,28 @@ test("planHorizon: firstMaxT caps the first race's transfers only", () => {
   assert.equal(wait.steps[0].transfers, 0);
   assert.equal(wait.steps[1].transfers, 1); // it still makes the move, one race later
   assert.equal(Math.round(now.total - wait.total), 55); // race 1 with f in (+35) and as the Boost (+20)
+});
+
+test("planHorizon: a price change carries through every later race, and only held assets move the budget", () => {
+  const mk = (vals) =>
+    Object.entries(vals).map(([id, e]) => ({
+      id,
+      kind: id[0] === "K" ? "C" : "D",
+      price: 10,
+      e,
+      boostE: id[0] === "K" ? 0 : e,
+      active: true,
+    }));
+  // a $70m team (reviewer's example, 2026-09-27): a rises $0.6m after race 1; nothing is simulated after that
+  const r = { a: 20, b: 20, c: 20, d: 20, e: 20, KA: 10, KB: 10, f: 1, KC: 1 };
+  const team = ["a", "b", "c", "d", "e", "KA", "KB"];
+  const o = { cap: 70, free: 0, maxT: 0, chip: "", locks: new Set(), bans: new Set() };
+  const stages = [{ cand: mk(r), dPrice: { a: 0.6, f: 3 } }, { cand: mk(r) }, { cand: mk(r) }];
+  const [best] = E.planHorizon(stages, team, o);
+  const cost = best.steps.map((s) => Math.round(s.cost * 10) / 10);
+  const cap = best.steps.map((s) => Math.round(s.cap * 10) / 10);
+  assert.deepEqual(cost, [70, 70.6, 70.6]); // the rise stays in the team's value in race 3
+  assert.deepEqual(cap, [70, 70.6, 70.6]); // f's rise (not held) adds nothing
 });
 
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {

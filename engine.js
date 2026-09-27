@@ -121,17 +121,17 @@
   const PIT_FASTEST = 5;
 
   /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number }, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
-  /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number }} ResultRow */
+  /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
   /** @typedef {{ name: string, done: boolean, ref?: number | null, drivers: Record<string, { q: number | null, r: number | null, laps: number }> }} PracticeSession */
-  /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string }} Gameday */
+  /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string, sessions?: { type: string, start?: string, end?: string }[] }} Gameday */
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number> }} RaceBlock */
-  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]> } | null }} Data */
+  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string }} Odds */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -148,15 +148,18 @@
   const fieldOf = (/** @type {Data} */ data) => (data.cfg && data.cfg.field) || 22;
 
   /* ---------- small maths ---------- */
-  /** Solve A x = b (Gauss-Jordan with partial pivoting). @param {number[][]} A @param {number[]} b */
+  /** Solve A x = b (Gauss-Jordan with partial pivoting). A variable the system can't pin down (no pivot left, e.g.
+   * two identical columns) is set to 0 rather than blown up, so a singular fit stays finite.
+   * @param {number[][]} A @param {number[]} b */
   function solve(A, b) {
     const n = b.length;
     const M = A.map((row, i) => [...row, b[i]]);
+    const tol = 1e-12 * Math.max(1e-300, ...A.flat().map(Math.abs));
     for (let i = 0; i < n; i++) {
       let pv = i;
       for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[pv][i])) pv = k;
       [M[i], M[pv]] = [M[pv], M[i]];
-      if (Math.abs(M[i][i]) < 1e-12) M[i][i] = 1e-12;
+      if (!(Math.abs(M[i][i]) > tol)) M[i] = M[i].map((_, j) => (j === i ? 1 : 0));
       for (let k = 0; k < n; k++)
         if (k !== i) {
           const f = M[k][i] / M[i][i];
@@ -288,16 +291,25 @@
     const x = gamma(a, r);
     return x / (x + gamma(b, r));
   };
-  /** Index drawn with probability proportional to its weight. @param {number[]} weights @param {Rng} r */
+  /** Index drawn with probability proportional to its weight. Zero, negative and non-finite weights are never
+   * drawn; if none is positive, every index is equally likely. @param {number[]} weights @param {Rng} r */
   function pick(weights, r) {
-    let s = 0;
-    for (const w of weights) s += w;
-    let x = r() * s;
-    for (let i = 0; i < weights.length; i++) {
+    let s = 0,
+      last = -1;
+    for (let i = 0; i < weights.length; i++)
+      if (weights[i] > 0 && weights[i] < Infinity) {
+        s += weights[i];
+        last = i;
+      }
+    const u = r();
+    if (last < 0) return Math.min(weights.length - 1, Math.floor(u * weights.length));
+    let x = u * s;
+    for (let i = 0; i < last; i++) {
+      if (!(weights[i] > 0 && weights[i] < Infinity)) continue;
       x -= weights[i];
-      if (x <= 0) return i;
+      if (x < 0) return i;
     }
-    return weights.length - 1;
+    return last;
   }
 
   /* ---------- circuits ---------- */
@@ -1025,7 +1037,7 @@
     return cModels;
   }
   /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[] }} ConsModel stops = recent races' pit points */
-  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovSprint: number, slopeQ: number, slopeR: number }} Model */
+  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
    * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
@@ -1127,6 +1139,7 @@
       gRate,
       field: F,
       ovB: ovModel.b,
+      ovRet: ovModel.ret,
       ovSprint: ovModel.sprint,
       slopeQ,
       slopeR,
@@ -1209,7 +1222,10 @@
     return pace.map((p, i) => {
       let e = 1;
       pace.forEach((q, j) => {
-        if (j !== i) e += normCdf((p - q) / (teams[i] === teams[j] ? within : across));
+        if (j === i) return;
+        const s = teams[i] === teams[j] ? within : across;
+        // no noise at all: the faster car is ahead, a tie is a coin toss
+        e += s > 0 ? normCdf((p - q) / s) : p > q ? 1 : p === q ? 0.5 : 0;
       });
       return e;
     });
@@ -1233,6 +1249,11 @@
     });
   }
 
+  // Retired cars' overtakes before a season has 15 retirements to fit them: phi (hand-set, the reviewer's R1-R15
+  // data points to about a third) and an even spread of how far into the race a retirement comes, one in ten a
+  // car that doesn't start (-1)
+  const RET_PHI = 0.3;
+  const RET_SHARES = [-1, 0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95];
   /** Overtake model from this season's scoring lines. @param {Data} data @param {number} F @param {typeof MODEL} M */
   function fitOvertakes(data, F, M) {
     /** @type {Record<string, number>} */
@@ -1279,34 +1300,100 @@
           fallback[a.tla] =
             a.overtakePts / (wk + sprint * a.hist.filter((h) => h && h.active && data.results.sprint[h.gd]).length);
       }
+    // Finishers: places moved and grid slot. Retired cars keep the overtakes they made before stopping (66
+    // unclassified cars in R1-R15 scored 202 overtake points): their own intercept (column 4, places moved unknown)
+    // and an exposure of phi + (1 - phi) x the share of the race they ran, phi being the part that doesn't wait for
+    // laps (the start: cars out within 5 laps often had 3-6). A car that didn't start has none.
     /** @type {number[][]} */
     const X = [];
     /** @type {number[]} */
     const y = [];
     /** @type {number[]} */
     const off = [];
+    /** @type {number[]} share of the race run (retired cars; -1 = finished) */
+    const run = [];
     /** @type {string[]} */
     const who = [];
+    /** @type {number[]} every retirement's share of the race run (-1 = didn't start), for the sim to draw from */
+    const shares = [];
     for (const gd of data.done || []) {
+      const rows = data.results.race[gd] || [];
+      const lapsRun = rows.map((r) => r.laps ?? -1),
+        full = Math.max(...lapsRun);
+      for (const row of rows) if (!row.cls && full > 0 && row.laps != null) shares.push(row.dns ? -1 : row.laps / full);
       const ts = data.trackStats && data.trackStats[gd];
       if (!ts || !(ts.ovt > 0)) continue;
-      for (const row of data.results.race[gd] || []) {
-        if (!row.cls || !row.grid) continue;
+      for (const row of rows) {
+        if (!row.grid) continue;
         const ov = byTla[row.tla] && byTla[row.tla][gd];
         if (!ov) continue;
-        X.push([1, Math.log1p(Math.abs(row.grid - row.pos)), (row.grid - 1) / (F - 1)]);
+        if (row.cls) {
+          X.push([1, Math.log1p(Math.abs(row.grid - row.pos)), (row.grid - 1) / (F - 1), 0]);
+          run.push(-1);
+        } else if (!row.dns && row.laps != null && full > 0) {
+          X.push([1, 0, (row.grid - 1) / (F - 1), 1]);
+          run.push(row.laps / full);
+        } else continue;
         y.push(ov[0]);
         off.push(Math.log(ts.ovt));
         who.push(row.tla);
       }
     }
+    const nRet = run.filter((v) => v >= 0).length;
+    const ret = {
+      b: 0,
+      phi: RET_PHI,
+      share: shares.length >= 10 ? shares : RET_SHARES,
+    };
     if (X.length < 40)
-      return { b: [0, 0, 0], sprint, skill: /** @type {Record<string, number>} */ ({}), fallback, fitted: false };
-    const b = poissonGlm(X, y, off);
+      return {
+        b: [0, 0, 0],
+        ret,
+        sprint,
+        skill: /** @type {Record<string, number>} */ ({}),
+        fallback,
+        fitted: false,
+      };
+    const expo = (/** @type {number} */ phi) => run.map((f, n) => off[n] + (f < 0 ? 0 : Math.log(phi + (1 - phi) * f)));
+    /** @param {number[]} o @param {number[][]} Xs @param {number[]} b */
+    const logLik = (o, Xs, b) =>
+      Xs.reduce((s, x, n) => {
+        const eta = o[n] + x.reduce((t, v, j) => t + v * b[j], 0);
+        return s + y[n] * eta - Math.exp(eta);
+      }, 0);
+    let b = [0, 0, 0, 0],
+      oFit = off;
+    if (nRet >= 15) {
+      // phi by profile likelihood on a grid
+      let best = -Infinity;
+      for (let phi = 0; phi <= 0.801; phi += 0.05) {
+        const o = expo(phi),
+          bb = poissonGlm(X, y, o),
+          ll = logLik(o, X, bb);
+        if (ll > best) {
+          best = ll;
+          b = bb;
+          ret.phi = Math.round(phi * 100) / 100;
+          oFit = o;
+        }
+      }
+      ret.b = b[3];
+    } else {
+      // too few retirements to fit: finishers only; retired cars use the hand-set phi and the finishers' level
+      const keep = run.map((f) => f < 0);
+      const Xf = X.filter((_, n) => keep[n]).map((x) => x.slice(0, 3));
+      const bf = poissonGlm(
+        Xf,
+        y.filter((_, n) => keep[n]),
+        off.filter((_, n) => keep[n]),
+      );
+      b = [...bf, 0];
+      oFit = expo(ret.phi);
+    }
     /** @type {Record<string, [number, number]>} */
     const oe = {};
     X.forEach((x, n) => {
-      const mu = Math.exp(off[n] + b[0] * x[0] + b[1] * x[1] + b[2] * x[2]);
+      const mu = Math.exp(oFit[n] + x.reduce((t, v, j) => t + v * b[j], 0));
       const t = (oe[who[n]] ||= [0, 0]);
       t[0] += y[n];
       t[1] += mu;
@@ -1314,7 +1401,7 @@
     /** @type {Record<string, number>} */
     const skill = {};
     for (const [t, [ob, ex]] of Object.entries(oe)) skill[t] = Math.log((ob + M.ovShrink) / (ex + M.ovShrink));
-    return { b, sprint, skill, fallback, fitted: true };
+    return { b: b.slice(0, 3), ret, sprint, skill, fallback, fitted: true };
   }
 
   /** Driver of the Day popularity per driver: (votes won + k) / (votes expected + k), where "expected" is what the
@@ -1622,8 +1709,8 @@
     }
     return order;
   }
-  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, wet: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
-  /** @typedef {{ known?: Record<string, string[]>, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
+  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, scOver?: number, wet: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
+  /** @typedef {{ known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean }} SimOpts */
   const SIM_CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"]; // scoring categories per driver
   /** Driver of the Day vote weight for a finishing position and places gained. @param {number} pos @param {number} g */
   const dotdWeight = (pos, g) =>
@@ -1684,6 +1771,11 @@
       flOddsW: D.some((d) => d.flMk != null) ? SIM.flOddsW : 0,
       known: opt.known || {},
       pen: opt.pen || {},
+      // a finished sprint's classification (TLA -> "dnf" | "dns" | "dsq") while its points aren't scored yet
+      status: opt.status || {},
+      // points already scored: asset id -> [points, negative part] per finished session (q, s = the sprint)
+      lockQ: lockedArrays(opt.locked && opt.locked.q, D, C),
+      lockS: lockedArrays(opt.locked && opt.locked.s, D, C),
       tlaIdx: Object.fromEntries(D.map((d, i) => [d.tla, i])),
       rain: circuit.rain || {},
       ovB: model.ovB || [0, 0, 0],
@@ -1704,6 +1796,7 @@
       qp: new Float64Array(nd),
       rp: new Float64Array(nd),
       dnfP: new Float64Array(nd),
+      scDnfP: new Float64Array(nd), // this session's retirement chances (after chaos, sprint and rain scaling)
       shock: new Float64Array(nd),
       tShock: new Float64Array(nt),
       out: new Uint8Array(nd),
@@ -1721,6 +1814,7 @@
       pitSum: new Float64Array(nc),
       cat: new Float64Array(nd * SIM_CATS.length), // points by scoring category, for calibration and breakdowns
       scN: 0,
+      scOver: 0, // races whose retirements alone make more safety cars than the circuit's rate
       wetN: 0,
       // the lap-by-lap race
       lapMode,
@@ -1738,6 +1832,16 @@
       ovUs: D.map((d) => d.ovU || 0),
       calR: { th: 0, ka: 1 },
       calS: { th: 0, ka: 1 },
+    };
+  }
+  /** A finished session's points per asset as arrays in model order (drivers, then constructors), or null.
+   * @param {Record<string, number[]> | undefined} m @param {DriverModel[]} D @param {ConsModel[]} C */
+  function lockedArrays(m, D, C) {
+    if (!m) return null;
+    const ids = D.map((d) => String(d.id)).concat(C.map((c) => String(c.id)));
+    return {
+      pts: Float64Array.from(ids, (id) => (m[id] ? m[id][0] : 0)),
+      neg: Float64Array.from(ids, (id) => (m[id] ? m[id][1] : 0)),
     };
   }
   /** @typedef {ReturnType<typeof simState>} SimState */
@@ -1766,12 +1870,14 @@
    * @param {SimState} S @param {Int32Array} outArr @param {boolean} withPoints @param {boolean} wet
    * @param {string[] | undefined} fixed */
   function qualiOrder(S, outArr, withPoints, wet, fixed) {
-    const { nd, r, qp, tShock, tOf, shock, qCount, F, pts, neg } = S;
+    const { nd, r, qp, tShock, tOf, shock, qCount, F, pts, neg, lockQ } = S;
     /** @type {{ i: number, s: number, noTime: boolean }[]} */
     const arr = [];
     if (fixed) {
       fixedOrder(S, fixed, outArr);
-      for (let i = 0; i < nd; i++) arr.push({ i, s: outArr[i], noTime: false });
+      // qualifying run but not scored yet: its classification says who set no time
+      const st = (withPoints && S.status.q) || {};
+      for (let i = 0; i < nd; i++) arr.push({ i, s: outArr[i], noTime: !!st[S.D[i].tla] });
     } else {
       const sd = SIM.qSd * (wet ? SIM.rainNoise : 1);
       for (let i = 0; i < nd; i++) {
@@ -1788,6 +1894,13 @@
       outArr[x.i] = k + 1;
       if (!withPoints) return;
       qCount[x.i * F + Math.min(k, F - 1)]++;
+      if (lockQ) {
+        // qualifying is scored: its points as they are
+        pts[x.i] += lockQ.pts[x.i];
+        neg[x.i] += lockQ.neg[x.i];
+        addCat(S, x.i, "q", lockQ.pts[x.i]);
+        return;
+      }
       if (x.noTime) {
         // no time: starts last; the -5 is waived in a wet session (the 107% rule doesn't apply)
         if (!wet) {
@@ -1869,12 +1982,14 @@
     out.fill(0);
     // retirements: individual, plus multi-car incidents (a share of the same total risk)
     let pSum = 0;
+    const { scDnfP } = S;
     for (let i = 0; i < nd; i++) {
       const p = Math.min(
         0.9,
         dnfP[i] * (circuit.chaos ?? 1) * (isSprint ? SIM.sprintDnf : 1) * (wet ? SIM.rainDnf : 1),
       );
       pSum += p;
+      scDnfP[i] = p;
       if (!fixed && r() < (1 - SIM.incident) * p) out[i] = 1;
     }
     if (!fixed) {
@@ -1888,24 +2003,36 @@
         }
       }
     } else {
-      // a known sprint result: whoever isn't in it retired
-      const inIt = new Set(fixed.map((t) => tlaIdx[t]));
-      for (let i = 0; i < nd; i++) if (!inIt.has(i)) out[i] = 1;
+      // a known sprint result: whoever isn't in it, or is in it as not classified, retired
+      const inIt = new Set(fixed.map((t) => tlaIdx[t])),
+        st = (isSprint ? S.status.s : S.status.r) || {};
+      for (let i = 0; i < nd; i++) if (!inIt.has(i) || st[D[i].tla]) out[i] = 1;
     }
     let nOut = 0;
     for (let i = 0; i < nd; i++) nOut += out[i];
     // safety car: each retirement brings one out with chance scPerDnf; other causes (debris, a stranded car that
-    // still classifies) make up the circuit's rate: 1 - (1 - base) * (1 - q)^retirements averages to that rate
+    // still classifies) make up the circuit's rate: 1 - (1 - base) * (1 - q)^retirements averages to that rate.
+    // P(no SC from retirements) = E[(1 - q)^N] under the retirement process above: each car's own retirement
+    // independently, times the incidents' (a Poisson number of 1- or 2-car incidents: its generating function)
     const p = pSc * (isSprint ? SIM.sprintSc : 1),
-      q = SIM.scPerDnf,
-      viaDnf = Math.exp(Math.log(1 - q) * pSum),
-      base = clamp(1 - (1 - p) / Math.max(1e-9, viaDnf), 0, p);
-    const sc = r() < 1 - (1 - base) * Math.pow(1 - q, nOut);
+      q = SIM.scPerDnf;
+    let viaDnf = 1;
+    if (!fixed) {
+      for (let i = 0; i < nd; i++) viaDnf *= 1 - (1 - SIM.incident) * scDnfP[i] * q;
+      const gen = (1 - q + (1 - q) ** 2) / 2;
+      viaDnf *= Math.exp(((SIM.incident * pSum) / 1.5) * (gen - 1));
+    } else viaDnf = Math.pow(1 - q, nOut);
+    const base = 1 - (1 - p) / Math.max(1e-9, viaDnf);
+    // retirements alone bring out more safety cars than the circuit's rate: counted, and the rate can't be met
+    if (base < 0 && !isSprint) S.scOver++;
+    const sc = r() < 1 - (1 - clamp(base, 0, p)) * Math.pow(1 - q, nOut);
     if (!isSprint && sc) S.scN++;
     const fin = [];
     const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
     const tauNow = tau * (sc ? SIM.scTau : 1);
     const laps = lapMode && !fixed;
+    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
+    const ret = model.ovRet;
     for (let i = 0; i < nd; i++) {
       if (out[i]) {
         const pen = isSprint ? 10 : 20;
@@ -1913,6 +2040,21 @@
         neg[i] -= pen;
         addCat(S, i, isSprint ? "sprint" : "dnf", -pen);
         if (!isSprint) rCount[i * (F + 1) + F]++;
+        // the overtakes made before it stopped: how far it got is drawn from this season's retirements
+        if (!laps && !fixed && ret && ret.share.length) {
+          const f = ret.share[Math.floor(r() * ret.share.length)];
+          if (f >= 0) {
+            const expo = ret.phi + (1 - ret.phi) * f;
+            const lam =
+              model.ovB && SIM.ovModel
+                ? lvl * Math.exp(ovB[0] + ret.b + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU)
+                : D[i].ov * (circuit.ov ?? 1) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
+            const ov = poisson(lam * expo, r);
+            pts[i] += ov;
+            ovSum[i] += ov;
+            addCat(S, i, isSprint ? "sprint" : "ovt", ov);
+          }
+        }
         continue;
       }
       if (laps) continue;
@@ -1956,7 +2098,6 @@
     const flW = [];
     /** @type {number[]} */
     const dW = [];
-    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1);
     fin.forEach((x, k) => {
       const pos = k + 1,
         i = x.i;
@@ -2010,7 +2151,7 @@
    * @param {SimState} S @param {number} s */
   function simSample(S, s) {
     const { pts, neg, nt, nd, qp, D, unc, r, rp, shock, tOf, teamN, teamRate, dnfP, tShock, rain, qpos, nc, cOf } = S;
-    const { qb, qbNeg, sprint, sgrid, known, pen, rgrid, C, pitPts, pitSum, A, tot, nn, N } = S;
+    const { qb, qbNeg, sprint, sgrid, known, pen, rgrid, C, pitPts, pitSum, A, tot, nn, N, lockQ, lockS } = S;
     pts.fill(0);
     neg.fill(0);
     const dotd = { i: -1 };
@@ -2045,8 +2186,34 @@
       const b = q3 === 2 ? 10 : q3 === 1 ? 5 : q2 === 2 ? 3 : q2 === 1 ? 1 : -1;
       qb[c] = b;
       qbNeg[c] = b < 0 ? b : 0;
+      // scored: whatever the constructor's qualifying points hold beyond its drivers' (the bonus)
+      if (lockQ) {
+        qb[c] = lockQ.pts[nd + c];
+        qbNeg[c] = lockQ.neg[nd + c];
+        for (let i = 0; i < nd; i++)
+          if (cOf[i] === c) {
+            qb[c] -= lockQ.pts[i];
+            qbNeg[c] -= lockQ.neg[i];
+          }
+      }
     }
-    if (sprint) {
+    if (sprint && lockS) {
+      // the sprint is scored: its points as they are (a constructor's are its drivers', plus any difference)
+      for (let i = 0; i < nd; i++) {
+        pts[i] += lockS.pts[i];
+        neg[i] += lockS.neg[i];
+        addCat(S, i, "sprint", lockS.pts[i]);
+      }
+      for (let c = 0; c < nc; c++) {
+        qb[c] += lockS.pts[nd + c];
+        qbNeg[c] += lockS.neg[nd + c];
+        for (let i = 0; i < nd; i++)
+          if (cOf[i] === c) {
+            qb[c] -= lockS.pts[i];
+            qbNeg[c] -= lockS.neg[i];
+          }
+      }
+    } else if (sprint) {
       qualiOrder(S, sgrid, false, wetS, known.sq);
       raceSession(S, sgrid, true, { i: -1 }, wetS, known.s);
     }
@@ -2088,7 +2255,8 @@
   }
   /** Per-asset statistics over all samples, and the lap traces. @param {SimState} S @returns {Sim} */
   function simSummary(S) {
-    const { D, C, N, tot, nn, nd, rCount, F, flC, dotdC, ovSum, qCount, cat, pitSum, trace, lapN, scN, wetN } = S;
+    const { D, C, N, tot, nn, nd, rCount, F, flC, dotdC, ovSum, qCount, cat, pitSum, trace, lapN, scN, wetN, scOver } =
+      S;
     const CATS = SIM_CATS,
       NC = CATS.length;
     const ids = D.map((d) => d.id).concat(C.map((c) => c.id));
@@ -2141,7 +2309,7 @@
           run: D.map((_, i) => Array.from({ length: lapN }, (_, l) => trace.cnt[i * lapN + l] / N)),
         }
       : null;
-    return { ids, N, field: F, tot, nn, stats, sc: scN / N, wet: wetN / N, laps };
+    return { ids, N, field: F, tot, nn, stats, sc: scN / N, scOver: scOver / N, wet: wetN / N, laps };
   }
   /**
    * Simulate one weekend N times, scored with the official rules. tot/nn hold every sample per asset
@@ -2154,6 +2322,7 @@
    * @returns {Sim}
    */
   function simulate(model, circuit, sprint, N, seed, opt = {}) {
+    if (!Number.isInteger(N) || N < 1) throw new RangeError(`simulate: N must be a positive whole number (got ${N})`);
     const S = simState(model, circuit, sprint, N, seed, opt);
     if (S.lapMode) {
       S.calR = lapCalib(S, false, S.ovLvl);
@@ -2166,8 +2335,11 @@
   /* ---------- the betting market (next race) ---------- */
   /** Move each driver's pace so the simulated chances of winning, a podium, a top 10 and pole move towards the
    * market's, by weight w (0 = model only, 1 = market only), in log-odds. Returns a new model; the shift per driver
-   * is kept as oddsQ / oddsR (%). @param {Model} model @param {Circuit} circuit @param {Odds | null | undefined} odds
-   * @param {{ w?: number, seed?: number, n?: number, iters?: number }} [o] @returns {Model} */
+   * is kept as oddsQ / oddsR (%). o.simOpt: what's already known this weekend (grid penalties, the qualifying order),
+   * so a market quoted after qualifying isn't matched by moving pace to make up for a grid the sim doesn't know.
+   * With the qualifying order known, pole is settled and qualifying pace no longer moves.
+   * @param {Model} model @param {Circuit} circuit @param {Odds | null | undefined} odds
+   * @param {{ w?: number, seed?: number, n?: number, iters?: number, simOpt?: SimOpts }} [o] @returns {Model} */
   function applyOdds(model, circuit, odds, o = {}) {
     const w = o.w ?? SIM.oddsW;
     if (!odds || !w || !(odds.win || odds.podium || odds.top10 || odds.pole)) return model;
@@ -2186,12 +2358,15 @@
       }
       return { win: rr[0], podium: pod, top10: top, pole: qq[0] };
     };
-    const base = simulate(m, circuit, false, n, seed);
+    const simOpt = o.simOpt || {},
+      qKnown = !!(simOpt.known && simOpt.known.q);
+    const base = simulate(m, circuit, false, n, seed, simOpt);
     const p0 = m.drivers.map((_, i) => probs(base, i));
     /** @type {("win" | "podium" | "top10")[]} */
     const RACE = ["win", "podium", "top10"];
     let sim = base;
-    for (let it = 0; it < (o.iters || 4); it++) {
+    const iters = o.iters || 4;
+    for (let it = 0; it < iters; it++) {
       m.drivers.forEach((d, i) => {
         const p = probs(sim, i);
         let num = 0,
@@ -2207,16 +2382,17 @@
         const step = den ? clamp(num / den, -3, 3) * 0.12 : 0;
         d.rPace -= step;
         d.oddsR = (d.oddsR || 0) - step;
-        let qStep = step * 0.6;
+        let qStep = qKnown ? 0 : step * 0.6;
         const pole = odds.pole && odds.pole[d.tla];
-        if (pole != null) {
+        if (pole != null && !qKnown) {
           const target = (1 - w) * logit(p0[i].pole) + w * logit(pole);
           qStep = 0.5 * qStep + 0.5 * clamp(target - logit(p.pole), -3, 3) * 0.1;
         }
         d.qPace -= qStep;
         d.oddsQ = (d.oddsQ || 0) - qStep;
       });
-      sim = simulate(m, circuit, false, n, seed);
+      // the last step's result isn't read: no simulation after it
+      if (it < iters - 1) sim = simulate(m, circuit, false, n, seed, simOpt);
     }
     finishPositions(m.drivers);
     return m;
@@ -2233,6 +2409,21 @@
     const step = ppm >= PRICE_BANDS[2] ? 3 : ppm >= PRICE_BANDS[1] ? 1 : ppm >= PRICE_BANDS[0] ? -1 : -3;
     const d = big ? step * 0.1 : step * 0.2;
     return Math.max(3, Math.min(34, Math.round((price + d) * 10) / 10)) - price;
+  }
+
+  /** The points already in an asset's next price change: its last two rounds (p1 = the last), counting only rounds
+   * it raced. The game averages over the races in the last three rounds, the coming one included: an inactive round
+   * isn't a zero (2026: 493/495 real changes, vs 422/425 counting zeros; the two left are R8, likely points corrected
+   * after the prices were set). n = races in the average. @param {Asset} a @param {number[]} done
+   * @returns {{ p1: number | null, p2: number | null, sum2: number, n: number }} */
+  function priceBase(a, done) {
+    const pts = done.slice(-2).map((gd) => {
+      const h = a.hist.find((x) => x && x.gd === gd);
+      return h && h.active ? h.pts : null;
+    });
+    while (pts.length < 2) pts.unshift(null);
+    const [p2, p1] = pts;
+    return { p1, p2, sum2: (p1 ?? 0) + (p2 ?? 0), n: 1 + (p1 != null ? 1 : 0) + (p2 != null ? 1 : 0) };
   }
 
   /* ---------- optimiser ---------- */
@@ -2528,16 +2719,21 @@
           },
         ],
       }));
+    // every asset's price change so far (all stages up to the last one), whoever holds it: a stage's prices are
+    // today's plus these
+    /** @type {Record<string, number>} */
+    const moved = {};
     for (let h = 1; h < H; h++) {
       /** @type {Plan[]} */
       const next = [];
+      const dp = stages[h - 1].dPrice || {};
+      for (const [id, d] of Object.entries(dp)) moved[id] = (moved[id] || 0) + d;
+      const cand = stages[h].cand.map((c) => ({ ...c, price: c.price + (moved[c.id] || 0) }));
       for (const p of plans) {
         const prev = p.steps[p.steps.length - 1];
-        const dp = stages[h - 1].dPrice || {};
         // budget after the price changes of the team held through the last race
         const gain = prev.team.reduce((s, id) => s + (dp[id] || 0), 0);
         const cap = (o.chip === "limitless" && h === 1 ? o.cap : Math.max(prev.cap, prev.cost)) + gain;
-        const cand = stages[h].cand.map((c) => ({ ...c, price: c.price + (dp[c.id] || 0) }));
         const opts = {
           ...o,
           cap,
@@ -2639,13 +2835,92 @@
       paceShift: next && (MODEL.bandQ || MODEL.bandR) ? bandShift(data, g) || {} : {},
     });
     const odds = data.odds && data.odds.gd === g.gd ? data.odds : null;
-    if (next && odds) model = applyOdds(model, c, odds, { w: o.oddsW ?? SIM.oddsW, seed: g.gd * 31 + 7 });
-    const fl = next && odds && odds.fl;
-    if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
     const wk = data.weekend && data.weekend.gd === g.gd ? data.weekend : null;
     /** @type {SimOpts} */
-    const simOpt = { pen: { ...((wk && wk.penalties) || {}), ...(o.pen || {}) }, known: next && wk ? wk.grid : {} };
+    const simOpt = {
+      pen: { ...((wk && wk.penalties) || {}), ...(o.pen || {}) },
+      known: next && wk ? { ...wk.grid } : {},
+      status: next && wk ? wk.status || {} : {},
+      locked: next ? scoredSessions(data, g) : {},
+    };
+    // qualifying scored before OpenF1 has its order (it's closed while any session runs): the order from the
+    // scoring lines' positions; without one, qualifying stays simulated (its points and grid go together)
+    const lk = /** @type {{ q?: Record<string, number[]> }} */ (simOpt.locked);
+    const known = /** @type {Record<string, string[]>} */ (simOpt.known);
+    if (lk.q && !known.q) {
+      const order = qualiOrderFromLive(data);
+      if (order) known.q = order;
+      else delete lk.q;
+    }
+    if (next && odds)
+      model = applyOdds(model, c, odds, {
+        w: o.oddsW ?? SIM.oddsW,
+        seed: g.gd * 31 + 7,
+        simOpt: oddsKnown(simOpt, odds, g),
+      });
+    const fl = next && odds && odds.fl;
+    if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
     return { circuit: c, model, simOpt, odds: !!odds };
+  }
+  /** This weekend's sessions the fantasy feed has already scored (data.live, the player feed's per-session points):
+   * q = qualifying, s = the sprint (F1 Fantasy's "Sprint Qualifying" session). A session counts once it has ended
+   * before the feed's time and every racing asset has points for it. Returns asset id -> [points, negative part]
+   * per session; the negative part comes from the scoring lines when they add up to the session's points.
+   * @param {Data} data @param {Gameday} g @returns {{ q?: Record<string, number[]>, s?: Record<string, number[]> }} */
+  function scoredSessions(data, g) {
+    const live = data.live;
+    /** @type {{ q?: Record<string, number[]>, s?: Record<string, number[]> }} */
+    const out = {};
+    if (!live || live.gd !== g.gd || !live.feedTime) return out;
+    const names = data.evNames || [];
+    const fed = Date.parse(live.feedTime);
+    for (const [key, type, code] of /** @type {const} */ ([
+      ["q", "Qualifying", "Q"],
+      ["s", "Sprint Qualifying", "S"],
+    ])) {
+      const sess = (g.sessions || []).find((x) => x.type === type);
+      if (!sess || !sess.end || !(Date.parse(sess.end) < fed)) continue;
+      const racing = Object.entries(live.assets || {}).filter(([, a]) => a.act);
+      if (!racing.length || !racing.every(([, a]) => a.sess && typeof a.sess[type] === "number")) continue;
+      /** @type {Record<string, number[]>} */
+      const m = {};
+      for (const [id, a] of racing) {
+        const p = (a.sess && a.sess[type]) || 0;
+        const lines = (a.ev || []).filter(([i]) => names[i] && names[i].s === code);
+        const sum = lines.reduce((t, [, v]) => t + v, 0);
+        const neg = sum === p ? lines.reduce((t, [, v]) => t + Math.min(0, v), 0) : Math.min(0, p);
+        m[id] = [p, neg];
+      }
+      out[key] = m;
+    }
+    return out;
+  }
+  /** The qualifying order from the live weekend's "Qualifying Position" lines ("7th"), or null unless every racing
+   * driver has one. @param {Data} data @returns {string[] | null} */
+  function qualiOrderFromLive(data) {
+    const live = data.live,
+      names = data.evNames || [];
+    if (!live) return null;
+    /** @type {{ tla: string, pos: number }[]} */
+    const rows = [];
+    for (const a of data.assets) {
+      const la = a.kind === "D" && live.assets[a.id];
+      if (!la || !la.act) continue;
+      const line = (la.ev || []).find(([i]) => names[i] && names[i].c === "Q POS");
+      const pos = line ? parseInt(String(line[2]), 10) : NaN;
+      if (!(pos > 0)) return null;
+      rows.push({ tla: a.tla, pos });
+    }
+    return rows.length >= 10 ? rows.sort((x, y) => x.pos - y.pos).map((x) => x.tla) : null;
+  }
+  /** What the market saw when it was quoted: grid penalties always (they're announced before qualifying, and the
+   * odds are refetched with them); the qualifying order only if the quote is from after qualifying ended (odds.at).
+   * @param {SimOpts} simOpt @param {Odds} odds @param {Gameday} g @returns {SimOpts} */
+  function oddsKnown(simOpt, odds, g) {
+    const known = simOpt.known || {};
+    const q = (g.sessions || []).find((x) => x.type === "Qualifying");
+    const after = !!(odds.at && q && q.end && Date.parse(odds.at) >= Date.parse(q.end));
+    return { pen: simOpt.pen, known: known.q && after ? { q: known.q } : {} };
   }
   /** The coming race's projection at default settings: what refresh.py freezes into the season archive at lock.
    * Null once the season is over. @param {Data} data @param {Partial<typeof DEFAULTS>} [opt] */
@@ -2845,13 +3120,17 @@
     raceSegs,
     applyOdds,
     priceStep,
+    priceBase,
     optimise,
     budgetCurve,
     planHorizon,
     mulberry32,
+    pick,
     recentForm,
     blendMean,
     raceSetup,
+    scoredSessions,
+    oddsKnown,
     project,
     presetWeights,
     pastPoints,

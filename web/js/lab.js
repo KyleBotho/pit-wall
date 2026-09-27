@@ -6,7 +6,7 @@
 import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming } from "./core.js";
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
-import { BINS, codeBox, forecast, heat, sprintNext, startTeam, who } from "./forecast.js";
+import { BINS, codeBox, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
 import { showView } from "./main.js";
 import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
@@ -129,15 +129,11 @@ function withLab(set, fn) {
 function labSim(set, g, k, N) {
   return withLab(set, () => {
     const tm = Engine.trackModel(DATA);
+    // the Calculator's options; the lab's own switches act through the engine settings (practiceQ inside
+    // buildModel), except the market weight, which raceSetup takes as an option
     const setup = Engine.raceSetup(DATA, g, {
-      next: k === 0,
-      track: tm,
-      halfLife: state.halfLife,
-      adj: state.adj,
-      pw: Engine.MODEL.practiceQ,
-      oddsW: Engine.SIM.oddsW,
-      pen: k === 0 ? state.pen : {},
-      circuit: state.circuits[g.gd] || {},
+      ...setupOpts(g, k, tm),
+      ...("SIM.oddsW" in set ? { oddsW: Engine.SIM.oddsW } : {}),
     });
     const t0 = performance.now();
     const sim = Engine.simulate(setup.model, setup.circuit, k === 0 ? sprintNext() : g.sprint, N, g.gd * 7919 + 13, {
@@ -168,9 +164,7 @@ export function labRerun() {
 const labQ = (arr, p) => arr[Math.min(arr.length - 1, Math.floor(arr.length * p))];
 // price change after the race from the simulated weekends (the game's rule), like the Budget view
 function labPrice(a, sim, i) {
-  const h = a.hist.filter(Boolean);
-  const sum2 = (h.length ? h[h.length - 1].pts : 0) + (h.length > 1 ? h[h.length - 2].pts : 0),
-    n = Math.min(3, h.length + 1),
+  const { sum2, n } = Engine.priceBase(a, DATA.done),
     N = sim.N;
   let up = 0,
     down = 0,
@@ -736,9 +730,7 @@ function labPriceMatrix(run, rows) {
     rows
       .filter((r) => r.a.kind === kind)
       .map((r) => {
-        const h = r.a.hist.filter(Boolean);
-        const sum2 = (h.length ? h[h.length - 1].pts : 0) + (h.length > 1 ? h[h.length - 2].pts : 0),
-          n = Math.min(3, h.length + 1),
+        const { sum2, n } = Engine.priceBase(r.a, DATA.done),
           dist = BINS.map(() => 0);
         let ev = 0;
         for (let s = 0; s < N; s++) {

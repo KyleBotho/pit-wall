@@ -223,6 +223,10 @@ def load_results(done):
                         row["cls"] = r["positionText"].isdigit()
                         row["fl"] = (r.get("FastestLap") or {}).get("rank") == "1"
                         row["num"] = int(r["number"])
+                        # laps run (a retired car's overtakes scale with them), and whether it started at all
+                        row["laps"] = int(r.get("laps") or 0)
+                        if r.get("status") == "Did not start":
+                            row["dns"] = True
                     else:
                         row["qt"] = [lap_secs(r.get(k)) for k in ("Q1", "Q2", "Q3")]
                     rows.append(row)
@@ -457,7 +461,7 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     print(f"  rain forecasts: {', '.join(f'R{k}' for k in out['weather']) or 'none in range'}")
     if nxt_g:
         tlas = {a["tla"] for a in assets if a["kind"] == "D"}
-        out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas)
+        out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas, CFG["field"])
         if out["odds"]:
             out["odds"]["gd"] = nxt_g["gd"]
             out["odds"]["at"] = now.isoformat(timespec="minutes")

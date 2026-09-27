@@ -246,11 +246,13 @@ export function h2h(myIds, rivals, opt = {}) {
         boost = ds.includes(m.boost) ? m.boost : boostFor(m.ids, 0, { boost: "auto" });
       const smp = teamSamples(m.ids, boost, "");
       let win = 0,
+        tie = 0,
         gap = 0;
       const d = new Float64Array(N);
       for (let s = 0; s < N; s++) {
         d[s] = mySmp[s] - smp[s];
         if (d[s] > 0) win++;
+        else if (d[s] === 0) tie++;
         gap += d[s];
       }
       const drs = ds.slice().sort((x, y) => (x === boost ? -1 : y === boost ? 1 : xpts(y, 1) - xpts(x, 1)));
@@ -277,7 +279,7 @@ export function h2h(myIds, rivals, opt = {}) {
         range = `<span class="muted" title="Your points minus theirs: 10% of simulated weekends end below the first number, 10% above the second">${sgn(q(0.1), 0)} to ${sgn(q(0.9), 0)}</span>`;
       }
       return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}${m.sub ? ` <small class="dim">${esc(m.sub)}</small>` : ""}</b><div class="chips">${chipsHtml}</div>${m.goal ? `<button class="btn ghost sm" data-rvgoal="${esc(m.key)}" style="align-self:flex-start">Aim to beat in the Calculator</button>` : ""}</div>
-      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}">${pct(p)}</b><span class="muted">you win</span><span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
+      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}">${pct(p)}</b><span class="muted">you win</span>${tie / N >= 0.005 ? `<span class="muted" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}<span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
     })
     .join("");
   return { html, mean };

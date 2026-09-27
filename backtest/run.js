@@ -22,19 +22,30 @@ const want = (n) => !only.length || only.includes(n);
 function prices() {
   let n = 0,
     ok = 0;
+  const miss = [];
   for (const a of D.assets)
-    for (let k = 2; k < a.hist.length; k++) {
+    for (let k = 0; k < a.hist.length; k++) {
       const h = a.hist;
-      if (!h[k] || !h[k].active || !h[k - 1] || !h[k - 2]) continue;
-      const next = k + 1 < h.length ? h[k + 1] : { price: a.price };
+      if (!h[k] || !h[k].active) continue;
+      const next = k + 1 < h.length ? h[k + 1] : D.pricesPending ? null : { price: a.price };
       if (!next) continue;
-      const pred =
-        Math.round((h[k].price + E.priceStep(h[k].price, (h[k].pts + h[k - 1].pts + h[k - 2].pts) / 3)) * 10) / 10;
+      // the races among the last three rounds (an inactive round isn't a zero): Engine.priceBase
+      const { sum2, n: races } = E.priceBase(
+        a,
+        D.done.filter((g) => g < h[k].gd),
+      );
+      const pred = Math.round((h[k].price + E.priceStep(h[k].price, (sum2 + h[k].pts) / races)) * 10) / 10;
       n++;
       if (Math.abs(pred - next.price) < 0.05) ok++;
+      else miss.push(`${a.tla || a.name} (${a.team}) after R${h[k].gd}: ${pred} vs ${next.price}`);
     }
   console.log(
-    `\n1. Price rule (bands ${E.PRICE_BANDS.join(" / ")}): ${ok}/${n} real price changes reproduced (${((100 * ok) / n).toFixed(1)}%)`,
+    `
+1. Price rule (bands ${E.PRICE_BANDS.join(" / ")}): ${ok}/${n} real price changes reproduced (${((100 * ok) / n).toFixed(1)}%)` +
+      (miss.length
+        ? `
+   missed: ${miss.join("; ")}`
+        : ""),
   );
 }
 

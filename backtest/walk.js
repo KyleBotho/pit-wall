@@ -92,6 +92,7 @@ function asOf(r, drop = []) {
     practice: PRACTICE[r] || [],
     weather: {},
     weekend: null,
+    live: null, // the live weekend's scored sessions: not known at lock
     odds: ODDS[r] ? { ...ODDS[r], gd: r } : null,
   };
 }

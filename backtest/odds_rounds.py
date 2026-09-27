@@ -63,7 +63,8 @@ def historical(series, suffix, start, end):
 
 
 def main():
-    season = load_config("season")["season"]
+    cfg = load_config("season")
+    season, field = cfg["season"], cfg["field"]
     with open(os.path.join(CACHE, "data.json"), encoding="utf-8") as f:
         data = json.load(f)
     tlas = {a["tla"] for a in data["assets"] if a["kind"] == "D"}
@@ -99,11 +100,11 @@ def main():
                 if tla in tlas and vals:
                     raw[tla] = vals[-1]
             if len(raw) >= 10:
-                rec[key] = extras._norm(raw, total)
+                rec[key] = extras._norm(raw, total, field)
         print(f"R{g['gd']} {suffix}: {', '.join(k for k in rec if k in extras.KALSHI_SERIES) or 'nothing'}")
         if len(rec) > 2:
             out[str(g["gd"])] = rec
-    with open(OUT, "w", encoding="utf-8") as f:
+    with open(OUT, "w", encoding="utf-8", newline="\n") as f:
         json.dump(out, f, indent=1, sort_keys=True)
     print(f"{len(out)} rounds -> {os.path.relpath(OUT, ROOT)}")
 
