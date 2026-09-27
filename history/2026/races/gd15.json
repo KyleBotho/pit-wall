@@ -23,9 +23,127 @@
    "SAI": 1.737,
    "VER": 0.234
   },
+  "paceCoef": {
+   "agePerLap": {
+    "M": 0.0198,
+    "S": 0.0098
+   },
+   "base": "M",
+   "compound": {
+    "S": -0.184
+   },
+   "fuelFullRace": -3.121,
+   "laps": 775,
+   "sigma": 0.379,
+   "traffic": 0.453
+  },
+  "paceCtx": {
+   "ALB": 1.723,
+   "ALO": 4.012,
+   "ANT": 0.613,
+   "BEA": 1.727,
+   "BOR": 1.766,
+   "BOT": 3.966,
+   "COL": 1.354,
+   "GAS": 0.932,
+   "HAD": 0.444,
+   "HAM": 1.009,
+   "HUL": 1.961,
+   "LAW": 1.896,
+   "LEC": 0.769,
+   "LIN": 1.8,
+   "NOR": 0.805,
+   "OCO": 1.801,
+   "PER": 2.187,
+   "PIA": 0.952,
+   "RUS": 0.074,
+   "SAI": 2.037,
+   "STR": 3.698,
+   "VER": 0.0
+  },
+  "paceN": {
+   "ALB": 28,
+   "ALO": 19,
+   "ANT": 40,
+   "BEA": 40,
+   "BOR": 40,
+   "BOT": 35,
+   "COL": 28,
+   "GAS": 28,
+   "HAD": 41,
+   "HAM": 40,
+   "HUL": 40,
+   "LAW": 40,
+   "LEC": 41,
+   "LIN": 40,
+   "NOR": 28,
+   "OCO": 40,
+   "PER": 40,
+   "PIA": 41,
+   "RUS": 41,
+   "SAI": 38,
+   "STR": 6,
+   "VER": 41
+  },
+  "paceSe": {
+   "ALB": 0.098,
+   "ALO": 0.114,
+   "ANT": 0.084,
+   "BEA": 0.081,
+   "BOR": 0.086,
+   "BOT": 0.078,
+   "COL": 0.085,
+   "GAS": 0.085,
+   "HAD": 0.084,
+   "HAM": 0.08,
+   "HUL": 0.081,
+   "LAW": 0.083,
+   "LEC": 0.079,
+   "LIN": 0.079,
+   "NOR": 0.09,
+   "OCO": 0.08,
+   "PER": 0.081,
+   "PIA": 0.077,
+   "RUS": 0.077,
+   "SAI": 0.079,
+   "STR": 0.169,
+   "VER": 0.089
+  },
   "pits": {},
   "rain": 0,
   "red": 0,
+  "retirements": {
+   "ALB": {
+    "cause": "other",
+    "lap": 30,
+    "share": 0.569
+   },
+   "ALO": {
+    "cause": "other",
+    "lap": 21,
+    "share": 0.392
+   },
+   "COL": {
+    "cause": "incident",
+    "lap": 37,
+    "share": 0.706
+   },
+   "GAS": {
+    "cause": "incident",
+    "lap": 36,
+    "share": 0.686
+   },
+   "NOR": {
+    "cause": "incident",
+    "lap": 36,
+    "share": 0.686
+   },
+   "STR": {
+    "cause": "other",
+    "lap": 8,
+    "share": 0.137
+   }
+  },
   "sc": 2,
   "vsc": 0
  }

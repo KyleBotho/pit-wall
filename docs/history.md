@@ -5,6 +5,31 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, review batch 3: lap/stint data, contextual race pace, retirements by cause (plan 4A-4C).
+  - `laps.py`: canonical lap records per race / sprint from OpenF1 (laps + stints + race control + weather: lap,
+    start, time, sectors, compound, tyre age, stint, pit in / out, neutralised (SC / VSC / red windows, also the
+    "VSC DEPLOYED" spelling; a window with no end message, Monza R13's lap-3 SC, capped at 6 laps), wet, gap to the
+    previous car at the line, slow) with a quality summary -> `history/<season>/laps/gdNN.json` (~65 KB a round).
+    Audit vs the FastF1 archive (`python laps.py audit`): ~98% of lap times and ~100% of compounds equal, except
+    R1 where OpenF1's lap numbers run one behind FastF1's (flagged in quality.skips).
+  - Pace model per race: Huber-weighted least squares on log lap time over clean laps: driver + compound +
+    compound x tyre age + fuel (share of race) + traffic (gap < 2 s); synthetic test recovers every term when
+    strategies vary (with one common strategy fuel and tyre age can't be told apart). R15: fuel + track -3.1% over
+    the race, softs -0.18% vs mediums, wear 0.01-0.02%/lap, traffic +0.45%, sigma 0.38%. Kept as `paceCtx` /
+    `paceSe` / `paceN` / `paceCoef` in the race block. MODEL.racePace "ctx" (default "median"): rank corr with the
+    next round's pace 0.848 vs 0.827 (steadier), with the next finishing order 0.756 vs 0.764; section 9 R5-R15
+    CRPS +0.020 +/- 0.034, MAE -0.015 +/- 0.050: a tie. Challenger `racectx`.
+  - Retirement causes (`retirements`): race control names the car in an incident / collision from 3 min before to
+    10 min after it stopped (messages lag: R15's NOR/GAS/COL collision was posted at the leader's lap 38, they
+    stopped after lap 35-36; race control's lap number is the leader's), else "other" (mechanical, or a solo crash
+    nobody named), "dns". R1-R15: dns 7, incident 10, other 42. MODEL.dnfModel "causes" (team mechanical rate +
+    field incident rate): walk-forward log loss 0.4690 vs 0.4711 pooled (section 3); per-driver incident rates
+    don't help. Challenger `dnfcauses`.
+  - Automatic after every race: `extras.race_info` builds the lap records, pace model and causes for each newly
+    finished round (and retries for 4 days while stints / Jolpica aren't in); refresh.yml runs `telemetry.py laps
+    --max 6` after refresh.py (FastF1 lap archive of finished rounds, paced, never during a live session, a stop
+    never fails the build). R1-R15 backfilled with `python laps.py backfill`. User asked for everything to arrive
+    on its own after a race weekend (2026-09-27).
 - [x] 2026-09-27, review batch 2: evidence (plan items B02-B04, B07, N07-N09).
   - Forecast record at lock: `project(data, {detail})` adds 19 quantiles (5-95%) and the sd per asset, and a record:
     RNG version (`Engine.RNG_VERSION`), seed, every setting (`settingsSnapshot`), the market-fit diagnostics and the

@@ -19,6 +19,7 @@ Season archive (committed by the workflow, so history survives F1 changing or dr
   history/<season>/samples/gdNN.json      the first 2,000 joint samples at lock (int16, gzip, base64)
   history/<season>/rebuilt/gdNN.json      projections rebuilt for the rounds before that archive (npm run rebuild)
   history/<season>/practice/gdNN.json     analysed OpenF1 practice sessions (OpenF1 closes during live sessions)
+  history/<season>/laps/gdNN.json         every race / sprint lap with its context (laps.py), from OpenF1
   history/<season>/elite/<feedTime>_<hash>.json  top-10/100/500 ownership each time the global line-ups change,
                                           with the time we first saw it (when does the feed update: at lock?)
 """
@@ -455,7 +456,7 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     out["raceInfo"] = {
         str(k): v
         for k, v in extras.race_info(
-            get_soft, cached, archived, read_json, write_json, SEASON, schedule, done, num
+            get_soft, cached, archived, read_json, write_json, SEASON, schedule, done, num, results["race"]
         ).items()
     }
     print(f"  OpenF1 race data: {len(out['raceInfo'])}/{len(done)} rounds")

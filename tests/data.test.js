@@ -112,6 +112,26 @@ test("challengers: every one projects under its own settings, and the shipped on
   assert.throws(() => E.withSettings({ "SIM.noSuchThing": 1 }, () => 0));
 });
 
+test("batch 3 switches: race pace from the lap model, retirements by cause", opt, () => {
+  if (!Object.values(D.raceInfo || {}).some((x) => x.race && x.race.paceCtx)) return;
+  const b = (model) => E.buildModel(D, { halfLife: 4, adj: {}, practice: [], practiceWeight: 1, model });
+  const med = b({}),
+    ctx = b({ racePace: "ctx" });
+  assert.ok(
+    med.drivers.some((d, i) => Math.abs(d.rPace - ctx.drivers[i].rPace) > 0.01),
+    "a different race pace",
+  );
+  assert.deepEqual(
+    med.drivers.map((d) => d.qPace),
+    ctx.drivers.map((d) => d.qPace),
+  );
+  // by cause with the field's incident rate: team-mates still share one rate, about the pooled level
+  const cz = b({ dnfModel: "causes", incShrink: 1e6 });
+  const mean = (m) => m.drivers.reduce((a, d) => a + d.dnf, 0) / m.drivers.length;
+  assert.ok(Math.abs(mean(cz) - mean(med)) < 0.02, `${mean(cz)} vs ${mean(med)}`);
+  for (const d of cz.drivers) assert.ok(d.dnf > 0 && d.dnf < 0.5);
+});
+
 test("a finished season projects nothing and still models", opt, () => {
   const over = { ...D, schedule: D.schedule.filter((g) => D.done.includes(g.gd)) };
   assert.equal(E.project(over), null);

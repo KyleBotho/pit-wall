@@ -112,13 +112,21 @@ def lap_pace(laps):
     return {num: round((v / best - 1) * 100, 3) for num, v in med.items()}
 
 
-def _race_block(get_soft, cached, s, num2):
-    """One race session: SC/VSC/red/rain, pit stops by team, pace by driver TLA."""
+def _of(get_soft, cached, kind, key):
+    """One OpenF1 table of a session (cached for good: a finished session doesn't change)."""
+    d = get_soft(f"{OPENF1}/{kind}?session_key={key}", cached(f"of_{kind}_{key}.json"), reuse=True)
+    return d if isinstance(d, list) else []
+
+
+def _race_block(get_soft, cached, s, num2, results=None, archive=None):
+    """One race session: SC/VSC/red/rain, pit stops by team, pace by driver TLA (median clean lap, and the
+    contextual model: laps.py), and for the race each retirement's cause. archive(canon) keeps the canonical laps."""
+    import laps as lapmod
+
     key = s["session_key"]
 
     def f(kind):
-        d = get_soft(f"{OPENF1}/{kind}?session_key={key}", cached(f"of_{kind}_{key}.json"), reuse=True)
-        return d if isinstance(d, list) else []
+        return _of(get_soft, cached, kind, key)
 
     rc, wx, pits, laps = f("race_control"), f("weather"), f("pit"), f("laps")
     if not laps:
@@ -130,7 +138,7 @@ def _race_block(get_soft, cached, s, num2):
         who = num2.get(p.get("driver_number"))
         if who and p.get("stop_duration"):
             stops.setdefault(who[1], []).append(p["stop_duration"])
-    return {
+    block = {
         "sc": sum(1 for m in msgs if m.startswith("SAFETY CAR DEPLOYED")),
         "vsc": sum(1 for m in msgs if m.startswith("VIRTUAL SAFETY CAR DEPLOYED")),
         "red": int(any(m.get("flag") == "RED" for m in rc)),
@@ -138,11 +146,29 @@ def _race_block(get_soft, cached, s, num2):
         "pits": {t: sorted(v) for t, v in stops.items()},
         "pace": {num2[n][0]: v for n, v in pace.items() if n in num2},
     }
+    # batch 3: every lap with its context, the pace model on it, retirement causes (fail-soft: extras)
+    try:
+        tla = {n: v[0] for n, v in num2.items()}
+        canon = lapmod.canonical(laps, f("stints"), rc, wx, tla)
+        if archive:
+            archive(canon)
+        fit = lapmod.fit_pace(canon)
+        if fit:
+            block.update(paceCtx=fit["pace"], paceSe=fit["se"], paceN=fit["n"], paceCoef=fit["coef"])
+        if results:
+            block["retirements"] = lapmod.retirements(results, rc, {v: k for k, v in tla.items()}, canon)
+    except Exception as e:  # noqa: BLE001
+        _warn("lap model", e)
+    return block
 
 
-def race_info(get_soft, cached, archived, read_json, write_json, season, schedule, done, results_num):
+RETRY_DAYS = 4  # a finished round's race block is recomputed this long while its lap model / causes are missing
+
+
+def race_info(get_soft, cached, archived, read_json, write_json, season, schedule, done, results_num, race_rows=None):
     """Per finished round (archived once complete): race and sprint blocks. results_num[gd] = {car number: (tla,
-    team)} from the Jolpica classification."""
+    team)} from the Jolpica classification; race_rows[gd] = its race rows (for retirement causes). The canonical
+    laps go to history/<season>/laps/gdNN.json."""
     import os
 
     out, sessions = {}, None
@@ -152,19 +178,27 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
             continue
         path = archived("races", f"gd{gd:02d}.json")
         if os.path.exists(path):
-            out[gd] = read_json(path)
-            continue
+            rec = read_json(path)
+            race = rec.get("race") or {}
+            # first archived before OpenF1's stints or Jolpica's classification were in: try again for a few days
+            late = datetime.now(timezone.utc) - _dt(g["raceStart"]) < timedelta(days=RETRY_DAYS)
+            out[gd] = rec  # kept if the retry fails
+            if not (late and ("paceCtx" not in race or "retirements" not in race)):
+                continue
         try:
             if sessions is None:
                 sessions = _sessions(get_soft, cached, season, fresh=True)
             num2 = results_num.get(gd) or {}
-            rec = {}
+            rec, lap_rec = {}, {"gd": gd}
             for name, key in (("Race", "race"), ("Sprint", "sprint")):
                 s = _session_for(sessions, name, g["raceStart"])
                 if s:
-                    rec[key] = _race_block(get_soft, cached, s, num2)
+                    rows = (race_rows or {}).get(gd) if key == "race" else None
+                    rec[key] = _race_block(get_soft, cached, s, num2, rows, lap_rec.setdefault(key, {}).update)
             if "race" in rec:
                 write_json(path, rec, indent=1, sort_keys=True)
+                if len(lap_rec) > 1:
+                    write_json(archived("laps", f"gd{gd:02d}.json"), lap_rec, separators=(",", ":"))
                 out[gd] = rec
         except Exception as e:  # noqa: BLE001 - an extra; OpenF1 closes during live sessions
             _warn(f"OpenF1 race data for gameday {gd}", e)

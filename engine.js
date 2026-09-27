@@ -28,9 +28,19 @@
     gapCap: 4, // hand-set: a round's gap above this (%) counts as this (a problem lap, damage)
     paceShrink: 0.8, // fitted (npm run fit): share of each driver's gap to the field median that's kept
     rankSlope: 0.1, // hand-set: % per place when a round has no lap-time pace (only its finishing order)
+    // race pace per round: "median" = median clean lap (extras.lap_pace); "ctx" = the contextual lap model
+    // (laps.py: tyres, fuel, traffic, neutralised and wet laps taken out), median where it has no estimate.
+    // Review batch 3 (2026-09-27): see docs/history.md for the backtest.
+    racePace: "median",
     dnfHalfLife: Infinity, // backtested: no recency weighting of retirements (every race counts the same)
     dnfShrink: 16, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
     dnfFallback: 0.12, // hand-set: retirement rate before any race has run
+    // retirements by cause (review batch 3): "pooled" = one team rate for every cause; "causes" = the team's
+    // mechanical rate (no incident recorded, or didn't start; shrunk with dnfShrink) plus the driver's incident rate
+    // (race control named the car; shrunk with incShrink pseudo-races of the field's). raceInfo retirements
+    // (laps.py) decide the cause; rounds without them count as mechanical.
+    dnfModel: "pooled",
+    incShrink: 40,
     defaultOvertakes: 3, // hand-set: race overtake points for a driver with no races
     sprintOvertakeShare: 0.4, // hand-set prior; this season's sprints move it (shrunk: they're noisy)
     ovShrink: 12, // hand-set: pseudo-overtakes behind each driver's own overtaking skill
@@ -129,7 +139,7 @@
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
-  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number> }} RaceBlock */
+  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null }} Data */
 
@@ -858,26 +868,55 @@
     const tD = {};
     /** @type {Record<string, number>} */
     const tN = {};
+    // by cause: mechanical per team, incidents per driver
+    let gM = 0,
+      gI = 0;
+    /** @type {Record<string, number>} */
+    const tM = {};
+    /** @type {Record<string, number>} */
+    const dI = {};
+    /** @type {Record<string, number>} */
+    const dN = {};
     const dDecay = Math.pow(0.5, 1 / M.dnfHalfLife);
-    for (const r of rounds)
+    for (const r of rounds) {
+      const causes =
+        (data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race && data.raceInfo[r].race.retirements) || {};
       for (const row of data.results.race[r]) {
         const w = Math.pow(dDecay, last - r);
         gN += w;
         tN[row.team] = (tN[row.team] || 0) + w;
+        dN[row.tla] = (dN[row.tla] || 0) + w;
         if (!row.cls) {
           gD += w;
           tD[row.team] = (tD[row.team] || 0) + w;
+          if ((causes[row.tla] || {}).cause === "incident") {
+            gI += w;
+            dI[row.tla] = (dI[row.tla] || 0) + w;
+          } else {
+            gM += w;
+            tM[row.team] = (tM[row.team] || 0) + w;
+          }
         }
       }
+    }
     const gRate = gN ? gD / gN : M.dnfFallback;
-    return { tD, tN, gRate };
+    // the field's split of the fallback before any race: an eighth incidents (2026: 10 of 66)
+    const gMech = gN ? gM / gN : M.dnfFallback * 0.85,
+      gInc = gN ? gI / gN : M.dnfFallback * 0.15;
+    return { tD, tN, gRate, tM, dI, dN, gMech, gInc };
+  }
+  /** A round's race pace per driver (% off the fastest) as MODEL.racePace picks it. @param {Data} data
+   * @param {number} r @param {typeof MODEL} M @returns {Record<string, number>} */
+  function racePaceOf(data, r, M) {
+    const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
+    if (!b) return {};
+    return M.racePace === "ctx" && b.paceCtx ? { ...b.pace, ...b.paceCtx } : b.pace || {};
   }
   /** Each driver's pace observations: % off the fastest in qualifying (lap times) and race (median clean lap; else
    * finishing order), recency-weighted, for rounds driven for his current team.
    * @param {Data} data @param {Asset[]} drivers @param {number[]} rounds @param {number} last @param {number} decay
    * @param {typeof MODEL} M @param {(v: number) => number} cap @param {number} F */
   function paceObservations(data, drivers, rounds, last, decay, M, cap, F) {
-    const info = (/** @type {number} */ r) => (data.raceInfo && data.raceInfo[r]) || {};
     const raw = drivers.map((a) => {
       let qs = 0,
         qw = 0,
@@ -909,7 +948,7 @@
           qw2 += w * w;
           qObs.push([w, g]);
         }
-        const lap = info(r).race && /** @type {RaceBlock} */ (info(r).race).pace[a.tla];
+        const lap = racePaceOf(data, r, M)[a.tla];
         let rg = null;
         if (lap != null) rg = cap(lap);
         else if (race && race.cls) {
@@ -1085,7 +1124,7 @@
       .sort((a, b) => a - b);
     const last = rounds.length ? rounds[rounds.length - 1] : 0;
 
-    const { tD, tN, gRate } = reliability(data, rounds, last, M);
+    const { tD, tN, gRate, tM, dI, dN, gMech, gInc } = reliability(data, rounds, last, M);
     const cap = (/** @type {number} */ v) => Math.min(M.gapCap, Math.max(0, v));
     const raw = paceObservations(data, drivers, rounds, last, decay, M, cap, F);
     const { paceQ, paceR, slopeQ, slopeR, sdQ, sdR } = paceEstimates(
@@ -1118,7 +1157,11 @@
         rSe: sdR / Math.sqrt(nr + P),
         qMu: 0,
         rMu: 0,
-        dnf: ((tD[d.a.team] || 0) + M.dnfShrink * gRate) / (n + M.dnfShrink),
+        dnf:
+          M.dnfModel === "causes"
+            ? ((tM[d.a.team] || 0) + M.dnfShrink * gMech) / (n + M.dnfShrink) +
+              ((dI[d.a.tla] || 0) + M.incShrink * gInc) / ((dN[d.a.tla] || 0) + M.incShrink)
+            : ((tD[d.a.team] || 0) + M.dnfShrink * gRate) / (n + M.dnfShrink),
         dnfN: n + M.dnfShrink,
         ov: M.defaultOvertakes,
         ovU: 0,
@@ -1187,7 +1230,7 @@
         wo = Math.pow(offDecay, last - r);
       const rows = data.results.race[r] || [],
         ncls = rows.filter((x) => x.cls).length || F;
-      const lapPace = (data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race && data.raceInfo[r].race.pace) || {};
+      const lapPace = racePaceOf(data, r, M);
       /** @type {Record<string, [string, number][]>[]} team -> [tla, gap] for qualifying [0] and race [1] */
       const by = [{}, {}];
       for (const q of data.results.quali[r] || []) {
@@ -3011,6 +3054,18 @@
       label: "Overtake level weighted to recent rounds (half-life 6)",
       set: { "TRACK.ovHalfLife": 6 },
       why: "R1-R4 had far more overtaking than later rounds; R5-R15 CRPS -0.015 +/- 0.017",
+    },
+    {
+      id: "racectx",
+      label: "Race pace from the lap model (tyres, fuel, traffic)",
+      set: { "MODEL.racePace": "ctx" },
+      why: "review batch 3: steadier round to round (rank corr 0.85 vs 0.83); R5-R15 CRPS +0.020 +/- 0.034 (tie)",
+    },
+    {
+      id: "dnfcauses",
+      label: "Retirements by cause (team mechanical + field incidents)",
+      set: { "MODEL.dnfModel": "causes", "MODEL.incShrink": 1e6 },
+      why: "review batch 3: retirement log loss 0.4690 vs 0.4711 walk-forward R4-R15 (small)",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */

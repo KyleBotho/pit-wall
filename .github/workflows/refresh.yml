@@ -50,6 +50,13 @@ jobs:
           key: f1-cache-${{ github.run_id }}
           restore-keys: f1-cache-
       - run: python refresh.py
+      # FastF1's lap records of each finished round (history/<season>/telemetry/laps, the independent cross-check of
+      # OpenF1's laps: laps.py audit): only sessions not archived yet, paced, never while a session is live. A stop
+      # (live session, not published yet) never fails the build; the next run picks it up.
+      - name: Lap archive (FastF1)
+        timeout-minutes: 15
+        continue-on-error: true
+        run: python telemetry.py laps --max 6 || echo "::warning::telemetry.py stopped; the next run continues"
       # the build's health checks (health.py), for the health job's issue
       - id: health
         run: echo "json=$(jq -c . build/health.json)" >> "$GITHUB_OUTPUT"

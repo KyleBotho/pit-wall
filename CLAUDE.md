@@ -40,6 +40,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   and `track(known, seen, official)`: a team's season from export records where they exist, else the line-up seen
   after each race + the official points (Boost/x3/chip = the plainest combination that rebuilds the score; budget,
   bank, free transfers carried on; see "Round tracking" under Open items).
+- `laps.py` — canonical lap records (OpenF1 laps + stints + race control + weather, with context and quality
+  flags) -> `history/<season>/laps/gdNN.json`, the contextual race-pace model (`paceCtx`, MODEL.racePace "ctx") and
+  retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`.
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
   fuel/tyre/compound-corrected) gaps, plus each session's reference lap `ref` (s; the track's average speed). A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
   refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
@@ -255,10 +258,11 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
-- [ ] Independent review (`docs/reviews/2026-09-27/`), user's order 2026-09-27: batch 1 correctness and batch 2
-      evidence DONE (history). Watch from R16: the first frozen record + samples, challengers (qskew2, ovhl6) scored in
-      Model health after certification; adopt one only after 5+ rounds and a gain beyond 2 SE. Next: batch 3 research (lap/stint dataset + pace model,
-      cause-specific retirements); batch 4 the deferred items, built even if they only pay off next season
+- [ ] Independent review (`docs/reviews/2026-09-27/`), user's order 2026-09-27: batches 1 (correctness), 2 (evidence)
+      and 3 (lap data, contextual pace, retirement causes) DONE (history). Watch from R16: the first frozen record +
+      samples; challengers (qskew2, ovhl6, racectx, dnfcauses) scored in Model health after certification; adopt one
+      only after 5+ rounds and a gain beyond 2 SE; the lap records and FastF1 archive arriving on their own. Next:
+      batch 4, the deferred items, built even if they only pay off next season
       (weather paths, race-wide pit bonuses, sampled price paths, persistent car strength, random streams/config,
       Web Worker, extra data collection: forecast vintages, Pirelli compounds, FIA documents, Kalshi quote history).
 

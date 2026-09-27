@@ -471,3 +471,106 @@ class PageBuild(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LapModel(unittest.TestCase):
+    """laps.py: canonical lap records, the contextual race pace, retirement causes (review batch 3)."""
+
+    T0 = 1_790_000_000  # epoch seconds, a race start
+
+    def iso(self, s):
+        from datetime import datetime, timezone
+
+        return datetime.fromtimestamp(self.T0 + s, timezone.utc).isoformat()
+
+    def test_neutral_windows_close_on_any_end_signal_or_are_capped(self):
+        import laps
+
+        rc = [
+            {"date": self.iso(100), "message": "SAFETY CAR DEPLOYED"},
+            {"date": self.iso(400), "message": "SAFETY CAR IN THIS LAP"},
+            {"date": self.iso(1000), "message": "VSC DEPLOYED"},
+            {"date": self.iso(1100), "message": "VSC ENDING"},
+            {"date": self.iso(2000), "message": "SAFETY CAR DEPLOYED"},  # never ends in the messages (Monza R13)
+        ]
+        w = [(a - self.T0, b - self.T0) for a, b in laps.neutral_windows(rc, 90)]
+        self.assertEqual(w, [(100, 400 + 135), (1000, 1100 + 45), (2000, 2000 + 6 * 90)])
+
+    def session(self, pace, n_laps=30, vary=False):
+        """Synthetic race: lap time = 90 x (1 + pace %) + tyre wear - fuel burn, one stop. vary: each car stops
+        on its own lap and half start on hards (what makes fuel and tyres separable in a real race)."""
+        num2 = {k + 1: t for k, t in enumerate(pace)}
+        laps_, stints = [], []
+        for num, t in num2.items():
+            stop = n_laps // 2 + (num % 7 - 3 if vary else 0)
+            first, second = ("HARD", "MEDIUM") if vary and num % 2 else ("MEDIUM", "HARD")
+            wear = {"MEDIUM": 0.08, "HARD": 0.04}
+            clock = self.T0 + num * 0.7  # cars cross the line in order
+            for n in range(1, n_laps + 1):
+                cmp_, start = (first, 1) if n <= stop else (second, stop + 1)
+                dur = 90 * (1 + pace[t] / 100) + wear[cmp_] * (n - start) - 2.0 * n / n_laps + (5 if n == 1 else 0)
+                laps_.append(
+                    {
+                        "driver_number": num,
+                        "lap_number": n,
+                        "date_start": self.iso(clock - self.T0),
+                        "lap_duration": round(dur, 3),
+                        "is_pit_out_lap": n == stop + 1,
+                    }
+                )
+                clock += dur
+            stints += [
+                {"driver_number": num, "stint_number": 1, "lap_start": 1, "lap_end": stop, "compound": first,
+                 "tyre_age_at_start": 0},
+                {"driver_number": num, "stint_number": 2, "lap_start": stop + 1, "lap_end": n_laps,
+                 "compound": second, "tyre_age_at_start": 0},
+            ]  # fmt: skip
+        return laps_, stints, num2
+
+    def test_canonical_records_carry_the_context(self):
+        import laps
+
+        l_, st, num2 = self.session({"AAA": 0.0, "BBB": 0.5})
+        c = laps.canonical(l_, st, [], [{"date": self.iso(500), "rainfall": 1}], num2)
+        ix = {k: i for i, k in enumerate(c["cols"])}
+        a = c["laps"]["AAA"]
+        self.assertEqual([r[ix["cmp"]] for r in a[14:17]], ["M", "H", "H"])
+        self.assertEqual([r[ix["pitIn"]] for r in a[14:16]], [1, 0])
+        self.assertEqual(a[15][ix["pitOut"]], 1)
+        self.assertEqual(a[16][ix["age"]], 1)
+        self.assertEqual(sum(r[ix["wet"]] for r in a), 1)  # the lap running at 500 s
+        self.assertAlmostEqual(c["laps"]["BBB"][0][ix["gap"]], 0.7, places=2)  # BBB crosses 0.7 s after AAA
+        self.assertEqual(c["quality"]["compound"], 1.0)
+
+    def test_pace_model_recovers_the_cars_through_tyres_and_fuel(self):
+        import laps
+
+        pace = {"A%02d" % k: 0.15 * k for k in range(8)}
+        l_, st, num2 = self.session(pace, vary=True)
+        fit = laps.fit_pace(laps.canonical(l_, st, [], [], num2))
+        for t, p in pace.items():
+            self.assertAlmostEqual(fit["pace"][t], p, delta=0.02)
+        self.assertLess(fit["coef"]["fuelFullRace"], -1.5)  # lighter car, faster laps
+
+    def test_retirement_causes_by_time_of_the_incident_message(self):
+        import laps
+
+        rows = [
+            {"tla": "WIN", "cls": True, "laps": 50},
+            {"tla": "CRA", "cls": False, "laps": 20},
+            {"tla": "ENG", "cls": False, "laps": 30},
+            {"tla": "DNS", "cls": False, "laps": 0, "dns": True},
+        ]
+        canon = {
+            "cols": laps.COLS,
+            "t0": self.iso(0),
+            "laps": {"CRA": [[20, 1800.0, 90.0] + [None] * 12], "ENG": [[30, 2700.0, 90.0] + [None] * 12]},
+        }
+        rc = [
+            # noted two minutes after CRA stopped, with the leader already laps further on
+            {"date": self.iso(2010), "lap_number": 24, "message": "INCIDENT INVOLVING CARS 7 (CRA) AND 9 (XXX) NOTED"},
+            {"date": self.iso(2790), "lap_number": 31, "message": "INCIDENT INVOLVING CAR 8 (ENG) - TRACK LIMITS"},
+        ]
+        got = laps.retirements(rows, rc, {"CRA": 7, "ENG": 8, "DNS": 5}, canon)
+        self.assertEqual({t: v["cause"] for t, v in got.items()}, {"CRA": "incident", "ENG": "other", "DNS": "dns"})
+        self.assertEqual(got["CRA"]["share"], 0.4)

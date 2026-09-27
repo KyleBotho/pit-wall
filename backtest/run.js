@@ -125,8 +125,29 @@ function retirements() {
       }
       out.push({ "half-life": hl === 1000 ? "none" : hl, shrink: k, "log loss": +(loss / n).toFixed(4) });
     }
+  // review batch 3: by cause (team mechanical + driver incidents), no recency
+  for (const k of [8, 16, 32])
+    for (const ki of [10, 40, 1e6]) {
+      let loss = 0,
+        n = 0;
+      for (const r of from) {
+        const m = E.buildModel(asOf(r), { model: { dnfModel: "causes", dnfShrink: k, incShrink: ki } });
+        for (const row of D.results.race[r] || []) {
+          const d = m.drivers.find((x) => x.tla === row.tla);
+          if (!d) continue;
+          const p = Math.min(0.99, Math.max(0.01, d.dnf));
+          loss -= row.cls ? Math.log(1 - p) : Math.log(p);
+          n++;
+        }
+      }
+      out.push({
+        "half-life": `causes, incidents ${ki >= 1e6 ? "field only" : `shrink ${ki}`}`,
+        shrink: k,
+        "log loss": +(loss / n).toFixed(4),
+      });
+    }
   out.sort((a, b) => a["log loss"] - b["log loss"]);
-  table(out.slice(0, 6));
+  table(out.slice(0, 10));
   console.log(
     `   in use: half-life ${Number.isFinite(E.MODEL.dnfHalfLife) ? E.MODEL.dnfHalfLife : "none"}, shrink ${E.MODEL.dnfShrink}`,
   );
@@ -443,6 +464,8 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // review batch 3 (2026-09-27): race pace from the contextual lap model (laps.py) instead of the median lap
+  racepace: [["race pace from the lap model (tyres, fuel, traffic)", [[E.MODEL, "racePace", "ctx"]]]],
   // review batch 2 (2026-09-27): the season's overtake level weighted towards recent rounds (TRACK.ovHalfLife)
   ovrecent: [
     ["overtake level, half-life 3 rounds", [[E.TRACK, "ovHalfLife", 3]]],
