@@ -260,6 +260,10 @@ class FiaTech(unittest.TestCase):
         self.assertEqual((row["doc"], row["title"]), (15, "Doc 15 - Car Presentation Submissions"))
         self.assertEqual(row["event"], "2026_monaco_grand_prix")
         self.assertEqual(collect.tech_kind(row["title"]), "upgrades")
+        # the parts list, not the stewards' parc-fermé decisions
+        self.assertEqual(collect.tech_kind("Doc 57 - Parts and Parameters replaced during Parc Ferme"), "parcFerme")
+        self.assertIsNone(collect.tech_kind("Doc 50 - Infringement - Car 11 - Changes made under Parc Ferme"))
+        self.assertIsNone(collect.tech_kind("Doc 40 - Parc Ferme Issues"))
 
     def test_power_unit_tables(self):
         import collect
@@ -268,19 +272,22 @@ class FiaTech(unittest.TestCase):
             "24 - 26 September 2026\nN° Car Driver ICE TC EXH MGU\n-K ES PU-\nCE\n"
             "14 Aston Martin Aramco Honda Fernando Alonso 4 4 2 5 6 6 8 \n"
             "27 Audi Nico Hülkenber g 4 4 4 3 1 1 5 \n"
+            "30 Red Bull Racing RB Ford Liam Lawson  6  6  6  4 4 4 7 \n"  # some PDFs space columns unevenly
         )
         self.assertEqual(
             collect.parse_pu_used(used)[14], {"ICE": 4, "TC": 4, "EXH": 2, "MGU-K": 5, "ES": 6, "PU-CE": 6, "PU-ANC": 8}
         )
-        self.assertEqual(len(collect.parse_pu_used(used)), 2)
+        self.assertEqual(len(collect.parse_pu_used(used)), 3)
         new = (
             "start the fifteenth Competition of the 2026 Formula One World \nChampionship with a new internal "
             "combustion engine (ICE): \n \nNumber Car Driver Previously used ICE \n41 Racing Bulls RB Ford Arvid "
             "Lindblad 3 \n14 Aston Martin Aramco Honda Fernando Alonso 4 \n \nThe internal combustion engine used by "
             "Fernando Alonso is the fifth (5th) of the four (4) new \n2026 Formula One Sporting Regulations. \n"
             "Championship with a new energy store unit (ES): \n81 McLaren Mercedes Oscar Piastri 2 \n"
+            "The following driver is using a new MGU-Kinetic (MGU-K)  for the remainder of the \nCompetition: \n"
+            "18 Aston Martin Aramco Honda Lance Stroll 6 \n"
         )
-        self.assertEqual(collect.parse_pu_new(new), {41: {"ICE": 3}, 14: {"ICE": 4}, 81: {"ES": 2}})
+        self.assertEqual(collect.parse_pu_new(new), {41: {"ICE": 3}, 14: {"ICE": 4}, 81: {"ES": 2}, 18: {"MGU-K": 6}})
 
     def test_upgrades_count_wrapped_items_and_teams_with_none(self):
         import collect
@@ -300,6 +307,8 @@ class FiaTech(unittest.TestCase):
                 "Someone New": {"n": 1, "reasons": {"Circuit specific": 1}},
             },
         )
+        # a header with only part of the name ("HAAS" for "Haas F1 Team")
+        self.assertEqual(collect.team_code("HAAS", {"Haas F1 Team": {"code": "HAA"}}), "HAA")
 
     def test_parc_ferme_parts_per_car_across_a_page_break(self):
         import collect

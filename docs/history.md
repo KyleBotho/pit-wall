@@ -5,6 +5,23 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, FIA technical documents (deferred "Data" item; user: "get cracking on the open items"): collect.py
+      `fia_tech` reads each event's PU elements used / new, Car Presentation Submissions, the parc-fermé parts list
+      and the Pirelli preview once each (6 PDFs a run around race weekends), keeps the text (`fia/text/`, 1.2 MB for
+      R1-R15) and a parsed `tech` summary. Formats seen: PU rows with uneven spacing; new elements worded "start
+      ... with a new X (ABBR):" or "is using a new X (ABBR) for the remainder"; upgrade items numbered 1..n but
+      wrapped mid-line (Audi Baku 14 items); team headers like "HAAS" (first-word match); no-break spaces in the
+      parc-fermé list; Belgium and Hungary published no parts list; the stewards' "Parc Ferme Issues" /
+      "Changes made under Parc Ferme" decisions are not the list. Past events: the FIA's per-event pages
+      (`.../season/season-2026-2072/event/<name>`; "Barcelona Grand Prix" answers 500, the FIA's name is
+      "Barcelona-Catalunya Grand Prix", slug `2026_barcelona-catalunya_grand_prix`). Past event pages wrap titles in
+      nested divs (parse_fia strips tags now). Check: all 22 drivers' PU counts at R2-R15, all teams mapped.
+- [x] 2026-09-27, calibration by group (deferred "Evaluation" item): walk.js `groups` / `roundTags` (tags after the
+      fact from raceInfo + schedule, never model inputs), section 6's "by group" table, accuracy.json
+      `season.groups` + `frozenGroups`, Model health's "By group" table. Headline unchanged (CRPS 8.674, MAE 11.86).
+      R5-R15: drivers CRPS 7.61 / constructors 10.80; sprint 8.49 (3 rounds) / normal 8.74; wet 7.93 (1) / dry 8.75;
+      safety car 9.47, MAE 13.5, bias -0.6, 74% / 43% covered vs no safety car 8.01, 10.5, +2.6, 86% / 61%: the SC
+      spread is too narrow and no-SC races run high. Not tuned on R5-R15 (third review); watch the frozen rounds.
 - [x] 2026-09-27, challenger `odds8` (user, after the pros and cons of more market-fit steps): SIM.oddsIters (4) and
       SIM.oddsN (2,500) are settings now; odds8 = 8 steps on 5,000 sims, frozen at every lock and scored in Model
       health. Checked with R13-R15's books and 24 steps: the residual falls 0.55 -> 0.42 over the shipped 4 steps,

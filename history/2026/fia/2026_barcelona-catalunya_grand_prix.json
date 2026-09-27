@@ -1,0 +1,846 @@
+{
+ "event": "2026_barcelona-catalunya_grand_prix",
+ "docs": [
+  {
+   "doc": 1,
+   "title": "Doc 1 - Competition Visa",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_competition_visa.pdf",
+   "published": "2026-06-10T13:17+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 2,
+   "title": "Doc 2 - Timetable V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_timetable_v2.pdf",
+   "published": "2026-06-10T13:19+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 3,
+   "title": "Doc 3 - Competition Notes - Pirelli Preview",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_competition_notes_-_pirelli_preview.pdf",
+   "published": "2026-06-10T15:07+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "tyres"
+  },
+  {
+   "doc": 4,
+   "title": "Doc 4 - Post-Race Checks on Car 27, Monaco GP 2026",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_post-race_checks_on_car_27_monaco_gp_2026.pdf",
+   "published": "2026-06-10T15:37+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 5,
+   "title": "Doc 5 - Power Unit Information",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_power_unit_information.pdf",
+   "published": "2026-06-11T14:32+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 6,
+   "title": "Doc 6 - Race Director's Competition Notes",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_race_directors_competition_notes.pdf",
+   "published": "2026-06-11T15:42+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 7,
+   "title": "Doc 7 - Car Display Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_car_display_procedure.pdf",
+   "published": "2026-06-11T15:48+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 8,
+   "title": "Doc 8 - Competition Notes - Circuit Map, Pit Lane Drawing and Emergency Exits Map",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_and_emergency_exits_map.pdf",
+   "published": "2026-06-11T15:59+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - Race Director's Competition Notes V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_race_directors_competition_notes_v2.pdf",
+   "published": "2026-06-11T16:12+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - Timetable V3",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_timetable_v3.pdf",
+   "published": "2026-06-11T16:23+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 11,
+   "title": "Doc 11 - PU elements used per driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-06-12T09:47+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_self_scrutineering.pdf",
+   "published": "2026-06-12T08:40+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_entry_list.pdf",
+   "published": "2026-06-12T08:56+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_car_presentation_submissions.pdf",
+   "published": "2026-06-12T09:00+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 15,
+   "title": "Doc 15 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-06-12T12:21+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_free_practice_1_classification.pdf",
+   "published": "2026-06-12T12:47+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Infringement - Free Practice 1 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_free_practice_1_deleted_lap_times.pdf",
+   "published": "2026-06-12T13:53+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 18,
+   "title": "Doc 18 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_new_pu_elements_for_this_competition_0.pdf",
+   "published": "2026-06-12T15:02+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 19,
+   "title": "Doc 19 - Infringement - Car 14 - Pit exit incident",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_14_-_pit_exit_incident.pdf",
+   "published": "2026-06-12T16:02+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 20,
+   "title": "Doc 20 - Infringement - Car 77 - Pit Lane Speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_77_-_pit_lane_speeding.pdf",
+   "published": "2026-06-12T16:11+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 21,
+   "title": "Doc 21 - Infringement - Car 11 - Pit Lane Speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_11_-_pit_lane_speeding.pdf",
+   "published": "2026-06-12T16:26+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 22,
+   "title": "Doc 22 - Free Practice 2 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_free_practice_2_classification.pdf",
+   "published": "2026-06-12T16:20+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 23,
+   "title": "Doc 23 - Infringement - Free Practice 2 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_free_practice_2_deleted_lap_times.pdf",
+   "published": "2026-06-12T16:23+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 24,
+   "title": "Doc 24 - Race Director Notes - SC2 - SC1 Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_race_director_notes_-_sc2_-_sc1_times.pdf",
+   "published": "2026-06-12T16:28+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 25,
+   "title": "Doc 25 - Timetable V4",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_timetable_v4.pdf",
+   "published": "2026-06-12T16:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 26,
+   "title": "Doc 26 - FP1 and FP2 Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_fp1_and_fp2_scrutineering.pdf",
+   "published": "2026-06-12T17:22+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 27,
+   "title": "Doc 27 - Competition Notes - Pirelli Preview V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_competition_notes_-_pirelli_preview_v2.pdf",
+   "published": "2026-06-13T06:42+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "tyres"
+  },
+  {
+   "doc": 28,
+   "title": "Doc 28 - Curfew",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_curfew.pdf",
+   "published": "2026-06-13T07:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 30,
+   "title": "Doc 30 - Post-Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_post-qualifying_procedure.pdf",
+   "published": "2026-06-13T08:21+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 31,
+   "title": "Doc 31 - Power Unit Information V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_power_unit_information_v2.pdf",
+   "published": "2026-06-13T09:12+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 32,
+   "title": "Doc 32 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_new_pu_elements_for_this_competition_1.pdf",
+   "published": "2026-06-13T10:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 33,
+   "title": "Doc 33 - Infringement - Car 18 - Pit Lane Speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_18_-_pit_lane_speeding.pdf",
+   "published": "2026-06-13T11:41+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 34,
+   "title": "Doc 34 - Summons - Car 12 - Alleged driving erratically",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_12_-_alleged_driving_erratically.pdf",
+   "published": "2026-06-13T11:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 35,
+   "title": "Doc 35 - Summons - Car 18 - Incident with Car 12 in Turn 2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_18_-_incident_with_car_12_in_turn_2.pdf",
+   "published": "2026-06-13T11:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 36,
+   "title": "Doc 36 - Summons - Car 16 - Alleged incident with Car 27 at turn 5",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_16_-_alleged_incident_with_car_27_at_turn_5.pdf",
+   "published": "2026-06-13T11:52+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 37,
+   "title": "Doc 37 - Free Practice 3 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_free_practice_3_classification.pdf",
+   "published": "2026-06-13T11:55+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 38,
+   "title": "Doc 38 - Infringement - Free Practice 3 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_free_practice_3_deleted_lap_times.pdf",
+   "published": "2026-06-13T12:18+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 39,
+   "title": "Doc 39 - Infringement - Car 12 - Driving erratically",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_12_-_driving_erratically.pdf",
+   "published": "2026-06-13T12:36+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 40,
+   "title": "Doc 40 - Infringement - Car 16 - Impeding of Car 27",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_16_-_impeding_of_car_27.pdf",
+   "published": "2026-06-13T13:38+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 41,
+   "title": "Doc 41 - Provisional Qualifying Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_provisional_qualifying_classification.pdf",
+   "published": "2026-06-13T15:25+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 42,
+   "title": "Doc 42 - Infringement - Qualifying Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_qualifying_deleted_lap_times.pdf",
+   "published": "2026-06-13T15:31+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 43,
+   "title": "Doc 43 - Decision - Qualifying SC2-SC1 Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_decision_-_qualifying_sc2-sc1_times.pdf",
+   "published": "2026-06-13T15:35+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 44,
+   "title": "Doc 44 - P3 and Qualifying Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_p3_and_qualifying_scrutineering.pdf",
+   "published": "2026-06-13T17:09+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Final Qualifying Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_final_qualifying_classification.pdf",
+   "published": "2026-06-13T17:22+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 47,
+   "title": "Doc 47 - Provisional Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_provisional_starting_grid.pdf",
+   "published": "2026-06-13T17:35+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 48,
+   "title": "Doc 48 - Pre-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_pre-race_procedure.pdf",
+   "published": "2026-06-14T08:17+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 49,
+   "title": "Doc 49 - Post-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_post-race_procedure.pdf",
+   "published": "2026-06-14T08:18+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 50,
+   "title": "Doc 50 - Parc Ferm\u00e9 Issues",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_parc_ferme_issues.pdf",
+   "published": "2026-06-14T09:17+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 51,
+   "title": "Doc 51 - Race Director's Competition Notes V3",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_race_directors_competition_notes_v3.pdf",
+   "published": "2026-06-14T09:44+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 52,
+   "title": "Doc 52 - Infringement - Car 14 - PU elements and changes used during Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_14_-_pu_elements_and_changes_used_during_parc_ferme.pdf",
+   "published": "2026-06-14T10:56+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 53,
+   "title": "Doc 53 - Parts and Parameters been replaced and or changed during Parc Ferm\u00e9",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_parts_and_parameters_been_replaced_and_or_changed_during_parc_ferme.pdf",
+   "published": "2026-06-14T11:52+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "parcFerme"
+  },
+  {
+   "doc": 54,
+   "title": "Doc 54 - Final Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_final_starting_grid.pdf",
+   "published": "2026-06-14T12:00+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 55,
+   "title": "Doc 55 - Summons - Car 23 - Start Procedure Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_23_-_start_procedure_infringement_.pdf",
+   "published": "2026-06-14T14:45+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 56,
+   "title": "Doc 56 - Summons - Car 55 - Start Procedure Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_55_-_start_procedure_infringement_.pdf",
+   "published": "2026-06-14T14:46+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 57,
+   "title": "Doc 57 - Decision - Car 27 - Alleged leaving the track and gaining an advantage",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_decision_-_car_27_-_alleged_leaving_the_track_and_gaining_an_advantage.pdf",
+   "published": "2026-06-14T15:13+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 58,
+   "title": "Doc 58 - Decision - Car 41 - Alleged leaving the track and gaining an advantage",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_decision_-_car_41_-_alleged_leaving_the_track_and_gaining_an_advantage.pdf",
+   "published": "2026-06-14T15:14+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 59,
+   "title": "Doc 59 - Summons - Car 43 - Alleged Yellow Flag Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_summons_-_car_43_-_alleged_yellow_flag_infringement.pdf",
+   "published": "2026-06-14T15:14+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 60,
+   "title": "Doc 60 - Provisional Race Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_provisional_race_classification.pdf",
+   "published": "2026-06-14T14:56+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 61,
+   "title": "Doc 61 - Infringement - Race Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_race_deleted_lap_times.pdf",
+   "published": "2026-06-14T16:15+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 62,
+   "title": "Doc 62 - Infringement - Car 43 - Failing to slow for yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_43_-_failing_to_slow_for_yellow_flags.pdf",
+   "published": "2026-06-14T17:06+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 63,
+   "title": "Doc 63 - Infringement - Car 23 - Start Procedure Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_23_-_start_procedure_infringement.pdf",
+   "published": "2026-06-14T17:07+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 64,
+   "title": "Doc 64 - Infringement - Car 55 - Start Procedure Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_55_-_start_procedure_infringement.pdf",
+   "published": "2026-06-14T17:08+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 65,
+   "title": "Doc 65 - Race Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_race_scrutineering.pdf",
+   "published": "2026-06-14T17:08+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 66,
+   "title": "Doc 66 - Infringement - Car 12 - Leaving the track without a justifiable reason",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_12_-_leaving_the_track_without_a_justifiable_reason.pdf",
+   "published": "2026-06-14T17:15+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 67,
+   "title": "Doc 67 - Infringement - Car 12 - Leaving the track without a justifiable reason multiple times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_12_-_leaving_the_track_without_a_justifiable_reason_multiple_times.pdf",
+   "published": "2026-06-14T17:22+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 68,
+   "title": "Doc 68 - Final Race Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_final_race_classification.pdf",
+   "published": "2026-06-14T17:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 70,
+   "title": "Doc 70 - Championship Points",
+   "url": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_championship_points.pdf",
+   "published": "2026-06-14T18:10+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  }
+ ],
+ "tech": {
+  "tyres": {
+   "compounds": [
+    "C2",
+    "C3",
+    "C4"
+   ],
+   "q3": "C4",
+   "race": [
+    "C2",
+    "C3"
+   ]
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "MER": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "RED": {
+    "n": 2,
+    "reasons": {}
+   },
+   "FER": {
+    "n": 8,
+    "reasons": {
+     "Performance": 3
+    }
+   },
+   "WIL": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "VRB": {
+    "n": 2,
+    "reasons": {
+     "Circuit specific": 1,
+     "Performance": 1
+    }
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "AUD": {
+    "n": 0,
+    "reasons": {}
+   },
+   "ALP": {
+    "n": 0,
+    "reasons": {}
+   },
+   "CAD": {
+    "n": 2,
+    "reasons": {
+     "Performance": 2
+    }
+   }
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 2
+   },
+   "1": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "63": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 4
+   },
+   "12": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "3": {
+    "ICE": 1,
+    "TC": 1,
+    "EXH": 1,
+    "MGU-K": 2,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 2
+   },
+   "6": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 3
+   },
+   "16": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 2
+   },
+   "44": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "23": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "55": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "41": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 2
+   },
+   "30": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 3
+   },
+   "18": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "14": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "31": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 1,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "87": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 2
+   },
+   "27": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 2
+   },
+   "5": {
+    "ICE": 1,
+    "TC": 1,
+    "EXH": 1,
+    "MGU-K": 3,
+    "ES": 1,
+    "PU-CE": 2,
+    "PU-ANC": 2
+   },
+   "10": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 2
+   },
+   "43": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 2
+   },
+   "11": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 3
+   },
+   "77": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 1,
+    "PU-CE": 2,
+    "PU-ANC": 2
+   }
+  },
+  "puNew": {
+   "3": {
+    "ICE": 1,
+    "TC": 1,
+    "EXH": 1,
+    "PU-ANC": 2
+   },
+   "27": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "PU-ANC": 2
+   },
+   "5": {
+    "ICE": 1,
+    "TC": 1,
+    "EXH": 1,
+    "PU-ANC": 2
+   },
+   "31": {
+    "ES": 1
+   },
+   "11": {
+    "ES": 1,
+    "PU-CE": 1
+   },
+   "77": {
+    "ES": 1
+   },
+   "87": {
+    "PU-ANC": 2
+   },
+   "23": {
+    "ICE": 2,
+    "TC": 2,
+    "PU-ANC": 3,
+    "ES": 2,
+    "PU-CE": 2
+   }
+  },
+  "parcFerme": {
+   "81": [
+    "LHS and RHS rear brake duct lower winglet"
+   ],
+   "1": [
+    "RHS rear brake duct lower winglet"
+   ],
+   "16": [
+    "Front wing/nose assembly",
+    "Nose chassis pins",
+    "Floor assembly",
+    "LHS and RHS rear view mirror assemblies",
+    "Pitot sensor",
+    "LHS and RHS front corner suspension assembly",
+    "Front mono assembly",
+    "Front lateral dampers",
+    "Front and rear brake friction material",
+    "Power steering assembly",
+    "Steering column",
+    "Pedal box assembly",
+    "Seat belts",
+    "Front chassis harness",
+    "LHS and RHS front HIU units",
+    "Parameter changes associated with the listed parts replacement"
+   ],
+   "55": [
+    "RHS front outboard brake duct",
+    "RHS front brake scoop exit duct"
+   ],
+   "41": [
+    "LHS rear wheel nut retention device"
+   ],
+   "27": [
+    "Static clutch seal",
+    "RHS rear brake duct deflector",
+    "Gearbox hydraulic control manifold",
+    "Parameter changes associated with the gearbox control manifold replacement"
+   ],
+   "5": [
+    "Static clutch seal"
+   ],
+   "11": [
+    "Driver\u2019s leg padding"
+   ],
+   "77": [
+    "RHS front brake temperature sensor",
+    "ICE oil inlet and oil outlet pipes"
+   ]
+  }
+ }
+}

@@ -1,0 +1,173 @@
+2026 BELGIAN GRAND PRIX
+17 - 19 July 2026
+The FIA Formula 1 Race Director
+From The FIA Formula 1 Race Director
+To All Teams, All Officials
+Document 2
+Date 15 July 2026
+Time 20:05
+Title Competition Notes - Pirelli Preview
+Description Pirelli Preview
+Enclosed 26R10SPA Preview - Issue A.pdf
+Rui Marques
+
+Pstartf:
+Pstartr:
+T:
+Teams are kindly reminded that the following will be subject to FIA checks during the event:
+•  Starting pressures
+•  Cold pressures (according to the cold pressure cooling curves)
+•  Re-heat pressures
+•  EOS Camber
+•  Maximum tyre temperatures and times in blankets
+•  Tyre swapping
+• Not permitted to switch tyres from their originally allocated position.
+• Do not subject tyres to large deformation or heavy impact.
+• Do not leave fitted tyres exposed at an air temperature lower than 10°C and/or any excessive UV emission.
+• Revised prescriptions could be issued during the race weekend in accordance with FIA-F1-DOC-062.
+• Cut-off time for fitting tyres at an event on sunday morning: 4 hours prior to the race start
+• Heating time temperature limits apply to the actual tyre surface temperature measured with the IR gun as detailed in the FIA-F1-DOC-062.
+• BLANKET HEATING TIME for each temperature range to be counted from the moment the blanket control unit is set to reach its targeted temperature within 
+its correspondent interval
+• Cold pressure cooling curve temperature limits apply to the average of 5 TPMS spots as detailed in FIA-F1-DOC-062.
+Maximum heating times and temperatures (tread & sidewall)
+Grand Prix of Belgium   17/07-19/07/2026  (26R10SPA)
+In agreement with the FIA and in accordance with Article B6.1.3 a) of the F1 Sporting Regulations, this document contains 
+the prescriptions for the operation of tyres during the following event.
+Issue ADocument version 5
+Cold Pressure Cooling Curve
+Minimum starting pressure on the 
+front axle [psi]
+Minimum starting pressure on the 
+rear axle [psi]
+Tyre temperature [°C]
+Pressures & camber
+Prear = (T - 70) ∙ 0.133+ Pstartr
+Pfront = (T - 70) ∙ 0.133 + Pstartf
+FL FR RL RR
+B1W B2W B3W B4W
+C1Y C2Y C3Y C4Y
+D1R D2R D3R D4R
+ME1 ME2 ME3 ME4
+WE1 WE2 WE3 WE4
+Compound
+C3
+C2
+C4
+Intermediate
+Wet
+Q3 tyre
+C4
+Mandatory race tyres
+C2
+C3
+10
+12
+14
+16
+18
+20
+22
+24
+26
+28
+30
+0 5 10 15 20 25 30 35 40 45 50 55 60 65 70
+Pressure [psi]
+Temperature [°C]
+Front pressure
+Rear pressure
+max. 2h
+• Temperatures refer to tyre tread and side wall temperatures, not blanket or controller set-
+point temperatures.
+• Tyres may only be heated prior to the session in which they are intended to be used.
+• The temperatures apply at all times during the event.
+max. 2h
+max. 2h
+Temperature  
+Slicks
+Intermediate
+Wet
+0°C 70°C40°C
+Compounds 
+Prescriptions
+Tyre Notes
+General Notes
+Circuit Layout
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Front 28.0 psi ≥28.5 psi -2.75° 29.5 psi ≥30.0 psi -3° 27.5 psi ≥30.0 psi -3°
+Rear 28.0 psi ≥28.5 psi -1.5° 27.5 psi ≥28.0 psi -2° 25.0 psi ≥28.0 psi -2°
+Intermediates WetsSlicks
+FL FR RL RR
+B1W B2W B3W B4W
+C1Y C2Y C3Y C4Y
+D1R D2R D3R D4R
+ME1 ME2 ME3 ME4
+WE1 WE2 WE3 WE4
+Compound
+C3
+C2
+C4
+Intermediate
+Wet
+Q3 tyre
+C4
+Mandatory race tyres
+C2
+C3
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Minimum 
+starting 
+pressure
+Expected 
+stabilized 
+running 
+pressure
+Camber 
+limit
+Front 28.0 psi ≥28.5 psi -2.75° 29.5 psi ≥30.0 psi -3° 27.5 psi ≥30.0 psi -3°
+Rear 28.0 psi ≥28.5 psi -1.5° 27.5 psi ≥28.0 psi -2° 25.0 psi ≥28.0 psi -2°
+Intermediates WetsSlicks

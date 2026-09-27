@@ -308,7 +308,7 @@ TECH = {
     "puUsed": re.compile(r"PU elements used per driver", re.I),
     "puNew": re.compile(r"New PU elements", re.I),
     "upgrades": re.compile(r"Car Presentation Submissions", re.I),
-    "parcFerme": re.compile(r"Parc Ferm", re.I),
+    "parcFerme": re.compile(r"^(?!.*Infringement).*(?:Parts|replaced).*Parc Ferm", re.I),
     "tyres": re.compile(r"Pirelli Preview", re.I),
 }
 PU_ELEMENTS = ["ICE", "TC", "EXH", "MGU-K", "ES", "PU-CE", "PU-ANC"]  # the "used up to now" table's columns
@@ -322,7 +322,7 @@ def parse_pu_used(text):
     """ "PU elements used per driver up to now" -> {car number: {element: count}} (the season so far)."""
     out = {}
     for line in text.splitlines():
-        m = re.match(r"\s*(\d{1,2})\s+\D.*?((?:\s\d+){7})\s*$", line)
+        m = re.match(r"\s*(\d{1,2})\s+\D.*?((?:\s+\d+){7})\s*$", line)
         if m:
             out[int(m.group(1))] = dict(zip(PU_ELEMENTS, (int(n) for n in m.group(2).split()), strict=True))
     return out
@@ -331,7 +331,9 @@ def parse_pu_used(text):
 def parse_pu_new(text):
     """ "New PU elements for this Competition" -> {car number: {element: how many of it the car had used before}}."""
     out = {}
-    parts = re.split(r"with an? new [^()]+?\(([A-Z][A-Z\-]*)\)\s*:", text)
+    # "... start the Competition with a new turbocharger (TC):" / "... is using a new internal combustion engine
+    # (ICE) for the remainder of the Competition:"; the compliance lines say "(4) new", never "a new"
+    parts = re.split(r"\ban? new [^()]{3,60}?\(([A-Z][A-Z\-]*)\)", text)
     for el, body in zip(parts[1::2], parts[2::2], strict=True):
         for line in body.splitlines():
             m = re.match(r"\s*(\d{1,2})\s+\D.*\s(\d+)\s*$", line)
@@ -343,7 +345,9 @@ def parse_pu_new(text):
 def team_code(name, teams):
     """A team's code from any of its names ("Oracle Red Bull Racing" -> RED): the longest config name inside it."""
     low = (name or "").lower()
-    hits = [k for k in teams if not k.startswith("_") and k.lower() in low]
+    keys = [k for k in teams if not k.startswith("_")]
+    # the full name inside it, else its first word alone ("HAAS" for "Haas F1 Team")
+    hits = [k for k in keys if k.lower() in low] or [k for k in keys if re.search(rf"\b{k.split()[0].lower()}\b", low)]
     return teams[max(hits, key=len)]["code"] if hits else None
 
 
@@ -412,10 +416,11 @@ def tech_summary(kind, text, teams):
     return parse_tyres(text)
 
 
-def fia_tech(archived, read_json, write_json, read_bytes, teams, most=6):
+def fia_tech(archived, read_json, write_json, read_bytes, teams, most=6, reparse=False):
     """Every archived event's technical documents not read yet (at most `most` PDFs a run, oldest event first): the
     text kept, `read` set on the document, and the event's `tech` rebuilt from all its texts (the latest document
-    of a kind wins; new PU elements add up over the weekend). Returns how many were read."""
+    of a kind wins; new PU elements add up over the weekend). `reparse` rebuilds every event's `tech` (after a parser
+    change). Returns how many were read."""
     import glob
     import os
 
@@ -423,9 +428,18 @@ def fia_tech(archived, read_json, write_json, read_bytes, teams, most=6):
     for path in sorted(glob.glob(archived("fia", "*.json"))):
         rec = read_json(path)
         slug = rec.get("event") or os.path.basename(path)[:-5]
-        changed = False
+        changed = reparse
         for d in rec["docs"]:
             kind = tech_kind(d.get("title"))
+            if d.get("read") and d["read"] != kind:  # TECH changed: relabel, or drop what it no longer covers
+                if kind:
+                    d["read"] = kind
+                else:
+                    del d["read"]
+                    txt = archived("fia", "text", slug, os.path.basename(d["url"])[:-4] + ".txt")
+                    if os.path.exists(txt):
+                        os.remove(txt)
+                changed = True
             if not kind or d.get("read"):
                 continue
             if fetched >= most:

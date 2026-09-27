@@ -1,0 +1,779 @@
+{
+ "event": "2026_belgian_grand_prix",
+ "docs": [
+  {
+   "doc": 1,
+   "title": "Doc 1 - Competition Visa",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_competition_visa.pdf",
+   "published": "2026-07-15T14:11+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 2,
+   "title": "Doc 2 - Competition Notes - Pirelli Preview",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_competition_notes_-_pirelli_preview.pdf",
+   "published": "2026-07-15T18:06+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "tyres"
+  },
+  {
+   "doc": 3,
+   "title": "Doc 3 - Timetable V4",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_timetable_v4.pdf",
+   "published": "2026-07-16T10:27+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 4,
+   "title": "Doc 4 - Power Unit Information",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_power_unit_information.pdf",
+   "published": "2026-07-16T11:17+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 5,
+   "title": "Doc 5 - Post-Race Checks on Car Numbers 63 and 06, 2026 British GP",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_post-race_checks_on_car_numbers_63_and_06_2026_british_gp.pdf",
+   "published": "2026-07-16T13:57+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 6,
+   "title": "Doc 6 - Race Director's Competition Notes",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_race_directors_competition_notes.pdf",
+   "published": "2026-07-16T15:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 7,
+   "title": "Doc 7 - Competition Notes - Circuit Map, Pit Lane Drawing, Emergency Exits Map and Red Zone",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_and_red_zone.pdf",
+   "published": "2026-07-16T15:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 8,
+   "title": "Doc 8 - PU elements used per driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-07-17T08:42+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - Summons - Car 31 - Late attendance of the Thursday Press Conference",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_car_31_-_late_attendance_of_the_thursday_press_conference.pdf",
+   "published": "2026-07-17T07:52+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_self_scrutineering.pdf",
+   "published": "2026-07-17T09:35+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 11,
+   "title": "Doc 11 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_entry_list.pdf",
+   "published": "2026-07-17T09:56+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_car_presentation_submissions.pdf",
+   "published": "2026-07-17T10:17+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - Infringement - Car 31 - Media Commitment",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_31_-_media_commitment.pdf",
+   "published": "2026-07-17T10:27+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-07-17T11:43+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 15,
+   "title": "Doc 15 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_free_practice_1_classification.pdf",
+   "published": "2026-07-17T12:52+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Summons - Car 55 - Alleged crossing the line at pit entry",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_car_55_-_alleged_crossing_the_line_at_pit_entry.pdf",
+   "published": "2026-07-17T13:04+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Summons - Car 27 - Alleged yellow flag infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_car_27_-_alleged_yellow_flag_infringement.pdf",
+   "published": "2026-07-17T13:23+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 18,
+   "title": "Doc 18 - Infringement - Car 34 - Pit lane speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_34_-_pit_lane_speeding.pdf",
+   "published": "2026-07-17T14:47+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 19,
+   "title": "Doc 19 - Infringement - Car 55 - Crossing the white line at pit entry",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_55_-_crossing_the_white_line_at_pit_entry.pdf",
+   "published": "2026-07-17T14:33+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 20,
+   "title": "Doc 20 - Infringement - Free Practice 1 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_free_practice_1_deleted_lap_times.pdf",
+   "published": "2026-07-17T14:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 22,
+   "title": "Doc 22 - Infringement - Car 18 - Change to PU element",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_18_-_change_to_pu_element.pdf",
+   "published": "2026-07-17T14:53+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 23,
+   "title": "Doc 23 - Infringement - Car 1 - Change to PU element",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_1_-_change_to_pu_element.pdf",
+   "published": "2026-07-17T14:53+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 24,
+   "title": "Doc 24 - Tyre Return Infringement",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_tyre_return_infringement.pdf",
+   "published": "2026-07-17T16:25+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 25,
+   "title": "Doc 25 - Free Practice 2 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_free_practice_2_classification.pdf",
+   "published": "2026-07-17T16:26+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 26,
+   "title": "Doc 26 - Infringement - Free Practice 2 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_free_practice_2_deleted_lap_times.pdf",
+   "published": "2026-07-17T16:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 27,
+   "title": "Doc 27 - Race Director Notes - SC2 - SC1 Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_race_director_notes_-_sc2_-_sc1_times.pdf",
+   "published": "2026-07-17T16:54+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 28,
+   "title": "Doc 28 - Summons - Ferrari - Car 16 Failure to return tyres",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_ferrari_-_car_16_failure_to_return_tyres.pdf",
+   "published": "2026-07-17T16:57+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 29,
+   "title": "Doc 29 - Summons - Ferrari - Car 44 Failure to return tyres",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_ferrari_-_car_44_failure_to_return_tyres.pdf",
+   "published": "2026-07-17T16:58+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 30,
+   "title": "Doc 30 - Infringement - Car 27 - Failure to slow under double yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_27_-_failure_to_slow_under_double_yellow_flags.pdf",
+   "published": "2026-07-17T16:58+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 31,
+   "title": "Doc 31 - P1 and P2 Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_p1_and_p2_scrutineering.pdf",
+   "published": "2026-07-17T17:20+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 33,
+   "title": "Doc 33 - Infringement - Ferrari - Car 16 Return of tyres",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_ferrari_-_car_16_return_of_tyres.pdf",
+   "published": "2026-07-17T17:38+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 34,
+   "title": "Doc 34 - Infringement - Ferrari - Car 44 Return of tyres",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_ferrari_-_car_44_return_of_tyres.pdf",
+   "published": "2026-07-17T17:38+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 35,
+   "title": "Doc 35 - Post-Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_post-qualifying_procedure.pdf",
+   "published": "2026-07-18T07:32+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 36,
+   "title": "Doc 36 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_new_pu_elements_for_this_competition_0.pdf",
+   "published": "2026-07-18T10:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 38,
+   "title": "Doc 38 - Free Practice 3 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_free_practice_3_classification.pdf",
+   "published": "2026-07-18T11:57+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 39,
+   "title": "Doc 39 - Summons - Car 55 - Alleged failure to slow for double yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_car_55_-_alleged_failure_to_slow_for_double_yellow_flags.pdf",
+   "published": "2026-07-18T12:18+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 40,
+   "title": "Doc 40 - Summons - Car 3 - Car 55 Alleged failure to slow for double yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_car_3_-_car_55_alleged_failure_to_slow_for_double_yellow_flags.pdf",
+   "published": "2026-07-18T12:18+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 41,
+   "title": "Doc 41 - Infringement - Free Practice 3 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_free_practice_3_deleted_lap_times.pdf",
+   "published": "2026-07-18T12:26+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 42,
+   "title": "Doc 42 - Infringement - Free Practice 3 Double Yellow Flags Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_free_practice_3_double_yellow_flags_deleted_lap_times.pdf",
+   "published": "2026-07-18T12:26+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 43,
+   "title": "Doc 43 - Decision - Car 55 - Alleged failure to slow for double yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_decision_-_car_55_-_alleged_failure_to_slow_for_double_yellow_flags_.pdf",
+   "published": "2026-07-18T13:09+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 44,
+   "title": "Doc 44 - Corrected Infringement - Car 6 - Changes to PU elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_6_-_changes_to_pu_elements.pdf",
+   "published": "2026-07-18T13:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Corrected Infringement - Car 14 - Change to PU elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_14_-_change_to_pu_elements.pdf",
+   "published": "2026-07-18T13:52+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 46,
+   "title": "Doc 46 - Provisional Qualifying Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_provisional_qualifying_classification.pdf",
+   "published": "2026-07-18T15:23+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 47,
+   "title": "Doc 47 - Covers-on Time",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_covers-on_time.pdf",
+   "published": "2026-07-18T16:05+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 48,
+   "title": "Doc 48 - P3 and Qualifying Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_p3_and_qualifying_scrutineering.pdf",
+   "published": "2026-07-18T17:32+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 49,
+   "title": "Doc 49 - Final Qualifying Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_final_qualifying_classification.pdf",
+   "published": "2026-07-18T18:06+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 50,
+   "title": "Doc 50 - Provisional Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_provisional_starting_grid.pdf",
+   "published": "2026-07-18T18:10+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 51,
+   "title": "Doc 51 - Pre-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_pre-race_procedure.pdf",
+   "published": "2026-07-19T06:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 52,
+   "title": "Doc 52 - Post-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_post-race_procedure.pdf",
+   "published": "2026-07-19T06:51+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 53,
+   "title": "Doc 53 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_new_pu_elements_for_this_competition_1.pdf",
+   "published": "2026-07-19T09:59+00:00",
+   "backfill": "2026-09-27T19:54+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 54,
+   "title": "Doc 54 - Infringement - Car 55 - Change to PU elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_55_-_change_to_pu_elements.pdf",
+   "published": "2026-07-19T10:22+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 56,
+   "title": "Doc 56 - Final Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_final_starting_grid.pdf",
+   "published": "2026-07-19T12:00+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 57,
+   "title": "Doc 57 - Infringement - Car 44 - Causing a collision with Car 63 in turn 5",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_44_-_causing_a_collision_with_car_63_in_turn_5.pdf",
+   "published": "2026-07-19T14:20+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 58,
+   "title": "Doc 58 - Summons - Ferrari - Alleged unsafe release Car 44",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_summons_-_ferrari_-_alleged_unsafe_release_car_44.pdf",
+   "published": "2026-07-19T14:20+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 59,
+   "title": "Doc 59 - Decision - Car 16 - Collision with Car 81 in turn 5",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_decision_-_car_16_-_collision_with_car_81_in_turn_5.pdf",
+   "published": "2026-07-19T14:21+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 60,
+   "title": "Doc 60 - Provisional Race Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_provisional_race_classification.pdf",
+   "published": "2026-07-19T14:45+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 61,
+   "title": "Doc 61 - Infringement - Race Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_race_deleted_lap_times.pdf",
+   "published": "2026-07-19T15:25+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 62,
+   "title": "Doc 62 - Race Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_race_scrutineering.pdf",
+   "published": "2026-07-19T16:32+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 63,
+   "title": "Doc 63 - Infringement - Ferrari - Unsafe Release of Car 44",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_ferrari_-_unsafe_release_of_car_44.pdf",
+   "published": "2026-07-19T16:50+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 64,
+   "title": "Doc 64 - Infringement - Car 23 - Car Safety Lights",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_23_-_car_safety_lights_.pdf",
+   "published": "2026-07-19T17:09+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 65,
+   "title": "Doc 65 - Final Race Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_final_race_classification.pdf",
+   "published": "2026-07-19T17:15+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  },
+  {
+   "doc": 66,
+   "title": "Doc 66 - Championship Points",
+   "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_championship_points.pdf",
+   "published": "2026-07-19T17:20+00:00",
+   "backfill": "2026-09-27T19:54+00:00"
+  }
+ ],
+ "tech": {
+  "tyres": {
+   "compounds": [
+    "C2",
+    "C3",
+    "C4"
+   ],
+   "q3": "C4",
+   "race": [
+    "C2",
+    "C3"
+   ]
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 1,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "1": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "63": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "12": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 1,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "3": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "6": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "16": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 3
+   },
+   "44": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "23": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "55": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "41": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "30": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 4
+   },
+   "18": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 5,
+    "PU-CE": 5,
+    "PU-ANC": 5
+   },
+   "14": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 6
+   },
+   "31": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "87": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 3
+   },
+   "27": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 1,
+    "PU-CE": 1,
+    "PU-ANC": 4
+   },
+   "5": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 3,
+    "PU-ANC": 3
+   },
+   "10": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 1,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "43": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 3
+   },
+   "11": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   },
+   "77": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 3
+   }
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 2,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "MER": {
+    "n": 3,
+    "reasons": {
+     "Circuit specific": 1,
+     "Performance": 2
+    }
+   },
+   "RED": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "FER": {
+    "n": 0,
+    "reasons": {}
+   },
+   "WIL": {
+    "n": 3,
+    "reasons": {
+     "Circuit specific": 2,
+     "Performance": 1
+    }
+   },
+   "VRB": {
+    "n": 4,
+    "reasons": {
+     "Performance": 4
+    }
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 4,
+    "reasons": {
+     "Performance": 4
+    }
+   },
+   "AUD": {
+    "n": 2,
+    "reasons": {
+     "Circuit specific": 1,
+     "Performance": 1
+    }
+   },
+   "ALP": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "CAD": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   }
+  },
+  "puNew": {
+   "81": {
+    "ICE": 2,
+    "TC": 2
+   },
+   "1": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2,
+    "PU-CE": 3
+   },
+   "12": {
+    "ICE": 3,
+    "EXH": 3,
+    "MGU-K": 1,
+    "PU-ANC": 4
+   },
+   "3": {
+    "ICE": 2,
+    "TC": 2,
+    "EXH": 2
+   },
+   "6": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "PU-ANC": 4
+   },
+   "18": {
+    "MGU-K": 3
+   },
+   "10": {
+    "MGU-K": 1,
+    "PU-ANC": 3
+   },
+   "11": {
+    "ES": 2,
+    "PU-CE": 2
+   },
+   "77": {
+    "ES": 2,
+    "PU-CE": 2
+   },
+   "14": {
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 6
+   },
+   "55": {
+    "ES": 2,
+    "PU-CE": 3
+   }
+  }
+ }
+}

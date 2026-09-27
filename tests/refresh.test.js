@@ -152,4 +152,19 @@ test("Model health: season summary, rounds newest first, misses, and the fit pro
   assert.match(mh({ accuracy: ch(-0.3, 0.1, 6) }), /Skewed<\/td><td>6<\/td><td>-0\.30 ± 0\.10.*better/);
   assert.match(mh({ accuracy: ch(-0.1, 0.1, 6) }), /within noise/);
   assert.match(mh({ accuracy: ch(-0.3, 0.1, 2) }), /too few rounds/);
+  // calibration by group: walk-forward and frozen side by side, a group only one of them has still listed
+  assert.doesNotMatch(h, /By group/);
+  const grp = mh({
+    accuracy: {
+      ...acc,
+      season: {
+        ...acc.season,
+        groups: { wet: { rounds: 1, crps: 7.93, mae: 9.66, bias: 3.62, cover80: 0.82, cover50: 0.73 } },
+      },
+      frozenGroups: { "safety car": { rounds: 1, mae: 14.82, bias: 2.47, cover80: null, cover50: 0.36 } },
+    },
+  });
+  assert.match(grp, /By group/);
+  assert.match(grp, /wet<\/td><td>1<\/td><td>7\.93<\/td><td>9\.7<\/td><td>\+3\.6<\/td><td>82%<\/td><td>73%<\/td><td>–/);
+  assert.match(grp, /safety car<\/td><td>–<\/td>.*<td>1<\/td><td>14\.8<\/td><td>\+2\.5<\/td><td>36%/);
 });

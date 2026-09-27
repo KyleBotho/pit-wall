@@ -44,7 +44,11 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   bank, free transfers carried on; see "Round tracking" under Open items).
 - `collect.py` — data kept as it happens (refresh.py, fail-soft): forecast vintages + ECMWF ensemble per session
   (`history/<season>/weather/`), Kalshi quotes (`quotes/`), the FIA documents index (`fia/`). Also gives the
-  ensemble wet shares behind the weather copula (`weather[gd].ens`).
+  ensemble wet shares behind the weather copula (`weather[gd].ens`). `fia_tech` (2026-09-27): the FIA's technical
+  documents read once each (PU elements used / new, Car Presentation Submissions = upgrades, the parc-fermé parts
+  list, the Pirelli preview: compounds, Q3 tyre, mandatory race tyres), text kept in `fia/text/<event>/`, summary
+  as the event index's `tech`; nothing uses them yet. `backtest/fia_rounds.py` backfilled R1-R15 (`--reparse`
+  rebuilds every summary after a parser change). Health warns when a finished round has < 3 kinds read.
 - `laps.py` — canonical lap records (OpenF1 laps + stints + race control + weather, with context and quality
   flags) -> `history/<season>/laps/gdNN.json`, the contextual race-pace model (`paceCtx`, MODEL.racePace "ctx") and
   retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`.
@@ -314,11 +318,14 @@ there before re-deciding something.
     precision of quantile ranges; a worker for the Calculator's own runs (the Sim lab has one; the build's presim
     covers default settings, so only custom settings run on the main thread).
   - Evaluation: repeated walk-forward validation for the weekly fit (now one 3-round holdout); MODEL.ctxSeInflate
-    (hand-set x2) estimated from held-out stints; calibration by group (wet / dry, sprint / normal weekends,
-    drivers / constructors: section 6 splits MAE by drivers / constructors, section 5 only by scoring category);
-    a real condition number in the fit log (now a pivot ratio).
-  - Data: PU mileage, tyre-set inventory and upgrades from the FIA documents (only grid penalties are extracted);
-    the `oddsq` challenger needs Kalshi spreads, kept from R17 on.
+    (hand-set x2) estimated from held-out stints; a real condition number in the fit log (now a pivot ratio).
+    DONE 2026-09-27: calibration by group (walk.js `groups`: drivers / constructors, sprint / normal, wet / dry,
+    safety car or not) in section 6 and Model health (walk-forward + frozen). First read, R5-R15: SC races
+    under-covered (74% / 43% in the 10-90 / 25-75% ranges), no-SC races projected +2.6 too high. Not retuned:
+    watch it on the frozen rounds.
+  - Data: tyre-set inventory (not in the FIA documents). DONE 2026-09-27: PU elements, upgrades, parc-fermé parts
+    and tyre choices from the FIA documents (collect.py `fia_tech`), R1-R15 backfilled. The `oddsq` challenger
+    needs Kalshi spreads (bid/ask are archived in quotes/ from R16).
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
