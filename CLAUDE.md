@@ -66,6 +66,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `LEAGUE_DATA`. `compute()` runs the live sim (known qualifying/sprint orders, live market) only for
   owners/admins (`labOwner`); everyone else gets it as at lock (`atLock`: practice only, `DATA.oddsLock`), and the
+  My rivals always uses the live one (`withLive`); the
   Pit Wall preset's label names the race and stage ("Pit Wall sim · Monaco post FP2"; user, 2026-09-27) (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
   from `app_config`, username search, link), Settings' Change/Delete, `pullLink()` after sign-in; `tracking.js` = its

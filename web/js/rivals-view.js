@@ -5,7 +5,7 @@
    global cut-off it stands for (the templates have no season of their own). */
 import { $, DATA, NEXT, SEASON_OVER, esc, f1, infoTip } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { rivalTeams } from "./forecast.js";
+import { rivalTeams, withLive } from "./forecast.js";
 import { h2h, ownTable, pointsRace, teamHist, teamKey, teamLabel } from "./league.js";
 import { needSync, syncState } from "./sync.js";
 
@@ -25,7 +25,9 @@ function cutLine(tpl) {
   return Object.keys(total).length ? { key: "tpl:" + tpl, name, total, color: "#71717A" } : null;
 }
 
-export function renderRivals() {
+// the live sim for everyone, qualifying and all, also once the page's own sim is the one at lock (forecast.js)
+export const renderRivals = () => withLive(draw);
+function draw() {
   const picks = state.rivals;
   $("#rivalsEmpty").hidden = picks.length > 0;
   $("#rivalsDash").hidden = !picks.length;

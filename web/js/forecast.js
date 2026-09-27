@@ -24,19 +24,42 @@ export const setupOpts = (g, k, track = trackFit) => ({
   pen: k === 0 ? state.pen : {},
   circuit: state.circuits[g.gd] || {},
 });
+// past lock, so the live sim and the one at lock can differ
+const pastLock = () => !!NEXT && Date.parse(NEXT.lock) <= Date.parse(DATA.generated);
 // What everyone but the owner and admins sees: the sim as it stood at lock (the user's call, 2026-09-27): practice,
 // grid penalties and the forecast, but no session run or scored since (qualifying, sprint) and the market going in.
-// The owner and admins (labOwner) get the live one, orders and all. A UI gate: the data is in the public build.
+// The owner and admins (labOwner) get the live one, orders and all, and so does My rivals (withLive). A UI gate: the
+// data is in the public build.
 function atLock() {
-  const locked = !!NEXT && Date.parse(NEXT.lock) <= Date.parse(DATA.generated);
   return {
     ...DATA,
     live: null,
     weekend: DATA.weekend && { ...DATA.weekend, grid: {}, status: {} },
-    odds: locked ? DATA.oddsLock || null : DATA.odds,
+    odds: pastLock() ? DATA.oddsLock || null : DATA.odds,
   };
 }
+let liveFc = null; // the live forecast for My rivals when the page's own is the one at lock (built on first use)
 export function compute() {
+  liveFc = null;
+  build(labOwner ? DATA : atLock());
+}
+// My rivals keeps the live sim for everyone (the user, 2026-09-27): fn runs with the live forecast in place of the
+// one at lock, which is put back after
+export function withLive(fn) {
+  if (labOwner || SEASON_OVER || !pastLock()) return fn();
+  const keep = forecast;
+  try {
+    if (!liveFc) {
+      build(DATA);
+      liveFc = forecast;
+    }
+    forecast = liveFc;
+    return fn();
+  } finally {
+    forecast = keep;
+  }
+}
+function build(data) {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));
   if (SEASON_OVER) {
     forecast = { model: null, races: [], sims: [], idx: {}, form, proj: [], price: {} };
@@ -45,7 +68,7 @@ export function compute() {
   // the next three races; each gets its own model: practice pace, the betting market, grid penalties and any
   // result already known (qualifying) only for the coming weekend (later races use season form alone)
   const races = upcoming.slice(0, 3);
-  const setups = races.map((g, k) => Engine.raceSetup(labOwner ? DATA : atLock(), g, setupOpts(g, k)));
+  const setups = races.map((g, k) => Engine.raceSetup(data, g, setupOpts(g, k)));
   const models = setups.map((x) => x.model);
   // one persist seed for the three races: sample s is one coherent future (the same car strength each race), so
   // price paths and horizon totals keep what isn't known about a car
