@@ -901,9 +901,9 @@
   "s": 0.1656859280319779
  },
  "record": {
-  "built": "2026-09-27T14:02:04+00:00",
-  "commit": "c0031a5781d1ef742cac17cee6b0fb7398d3f7cd",
-  "dataGenerated": "2026-09-27T14:01+00:00",
+  "built": "2026-09-27T14:19:08+00:00",
+  "commit": "4da849fc457e7659b2739ce76cd35209ecc05f36",
+  "dataGenerated": "2026-09-27T14:18+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -922,11 +922,11 @@
    "odds": "2be88ca4242c",
    "practice": "548ccdd2249f",
    "priors": "be73a4218704",
-   "raceInfo": "69417b6e062f",
+   "raceInfo": "163ca5e84d3c",
    "results": "1fef1a19aa39",
    "schedule": "6035d999051c",
    "trackStats": "2293a535916b",
-   "weather": "e94623dab7cd",
+   "weather": "0a9bf0ff599a",
    "weekend": "1e7d3cf53da7"
   },
   "lock": "2026-10-03T16:00:00+08:00",
@@ -965,9 +965,11 @@
     "defaultOvertakes": 3,
     "dnfFallback": 0.12,
     "dnfHalfLife": "Infinity",
+    "dnfModel": "pooled",
     "dnfShrink": 16,
     "dotdShrink": 2,
     "gapCap": 4,
+    "incShrink": 40,
     "mate": "blend",
     "offHalfLife": "Infinity",
     "offPrior": 3,
@@ -981,6 +983,7 @@
     "practiceQ": 0.5,
     "practiceR": 0,
     "prior": 1.5,
+    "racePace": "median",
     "rankSlope": 0.1,
     "sprintOvertakeShare": 0.4
    },
