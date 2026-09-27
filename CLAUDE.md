@@ -299,8 +299,10 @@ there before re-deciding something.
       rounds from R16 (champion vs challengers in Model health).
 - [ ] Deferred from the three reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
       rounds show the error it addresses, and judge it as a challenger:
-  - Decision: more steps in the market fit (still "moving", 0.3-0.4 log-odds off after 4): a higher effective
-    market weight, so test on frozen R16+ rounds, not by retuning R5-R15.
+  - Market fit: now the challenger `odds8` (SIM.oddsIters 8, SIM.oddsN 5000; 2026-09-27), scored from R16. Found
+    while adding it: more steps help little, the residual levels off by ~step 6 (R13 0.42 -> ~0.35, R15 0.31 ->
+    ~0.27) because one pace per driver can't meet win, podium and top 10 together (the market sees a wider spread
+    of results). If the market matters, the lever is a per-driver spread (variance) fitted to the market too.
   - Models: a hierarchical race-pace model (tyres / fuel across races; laps.py fits each race alone, 6 fixed
     reweightings); retirements by distance run, and "other" causes split into unknown vs confirmed mechanical
     (laps.py lumps them); SC / VSC / red flag as timed events (only the experimental lap models, SIM.raceModel

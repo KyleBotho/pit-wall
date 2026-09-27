@@ -105,6 +105,13 @@
     // market quote quality (second review, off: challenger "oddsq"): a line's pull towards the market is divided by
     // 1 + oddsQuality x its bid-ask spread / its price, so a wide, thin quote moves pace less than a tight one
     oddsQuality: 0,
+    // the market fit's steps and the sims each step is judged on (hand-set; the weight oddsW was backtested with
+    // these). After 4 steps the fit is still "moving" (0.3-0.4 log-odds off its targets on R13-R15), so the market's
+    // real pull is below oddsW. More steps help little: the residual levels off by about step 6 (R13 0.42 -> ~0.35,
+    // R15 0.31 -> ~0.27, 24 steps tried), because one pace per driver can't meet win, podium and top 10 together (the
+    // market sees a wider spread of results than the model). Challenger "odds8" (8 steps on 5,000 sims) tests the gain.
+    oddsIters: 4,
+    oddsN: 2500,
     // review batch 4: a race-wide overtaking factor drawn once a weekend, lognormal with mean 1 and the circuit's
     // ovSd (trackModel), so a race can run high or low for everyone (and the tails of overtake points widen).
     // 0 = the fixed forecast level. See docs/history.md for the backtest.
@@ -2790,7 +2797,7 @@
     const w = o.w ?? SIM.oddsW;
     if (!odds || !w || !(odds.win || odds.podium || odds.top10 || odds.pole)) return model;
     const m = { ...model, drivers: model.drivers.map((d) => ({ ...d, oddsQ: 0, oddsR: 0 })) };
-    const n = o.n || 2500,
+    const n = o.n || SIM.oddsN,
       seed = o.seed || 4242;
     const probs = (/** @type {Sim} */ sim, /** @type {number} */ i) => {
       const st = sim.stats[i],
@@ -2812,7 +2819,7 @@
     /** @type {("win" | "podium" | "top10")[]} */
     const RACE = ["win", "podium", "top10"];
     let sim = base;
-    const iters = o.iters || 4;
+    const iters = o.iters || SIM.oddsIters;
     // the targets, per driver and market: [log-odds, weight], the market's chance moved w of the way from the
     // model's, weighted by sqrt(p (1 - p)) of the market's so long shots don't dominate. Pole only while the
     // qualifying order isn't known (then it's settled). Kept for oddsCheck, which scores the final model on a run
@@ -3717,6 +3724,12 @@
       label: "Market lines weighted by their bid-ask spread",
       set: { "SIM.oddsQuality": 1 },
       why: "second review: a wide, thin quote says less than a tight one; spreads kept from R17 on (no past data)",
+    },
+    {
+      id: "odds8",
+      label: "Market fit run to (near) convergence: 8 steps on 5,000 sims",
+      set: { "SIM.oddsIters": 8, "SIM.oddsN": 5000 },
+      why: "4 steps stop 0.3-0.4 log-odds short of the targets (R13-R15); 8 get most of what's reachable (the residual levels off by ~6: one pace per driver can't meet every line); more sims so extra steps don't chase noise",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */

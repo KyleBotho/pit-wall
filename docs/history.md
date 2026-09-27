@@ -5,6 +5,12 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, challenger `odds8` (user, after the pros and cons of more market-fit steps): SIM.oddsIters (4) and
+      SIM.oddsN (2,500) are settings now; odds8 = 8 steps on 5,000 sims, frozen at every lock and scored in Model
+      health. Checked with R13-R15's books and 24 steps: the residual falls 0.55 -> 0.42 over the shipped 4 steps,
+      then levels off by ~6 (R13 ~0.35, R15 ~0.27) and jitters (last steps ~0.02%). Per market (R15, 24 steps): the
+      sim is short of the market on win (+0.22 log-odds) and podium (+0.35), over on top 10 (-0.07): the market
+      sees more spread in a driver's results than one pace number can give. Shipped output unchanged.
 - [x] 2026-09-27, third review (`docs/reviews/2026-09-27/F1-second-round-review.md` + evidence JSON; 7.8/10, up from
       7.5). Its five findings and the smaller points, the same day:
   - 1. Time of knowledge in the backtest: `weather_rounds.py` now picks, per session, the run that was issued before
