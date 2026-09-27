@@ -90,18 +90,19 @@ def ensemble_sessions(d, g):
     return out
 
 
-def ensemble(get_soft, cached, g):
-    """ECMWF IFS ensemble rain for the race weekend (Open-Meteo, no key), or None."""
+def ensemble(get_soft, cached, g, meta=None):
+    """ECMWF IFS ensemble rain for the race weekend (Open-Meteo, no key), or None. meta: as f1feeds.get_soft."""
     url = (
         "https://ensemble-api.open-meteo.com/v1/ensemble?latitude={:.3f}&longitude={:.3f}"
         "&hourly=precipitation&models=ecmwf_ifs025&forecast_days=15&timezone=UTC"
     ).format(g["lat"], g["lon"])
-    return get_soft(url, cached(f"wxe_{g['gd']}.json"))
+    return get_soft(url, cached(f"wxe_{g['gd']}.json"), meta=meta)
 
 
-def weather_vintage(archived, read_json, write_json, g, forecast, ens, now):
-    """Keep this forecast (and ensemble) for the weekend unless it's the same as the last one kept."""
-    entry = {"at": now.isoformat(timespec="minutes"), "hourly": forecast_slice(forecast or {}, g)}
+def weather_vintage(archived, read_json, write_json, g, forecast, ens, now, at=None):
+    """Keep this forecast (and ensemble) for the weekend unless it's the same as the last one kept. at: when the
+    forecast was fetched (a cached copy's own time), else now."""
+    entry = {"at": at or now.isoformat(timespec="minutes"), "hourly": forecast_slice(forecast or {}, g)}
     if ens:
         entry["ensemble"] = ens
     return _append(

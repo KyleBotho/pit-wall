@@ -11,7 +11,7 @@ import os
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -84,10 +84,29 @@ def get(url, path, reuse=False, attempts=3, backoff=10):
     return data
 
 
-def get_soft(url, path, reuse=False):
+def fetched_at(path):
+    """When the saved copy at path was fetched (UTC ISO, minutes): its `.at` stamp, else the file's modification
+    time; None without a copy."""
+    try:
+        with open(path + ".at", encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        pass
+    try:
+        t = os.path.getmtime(path)
+    except OSError:
+        return None
+    return datetime.fromtimestamp(t, timezone.utc).isoformat(timespec="minutes")
+
+
+def get_soft(url, path, reuse=False, meta=None):
     """For sources that may refuse us for a while (OpenF1 locks everything to paying users while a session is live):
-    one attempt; on failure fall back to the last saved copy, else raise FeedError so the caller can skip it."""
+    one attempt; on failure fall back to the last saved copy, else raise FeedError so the caller can skip it.
+    meta (a dict) gets {"fresh": fetched just now, "at": when the data returned was fetched}: a cached copy keeps
+    its own time, so nobody takes an old answer for a new one."""
     if reuse and (saved := _load(path)) is not None:
+        if meta is not None:
+            meta.update(fresh=False, at=fetched_at(path))
         return saved
     try:
         body = _read(url)
@@ -95,6 +114,8 @@ def get_soft(url, path, reuse=False):
     except Exception as e:  # noqa: BLE001
         if (saved := _load(path)) is not None:
             print(f"  ! {url} -> {e}; using the cached copy")
+            if meta is not None:
+                meta.update(fresh=False, at=fetched_at(path))
             return saved
         if isinstance(e, FeedError):
             raise
@@ -102,6 +123,10 @@ def get_soft(url, path, reuse=False):
     finally:
         time.sleep(PAUSE)
     write_text(path, body)
+    at = datetime.now(timezone.utc).isoformat(timespec="minutes")
+    write_text(path + ".at", at)
+    if meta is not None:
+        meta.update(fresh=True, at=at)
     return data
 
 

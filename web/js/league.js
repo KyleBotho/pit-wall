@@ -17,6 +17,7 @@ import {
   isDriver,
   money,
   pct,
+  simRange,
   sgn,
   infoTip,
 } from "./core.js";
@@ -279,7 +280,7 @@ export function h2h(myIds, rivals, opt = {}) {
         range = `<span class="muted" title="Your points minus theirs: 10% of simulated weekends end below the first number, 10% above the second">${sgn(q(0.1), 0)} to ${sgn(q(0.9), 0)}</span>`;
       }
       return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}${m.sub ? ` <small class="dim">${esc(m.sub)}</small>` : ""}</b><div class="chips">${chipsHtml}</div>${m.goal ? `<button class="btn ghost sm" data-rvgoal="${esc(m.key)}" style="align-self:flex-start">Aim to beat in the Calculator</button>` : ""}</div>
-      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}" title="± ${(196 * Math.sqrt((p * (1 - p)) / N)).toFixed(1)} points of % (simulation error, 95%)">${pct(p)}</b><span class="muted">you win</span>${tie / N >= 0.005 ? `<span class="muted" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}<span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
+      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}" title="${simRange(p, N)}">${pct(p)}</b><span class="muted">you win</span>${tie / N >= 0.005 ? `<span class="muted" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}<span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
     })
     .join("");
   return { html, mean };

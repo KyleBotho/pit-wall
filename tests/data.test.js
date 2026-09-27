@@ -99,6 +99,23 @@ test("a frozen forecast's record reruns to the same samples", opt, () => {
   assert.equal(p.record.settings.MODEL.dnfHalfLife, "Infinity");
 });
 
+test("the frozen record draws the page's own samples (the same seeds, persist included)", opt, () => {
+  const p = E.project(D, { samples: 300, sims: 1000 });
+  if (!p) return;
+  const track = E.trackModel(D),
+    Df = E.DEFAULTS;
+  const next = D.schedule.find((g) => !D.done.includes(g.gd));
+  const f = E.forecastRaces(D, {
+    setup: (g, k) => ({ next: k === 0, track, halfLife: Df.halfLife, adj: {}, pw: Df.pw, oddsW: Df.oddsW, pen: {} }),
+    sprint0: !!next.sprint,
+    sims: 1000,
+  });
+  const sim = f.sims[0];
+  sim.ids.forEach((id, i) => {
+    for (let k = 0; k < 300; k++) assert.equal(Math.round(sim.tot[i * 1000 + k]), p.joint.tot[i * 300 + k]);
+  });
+});
+
 test("challengers: every one projects under its own settings, and the shipped ones come back", opt, () => {
   const before = JSON.stringify([E.MODEL, E.SIM, E.TRACK]);
   const c = E.projectChallengers(D, { sims: 1000 });
@@ -110,6 +127,26 @@ test("challengers: every one projects under its own settings, and the shipped on
   for (const v of Object.values(c)) assert.ok(Object.values(v.assets).every((a) => a.q.length === 19));
   assert.equal(JSON.stringify([E.MODEL, E.SIM, E.TRACK]), before);
   assert.throws(() => E.withSettings({ "SIM.noSuchThing": 1 }, () => 0));
+});
+
+test("withSettings: a bad key or value changes nothing; nested calls and throws put everything back", () => {
+  const q = E.SIM.qSd,
+    m = E.MODEL.racePace;
+  assert.throws(() => E.withSettings({ "SIM.qSd": 0.91, "SIM.noSuchThing": 1 }, () => 0));
+  assert.throws(() => E.withSettings({ "SIM.qSd": 0.91, "SIM.rSd": "0.3" }, () => 0));
+  assert.throws(() => E.withSettings({ "SIM.qSd": NaN }, () => 0));
+  assert.equal(E.SIM.qSd, q);
+  const seen = E.withSettings({ "SIM.qSd": 0.5 }, () =>
+    E.withSettings({ "SIM.qSd": 0.7, "MODEL.racePace": "ctx" }, () => [E.SIM.qSd, E.MODEL.racePace]),
+  );
+  assert.deepEqual(seen, [0.7, "ctx"]);
+  assert.throws(() =>
+    E.withSettings({ "SIM.qSd": 0.5 }, () => {
+      throw new Error("boom");
+    }),
+  );
+  assert.equal(E.SIM.qSd, q);
+  assert.equal(E.MODEL.racePace, m);
 });
 
 test("batch 3 switches: race pace from the lap model, retirements by cause", opt, () => {

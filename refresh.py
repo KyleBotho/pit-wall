@@ -467,8 +467,8 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     coming = [g for g in schedule if g["gd"] not in done][:3]
     kept = []
 
-    def keep_weather(g, forecast, ens):
-        if gather.weather_vintage(archived, read_json, write_json, g, forecast, ens, now):
+    def keep_weather(g, forecast, ens, at=None):
+        if gather.weather_vintage(archived, read_json, write_json, g, forecast, ens, now, at):
             kept.append(f"R{g['gd']} forecast")
 
     out["weather"] = {str(k): v for k, v in extras.weather(get_soft, cached, coming, now, keep_weather).items()}
@@ -483,7 +483,9 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
         out["odds"] = extras.odds(get_soft, cached, nxt_g["name"], SEASON, tlas, CFG["field"], keep_quotes)
         if out["odds"]:
             out["odds"]["gd"] = nxt_g["gd"]
-            out["odds"]["at"] = now.isoformat(timespec="minutes")
+            # at (extras.odds) = when the books were fetched, the oldest of them; checked = this attempt
+            out["odds"].setdefault("at", now.isoformat(timespec="minutes"))
+            out["odds"]["checked"] = now.isoformat(timespec="minutes")
             # frozen at lock like the projections: what the market said going in
             if now < iso(nxt_g["lock"]):
                 write_json(archived("odds", f"gd{nxt_g['gd']:02d}.json"), out["odds"], indent=1, sort_keys=True)

@@ -5,6 +5,53 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-27, second independent review (`docs/reviews/2026-09-27/F1-post-upgrade-review.md` + evidence JSON;
+      7.5/10, up from 7). Its seven confirmed findings fixed the same day:
+  - A. Negative weather correlation: `simSample` clamped rho to >= 0, so R16's -0.21 ran as independent. Now the
+    Cholesky factor of the three sessions' equicorrelation matrix for rho < 0 (valid to -0.5); rho >= 0 draws
+    exactly as before. Test: the review's fixture (50% / 50%, rho -0.4) gives 18.45% together. RNG_VERSION 4.
+    Checked: with rho >= 0 the forecast is sample-identical to the previous engine; only R16 changes.
+  - B. Market fit diagnostics: pole was left out of the residual and the step, and "settled" was judged on the
+    fit's own samples. Now `applyOdds` keeps its targets (log-odds + weight per line, pole included while
+    qualifying is open); `Engine.oddsCheck(model, sim)` scores the final model on the production run:
+    "matched" (within 2x the sampling noise, same weights), "moving" (the last step still moved pace) or
+    "unreachable" (at rest, still off). forecastRaces attaches it to the next race's setup; the frozen record
+    has it too. The fit itself is unchanged (pace identical to the previous engine on R13-R15's books). What it
+    shows: at 4 steps the fit is still MOVING, 0.29-0.39 log-odds off vs noise ~0.05 (R13-R15 books), where the
+    old diagnostic said "settled" for R15. More steps would move pace further towards the market, i.e. raise the
+    effective market weight: a model change for a backtest, not made here.
+  - C. Odds and weather freshness: `f1feeds.get_soft(meta=)` says whether an answer is fresh and when it was
+    fetched (a `.at` stamp next to the cached copy, else its mtime). `odds.at` = the oldest book's fetch time
+    (`asOf` per book, `stale` = books from the cache, `checked` = this attempt), so a pre-qualifying book reused
+    after qualifying isn't taken as post-qualifying (`oddsKnown`). Only fresh books go into the quotes archive.
+    Grid penalties now carry race control's announcement time (`weekend.penAt`): the market fit only assumes the
+    penalties announced before the quote (hand-set ones always). Weather `at` = fetch time, `checked` = attempt,
+    ensemble `at` too; weather vintages keep the fetch time.
+  - D. Lap records vs FastF1: `laps.reconcile` (run by extras.race_info each refresh, once telemetry.py has the
+    round) finds the lap-number shift that matches FastF1's lap times (R1: OpenF1's lap n is FastF1's n + 1,
+    100% after the shift; the rest 97-98.5% unshifted), takes compound and tyre age from FastF1 (fixed 68 laps
+    in R1, 96 in R5 (Piastri on intermediates in OpenF1's stints, mediums/softs in fact), 132 in R6, 44 in R11,
+    26 in R10), refits the pace, and stores `lapCheck` in the race block. Under 90% agreement: no contextual pace
+    for that race (health warns). R1-R15 reconciled; R5's broken 89.5% standard error is gone (max 0.36%).
+    `paceSe` now counts under MODEL.racePace "ctx": each round weighs ctxTau^2 / (ctxTau^2 + (2 se)^2), ctxTau
+    0.4% hand-set, x2 for lap errors correlated within a stint. Section 9 after the repair (3 seeds x 3,000):
+    ctx vs shipped CRPS +0.026 +/- 0.027, MAE -0.011 +/- 0.045: still a tie, stays off (challenger racectx).
+  - E. Team-mates' retirement chances: the sim drew one rate per team from its first driver. Now the team shares
+    the lower of its drivers' mechanical rates (one Beta draw a weekend) and each driver adds what his own rate
+    has on top (his incident rate under dnfModel "causes"). Order-invariant; pooled team-mates unchanged (0 on top).
+    Test: 1% / 80% team-mates keep 1% / 80% in either order, with and without uncertainty.
+  - F. `withSettings` checks every key and value (type of the shipped value, finite numbers) before changing
+    anything; nested calls and throws put everything back (test).
+  - G. One job spec: `Engine.raceSeeds(g, first)` gives the race seed and the persist seed; forecastRaces,
+    project() (the frozen record) and the Sim lab use it, so the frozen record draws the page's own samples
+    (test) and the lab's shipped-model run is the Calculator's.
+  - Smaller: simulation-error tooltips on chances use Wilson bounds (`core.js simRange`; 0% / 100% no longer say
+    +/- 0); the accuracy cache key includes `samples/` and ACC_N.
+  - Not done (review sections 4-8, still open): provisional-session classification before scoring, the pit bonus
+    at all-zero bands / thin histories, solver convergence flags, the Poisson normal approximation's skew,
+    adaptive sample counts and independent finalist checks, nested validation, a stochastic planner, the full
+    hierarchical pace model and distance-based survival, the performance items (summary sort, normals, worker
+    for the Calculator), and more market-fit steps (above).
 - [x] 2026-09-27, the sim by the site, not the visitor's device (user: slow phones shouldn't struggle; f1fantasytools
       publishes finished sims). `tools/presim.js` runs the default-settings forecast at build time (0.6 s here for
       10,000 weekends x 3 races; a mid-range phone was ~2-3 s, blocking the page). Shipped as two gzipped one-byte

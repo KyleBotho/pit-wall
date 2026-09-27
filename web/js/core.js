@@ -15,6 +15,19 @@ export const f0 = (x) => (x == null || isNaN(x) ? "—" : Math.round(x).toString
 export const sgn = (x, d = 1) => (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d);
 export const money = (x) => "$" + x.toFixed(1) + "m";
 export const pct = (x) => (x == null ? "—" : Math.round(x * 100) + "%");
+// a chance seen in n of N simulated weekends (p = n / N): its 95% simulation range (Wilson), which stays honest at 0
+// and 100% (the plain ± sqrt(p (1 - p) / N) says "± 0" there)
+export const simRange = (p, N) => {
+  const z = 1.96,
+    d = 1 + (z * z) / N,
+    c = (p + (z * z) / (2 * N)) / d,
+    h = (z * Math.sqrt((p * (1 - p)) / N + (z * z) / (4 * N * N))) / d;
+  const f = (x) => {
+    const v = Math.max(0, Math.min(1, x)) * 100;
+    return v < 1 || v > 99 ? v.toFixed(2) : v.toFixed(1);
+  };
+  return `${f(c - h)}–${f(c + h)}% (simulation error, 95%)`;
+};
 export const shortDate = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
 
 // team colours and constructor codes from config/season.json

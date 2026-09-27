@@ -226,6 +226,17 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
                 out[gd] = rec
         except Exception as e:  # noqa: BLE001 - an extra; OpenF1 closes during live sessions
             _warn(f"OpenF1 race data for gameday {gd}", e)
+    # once telemetry.py has archived a round from FastF1: its lap records checked against it, the pace refitted
+    import laps as lapmod
+
+    for gd in out:
+        try:
+            rec = lapmod.reconcile(archived, read_json, write_json, gd)
+            if rec:
+                out[gd] = rec
+                print(f"  R{gd}: lap records checked against FastF1 {rec['race'].get('lapCheck')}")
+        except Exception as e:  # noqa: BLE001
+            _warn(f"lap check for gameday {gd}", e)
     return out
 
 
@@ -250,8 +261,9 @@ def weather(get_soft, cached, races, now, keep=None):
             "https://api.open-meteo.com/v1/forecast?latitude={:.3f}&longitude={:.3f}"
             "&hourly=precipitation_probability,precipitation&forecast_days=16&timezone=UTC"
         ).format(g["lat"], g["lon"])
+        got = {}
         try:
-            d = get_soft(url, cached(f"wx_{g['gd']}.json"))
+            d = get_soft(url, cached(f"wx_{g['gd']}.json"), meta=got)
         except Exception as e:  # noqa: BLE001
             _warn(f"weather for gameday {g['gd']}", e)
             continue
@@ -265,13 +277,15 @@ def weather(get_soft, cached, races, now, keep=None):
             v = [p for t, p in hourly if t0 - timedelta(hours=1) <= t <= t0 + timedelta(hours=h)]
             return round(max(v) / 100, 2) if v else None
 
-        rec = {"at": now.isoformat(timespec="minutes")}
+        # at = when this forecast was fetched (a cached copy keeps its own time), checked = this attempt
+        rec = {"at": got.get("at") or now.isoformat(timespec="minutes"), "checked": now.isoformat(timespec="minutes")}
         for typ, key, h in (("Qualifying", "q", 1), ("Sprint", "s", 1), ("Race", "r", 2)):
             if typ in starts:
                 rec[key] = window(starts[typ], h)
         ens = None
+        got_e = {}
         try:
-            ens = collect.ensemble_sessions(collect.ensemble(get_soft, cached, g), g)
+            ens = collect.ensemble_sessions(collect.ensemble(get_soft, cached, g, meta=got_e), g)
         except Exception as e:  # noqa: BLE001
             _warn(f"weather ensemble for gameday {g['gd']}", e)
         if ens:
@@ -282,10 +296,11 @@ def weather(get_soft, cached, races, now, keep=None):
                 "r": p.get("Race"),
                 "qr": ens.get("pQR"),
                 "n": ens["n"],
+                "at": got_e.get("at"),
             }
         if keep:
             try:
-                keep(g, d, ens)
+                keep(g, d, ens, rec["at"])
             except Exception as e:  # noqa: BLE001
                 _warn(f"weather archive for gameday {g['gd']}", e)
         out[g["gd"]] = rec
@@ -348,10 +363,14 @@ def odds(get_soft, cached, name, season, tlas, field=22, keep=None):
 
     out = {"event": suffix}
     books = {}
+    got = {}
     for key, (series, total) in KALSHI_SERIES.items():
+        got[key] = {}
         try:
             d = get_soft(
-                f"{KALSHI}/markets?event_ticker={series}-{suffix}&limit=60", cached(f"k_{series}_{suffix}.json")
+                f"{KALSHI}/markets?event_ticker={series}-{suffix}&limit=60",
+                cached(f"k_{series}_{suffix}.json"),
+                meta=got[key],
             )
         except Exception as e:  # noqa: BLE001
             _warn(f"Kalshi {series}", e)
@@ -366,12 +385,23 @@ def odds(get_soft, cached, name, season, tlas, field=22, keep=None):
                 books.setdefault(key, {})[tla] = collect.quote_row(m)
         if len(raw) >= 10:
             out[key] = _norm(raw, total, field)
-    if keep and books:
+    # when each book was fetched (a cached copy after a failed request keeps its own time); at = the oldest, which
+    # decides what the market can have known (engine.js oddsKnown: the qualifying order only if at is after it)
+    used = [k for k in KALSHI_SERIES if k in out]
+    out["asOf"] = {k: got[k].get("at") for k in used}
+    stale = [k for k in used if not got[k].get("fresh")]
+    if stale:
+        out["stale"] = stale
+    times = [t for t in out["asOf"].values() if t]
+    if times:
+        out["at"] = min(times, key=_dt)
+    fresh = {k: v for k, v in books.items() if got.get(k, {}).get("fresh")}
+    if keep and fresh:
         try:
-            keep(suffix, books)
+            keep(suffix, fresh)
         except Exception as e:  # noqa: BLE001
             _warn("Kalshi quotes archive", e)
-    return out if len(out) > 1 else None
+    return out if used else None
 
 
 # ---------------------------------------------------------------- the coming weekend
@@ -402,11 +432,16 @@ def weekend(get_soft, cached, season, g, now):
             if "GRID" not in msg and "PIT LANE" not in msg and "PITLANE" not in msg:
                 continue
             p, b = PEN.search(msg), BACK.search(msg)
-            if p and num2.get(int(p.group(1))):
-                t = num2[int(p.group(1))]
+            t = num2.get(int((p or b).group(1))) if p or b else None
+            if not t:
+                continue
+            if p:
                 out["penalties"][t] = out["penalties"].get(t, 0) + int(p.group(2))
-            elif b and num2.get(int(b.group(1))):
-                out["penalties"][num2[int(b.group(1))]] = 99  # back of the grid / pit lane
+            else:
+                out["penalties"][t] = 99  # back of the grid / pit lane
+            # when race control announced it (the latest message): a market quoted before then didn't know it
+            if m.get("date"):
+                out.setdefault("penAt", {})[t] = max(out.get("penAt", {}).get(t, ""), m["date"])
         # the official race grid once published (penalties and pit-lane starts applied): what the race starts from
         rs = race if race and _dt(race["date_start"]) - timedelta(hours=2) <= now else None
         if rs:

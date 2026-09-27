@@ -9,6 +9,13 @@
   }
  },
  "race": {
+  "lapCheck": {
+   "agree": 0.9787,
+   "cmpFixed": 2,
+   "n": 1033,
+   "ok": true,
+   "shift": 0
+  },
   "pace": {
    "ALB": 2.025,
    "ALO": 4.189,
@@ -32,38 +39,38 @@
   "paceCoef": {
    "agePerLap": {
     "H": 0.0254,
-    "M": 0.0196,
+    "M": 0.0197,
     "S": 0.0081
    },
    "base": "H",
    "compound": {
-    "M": 0.621,
-    "S": -0.182
+    "M": 0.623,
+    "S": -0.178
    },
-   "fuelFullRace": -0.568,
+   "fuelFullRace": -0.569,
    "laps": 828,
-   "sigma": 0.433,
-   "traffic": 0.313
+   "sigma": 0.434,
+   "traffic": 0.315
   },
   "paceCtx": {
-   "ALB": 2.076,
-   "ALO": 3.554,
+   "ALB": 2.095,
+   "ALO": 3.551,
    "ANT": 0.037,
    "BEA": 2.132,
-   "BOR": 2.161,
-   "BOT": 5.049,
+   "BOR": 2.16,
+   "BOT": 5.047,
    "COL": 1.328,
-   "HAM": 1.05,
-   "LEC": 0.535,
+   "HAM": 1.051,
+   "LEC": 0.536,
    "LIN": 2.823,
    "NOR": 0.0,
-   "OCO": 2.299,
-   "PER": 3.735,
+   "OCO": 2.298,
+   "PER": 3.734,
    "PIA": 0.502,
-   "RUS": 0.846,
+   "RUS": 0.847,
    "SAI": 1.849,
-   "STR": 3.806,
-   "VER": 0.99
+   "STR": 3.803,
+   "VER": 0.991
   },
   "paceN": {
    "ALB": 47,
@@ -86,7 +93,7 @@
    "VER": 49
   },
   "paceSe": {
-   "ALB": 0.126,
+   "ALB": 0.128,
    "ALO": 0.155,
    "ANT": 0.126,
    "BEA": 0.13,
@@ -183,6 +190,13 @@
   }
  },
  "sprint": {
+  "lapCheck": {
+   "agree": 1.0,
+   "cmpFixed": 0,
+   "n": 360,
+   "ok": true,
+   "shift": 0
+  },
   "pace": {
    "ALB": 2.034,
    "ALO": 3.916,

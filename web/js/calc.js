@@ -16,6 +16,7 @@ import {
   isDriver,
   money,
   pct,
+  simRange,
   sameTeam,
   sgn,
   shortDate,
@@ -271,13 +272,17 @@ export function renderSettings() {
   if (modalKind === "editor") openTeamEditor();
 }
 
-// how closely the pace calibration met the market (Engine.applyOdds diagnostics)
-const oddsFitText = (f) =>
-  !f
+// how closely the pace calibration met the market, measured on the sims shown (Engine.oddsCheck)
+const oddsFitText = (c) =>
+  !c
     ? ""
-    : f.settled
-      ? ` (matched within simulation noise after ${f.iters} steps)`
-      : ` (only partly matched: ${f.resid[f.resid.length - 1].toFixed(2)} log-odds off vs noise ${f.noise.toFixed(2)}; the model's pace can't fully reach the market)`;
+    : c.state === "matched"
+      ? " (matched within simulation noise)"
+      : ` (only partly matched: ${c.resid.toFixed(2)} log-odds off vs noise ${c.noise.toFixed(2)}; ${
+          c.state === "moving"
+            ? "the fit was still closing in when its steps ran out"
+            : "the model's pace can't reach every line at once"
+        })`;
 // what else shapes the next race's simulation: the market, rain, safety car, grid penalties, results already in
 // where the sims came from: the build's default-settings run (the first part while the rest loads) or this device
 function simSource() {
@@ -296,9 +301,7 @@ function raceInputs() {
     pens = Object.entries((su.simOpt && su.simOpt.pen) || {}).filter(([, v]) => v);
   const names = { q: "qualifying", sq: "sprint qualifying", s: "sprint", race: "race grid (official)" };
   const bits = [
-    su.odds
-      ? `Betting market at ${Math.round(state.oddsW * 100)}%${oddsFitText(su.model.oddsFit)}.`
-      : "No market odds.",
+    su.odds ? `Betting market at ${Math.round(state.oddsW * 100)}%${oddsFitText(su.oddsCheck)}.` : "No market odds.",
     `Rain ${Math.round(((c.rain || {}).r || 0) * 100)}%, safety car ${Math.round((c.sc ?? 0) * 100)}%.`,
   ];
   if (pens.length)
@@ -764,10 +767,7 @@ function renderBestTable(ctx) {
     if (k === "dnf" || k === "ov" || k === "neg") return `<td class="muted">${f1(v)}</td>`;
     // a chance from N simulated weekends: ± its 95% simulation error
     const N = forecast.sims[0].N;
-    const moe =
-      v == null
-        ? ""
-        : ` title="± ${(196 * Math.sqrt((v * (1 - v)) / N)).toFixed(1)} points of % (simulation error, 95%)"`;
+    const moe = v == null ? "" : ` title="${simRange(v, N)}"`;
     return `<td class="muted"${moe}>${pct(v)}</td>`;
   };
   const pinned = (ids) => state.pins.findIndex((p) => sameTeam(p.ids, ids));

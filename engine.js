@@ -32,6 +32,12 @@
     // (laps.py: tyres, fuel, traffic, neutralised and wet laps taken out), median where it has no estimate.
     // Review batch 3 (2026-09-27): see docs/history.md for the backtest.
     racePace: "median",
+    // with "ctx": each round's estimate counts ctxTau^2 / (ctxTau^2 + (ctxSeInflate x its standard error)^2), so a
+    // driver the lap model barely pinned down (few clean laps) counts little. Hand-set: ctxTau ~ how much a
+    // driver's race pace moves between races (%); ctxSeInflate for lap errors that are correlated within a stint
+    // (laps.py's standard errors treat them as independent)
+    ctxTau: 0.4,
+    ctxSeInflate: 2,
     dnfHalfLife: Infinity, // backtested: no recency weighting of retirements (every race counts the same)
     dnfShrink: 16, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
     dnfFallback: 0.12, // hand-set: retirement rate before any race has run
@@ -152,8 +158,8 @@
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
-  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
+  /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[] }} Odds */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -966,7 +972,7 @@
   }
 
   /* ---------- model: pace, reliability, overtaking, pit stops from this season's results ---------- */
-  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number }} DriverModel */
+  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfInc?: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number }} DriverModel */
   /** Reliability: retirements per car-race (recency-weighted by dnfHalfLife), per team and grid-wide.
    * @param {Data} data @param {number[]} rounds @param {number} last @param {typeof MODEL} M */
   function reliability(data, rounds, last, M) {
@@ -1020,6 +1026,16 @@
     if (!b) return {};
     return M.racePace === "ctx" && b.paceCtx ? { ...b.pace, ...b.paceCtx } : b.pace || {};
   }
+  /** How much a round's race pace for a driver counts (1, or less for a contextual estimate with a wide standard
+   * error, MODEL.ctxTau). @param {Data} data @param {number} r @param {string} tla @param {typeof MODEL} M */
+  function racePaceWeight(data, r, tla, M) {
+    const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
+    const se = M.racePace === "ctx" && b && b.paceCtx && b.paceCtx[tla] != null && b.paceSe ? b.paceSe[tla] : null;
+    if (se == null) return 1;
+    const t2 = M.ctxTau * M.ctxTau,
+      e = M.ctxSeInflate * se;
+    return t2 / (t2 + e * e);
+  }
   /** Each driver's pace observations: % off the fastest in qualifying (lap times) and race (median clean lap; else
    * finishing order), recency-weighted, for rounds driven for his current team.
    * @param {Data} data @param {Asset[]} drivers @param {number[]} rounds @param {number} last @param {number} decay
@@ -1057,17 +1073,20 @@
           qObs.push([w, g]);
         }
         const lap = racePaceOf(data, r, M)[a.tla];
-        let rg = null;
-        if (lap != null) rg = cap(lap);
-        else if (race && race.cls) {
+        let rg = null,
+          wr = w;
+        if (lap != null) {
+          rg = cap(lap);
+          wr = w * racePaceWeight(data, r, a.tla, M);
+        } else if (race && race.cls) {
           const ncls = rows.filter((x) => x.cls).length || F;
           rg = cap((((race.pos - 0.5) / ncls) * F - 0.5) * M.rankSlope);
         }
         if (rg != null) {
-          rs += w * rg;
-          rw += w;
-          rw2 += w * w;
-          rObs.push([w, rg]);
+          rs += wr * rg;
+          rw += wr;
+          rw2 += wr * wr;
+          rObs.push([wr, rg]);
         }
       }
       return { a, qs, qw, qw2, rs, rw, rw2, qObs, rObs };
@@ -1219,7 +1238,7 @@
     return cModels;
   }
   /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[], bands?: number[], bonusW?: number }} ConsModel stops = recent races' pit points (bands: without the fastest-stop bonus) */
-  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, settled: boolean }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
+  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, targets: Record<string, Record<string, [number, number]>> }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
    * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
@@ -1265,6 +1284,7 @@
       // + adj = faster (grid places); the track shift is + = slower
       const nudge = (adjBy[d.a.id] || 0) - (shiftBy[d.a.team] || 0);
       const n = tN[d.a.team] || 0;
+      const inc = ((dI[d.a.tla] || 0) + M.incShrink * gInc) / ((dN[d.a.tla] || 0) + M.incShrink);
       return {
         id: d.a.id,
         tla: d.a.tla,
@@ -1277,9 +1297,9 @@
         rMu: 0,
         dnf:
           M.dnfModel === "causes"
-            ? ((tM[d.a.team] || 0) + M.dnfShrink * gMech) / (n + M.dnfShrink) +
-              ((dI[d.a.tla] || 0) + M.incShrink * gInc) / ((dN[d.a.tla] || 0) + M.incShrink)
+            ? ((tM[d.a.team] || 0) + M.dnfShrink * gMech) / (n + M.dnfShrink) + inc
             : ((tD[d.a.team] || 0) + M.dnfShrink * gRate) / (n + M.dnfShrink),
+        dnfInc: M.dnfModel === "causes" ? inc : 0,
         dnfN: n + M.dnfShrink,
         ov: M.defaultOvertakes,
         ovU: 0,
@@ -1912,6 +1932,23 @@
   /** How likely a car at this grid slot is caught in a multi-car incident (the midfield most). @param {number} g */
   const incidentWeight = (g) => (g <= 3 ? 0.6 : g <= 16 ? 1.2 : 1);
 
+  /** Per team: the retirement rate its drivers share (the lower of their mechanical rates, so the order they come
+   * in doesn't matter) and its effective number of races; per driver: what his own rate adds on top (his incident
+   * rate under MODEL.dnfModel "causes", 0 for pooled team-mates), so each driver keeps his own chance.
+   * @param {DriverModel[]} D @param {Record<string, number>} teamIdx @param {number} nt */
+  function teamReliability(D, teamIdx, nt) {
+    const teamRate = new Float64Array(nt).fill(Infinity),
+      teamN = new Float64Array(nt),
+      cnt = new Float64Array(nt);
+    D.forEach((d) => {
+      const t = teamIdx[d.team];
+      teamRate[t] = Math.min(teamRate[t], d.dnf - (d.dnfInc || 0));
+      teamN[t] += d.dnfN || 20;
+      cnt[t]++;
+    });
+    for (let t = 0; t < nt; t++) teamN[t] /= cnt[t] || 1;
+    return { teamRate, teamN, incRate: Float64Array.from(D, (d) => d.dnf - teamRate[teamIdx[d.team]]) };
+  }
   /** Everything one simulate() call shares between its stages: the model as arrays, the circuit's numbers, the random
    * stream, each sample's scratch arrays and the tallies over all samples.
    * @param {Model} model @param {Circuit} circuit @param {boolean} sprint @param {number} N @param {number} seed
@@ -1973,9 +2010,10 @@
       ovLvl,
       ovNoSc,
       ovSc: ovNoSc * scOv,
-      // team reliability: Beta around the team's rate with its effective number of races
-      teamRate: D.map((d) => d.dnf),
-      teamN: D.map((d) => d.dnfN || 20),
+      // team reliability: Beta around the team's mechanical rate with its effective number of races, one draw per
+      // team a weekend; each driver adds his own incident rate (MODEL.dnfModel "causes"), so team-mates keep
+      // their own chances whichever comes first
+      ...teamReliability(D, teamIdx, nt),
       // one sample's scratch
       pts: new Float64Array(A),
       neg: new Float64Array(A),
@@ -2342,7 +2380,28 @@
   /** One simulated weekend (sample s): this weekend's draw, the sessions and every asset's score.
    * @param {SimState} S @param {number} s */
   function simSample(S, s) {
-    const { pts, neg, nt, nd, qp, D, unc, r, rp, shock, tOf, teamN, teamRate, dnfP, tShock, rain, qpos, nc, cOf } = S;
+    const {
+      pts,
+      neg,
+      nt,
+      nd,
+      qp,
+      D,
+      unc,
+      r,
+      rp,
+      shock,
+      tOf,
+      teamN,
+      teamRate,
+      incRate,
+      dnfP,
+      tShock,
+      rain,
+      qpos,
+      nc,
+      cOf,
+    } = S;
     const { qb, qbNeg, sprint, sgrid, known, pen, rgrid, C, pitPts, pitSum, A, tot, nn, N, lockQ, lockS } = S;
     pts.fill(0);
     neg.fill(0);
@@ -2358,10 +2417,10 @@
       rp[i] = D[i].rPace + (unc ? gauss(ru) * D[i].rSe * unc : 0);
       const t = tOf[i];
       if (rel[t] < 0) {
-        const k = teamN[i] / Math.max(0.2, unc || 0.2);
-        rel[t] = unc ? beta(Math.max(0.05, teamRate[i] * k), Math.max(0.05, (1 - teamRate[i]) * k), ru) : teamRate[i];
+        const k = teamN[t] / Math.max(0.2, unc || 0.2);
+        rel[t] = unc ? beta(Math.max(0.05, teamRate[t] * k), Math.max(0.05, (1 - teamRate[t]) * k), ru) : teamRate[t];
       }
-      dnfP[i] = rel[t];
+      dnfP[i] = rel[t] + incRate[i];
     }
     for (let i = 0; i < nd; i++) shock[i] = gauss(r) * SIM.drvSd;
     for (let t = 0; t < nt; t++) tShock[t] = gauss(r) * SIM.teamSd;
@@ -2371,13 +2430,29 @@
     }
     // wet sessions: a Gaussian copula, one weekend draw shared by the sessions with correlation rho, so a wet
     // qualifying makes a wet race likelier while each session's own chance stays as forecast
-    const rho = clamp(rain.rho ?? SIM.rainCorr, -0.5, 0.95),
-      zc = gauss(r) * Math.sqrt(Math.max(0, rho)),
-      e = Math.sqrt(1 - Math.max(0, rho));
-    const wet = (/** @type {number} */ p) => p > 0 && normCdf(zc + e * gauss(r)) < p;
-    const wetQ = wet(rain.q ?? 0),
-      wetS = wet(rain.s ?? rain.r ?? 0),
+    // (rho >= 0: a shared factor; rho < 0, sessions pulling apart: the Cholesky factor of the three sessions'
+    // equicorrelation matrix, valid down to -0.5)
+    const rho = clamp(rain.rho ?? SIM.rainCorr, -0.5, 0.95);
+    let wetQ, wetS, wetR;
+    if (rho >= 0) {
+      const zc = gauss(r) * Math.sqrt(rho),
+        e = Math.sqrt(1 - rho);
+      const wet = (/** @type {number} */ p) => p > 0 && normCdf(zc + e * gauss(r)) < p;
+      wetQ = wet(rain.q ?? 0);
+      wetS = wet(rain.s ?? rain.r ?? 0);
       wetR = wet(rain.r ?? 0);
+    } else {
+      const g1 = gauss(r),
+        g2 = gauss(r),
+        g3 = gauss(r),
+        l22 = Math.sqrt(1 - rho * rho),
+        l32 = rho * Math.sqrt((1 - rho) / (1 + rho)),
+        l33 = Math.sqrt(Math.max(0, 1 - rho * rho - l32 * l32));
+      const wet = (/** @type {number} */ p, /** @type {number} */ x) => p > 0 && normCdf(x) < p;
+      wetQ = wet(rain.q ?? 0, g1);
+      wetR = wet(rain.r ?? 0, rho * g1 + l22 * g2);
+      wetS = wet(rain.s ?? rain.r ?? 0, rho * g1 + l32 * g2 + l33 * g3);
+    }
     if (wetR) S.wetN++;
     if (wetQ) S.wetQN++;
     if (wetQ && wetR) S.wetQRN++;
@@ -2597,65 +2672,110 @@
     const RACE = ["win", "podium", "top10"];
     let sim = base;
     const iters = o.iters || 4;
-    // diagnostics (Calculator's race inputs): each step's weighted mean |target - simulated| in log-odds, the
-    // largest pace step (%), and the sampling noise of a simulated log-odds at this n (1 / sqrt(n p (1 - p)))
+    // the targets, per driver and market: [log-odds, weight], the market's chance moved w of the way from the
+    // model's, weighted by sqrt(p (1 - p)) of the market's so long shots don't dominate. Pole only while the
+    // qualifying order isn't known (then it's settled). Kept for oddsCheck, which scores the final model on a run
+    // of its own (the production sims), not on the samples it was fitted to.
+    /** @type {Record<string, Record<string, [number, number]>>} */
+    const targets = {};
+    m.drivers.forEach((d, i) => {
+      /** @type {Record<string, [number, number]>} */
+      const t = {};
+      for (const k of /** @type {const} */ (["win", "podium", "top10", "pole"])) {
+        const mk = odds[k] && odds[k][d.tla];
+        if (mk == null || (k === "pole" && qKnown)) continue;
+        const c = clamp(mk, 0.01, 0.99);
+        t[k] = [(1 - w) * logit(p0[i][k]) + w * logit(mk), Math.sqrt(c * (1 - c))];
+      }
+      targets[d.tla] = t;
+    });
+    // diagnostics: each step's residual (oddsCheck's measure on the samples the step was fitted to) and the
+    // largest pace step, race or qualifying (%)
     /** @type {number[]} */
     const resid = [];
-    let maxStep = 0,
-      noise = 0,
-      nNoise = 0;
+    let maxStep = 0;
     for (let it = 0; it < iters; it++) {
-      let rs = 0,
-        rw = 0;
       maxStep = 0;
+      resid.push(oddsResid(targets, m.drivers, sim).resid);
       m.drivers.forEach((d, i) => {
-        const p = probs(sim, i);
+        const p = probs(sim, i),
+          t = targets[d.tla];
         let num = 0,
           den = 0;
         for (const k of RACE) {
-          const mk = odds[k] && odds[k][d.tla];
-          if (mk == null) continue;
-          const target = (1 - w) * logit(p0[i][k]) + w * logit(mk);
-          const wt = Math.sqrt(clamp(mk, 0.01, 0.99) * (1 - clamp(mk, 0.01, 0.99)));
+          if (t[k] == null) continue;
+          const [target, wt] = t[k];
           num += wt * (target - logit(p[k]));
           den += wt;
-          rs += wt * Math.abs(target - logit(p[k]));
-          rw += wt;
-          if (it === 0) {
-            const pc = clamp(p[k], 0.004, 0.996);
-            noise += 1 / Math.sqrt(n * pc * (1 - pc));
-            nNoise++;
-          }
         }
         const step = den ? clamp(num / den, -3, 3) * 0.12 : 0;
-        maxStep = Math.max(maxStep, Math.abs(step));
         d.rPace -= step;
         d.oddsR = (d.oddsR || 0) - step;
         let qStep = qKnown ? 0 : step * 0.6;
-        const pole = odds.pole && odds.pole[d.tla];
-        if (pole != null && !qKnown) {
-          const target = (1 - w) * logit(p0[i].pole) + w * logit(pole);
-          qStep = 0.5 * qStep + 0.5 * clamp(target - logit(p.pole), -3, 3) * 0.1;
-        }
+        if (t.pole != null) qStep = 0.5 * qStep + 0.5 * clamp(t.pole[0] - logit(p.pole), -3, 3) * 0.1;
         d.qPace -= qStep;
         d.oddsQ = (d.oddsQ || 0) - qStep;
+        maxStep = Math.max(maxStep, Math.abs(step), Math.abs(qStep));
       });
-      resid.push(rw ? Math.round((rs / rw) * 1000) / 1000 : 0);
-      // the last step's result isn't read: no simulation after it
+      // the last step's result isn't read here: no simulation after it (oddsCheck reads it off the production run)
       if (it < iters - 1) sim = simulate(m, circuit, false, n, seed, simOpt);
     }
     finishPositions(m.drivers);
-    const nz = nNoise ? noise / nNoise : 0;
-    // settled: the last residual is within twice the sampling noise, or the last step barely moved anyone
     m.oddsFit = {
       iters,
       n,
       resid,
-      noise: Math.round(nz * 1000) / 1000,
+      noise: oddsResid(targets, m.drivers, base).noise,
       lastStep: Math.round(maxStep * 1000) / 1000,
-      settled: resid[resid.length - 1] <= 2 * nz || maxStep < 0.01,
+      targets,
     };
     return m;
+  }
+
+  /** Weighted mean |target - simulated| in log-odds over every market line applyOdds fitted (pole included), and
+   * the sampling noise of a simulated log-odds at the sim's size (1 / sqrt(N p (1 - p)) at the target, the same
+   * weights). @param {Record<string, Record<string, [number, number]>>} targets @param {{ tla: string }[]} drivers @param {Sim} sim */
+  function oddsResid(targets, drivers, sim) {
+    let rs = 0,
+      nz = 0,
+      rw = 0;
+    drivers.forEach((d) => {
+      const t = targets[d.tla],
+        i = sim.ids.indexOf(/** @type {any} */ (d).id);
+      const st = i >= 0 ? sim.stats[i] : null;
+      if (!t || !st || !st.r || !st.q) return;
+      const rr = /** @type {number[]} */ (st.r);
+      let pod = 0,
+        top = 0;
+      for (let k = 0; k < 10; k++) {
+        if (k < 3) pod += rr[k];
+        top += rr[k];
+      }
+      /** @type {Record<string, number>} */
+      const p = { win: rr[0], podium: pod, top10: top, pole: /** @type {number[]} */ (st.q)[0] };
+      for (const [k, [target, wt]] of Object.entries(t)) {
+        const pt = clamp(1 / (1 + Math.exp(-target)), 0.004, 0.996);
+        rs += wt * Math.abs(target - logit(p[k]));
+        nz += wt / Math.sqrt(sim.N * pt * (1 - pt));
+        rw += wt;
+      }
+    });
+    const r3 = (/** @type {number} */ x) => Math.round(x * 1000) / 1000;
+    return { resid: rw ? r3(rs / rw) : 0, noise: rw ? r3(nz / rw) : 0 };
+  }
+  /** @typedef {{ resid: number, noise: number, state: "matched" | "moving" | "unreachable" }} OddsCheck */
+  /** How closely a model fitted by applyOdds meets its market targets, scored on a run of its own (the production
+   * sims, other samples than the fit's): "matched" = within twice the sampling noise; "moving" = off, and the
+   * fit's last step still moved pace (more steps would help); "unreachable" = off with the fit at rest (targets the
+   * model can't meet together). Null without a fit. @param {Model} model @param {Sim} sim
+   * @returns {OddsCheck | null} */
+  function oddsCheck(model, sim) {
+    const f = model.oddsFit;
+    if (!f || !f.targets) return null;
+    const { resid, noise } = oddsResid(f.targets, model.drivers, sim);
+    /** @type {OddsCheck["state"]} */
+    const state = resid <= 2 * noise ? "matched" : f.lastStep >= 0.01 ? "moving" : "unreachable";
+    return { resid, noise, state };
   }
 
   /* ---------- price change rule (fitted to this season's price history; backtest/prices.js) ---------- */
@@ -3162,11 +3282,12 @@
       model = applyOdds(model, c, odds, {
         w: o.oddsW ?? SIM.oddsW,
         seed: g.gd * 31 + 7,
-        simOpt: oddsKnown(simOpt, odds, g),
+        simOpt: oddsKnown(simOpt, odds, g, (wk && wk.penAt) || {}),
       });
     const fl = next && odds && odds.fl;
     if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
-    return { circuit: c, model, simOpt, odds: !!odds };
+    // oddsCheck: set by forecastRaces once the race is simulated
+    return { circuit: c, model, simOpt, odds: !!odds, oddsCheck: /** @type {OddsCheck | null} */ (null) };
   }
   /** The page's forecast: the next three races, each set up by raceSetup with setup(g, k) and simulated with one persist
    * seed (sample s is one coherent future: the same car strength each race). The page runs it (web/js/forecast.js)
@@ -3175,14 +3296,22 @@
   function forecastRaces(data, o) {
     const races = data.schedule.filter((g) => !data.done.includes(g.gd)).slice(0, 3);
     const setups = races.map((g, k) => raceSetup(data, g, o.setup(g, k)));
-    const persist = races.length ? races[0].gd * 104729 + 1 : 0;
-    const sims = races.map((g, k) =>
-      simulate(setups[k].model, setups[k].circuit, k === 0 ? o.sprint0 : g.sprint, o.sims, g.gd * 7919 + 13, {
+    const sims = races.map((g, k) => {
+      const { seed, persist } = raceSeeds(g, races[0]);
+      return simulate(setups[k].model, setups[k].circuit, k === 0 ? o.sprint0 : g.sprint, o.sims, seed, {
         ...setups[k].simOpt,
         persist,
-      }),
-    );
+      });
+    });
+    // how closely the next race's market fit holds on these sims (other samples than the fit's own)
+    if (setups[0]) setups[0].oddsCheck = oddsCheck(setups[0].model, sims[0]);
     return { races, setups, sims };
+  }
+  /** A race's seeds in the forecast: its own, and the persist seed shared by the forecast's races (from the first
+   * of them). The page, the frozen record (project) and the Sim lab all take them from here, so the same job draws
+   * the same samples everywhere. @param {Gameday} g @param {Gameday} first */
+  function raceSeeds(g, first) {
+    return { seed: g.gd * 7919 + 13, persist: first.gd * 104729 + 1 };
   }
   /** Whether the next race's team lock has passed at the data's time. @param {Data} data */
   function pastLock(data) {
@@ -3251,39 +3380,51 @@
     }
     return rows.length >= 10 ? rows.sort((x, y) => x.pos - y.pos).map((x) => x.tla) : null;
   }
-  /** What the market saw when it was quoted: grid penalties always (they're announced before qualifying, and the
-   * odds are refetched with them); the qualifying order only if the quote is from after qualifying ended (odds.at).
-   * @param {SimOpts} simOpt @param {Odds} odds @param {Gameday} g @returns {SimOpts} */
-  function oddsKnown(simOpt, odds, g) {
+  /** What the market saw when it was quoted (odds.at: when its books were fetched, the oldest of them): grid
+   * penalties race control announced before then (penAt: TLA -> announcement time; one without a time, like a
+   * penalty set by hand, counts as known), and the qualifying order only if the quote is from after qualifying ended.
+   * @param {SimOpts} simOpt @param {Odds} odds @param {Gameday} g @param {Record<string, string>} [penAt]
+   * @returns {SimOpts} */
+  function oddsKnown(simOpt, odds, g, penAt = {}) {
     const known = simOpt.known || {};
+    const at = odds.at ? Date.parse(odds.at) : NaN;
     const q = (g.sessions || []).find((x) => x.type === "Qualifying");
-    const after = !!(odds.at && q && q.end && Date.parse(odds.at) >= Date.parse(q.end));
+    const after = !!(q && q.end && at >= Date.parse(q.end));
     /** @type {Record<string, string[]>} */
     const k = {};
     if (after && known.q) k.q = known.q;
     if (after && known.race) k.race = known.race;
-    return { pen: simOpt.pen, known: k };
+    /** @type {Record<string, number>} */
+    const pen = {};
+    for (const [t, v] of Object.entries(simOpt.pen || {})) if (!penAt[t] || !(at < Date.parse(penAt[t]))) pen[t] = v;
+    return { pen, known: k };
   }
   // the random stream behind every simulation: bump when mulberry32, gauss or the order of draws changes, so a
   // stored forecast says which sequence produced it
   // 2: the weekend's weather drawn as a copula; 3: pace / reliability redraws before the driver form draws, and
-  // opt.persist per-sample streams (review batch 4)
-  const RNG_VERSION = "mulberry32+box-muller-cos/3";
+  // opt.persist per-sample streams (review batch 4); 4: a negative weather correlation draws three session normals
+  // (second review, 2026-09-27; rho >= 0 draws as in 3)
+  const RNG_VERSION = "mulberry32+box-muller-cos/4";
   /** Run fn() with some engine settings changed ({"SIM.qSkew": 2, ...}), then put the shipped values back.
    * @template T @param {Record<string, unknown>} set @param {() => T} fn @returns {T} */
   function withSettings(set, fn) {
     const objs = /** @type {Record<string, Record<string, unknown>>} */ ({ MODEL, SIM, TRACK });
-    const keep = Object.keys(set).map((k) => {
+    // check every key and value before changing anything, so a bad one can't leave the others changed
+    const plan = Object.keys(set).map((k) => {
       const [o, f] = k.split(".");
       if (!objs[o] || !(f in objs[o])) throw new Error(`withSettings: unknown setting ${k}`);
-      const old = objs[o][f];
-      objs[o][f] = set[k];
-      return () => (objs[o][f] = old);
+      const old = objs[o][f],
+        v = set[k];
+      if (old != null && typeof old !== "object" && typeof v !== typeof old)
+        throw new Error(`withSettings: ${k} must be a ${typeof old}`);
+      if (typeof v === "number" && !Number.isFinite(v)) throw new Error(`withSettings: ${k} must be finite`);
+      return { obj: objs[o], f, old, v };
     });
     try {
+      for (const x of plan) x.obj[x.f] = x.v;
       return fn();
     } finally {
-      keep.reverse().forEach((undo) => undo());
+      for (const x of plan.reverse()) x.obj[x.f] = x.old;
     }
   }
   /** Challengers: named variants frozen next to the shipped model at every lock (tools/freeze.js) and scored against
@@ -3343,8 +3484,10 @@
       pw: o.pw,
       oddsW: o.oddsW,
     });
-    const { circuit, model, simOpt, odds } = setup;
-    const seed = g.gd * 7919 + 13;
+    const { circuit, model, odds } = setup;
+    // the page's own run of this race (forecastRaces): the same seeds, persist included
+    const { seed, persist } = raceSeeds(g, g);
+    const simOpt = { ...setup.simOpt, persist };
     const sim = simulate(model, circuit, g.sprint, o.sims, seed, simOpt);
     /** @type {Record<string, { x: number, p25: number, p75: number, sd?: number, q?: number[] }>} */
     const assets = {};
@@ -3378,7 +3521,7 @@
         sprint: g.sprint,
         defaults: o,
         settings: settingsSnapshot(),
-        oddsFit: model.oddsFit || null,
+        oddsFit: model.oddsFit ? { ...model.oddsFit, check: oddsCheck(model, sim) } : null,
         scOver: sim.scOver,
         quantiles: PROJ_Q,
         setup: JSON.parse(JSON.stringify({ model, circuit, simOpt }, (_, v) => (v === Infinity ? "Infinity" : v))),
@@ -3580,6 +3723,7 @@
     raceLaps,
     raceSegs,
     applyOdds,
+    oddsCheck,
     priceStep,
     priceBase,
     pricePath,
@@ -3593,6 +3737,7 @@
     blendMean,
     raceSetup,
     forecastRaces,
+    raceSeeds,
     pastLock,
     atLock,
     withSettings,

@@ -9,6 +9,13 @@
   }
  },
  "race": {
+  "lapCheck": {
+   "agree": 0.9778,
+   "cmpFixed": 2,
+   "n": 992,
+   "ok": true,
+   "shift": 0
+  },
   "pace": {
    "ALB": 2.329,
    "ALO": 4.155,

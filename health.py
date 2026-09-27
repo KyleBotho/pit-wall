@@ -84,6 +84,17 @@ def problems(data, now):
                     "Jolpica's classification missing).",
                 )
             )
+        # second review: lap records checked against FastF1 once telemetry.py has the round (laps.reconcile)
+        chk = rb.get("lapCheck")
+        if chk and not chk.get("ok"):
+            out.append(
+                (
+                    f"lapcheck:{g['gd']}",
+                    "warn",
+                    f"{name(g)}: OpenF1's lap times match FastF1's for only {chk.get('agree', 0):.0%} of laps under "
+                    "any lap numbering: no lap-model pace for this race.",
+                )
+            )
         hist = [h["gd"] for h in (data.get("elite") or {}).get("history") or [] if not h.get("est")]
         if race and now > race + 24 * H and hist and max(hist) < g["gd"]:
             out.append(

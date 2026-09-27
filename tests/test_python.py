@@ -84,6 +84,21 @@ class FeedHelpers(unittest.TestCase):
                 json.dump([1, 2], f)
             self.assertEqual(f1feeds.get_soft("https://example.invalid/x", p), [1, 2])
 
+    def test_soft_fetch_says_when_its_answer_was_fetched(self):
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(f1feeds.time, "sleep"):
+            p = os.path.join(d, "x.json")
+            meta = {}
+            with mock.patch.object(f1feeds, "_read", return_value="[1]"):
+                f1feeds.get_soft("https://example.invalid/x", p, meta=meta)
+            self.assertTrue(meta["fresh"])
+            with open(p + ".at", "w") as f:
+                f.write("2026-09-01T10:00+00:00")
+            meta = {}
+            with mock.patch.object(f1feeds, "_read", side_effect=OSError("401")):
+                self.assertEqual(f1feeds.get_soft("https://example.invalid/x", p, meta=meta), [1])
+            # the cached copy keeps its own time, not the time of the failed attempt
+            self.assertEqual(meta, {"fresh": False, "at": "2026-09-01T10:00+00:00"})
+
     def test_a_block_page_is_not_cached_or_retried(self):
         calls = []
 
@@ -121,6 +136,33 @@ class FeedHelpers(unittest.TestCase):
             self.assertEqual(f1feeds.get("https://example.invalid/x", p, reuse=True), {"ok": 1})
             self.assertEqual(f1feeds.get("https://example.invalid/x", p, reuse=True), {"ok": 1})
             self.assertEqual(os.listdir(d), ["x.json"])
+
+
+class MarketOdds(unittest.TestCase):
+    def test_a_cached_book_keeps_its_own_time(self):
+        import extras
+
+        tlas = [f"D{i:02d}" for i in range(12)]
+
+        def fake(url, path, reuse=False, meta=None):
+            if "events?" in url:
+                return {"events": [{"event_ticker": "KXF1RACE-AZEGP26", "sub_title": "Azerbaijan Grand Prix 26"}]}
+            series = url.split("event_ticker=")[1].split("-")[0]
+            if meta is not None:
+                # the winner book fresh; the others failed and came from the cache, fetched before qualifying
+                fresh = series == "KXF1RACE"
+                meta.update(fresh=fresh, at="2026-09-19T15:00+00:00" if fresh else "2026-09-18T09:00+00:00")
+            ms = [
+                {"ticker": f"{series}-AZEGP26-{t}", "yes_bid_dollars": "0.05", "yes_ask_dollars": "0.07"} for t in tlas
+            ]
+            return {"markets": ms}
+
+        kept = []
+        o = extras.odds(fake, lambda n: n, "Azerbaijan Grand Prix", 2026, set(tlas), 22, lambda e, b: kept.append(b))
+        self.assertEqual(o["at"], "2026-09-18T09:00+00:00")  # the oldest book decides what the market knew
+        self.assertEqual(o["asOf"]["win"], "2026-09-19T15:00+00:00")
+        self.assertEqual(sorted(o["stale"]), ["fl", "podium", "pole", "top10"])
+        self.assertEqual(list(kept[0]), ["win"])  # only fresh quotes go into the archive
 
 
 class ForecastRecord(unittest.TestCase):
@@ -503,6 +545,36 @@ class LapModel(unittest.TestCase):
         ]
         w = [(a - self.T0, b - self.T0) for a, b in laps.neutral_windows(rc, 90)]
         self.assertEqual(w, [(100, 400 + 135), (1000, 1100 + 45), (2000, 2000 + 6 * 90)])
+
+    def test_lap_records_line_up_with_fastf1_or_give_no_pace(self):
+        import laps
+
+        cols = laps.COLS
+        ix = {c: i for i, c in enumerate(cols)}
+
+        def row(n, t, cmp="I", age=5):
+            r = [None] * len(cols)
+            r[ix["lap"]], r[ix["time"]], r[ix["cmp"]], r[ix["age"]] = n, t, cmp, age
+            return r
+
+        times = [90 + (k * 0.37) % 2 for k in range(12)]
+        ff = {
+            "cols": ["lap", "lapTime", "cmp", "life"],
+            "laps": {"AAA": [[n, times[n - 1], "MEDIUM", n + 2] for n in range(1, 13)]},
+        }
+        # OpenF1 numbers every lap one short (R1 2026) and puts the car on the wrong tyre (R5 2026)
+        canon = {"cols": cols, "laps": {"AAA": [row(n - 1, times[n - 1]) for n in range(2, 13)]}, "quality": {}}
+        out = laps.with_ff(canon, ff)
+        self.assertEqual(out["quality"]["ff"]["shift"], 1)
+        self.assertTrue(out["quality"]["ff"]["ok"])
+        r = out["laps"]["AAA"][0]
+        self.assertEqual((r[ix["lap"]], r[ix["cmp"]], r[ix["age"]]), (2, "M", 3))
+        self.assertEqual(canon["laps"]["AAA"][0][ix["lap"]], 1)  # the input isn't changed
+        # times that match under no numbering: no contextual pace
+        bad = {"cols": cols, "laps": {"AAA": [row(n, 80.0 + n) for n in range(1, 13)]}, "quality": {}}
+        out = laps.with_ff(bad, ff)
+        self.assertFalse(out["quality"]["ff"]["ok"])
+        self.assertIsNone(laps.fit_pace(out))
 
     def session(self, pace, n_laps=30, vary=False):
         """Synthetic race: lap time = 90 x (1 + pace %) + tyre wear - fuel burn, one stop. vary: each car stops

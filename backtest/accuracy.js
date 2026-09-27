@@ -50,9 +50,9 @@ const key = (() => {
     h.update(fs.readFileSync(f));
   h.update(JSON.stringify(Object.entries(D).filter(([k]) => !VOLATILE.has(k))));
   h.update(JSON.stringify(certified));
-  h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI]));
+  h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI, N]));
   const arch = path.join(ROOT, "history", String(D.season));
-  for (const d of ["projections", "challengers"]) hashDir(h, path.join(arch, d));
+  for (const d of ["projections", "challengers", "samples"]) hashDir(h, path.join(arch, d));
   return h.digest("hex").slice(0, 12);
 })();
 

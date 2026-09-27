@@ -21,7 +21,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `tools/health_issue.py` (refresh.yml's `health` job) keeps one "Data health" GitHub issue (label `data-health`) in
   step: opened, a comment (= email) when something new is listed, closed when clear. Public data only.
 - `f1feeds.py` — shared feed helpers: paced `get` / `get_soft` / `get_optional` raising `FeedError` (never
-  `sys.exit` deep inside), `feed_time`, `ev_code`. The private repo's `leagues.py` imports it from its checkout.
+  `sys.exit` deep inside), `feed_time`, `ev_code`. `get_soft(meta={})` reports fresh/cached and the real fetch
+  time (a `.at` stamp next to the cached copy): odds `at` / `asOf` / `stale`, weather `at` use it, never the
+  refresh time. The private repo's `leagues.py` imports it from its checkout.
 - `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
   example team. Embedded as `DATA.cfg`; update it before a new season. `config/feeds.json` — user agent, pacing,
   scoring-event codes (shared by Python, the page data and the Supabase function).
@@ -46,6 +48,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `laps.py` — canonical lap records (OpenF1 laps + stints + race control + weather, with context and quality
   flags) -> `history/<season>/laps/gdNN.json`, the contextual race-pace model (`paceCtx`, MODEL.racePace "ctx") and
   retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`.
+  `reconcile` (each refresh, once telemetry.py has the round): lap numbers lined up with FastF1's lap times,
+  compound + tyre age from FastF1, pace refitted, `lapCheck` in the race block; < 90% agreement = no `paceCtx`.
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
   fuel/tyre/compound-corrected) gaps, plus each session's reference lap `ref` (s; the track's average speed). A stint still open (no `lap_end`) runs to the driver's last lap. When OpenF1
   refuses a session, `fastf1_session` reads the same laps from F1's live-timing archive with FastF1 (optional
@@ -250,7 +254,8 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   more overtaking), within noise.
   Sprint share of race overtakes swings 0.17-0.92 between sprints: measured, shrunk to 0.4 with 3 pseudo-sprints.
 - Weather (2026-09-27): wet sessions from a Gaussian copula, rho from the ECMWF ensemble (else SIM.rainCorr 0.3,
-  hand-set; independent sessions were +0.015 CRPS). Pit: band points resampled per team, the +5 fastest stop to
+  hand-set; independent sessions were +0.015 CRPS). Negative rho (sessions pulling apart) is sampled too, since
+  the second review (Cholesky, to -0.5). Pit: band points resampled per team, the +5 fastest stop to
   one team a race (SIM.pitBonus). The Calculator's races share each sample's car strength (opt.persist).
 - Pit points: resample the team's own pit scoring lines (R FP/FP2) over the last 8 races. OpenF1 stop times match
   the official bands only 42/62 team-races (rounded, not DHL timing), so they're archived but not used.
@@ -278,6 +283,11 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
 Everything finished, with the reasoning and evidence behind it, is in `docs/history.md` (dated entries). Search
 there before re-deciding something.
 
+- [ ] Second review (`docs/reviews/2026-09-27/F1-post-upgrade-review.md`, 7.5/10): findings A-G fixed
+      2026-09-27 (history). Open from it: the market fit is still MOVING after 4 steps (0.3-0.4 log-odds off the
+      targets, the Calculator now says so): more steps = a higher effective market weight, decide with a backtest;
+      plus sections 4-8 (provisional sessions, pit bonus edges, solver flags, adaptive sampling, planner,
+      performance). Don't retune on the same R5-R15: wait for frozen rounds.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap

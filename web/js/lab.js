@@ -123,7 +123,8 @@ function labSetOwner(ok) {
 // and the sims are timed apart: the market fit is most of a default run.
 function labJob(set, g, k, N) {
   const { track, ...opts } = setupOpts(g, k);
-  return { set, g, opts, sprint: k === 0 ? sprintNext() : g.sprint, N, seed: g.gd * 7919 + 13 };
+  // the page's own seeds (persist included), so the shipped model's run here is the Calculator's run
+  return { set, g, opts, sprint: k === 0 ? sprintNext() : g.sprint, N, ...Engine.raceSeeds(g, upcoming[0]) };
 }
 function runJob(E, data, job) {
   return E.withSettings(job.set, () => {
@@ -137,7 +138,11 @@ function runJob(E, data, job) {
       ...("SIM.oddsW" in job.set ? { oddsW: E.SIM.oddsW } : {}),
     });
     const t1 = performance.now();
-    const sim = E.simulate(setup.model, setup.circuit, job.sprint, job.N, job.seed, { ...setup.simOpt, trace: true });
+    const sim = E.simulate(setup.model, setup.circuit, job.sprint, job.N, job.seed, {
+      ...setup.simOpt,
+      persist: job.persist,
+      trace: true,
+    });
     return { setup, sim, msSetup: t1 - t0, ms: performance.now() - t1 };
   });
 }

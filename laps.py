@@ -20,6 +20,11 @@ non-starter, else "other" (a mechanical failure or a solo crash race control did
   python laps.py backfill [--rounds 1-15]   canonical laps -> history/<season>/laps/gdNN.json and the pace and
                                             retirements into history/<season>/races/gdNN.json (cached / paced)
   python laps.py audit [--rounds 1-14]      OpenF1 vs the FastF1 lap archive (history/<season>/telemetry/laps)
+
+Checked against FastF1 (second review, 2026-09-27): once the FastF1 archive of a session is in (telemetry.py),
+`reconcile` lines OpenF1's lap numbers up with it (R1 2026: OpenF1's lap n is FastF1's n + 1), takes the compound
+and tyre age from it (OpenF1's stints put a driver on the wrong tyre in R5, R6, R10, R11) and refits the pace. A
+session whose lap times don't agree with FastF1's under any shift gets no contextual pace (quality.ff.ok false).
 """
 
 import argparse
@@ -34,6 +39,7 @@ COLS += ["slow"]
 CMP = {"SOFT": "S", "MEDIUM": "M", "HARD": "H", "INTERMEDIATE": "I", "WET": "W"}
 TRAFFIC_GAP = 2.0  # s: closer than this to the car ahead at the line costs time (dirty air)
 MIN_LAPS = 5  # clean laps a driver needs for a pace estimate
+FF_AGREE = 0.9  # share of laps whose times must match FastF1's (to 0.01 s) for a session to count as aligned
 RIDGE = 1.0  # on the non-driver terms (log-seconds scale, laps as units)
 INCIDENT_WINDOW = 2  # laps before the retirement lap in which an incident involving the car makes it an incident
 SKIP_INCIDENTS = ("STARTING PROCEDURE", "TRACK LIMITS", "PIT LANE", "UNNECESSARILY SLOWLY", "UNSAFE RELEASE")
@@ -183,6 +189,94 @@ def quality(laps):
     }
 
 
+# ---------------------------------------------------------------- checked against FastF1
+
+
+def align(canon, ff, shifts=(0, 1, -1, 2, -2)):
+    """The lap-number shift that makes OpenF1's lap times match FastF1's archive of the same session:
+    {shift, agree (share of laps in both with equal times), n (laps compared)}; the unshifted numbering wins ties."""
+    ia = {c: i for i, c in enumerate(ff["cols"])}
+    ib = {c: i for i, c in enumerate(canon["cols"])}
+    best = {"shift": 0, "agree": 0.0, "n": 0}
+    for sh in shifts:
+        n = same = 0
+        for t, rows in canon["laps"].items():
+            fa = {r[ia["lap"]]: r for r in ff["laps"].get(t, [])}
+            for r in rows:
+                x = fa.get(r[ib["lap"]] + sh)
+                if not x or r[ib["time"]] is None or x[ia["lapTime"]] is None:
+                    continue
+                n += 1
+                same += abs(r[ib["time"]] - x[ia["lapTime"]]) < 0.01
+        agree = same / n if n else 0.0
+        if agree > best["agree"] + 1e-9:
+            best = {"shift": sh, "agree": round(agree, 4), "n": n}
+    return best
+
+
+def with_ff(canon, ff):
+    """canon checked against FastF1: renumbered by the best shift, compound and tyre age from FastF1 (its TyreLife
+    counts the lap itself: age = life - 1), quality.ff = {shift, agree, n, ok, cmpFixed}. The input isn't changed."""
+    a = align(canon, ff)
+    ok = a["agree"] >= FF_AGREE
+    ia = {c: i for i, c in enumerate(ff["cols"])}
+    ib = {c: i for i, c in enumerate(canon["cols"])}
+    laps, fixed = {}, 0
+    for t, rows in canon["laps"].items():
+        fa = {r[ia["lap"]]: r for r in ff["laps"].get(t, [])}
+        out = []
+        for r in rows:
+            r = list(r)
+            r[ib["lap"]] += a["shift"] if ok else 0
+            x = fa.get(r[ib["lap"]]) if ok else None
+            if x:
+                c = CMP.get(str(x[ia["cmp"]] or "").upper(), (x[ia["cmp"]] or "")[:1] or None)
+                if c and c != r[ib["cmp"]]:
+                    fixed += 1
+                    r[ib["cmp"]] = c
+                if x[ia["life"]] is not None:
+                    r[ib["age"]] = max(0, int(x[ia["life"]]) - 1)
+            out.append(r)
+        laps[t] = out
+    q = dict(canon.get("quality") or {})
+    q["ff"] = {**a, "ok": ok, "cmpFixed": fixed}
+    return {**canon, "laps": laps, "quality": q}
+
+
+FF_KEY = {"race": "R", "sprint": "S"}
+
+
+def reconcile(archived, read_json, write_json, gd):
+    """Once the FastF1 archive of a round is in: its OpenF1 lap records checked against it (with_ff) and the pace
+    refitted, both archives rewritten. Returns the round's updated race record, or None when there was nothing to do
+    (no FastF1 archive yet, or already checked)."""
+    lp, rp, fp = archived("laps", f"gd{gd:02d}.json"), archived("races", f"gd{gd:02d}.json"), None
+    fp = archived("telemetry", "laps", f"gd{gd:02d}.json")
+    if not (os.path.exists(lp) and os.path.exists(rp) and os.path.exists(fp)):
+        return None
+    lap_rec, rec, ff = read_json(lp), read_json(rp), read_json(fp).get("sessions") or {}
+    changed = False
+    for key, code in FF_KEY.items():
+        canon = lap_rec.get(key)
+        if not canon or not canon.get("laps") or "ff" in (canon.get("quality") or {}) or not ff.get(code):
+            continue
+        canon = with_ff(canon, ff[code])
+        lap_rec[key] = canon
+        block = rec.setdefault(key, {})
+        for k in ("paceCtx", "paceSe", "paceN", "paceCoef"):
+            block.pop(k, None)
+        fit = fit_pace(canon)
+        if fit:
+            block.update(paceCtx=fit["pace"], paceSe=fit["se"], paceN=fit["n"], paceCoef=fit["coef"])
+        block["lapCheck"] = canon["quality"]["ff"]
+        changed = True
+    if not changed:
+        return None
+    write_json(lp, lap_rec, separators=(",", ":"))
+    write_json(rp, rec, indent=1, sort_keys=True)
+    return rec
+
+
 # ---------------------------------------------------------------- the pace model
 
 
@@ -212,6 +306,8 @@ def fit_pace(canon):
         import numpy as np
     except ImportError:
         return None
+    if not ((canon.get("quality") or {}).get("ff") or {"ok": True})["ok"]:
+        return None  # lap numbers that don't line up with FastF1's: compound, tyre age and fuel would be off
     rows = clean_laps(canon)
     counts = {}
     for r in rows:

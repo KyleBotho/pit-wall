@@ -543,21 +543,48 @@ test("oddsKnown: the qualifying order conditions the market only if the quote ca
   });
   assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T08:00+00:00" }, g), { pen: { VER: 5 }, known: {} });
   assert.deepEqual(E.oddsKnown(simOpt, {}, g), { pen: { VER: 5 }, known: {} });
+  // a penalty race control announced after the quote: the market didn't know it (a hand-set one always counts)
+  const penAt = { VER: "2026-10-03T09:30+00:00" };
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T08:00+00:00" }, g, penAt), { pen: {}, known: {} });
+  assert.deepEqual(E.oddsKnown(simOpt, { at: "2026-10-03T10:00+00:00" }, g, penAt).pen, { VER: 5 });
 });
 
 test("simulate: the weekend's weather is one regime: marginals as forecast, sessions wet together", () => {
   const m = toyModel();
   const run = (rain) => E.simulate(m, { ...circuit, rain }, false, 40000, 2, { unc: 0 });
-  for (const rho of [0, 0.6]) {
+  for (const rho of [-0.4, 0, 0.6]) {
     const sim = run({ q: 0.4, r: 0.5, s: 0.5, rho });
     assert.ok(Math.abs(sim.wetQ - 0.4) < 0.01 && Math.abs(sim.wet - 0.5) < 0.01, `${sim.wetQ} ${sim.wet}`);
     const want = E.biNormCdf(E.normInv(0.4), E.normInv(0.5), rho);
     assert.ok(Math.abs(sim.wetQR - want) < 0.01, `rho ${rho}: ${sim.wetQR} vs ${want}`);
   }
+  // pulling apart: the review's fixture (both 50%, rho -0.4: 18.45% together, not the independent 25%)
+  const apart = run({ q: 0.5, r: 0.5, s: 0.5, rho: -0.4 });
+  assert.ok(Math.abs(apart.wetQR - 0.1845) < 0.008, `${apart.wetQR}`);
   // the ensemble's joint wet share back as a correlation
   assert.ok(Math.abs(E.latentCorr(0.4, 0.5, E.biNormCdf(E.normInv(0.4), E.normInv(0.5), 0.6)) - 0.6) < 0.02);
   const c = E.withWeather({ ...circuit, rain: {} }, { q: 0.4, r: 0.5, ens: { q: 0.4, r: 0.5, qr: 0.2 } });
   assert.ok(Math.abs(c.rain.rho) < 0.03); // 0.4 x 0.5: independent
+});
+
+test("simulate: team-mates keep their own retirement chances, whichever comes first", () => {
+  // the review's fixture (2026-09-27, second round): 1% and 80% used to become both drivers' 1% or 80% by order
+  const dry = { ...circuit, rain: { q: 0, s: 0, r: 0 } };
+  for (const unc of [0, 1]) {
+    const m = toyModel();
+    m.drivers[10].dnf = 0.01;
+    m.drivers[11].dnf = 0.8;
+    const rev = { ...m, drivers: [...m.drivers].reverse() };
+    const run = (mm) => {
+      const sim = E.withSettings({ "SIM.incident": 0 }, () => E.simulate(mm, dry, false, 20000, 5, { unc }));
+      return (id) => sim.stats[sim.ids.indexOf(id)].dnf;
+    };
+    for (const dnf of [run(m), run(rev)]) {
+      const lo = dnf("D50"),
+        hi = dnf("D51");
+      assert.ok(Math.abs(lo - 0.01) < 0.006 && Math.abs(hi - 0.8) < 0.015, `${unc}: ${lo} ${hi}`);
+    }
+  }
 });
 
 test("simulate: the race's fastest-stop bonus goes to one team a race, among the best stop bands", () => {
