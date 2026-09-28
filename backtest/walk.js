@@ -236,6 +236,7 @@ function evaluate(o = {}) {
     ms: 0,
     byRound: [],
     recs: [],
+    events: [],
   };
   for (const r of rounds) {
     const Dr = asOf(r);
@@ -292,6 +293,10 @@ function evaluate(o = {}) {
         bias: p - y,
         in80: y >= st.p10 + sh && y <= st.p90 + sh,
         in50: y >= st.p25 + sh && y <= st.p75 + sh,
+        // the same scores against only the samples that match what happened (a group formed after the fact:
+        // a race with a safety car against the sim's safety-car races, a wet one against its wet ones)
+        cSc: condScore(sim, i, 1, tags.sc, y - sh),
+        cWet: condScore(sim, i, 2, tags.wet, y - sh),
       });
       // position log scores and per-category errors (drivers)
       if (A.kind === "D") {
@@ -309,6 +314,10 @@ function evaluate(o = {}) {
       }
     });
     out.rho.push(spearman(xs, ys));
+    // the event forecasts themselves: the sim's chance of a race safety car / a wet race vs what happened
+    const before = D.done.filter((g) => g < r).map(roundTags),
+      rate = (k) => (before.length ? mean(before.map((t) => (t[k] ? 1 : 0))) : 0.5);
+    out.events.push({ gd: r, sc: [sim.sc, tags.sc, rate("sc")], wet: [sim.wet, tags.wet, rate("wet")] });
     // log score of the fastest lap: the simulated chance of whoever set it
     const flRow = (D.results.race[r] || []).find((x) => x.fl);
     const flI = flRow ? sim.ids.findIndex((id) => D.assets.find((a) => a.id === id).tla === flRow.tla) : -1;
@@ -373,27 +382,60 @@ function evaluate(o = {}) {
     msPerRound: out.ms / rounds.length,
     byRound: out.byRound,
     groups: groups(out.recs),
+    events: eventCalib(out.events),
   };
 }
 
 // calibration by group (reviews' deferred evaluation item): the same scores for drivers / constructors, sprint /
 // normal weekends, wet / dry races and races with / without a safety car (race control: SC or VSC)
 const GROUPS = {
-  drivers: (x) => x.kind === "D",
-  constructors: (x) => x.kind === "C",
-  sprint: (x) => x.sprint,
-  normal: (x) => !x.sprint,
-  wet: (x) => x.wet,
-  dry: (x) => !x.wet,
-  "safety car": (x) => x.sc,
-  "no safety car": (x) => !x.sc,
+  drivers: [(x) => x.kind === "D"],
+  constructors: [(x) => x.kind === "C"],
+  sprint: [(x) => x.sprint],
+  normal: [(x) => !x.sprint],
+  wet: [(x) => x.wet, "cWet"],
+  dry: [(x) => !x.wet, "cWet"],
+  "safety car": [(x) => x.sc, "cSc"],
+  "no safety car": [(x) => !x.sc, "cSc"],
 };
+// Grouping by what happened (a safety car, rain) splits even a perfect forecast: its range mixes both kinds of race,
+// so it looks too narrow where the event happened and too wide, and off-centre, where it didn't. Those groups are
+// also scored against the matching samples (cond): that is the fair test of how the sim plays such a race.
+
+/** Scores of asset i against only the samples whose event bit matches `want` (null if fewer than 50). */
+function condScore(sim, i, bit, want, y) {
+  if (!sim.ev) return null;
+  const N = sim.N,
+    xs = [];
+  for (let s = 0; s < N; s++) if ((sim.ev[s] & bit) > 0 === !!want) xs.push(sim.tot[i * N + s]);
+  if (xs.length < 50) return null;
+  const x = Float64Array.from(xs).sort(),
+    q = (p) => x[Math.min(x.length - 1, Math.floor(p * x.length))];
+  return { crps: crps(x, y), in80: y >= q(0.1) && y <= q(0.9), in50: y >= q(0.25) && y <= q(0.75), bias: mean(xs) - y };
+}
+
+/** The sim's chance of a race safety car / a wet race vs what happened: mean forecast, actual rate, Brier score. */
+function eventCalib(evs) {
+  const one = (k) => {
+    const xs = evs.map((e) => e[k]);
+    return {
+      n: xs.length,
+      forecast: mean(xs.map(([p]) => p)),
+      actual: mean(xs.map(([, y]) => (y ? 1 : 0))),
+      brier: mean(xs.map(([p, y]) => (p - (y ? 1 : 0)) ** 2)),
+      // the Brier score of forecasting this season's rate so far (known before the round; lower is better)
+      brierFlat: mean(xs.map(([, y, f]) => (f - (y ? 1 : 0)) ** 2)),
+    };
+  };
+  return evs.length ? { sc: one("sc"), wet: one("wet") } : null;
+}
 
 /** What happened in round r, for grouping scores (after the fact; never a model input). */
 function roundTags(r) {
   const g = D.schedule.find((x) => x.gd === r) || {};
   const race = (D.raceInfo?.[r] || {}).race || {};
-  return { sprint: !!g.sprint, wet: !!race.rain, sc: (race.sc || 0) + (race.vsc || 0) > 0 };
+  // sc: a full safety car (the sim has no VSC; its safety-car samples are what a race with one is scored against)
+  return { sprint: !!g.sprint, wet: !!race.rain, sc: (race.sc || 0) > 0 };
 }
 
 /** Per-asset records {gd, kind, sprint, wet, sc, err, bias, crps?, in80?, in50?} -> {group: {rounds, n, crps, mae,
@@ -405,9 +447,10 @@ function groups(recs) {
     return v.length ? v.filter((x) => x[k]).length / v.length : null;
   };
   const out = {};
-  for (const [k, f] of Object.entries(GROUPS)) {
+  for (const [k, [f, ck]] of Object.entries(GROUPS)) {
     const xs = recs.filter(f);
     if (!xs.length) continue;
+    const cs = ck ? xs.map((x) => x[ck]).filter(Boolean) : [];
     out[k] = {
       rounds: new Set(xs.map((x) => x.gd)).size,
       n: xs.length,
@@ -416,6 +459,18 @@ function groups(recs) {
       bias: avg(xs.map((x) => x.bias)),
       cover80: share(xs, "in80"),
       cover50: share(xs, "in50"),
+      // against the matching samples (see GROUPS)
+      ...(cs.length
+        ? {
+            cond: {
+              n: cs.length,
+              crps: avg(cs.map((c) => c.crps)),
+              bias: avg(cs.map((c) => c.bias)),
+              cover80: share(cs, "in80"),
+              cover50: share(cs, "in50"),
+            },
+          }
+        : {}),
     };
   }
   return out;

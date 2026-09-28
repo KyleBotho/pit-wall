@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-28T06:43Z",
- "key": "0d8cb55edb29",
+ "generated": "2026-09-28T06:48Z",
+ "key": "1349a237dd3c",
  "N": 3000,
  "rounds": [
   {
@@ -296,7 +296,8 @@
     "mae": 9.66,
     "bias": 3.62,
     "cover80": 0.82,
-    "cover50": 0.73
+    "cover50": 0.73,
+    "cond": null
    },
    "dry": {
     "rounds": 10,
@@ -305,7 +306,8 @@
     "mae": 12.08,
     "bias": 0.87,
     "cover80": 0.81,
-    "cover50": 0.51
+    "cover50": 0.51,
+    "cond": null
    },
    "safety car": {
     "rounds": 5,
@@ -314,7 +316,8 @@
     "mae": 13.5,
     "bias": -0.6,
     "cover80": 0.74,
-    "cover50": 0.43
+    "cover50": 0.43,
+    "cond": null
    },
    "no safety car": {
     "rounds": 6,
@@ -323,7 +326,8 @@
     "mae": 10.5,
     "bias": 2.56,
     "cover80": 0.86,
-    "cover50": 0.61
+    "cover50": 0.61,
+    "cond": null
    }
   }
  }

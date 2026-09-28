@@ -5,6 +5,18 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, checked before building the "timed safety car" challenger (the group table had SC races
+      under-covered, 74% / 43%): grouping by what happened splits even a perfect forecast (its range mixes SC and
+      no-SC futures). The sim now marks each sample (sim.ev: bit 1 race SC, bit 2 wet race; no extra draws,
+      output-identical), and walk.js scores wet / SC groups against the matching samples too ("matching" columns in
+      section 6, "Matching races" in Model health). R5-R15: SC races 78% / 45%, no-SC 84% / 56% (80 / 50 honest):
+      the spread was mostly the grouping. Left: a bias split (-0.7 SC vs +2.7 no-SC, 5 vs 6 rounds, weak). Event
+      forecasts (section 6): race SC 56% forecast vs 45% seen, Brier 0.274 vs 0.308 for the season's rate so far
+      (skill); wet race 25% vs 9%, Brier 0.160 vs 0.099 (worse than the naive rate; one wet race, at-lock forecasts
+      for R4/R5 only: for the weather calibration once vintages exist). Decision: no timed-SC challenger now.
+      Found on the way: 2026 race control says "VSC DEPLOYED", extras.race_info / priors.py counted only "VIRTUAL
+      SAFETY CAR DEPLOYED" (every 2026 VSC read as 0; laps.py had both). Shared f1feeds.VSC_DEPLOYED / VSC_ENDING;
+      R1-R15 recounted from the cached race control: VSCs in 10 of 15 races. Nothing in the model read them.
 - [x] 2026-09-28, Budget view like f1fantasytools' budget builder (user sent their Required Points / Simulation Odds
       screenshots: "match what they are doing ... easy to read and needs little interpreting", split by tier): four
       tables (drivers / constructors x Tier A $18.5m+ / Tier B), a column per price step (the $3m floor / $34m cap

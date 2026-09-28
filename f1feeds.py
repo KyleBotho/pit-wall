@@ -178,6 +178,11 @@ def account_key(guid):
     return hashlib.sha256(str(guid).encode()).hexdigest()[:16]
 
 
+# race control's virtual safety car, as worded before 2026 and since (2026: "VSC DEPLOYED"); str.startswith takes both
+VSC_DEPLOYED = ("VIRTUAL SAFETY CAR DEPLOYED", "VSC DEPLOYED")
+VSC_ENDING = ("VIRTUAL SAFETY CAR ENDING", "VSC ENDING")
+
+
 def ev_code(session, name):
     """Scoring-event category code, e.g. ("Race", "Race Position Gained") -> "R PG"."""
     n = name.strip().lower()

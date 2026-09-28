@@ -31,6 +31,12 @@ class FeedHelpers(unittest.TestCase):
         self.assertIsNone(f1feeds.feed_time({}))
         self.assertIsNone(f1feeds.feed_time(None))
 
+    def test_vsc_in_either_wording(self):
+        # 2026 race control says "VSC DEPLOYED"; the old wording was counted alone until 2026-09-28 (all 0)
+        for m in ("VSC DEPLOYED", "VIRTUAL SAFETY CAR DEPLOYED"):
+            self.assertTrue(m.startswith(f1feeds.VSC_DEPLOYED))
+        self.assertFalse("SAFETY CAR DEPLOYED".startswith(f1feeds.VSC_DEPLOYED))
+
     def test_ev_code(self):
         self.assertEqual(f1feeds.ev_code("Race", "Race Position Gained"), "R PG")
         self.assertEqual(f1feeds.ev_code("Race", "2nd Fastest Pitstop"), "R FP2")

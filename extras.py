@@ -17,6 +17,8 @@ import re
 import statistics
 from datetime import datetime, timedelta, timezone
 
+from f1feeds import VSC_DEPLOYED
+
 OPENF1 = "https://api.openf1.org/v1"
 KALSHI = "https://api.elections.kalshi.com/trade-api/v2"
 # Kalshi series: probability per driver, and how many drivers each market pays out on (to normalise the book)
@@ -161,7 +163,7 @@ def _race_block(get_soft, cached, s, num2, results=None, archive=None):
             stops.setdefault(who[1], []).append(p["stop_duration"])
     block = {
         "sc": sum(1 for m in msgs if m.startswith("SAFETY CAR DEPLOYED")),
-        "vsc": sum(1 for m in msgs if m.startswith("VIRTUAL SAFETY CAR DEPLOYED")),
+        "vsc": sum(1 for m in msgs if m.startswith(VSC_DEPLOYED)),
         "red": int(any(m.get("flag") == "RED" for m in rc)),
         "rain": int(sum(1 for w in wx if w.get("rainfall")) >= 3),
         "pits": {t: sorted(v) for t, v in stops.items()},

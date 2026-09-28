@@ -325,8 +325,21 @@ function walkForward() {
       bias: +g.bias.toFixed(2),
       "in 10-90%": (100 * g.cover80).toFixed(0) + "%",
       "in 25-75%": (100 * g.cover50).toFixed(0) + "%",
+      // wet / safety-car groups against the sim's own matching races (walk.js GROUPS)
+      "matching: bias": g.cond ? +g.cond.bias.toFixed(2) : "",
+      "10-90%": g.cond ? (100 * g.cond.cover80).toFixed(0) + "%" : "",
+      "25-75%": g.cond ? (100 * g.cond.cover50).toFixed(0) + "%" : "",
     })),
   );
+  const ev = shipped.events;
+  if (ev)
+    for (const [k, name] of [
+      ["sc", "race safety car"],
+      ["wet", "wet race"],
+    ])
+      console.log(
+        `   ${name}: forecast ${(100 * ev[k].forecast).toFixed(0)}% on average, happened in ${(100 * ev[k].actual).toFixed(0)}% of ${ev[k].n} rounds; Brier ${ev[k].brier.toFixed(3)} (this season's rate so far: ${ev[k].brierFlat.toFixed(3)}; lower is better)`,
+      );
   const b = W.baselines();
   const best = W.evaluate({ N: 1000, decision: true }).best;
   console.log(

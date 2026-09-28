@@ -2064,7 +2064,7 @@
     }
     return order;
   }
-  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, scOver?: number, wet: number, wetQ?: number, wetQR?: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
+  /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, ev?: Uint8Array, scOver?: number, wet: number, wetQ?: number, wetQR?: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
   /** @typedef {{ persist?: number, known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean, lean?: boolean }} SimOpts */
   const SIM_CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"]; // scoring categories per driver
   /** Driver of the Day vote weight for a finishing position and places gained. @param {number} pos @param {number} g */
@@ -2195,6 +2195,10 @@
       pitSum: new Float64Array(nc),
       cat: new Float64Array(nd * SIM_CATS.length), // points by scoring category, for calibration and breakdowns
       scN: 0,
+      // per sample: bit 1 = a safety car in the race, bit 2 = a wet race (after-the-fact grouping in the backtests:
+      // a race that had one is scored against the samples that had one)
+      ev: new Uint8Array(N),
+      cur: 0,
       scOver: 0, // races whose retirements alone make more safety cars than the circuit's rate
       ovMult: 1, // this weekend's overtaking factor (SIM.ovEnv)
       wetN: 0,
@@ -2410,7 +2414,10 @@
     // retirements alone bring out more safety cars than the circuit's rate: counted, and the rate can't be met
     if (base < 0 && !isSprint) S.scOver++;
     const sc = r() < 1 - (1 - clamp(base, 0, p)) * Math.pow(1 - q, nOut);
-    if (!isSprint && sc) S.scN++;
+    if (!isSprint && sc) {
+      S.scN++;
+      S.ev[S.cur] |= 1;
+    }
     const fin = [];
     const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
     const tauNow = tau * (sc ? SIM.scTau : 1);
@@ -2539,6 +2546,7 @@
   /** One simulated weekend (sample s): this weekend's draw, the sessions and every asset's score.
    * @param {SimState} S @param {number} s */
   function simSample(S, s) {
+    S.cur = s;
     const {
       pts,
       neg,
@@ -2614,7 +2622,10 @@
       wetR = wet(rain.r ?? 0, rho * g1 + l22 * g2);
       wetS = wet(rain.s ?? rain.r ?? 0, rho * g1 + l32 * g2 + l33 * g3);
     }
-    if (wetR) S.wetN++;
+    if (wetR) {
+      S.wetN++;
+      S.ev[s] |= 2;
+    }
     if (wetQ) S.wetQN++;
     if (wetQ && wetR) S.wetQRN++;
     qualiOrder(S, qpos, true, wetQ, known.q);
@@ -2775,6 +2786,7 @@
       nn,
       stats,
       sc: scN / N,
+      ev: S.ev,
       scOver: scOver / N,
       wet: wetN / N,
       wetQ: S.wetQN / N,

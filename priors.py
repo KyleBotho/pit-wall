@@ -16,7 +16,7 @@ import json
 import os
 from datetime import datetime
 
-from f1feeds import FeedError, get, load_config
+from f1feeds import VSC_DEPLOYED, FeedError, get, load_config
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CACHE = os.path.join(HERE, "cache")
@@ -108,7 +108,7 @@ def openf1_race(session_key, reuse=True):
     msgs = [(m.get("message") or "").upper() for m in rc]
     info = {
         "sc": sum(1 for m in msgs if m.startswith("SAFETY CAR DEPLOYED")),
-        "vsc": sum(1 for m in msgs if m.startswith("VIRTUAL SAFETY CAR DEPLOYED")),
+        "vsc": sum(1 for m in msgs if m.startswith(VSC_DEPLOYED)),
         "red": int(any(m.get("flag") == "RED" for m in rc)),
         "rain": int(sum(1 for w in wx if w.get("rainfall")) >= 3),  # a few wet readings, not one stray drop
     }

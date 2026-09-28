@@ -176,6 +176,31 @@ test("Model health: season summary, rounds newest first, misses, and the fit pro
     },
   });
   assert.match(grp, /By group/);
-  assert.match(grp, /wet<\/td><td>1<\/td><td>7\.93<\/td><td>9\.7<\/td><td>\+3\.6<\/td><td>82%<\/td><td>73%<\/td><td>–/);
+  assert.match(
+    grp,
+    /wet<\/td><td>1<\/td><td>7\.93<\/td><td>9\.7<\/td><td>\+3\.6<\/td><td>82%<\/td><td>73%<\/td><td><\/td><td>–/,
+  );
+  // a wet / safety-car group scored against the matching simulated races as well
+  const cond = mh({
+    accuracy: {
+      ...acc,
+      season: {
+        ...acc.season,
+        groups: {
+          "safety car": {
+            rounds: 5,
+            crps: 9.5,
+            mae: 13.5,
+            bias: -0.6,
+            cover80: 0.74,
+            cover50: 0.43,
+            cond: { cover80: 0.78, cover50: 0.45 },
+          },
+        },
+      },
+    },
+  });
+  assert.match(cond, /Matching races/);
+  assert.match(cond, /43%<\/td><td>78% \/ 45%<\/td>/);
   assert.match(grp, /safety car<\/td><td>–<\/td>.*<td>1<\/td><td>14\.8<\/td><td>\+2\.5<\/td><td>36%/);
 });

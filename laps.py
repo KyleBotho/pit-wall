@@ -34,6 +34,8 @@ import re
 import statistics
 from datetime import datetime, timezone
 
+from f1feeds import VSC_DEPLOYED, VSC_ENDING
+
 COLS = ["lap", "start", "time", "s1", "s2", "s3", "cmp", "age", "stint", "pitIn", "pitOut", "neutral", "wet", "gap"]
 COLS += ["slow"]
 CMP = {"SOFT": "S", "MEDIUM": "M", "HARD": "H", "INTERMEDIATE": "I", "WET": "W"}
@@ -73,9 +75,9 @@ def neutral_windows(rc, lap_s):
             open_.setdefault("sc", t)
         elif msg.startswith("SAFETY CAR IN THIS LAP"):
             close("sc", t, 1.5)
-        elif msg.startswith(("VIRTUAL SAFETY CAR DEPLOYED", "VSC DEPLOYED")):
+        elif msg.startswith(VSC_DEPLOYED):
             open_.setdefault("vsc", t)
-        elif msg.startswith(("VIRTUAL SAFETY CAR ENDING", "VSC ENDING")):
+        elif msg.startswith(VSC_ENDING):
             close("vsc", t, 0.5)
         elif m.get("flag") == "RED":
             open_.setdefault("red", t)
