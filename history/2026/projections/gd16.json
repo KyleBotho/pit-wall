@@ -902,9 +902,9 @@
   "s": 0.1656859280319779
  },
  "record": {
-  "built": "2026-09-28T07:02:49+00:00",
-  "commit": "c6cc29ce4c913e63dd2ebf1582d10c375db71fe1",
-  "dataGenerated": "2026-09-28T07:02+00:00",
+  "built": "2026-09-28T07:11:56+00:00",
+  "commit": "f48ce798ab07071cc103a31306d213a5710d5cf5",
+  "dataGenerated": "2026-09-28T07:11+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -928,10 +928,10 @@
    "practice": "548ccdd2249f",
    "priors": "be73a4218704",
    "raceInfo": "e88c2b29324d",
-   "results": "1fef1a19aa39",
+   "results": "8593c2164317",
    "schedule": "6035d999051c",
    "trackStats": "2293a535916b",
-   "weather": "f0ca349cea41",
+   "weather": "c7d60d2d5025",
    "weekend": "1e7d3cf53da7"
   },
   "lock": "2026-10-03T16:00:00+08:00",
