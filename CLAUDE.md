@@ -73,7 +73,13 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   entry `main.js`; `tools/bundle.js` (esbuild) bundles them and supabase-js from npm into one script that refresh.py
   inlines (so `python refresh.py` needs `npm ci`). Engine and Hindsight stay classic scripts (also used by Node);
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
-  setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). `worker.js` = the engine worker shared by the lab
+  setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6).
+  Challengers never run in a visitor's browser (they're frozen and scored on GitHub), and what only the lab uses
+  stays out of the page everyone downloads (user, 2026-09-28): refresh.py `lab_split` moves Model health and the
+  challengers' inputs (raceInfo pacePool / scLaps / lapsRun, the priors' scLaps / lapsRun; LAB_KEYS,
+  LAB_RACE_FIELDS, LAB_PRIOR_FIELDS) into `lab-<hash>.json` next to index.html (`DATA.labFile`); lab.js `labData`
+  fetches and merges it for owners / admins (the worker gets the data again). A new challenger-only input goes into
+  those lists. `worker.js` = the engine worker shared by the lab
   and the Calculator (2026-09-28): `compute()` runs non-default sims there (returns false; `setSimDone` redraws),
   and caches runs by their inputs (`simKey`) so blend / xPts / preset changes don't re-simulate. Every derived
   model comes from the variant's own data (the track model per variant, `ctx.tm[v]`: as at lock = the practice

@@ -891,7 +891,7 @@ def content_policy(html):
             "style-src 'unsafe-inline' https://fonts.googleapis.com",
             "font-src https://fonts.gstatic.com",
             "img-src 'self' data:",
-            # Supabase, and this site itself for the build's sims (presim-*.bin)
+            # Supabase, and this site itself for the build's sims (presim-*.bin) and the lab's data (lab-*.json)
             f"connect-src 'self' {sb.group(1)}",
             # the Sim lab's worker: built in the page from its own (hash-allowed) engine script
             "worker-src blob:",
@@ -924,10 +924,56 @@ def presim(data, out_dir):
         return None
 
 
+# What only the owner-only Sim lab uses (the challengers' inputs and Model health), kept out of the page everyone
+# downloads (user, 2026-09-28: challengers have no bearing on normal users): a separate file next to index.html that
+# the lab fetches for owners and admins (web/js/lab.js labData). Top-level keys moved whole; per-row fields moved
+# out of raceInfo's race / sprint blocks and the priors' rows.
+LAB_KEYS = ("modelHealth",)
+LAB_RACE_FIELDS = ("pacePool", "scLaps", "lapsRun")
+LAB_PRIOR_FIELDS = ("scLaps", "lapsRun")
+
+
+def lab_split(data):
+    """(the page's data, the lab's payload): LAB_KEYS and the challenger-only fields moved from one to the other."""
+    page = {k: v for k, v in data.items() if k not in LAB_KEYS}
+    lab = {k: data[k] for k in LAB_KEYS if k in data}
+    race, ri = {}, {}
+    for gd, rec in (data.get("raceInfo") or {}).items():
+        ri[gd], keep = dict(rec), {}
+        for s in ("race", "sprint"):
+            b = rec.get(s)
+            if isinstance(b, dict) and any(f in b for f in LAB_RACE_FIELDS):
+                keep[s] = {f: b[f] for f in LAB_RACE_FIELDS if f in b}
+                ri[gd][s] = {k: v for k, v in b.items() if k not in LAB_RACE_FIELDS}
+        if keep:
+            race[gd] = keep
+    if "raceInfo" in data:
+        page["raceInfo"] = ri
+    pri = data.get("priors")
+    if pri and pri.get("races"):
+        rows = {i: {f: r[f] for f in LAB_PRIOR_FIELDS if f in r} for i, r in enumerate(pri["races"])}
+        lab["priorRows"] = {i: v for i, v in rows.items() if v}
+        page["priors"] = {
+            **pri,
+            "races": [{k: v for k, v in r.items() if k not in LAB_PRIOR_FIELDS} for r in pri["races"]],
+        }
+    lab["raceInfo"] = race
+    return page, lab
+
+
 def build_page(data, out_dir=BUILD):
     os.makedirs(out_dir, exist_ok=True)
     pre = presim({k: v for k, v in data.items() if k != "presim"}, out_dir)
-    out = inline_page({**data, "presim": pre})
+    page, lab = lab_split(data)
+    # content-named, like the presim files: a new build never meets an old file in the browser's cache
+    body = json.dumps(lab, separators=(",", ":"))
+    lab_file = f"lab-{hashlib.sha256(body.encode('utf-8')).hexdigest()[:12]}.json"
+    for f in os.listdir(out_dir):
+        if re.match(r"lab-[0-9a-f]+\.json$", f):
+            os.remove(os.path.join(out_dir, f))
+    with open(os.path.join(out_dir, lab_file), "w", encoding="utf-8") as f:
+        f.write(body)
+    out = inline_page({**page, "presim": pre, "labFile": lab_file})
     # logo files sit next to index.html; link previews need an absolute image URL
     shutil.copytree(os.path.join(HERE, "web", "brand"), os.path.join(out_dir, "brand"), dirs_exist_ok=True)
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as f:

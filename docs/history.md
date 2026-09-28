@@ -5,6 +5,15 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, the lab's data out of the everyday page (user: "since challengers currently have no bearing on the
+      normal users, it should probably not run in their browser and only on github for now. The data can be streamed
+      or triggered for user with owner/admin tag"). Checked first: no challenger ran in a browser (freeze and scoring
+      are on GitHub); what visitors still downloaded for nothing was Model health (3.5 KB) and the challengers'
+      inputs. refresh.py lab_split -> lab-<hash>.json (content-named, next to index.html), fetched by the Sim lab
+      for owners / admins (lab.js labData / mergeLab; worker.js dataChanged re-sends the data, dropping its cached
+      track models). The timed safety car's onsets are only attached to circuits with SIM.scTimed on, so shipped
+      circuits and frozen records are unchanged. Test: page + lab file merge back to the original data. The lab also
+      got switches for race pace (median / lap model / pooled) and the timed safety car.
 - [x] 2026-09-28, the timed safety car as a challenger (user: "yes for the timed safety car as challenger"). Data:
       laps.py sc_laps (race control -> [deployed lap, in lap] per safety car) into each race record (`scLaps`,
       `lapsRun`; extras.race_info, and once for rounds archived before) and into the priors (priors.py, 70 races

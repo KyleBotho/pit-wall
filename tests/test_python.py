@@ -869,6 +869,34 @@ class PageBuild(unittest.TestCase):
         self.assertTrue(block.startswith("{"))
         self.assertNotIn("<", block)  # every "<" escaped, so the data can't end its block
 
+    def test_lab_data_leaves_the_page_and_merges_back(self):
+        """The Sim lab's data (Model health, the challengers' inputs) goes to lab-<hash>.json, not into the page
+        everyone downloads; merged back (as web/js/lab.js mergeLab does) it's the original data."""
+        d = self.data()
+        d["modelHealth"] = {"accuracy": {"rounds": [1]}}
+        gd = next(iter(d["raceInfo"]))
+        d["raceInfo"][gd]["race"] = {**d["raceInfo"][gd]["race"], "pacePool": {"AAA": 1.0}, "scLaps": [[3, 5]]}
+        d["priors"]["races"][0] = {**d["priors"]["races"][0], "scLaps": [[1, 4]], "lapsRun": 50}
+        page, lab = refresh.lab_split(d)
+        self.assertNotIn("modelHealth", page)
+        self.assertNotIn("pacePool", page["raceInfo"][gd]["race"])
+        self.assertNotIn("scLaps", page["priors"]["races"][0])
+        merged = json.loads(json.dumps(page))
+        merged["modelHealth"] = lab["modelHealth"]
+        for g, blocks in lab["raceInfo"].items():
+            for s, f in blocks.items():
+                merged["raceInfo"][g][s].update(f)
+        for i, f in lab["priorRows"].items():
+            merged["priors"]["races"][int(i)].update(f)
+        self.assertEqual(merged, json.loads(json.dumps(d)))
+        # the build writes it next to index.html and names it in the page
+        with tempfile.TemporaryDirectory() as out:
+            refresh.build_page(d, out)
+            files = [f for f in os.listdir(out) if f.startswith("lab-")]
+            self.assertEqual(len(files), 1)
+            with open(os.path.join(out, "index.html"), encoding="utf-8") as f:
+                self.assertIn(f'"labFile":"{files[0]}"', f.read().replace(" ", ""))
+
     def test_content_policy_allows_exactly_the_page_scripts(self):
         html = self.build(self.data())
         policy = re.search(r'<meta http-equiv="Content-Security-Policy" content="([^"]+)">', html).group(1)

@@ -90,7 +90,10 @@ const JOBS = { lab: ${labJob.toString()}, races: ${racesJob.toString()}, sim: ${
 const ctx = {};
 let data = null;
 self.onmessage = (e) => {
-  if (e.data.data) data = e.data.data;
+  if (e.data.data) {
+    data = e.data.data;
+    ctx.tm = null; // models built from the old data
+  }
   try {
     const out = e.data.jobs.map((j) => JOBS[e.data.kind](self.Engine, data, j, ctx));
     self.postMessage({ id: e.data.id, out });
@@ -112,6 +115,8 @@ self.onmessage = (e) => {
   }
   return worker;
 }
+/** DATA changed in place (the lab's data merged in, lab.js): the worker gets it again with the next jobs. */
+export const dataChanged = () => (sent = false);
 /** Whether jobs can go to the worker (it starts on first use). */
 export const workerOk = () => !!engineWorker();
 /** Run jobs of a kind ("lab", "races", "sim") in the worker: a promise of their results, in order. */

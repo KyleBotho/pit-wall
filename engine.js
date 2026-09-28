@@ -1030,7 +1030,7 @@
         c.rain.q = c.rain.r;
         c.rain.s = c.rain.r;
         c.scOv = scOv;
-        if (scAt.length) c.scAt = scAt;
+        if (SIM.scTimed && scAt.length) c.scAt = scAt; // only for the timed safety car: the shipped circuit unchanged
         c.teamShift = Object.fromEntries(
           Object.entries(bTeam).map(([t, b]) => [t, clamp(dot(b, x), -o.teamShiftMax, o.teamShiftMax)]),
         );

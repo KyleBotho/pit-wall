@@ -7,7 +7,7 @@ import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming 
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
 import { BINS, codeBox, compute, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
-import { inWorker, labJob, workerOk } from "./worker.js";
+import { dataChanged, inWorker, labJob, workerOk } from "./worker.js";
 import { rerender, showView } from "./main.js";
 import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
@@ -41,11 +41,23 @@ const LAB_SWITCHES = [
   { g: "Race", o: "SIM", k: "ovModel", l: "Overtakes from the places-moved regression", bit: true },
   { g: "Race", o: "SIM", k: "pitStops", l: "Pit points from the team's real scoring lines", bit: true },
   { g: "Race", o: "SIM", k: "incident", l: "Share of retirements from multi-car incidents", range: [0, 0.5, 0.05] },
+  { g: "Race", o: "SIM", k: "scTimed", l: "Safety car timed: late ones reshuffle (challenger)", bit: true },
   { g: "Track", o: "TRACK", k: "speed", l: "Overtake level from practice average speed", bool: true },
   { g: "Track", o: "TRACK", k: "speedLambda", l: "Average speed: ridge", range: [0, 10, 0.5] },
   { g: "Track", o: "TRACK", k: "teamPace", l: "Team pace by track type", bool: true },
   { g: "Market", o: "SIM", k: "oddsW", l: "Betting-market weight", range: [0, 1, 0.05] },
   { g: "Market", o: "SIM", k: "flOddsW", l: "Fastest lap from the market", range: [0, 1, 0.05] },
+  {
+    g: "Pace",
+    o: "MODEL",
+    k: "racePace",
+    l: "Race pace per round",
+    opts: [
+      ["median", "Median clean lap"],
+      ["ctx", "Lap model (challenger)"],
+      ["pool", "Lap model, pooled (challenger)"],
+    ],
+  },
   { g: "Pace", o: "MODEL", k: "bandQ", l: "Fast-corner band shift into qualifying (4)", range: [0, 2, 0.1] },
   { g: "Pace", o: "MODEL", k: "bandR", l: "Fast-corner band shift into race pace (4)", range: [0, 2, 0.1] },
   { g: "Pace", o: "MODEL", k: "practiceQ", l: "Practice short runs into qualifying pace", range: [0, 1, 0.05] },
@@ -100,6 +112,7 @@ export async function labCheck() {
 function labSetOwner(ok) {
   const was = labOwner;
   labOwner = ok && !SEASON_OVER;
+  if (labOwner) labData(); // the lab's own data, for owners and admins only
   // owners and admins see the live sim, everyone else the one at lock (forecast.js atLock)
   if (labOwner !== was && forecast) {
     compute();
@@ -837,9 +850,40 @@ function labControls() {
     )
     .join("");
 }
+// The lab's own data (refresh.py lab_split: Model health and the challengers' inputs, e.g. the pooled race pace and
+// safety car timings), kept out of the page everyone downloads and fetched here for owners and admins only, then
+// merged into DATA (the worker gets the data again: worker.js dataChanged). Resolves once in (null if it failed).
+let labLoad = null;
+export function labData() {
+  if (!labLoad)
+    labLoad = !DATA.labFile
+      ? Promise.resolve(null)
+      : fetch(DATA.labFile)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((x) => {
+            if (x) mergeLab(x);
+            return x;
+          })
+          .catch(() => null);
+  return labLoad;
+}
+export function mergeLab(x) {
+  if (x.modelHealth) DATA.modelHealth = x.modelHealth;
+  for (const [gd, blocks] of Object.entries(x.raceInfo || {}))
+    for (const [s, f] of Object.entries(blocks)) {
+      const b = DATA.raceInfo && DATA.raceInfo[gd] && DATA.raceInfo[gd][s];
+      if (b) Object.assign(b, f);
+    }
+  const rows = (DATA.priors && DATA.priors.races) || [];
+  for (const [i, f] of Object.entries(x.priorRows || {})) if (rows[i]) Object.assign(rows[i], f);
+  dataChanged();
+}
 export function renderLab() {
   if (!labOwner) return;
-  $("#labHealth").innerHTML = modelHealthHtml(DATA.modelHealth, DATA.schedule);
+  if (!labLoad) labData().then(() => labOwner && state.view === "lab" && renderLab());
+  $("#labHealth").innerHTML = DATA.modelHealth
+    ? modelHealthHtml(DATA.modelHealth, DATA.schedule)
+    : `<p class="note">Loading model health…</p>`;
   const races = upcoming.slice(0, 3);
   $("#labRace").innerHTML = races
     .map(
