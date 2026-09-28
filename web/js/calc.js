@@ -48,6 +48,7 @@ import {
   templateTeam,
   teamDist,
   teamSamples,
+  CHECK_MAX,
   checkSim,
   teamValue,
   xpts,
@@ -679,7 +680,7 @@ export function runOptimiser() {
     );
   if (mc)
     bits.push(
-      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip${mc.checked ? " (judged on a second, independent set of weekends: the set that picked #1 flatters it)" : ""}.`,
+      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip${mc.checked ? ` (judged on ${mc.checkN.toLocaleString()} independent weekends, the set that picked #1 flatters it; more are added while a team near the top is within their noise, up to ${CHECK_MAX.toLocaleString()})` : ""}.`,
     );
   if (near)
     bits.push(
@@ -725,9 +726,10 @@ function simNoise(rows, chipK, H, sortK) {
     r.st.rev1 = false;
   });
   if (H !== 1 || sortK !== "x" || !rows.best.length) return null;
-  const chk = checkSim(() => {
+  const redraw = () => {
     if (state.view === "calc") runOptimiser();
-  });
+  };
+  const chk = checkSim(redraw);
   const sim = chk || forecast.sims[0],
     N = sim.N,
     top = rows.best[0];
@@ -758,7 +760,11 @@ function simNoise(rows, chipK, H, sortK) {
     r.st.rev1 = !!chk && c.reversed;
   }
   ses.sort((a, b) => a - b);
-  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk };
+  // adaptive: while a team near the top is still within the check run's noise of #1, another independent batch
+  // (checkSim grow, up to CHECK_MAX weekends); a tie that survives is within a fraction of a point. Stopping at the
+  // first look that settles it makes the 2-SE rule a little lenient (repeated looks)
+  if (chk && all.slice(0, 6).some((r) => r !== top && r.st.near1)) checkSim(redraw, true);
+  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk, checkN: chk ? chk.N : 0 };
 }
 function renderBestTable(ctx) {
   const { chipK, T: team, vp, tilePts } = ctx,

@@ -43,6 +43,22 @@ export function simJob(E, data, job) {
   return E.simulate(job.model, job.circuit, job.sprint, job.N, job.seed, job.opt);
 }
 
+// two runs of the same race (the same assets in the same order) as one: each asset's weekends one after the other
+export function mergeRuns(a, b) {
+  const A = a.ids.length,
+    n = a.N + b.N,
+    out = { ...a, N: n, batches: (a.batches || 1) + 1 };
+  for (const k of ["tot", "nn"]) {
+    const x = new Float32Array(A * n);
+    for (let i = 0; i < A; i++) {
+      x.set(a[k].subarray(i * a.N, (i + 1) * a.N), i * n);
+      x.set(b[k].subarray(i * b.N, (i + 1) * b.N), i * n + a.N);
+    }
+    out[k] = x;
+  }
+  return out;
+}
+
 let worker = null,
   tried = false,
   sent = false,

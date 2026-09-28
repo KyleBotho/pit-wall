@@ -6,7 +6,7 @@ import { TEMPLATES, pickKey } from "./tracking.js";
 import { rivalRows } from "./sync.js";
 import { labOwner } from "./lab.js";
 import { gunzip, presimSamples } from "./presim.js";
-import { inWorker, racesJob, simJob, workerOk } from "./worker.js";
+import { inWorker, mergeRuns, racesJob, simJob, workerOk } from "./worker.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
@@ -69,26 +69,32 @@ export function compute() {
 // An independent run of the next race (other seeds, the same setup and size), to judge near-ties among the teams the
 // main run picked without the winner's curse (second review): picking the best of many teams on the same samples
 // flatters the pick. Built once per forecast, after the page has drawn (onReady redraws); null until then.
-export function checkSim(onReady) {
+// Adaptive (the reviews' sampling item, 2026-09-28): grow = true adds another independent batch of the same size
+// to the check run, while the top teams are still within its noise (calc.js simNoise), up to CHECK_MAX weekends.
+// Only the check grows: the main run, its aligned futures and the build's presim stay as they are.
+export const CHECK_MAX = 50000;
+export function checkSim(onReady, grow = false) {
   const fc = forecast;
   if (!fc || !fc.setup || !fc.sims.length) return null;
-  if (fc.check) return fc.check;
+  if (fc.check && (!grow || fc.checkPending || fc.check.N + fc.sims[0].N > CHECK_MAX)) return fc.check;
   if (!fc.checkPending) {
     fc.checkPending = true;
     const g = fc.races[0],
       su = fc.setup,
-      { seed, persist } = Engine.raceSeeds(g, g);
+      { seed, persist } = Engine.raceSeeds(g, g),
+      b = fc.check ? fc.check.batches || 1 : 0; // batches so far: each its own seeds
     const job = {
       model: su.model,
       circuit: su.circuit,
       sprint: sprintNext(),
       N: fc.sims[0].N,
-      seed: seed + 1,
-      opt: { ...su.simOpt, persist: persist + 1 },
+      seed: seed + 1 + b * 7907,
+      opt: { ...su.simOpt, persist: persist + 1 + b * 7907 },
     };
     const done = (sim) => {
       if (forecast !== fc) return;
-      fc.check = sim;
+      fc.check = fc.check ? mergeRuns(fc.check, sim) : sim;
+      fc.checkPending = false;
       if (onReady) onReady();
     };
     // in the engine worker, else here once the page has drawn

@@ -312,18 +312,17 @@ there before re-deciding something.
     while adding it: more steps help little, the residual levels off by ~step 6 (R13 0.42 -> ~0.35, R15 0.31 ->
     ~0.27) because one pace per driver can't meet win, podium and top 10 together (the market sees a wider spread
     of results). If the market matters, the lever is a per-driver spread (variance) fitted to the market too.
-  - Models: retirements by distance run, and "other" causes split into unknown vs confirmed mechanical
-    (laps.py lumps them); SC / VSC / red flag as timed events (only the experimental lap models, SIM.raceModel
-    "laps" / "segments", put the SC and retirements on a lap; VSC and red flags nowhere; the default rank model
-    is per race); a fully stochastic transfer / chip planner (planHorizon searches on expected prices, then only
-    re-ranks the plans it kept by `afford`). CHECKED 2026-09-28, not built as challengers: a hierarchical race-pace
-    model (laps.py `hier`: context terms pooled across races moved no driver's pace by more than 0.044%) and timed
-    SC events (the SC groups were a grouping artifact; see Evaluation). DONE 2026-09-28: settings are values, not shared state (engine.js
+  - Models: chip timing across races (the planner plays a chip in the first race only). DONE 2026-09-28: the
+    stochastic planner (Engine.planStoch: plans valued over the simulated futures, a later transfer made where it
+    fits, else the team held; replaces the 90% afford gate). CHECKED 2026-09-28, not built as challengers: a
+    hierarchical race-pace model (laps.py `hier`: context terms pooled across races moved no driver's pace by more
+    than 0.044%), timed SC events (the SC groups were a grouping artifact; see Evaluation), retirements by distance
+    / confirmed cause (8 sprint retirements can't separate 0.36 / 0.40 / 0.45 x; no public source of causes). DONE 2026-09-28: settings are values, not shared state (engine.js
     withSettings swaps in a changed copy; Engine.SIM / MODEL / TRACK are read-only views, a write throws; the fit,
     section 9 and the tests go through withSettings). Checked output-identical (8 switch sets x 4 races, hashes).
-  - Sampling and speed: adaptive sample counts / sequential stopping when the top teams are within noise; the
-    precision of quantile ranges. DONE 2026-09-28: the Calculator's own runs (and its near-tie check) in the engine
-    worker (web/js/worker.js).
+  - Sampling and speed: the precision of quantile ranges. DONE 2026-09-28: the Calculator's own runs (and its
+    near-tie check) in the engine worker (web/js/worker.js); adaptive sampling: the independent check run grows by
+    a batch while a top-6 team is within its noise of #1 (forecast.js checkSim grow, CHECK_MAX 50,000).
   - Evaluation: DONE 2026-09-28: MODEL.ctxSeInflate measured on held-out stints (laps.py `inflate`: 1.85, keeps 2);
     outcome groups (wet / SC) scored against the matching simulated races (sim.ev), SC / rain forecast calibration
     in section 6 (rain runs high: 25% vs 9%, one wet race; wait for the weather vintages). Repeated

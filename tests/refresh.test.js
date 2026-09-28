@@ -204,3 +204,19 @@ test("Model health: season summary, rounds newest first, misses, and the fit pro
   assert.match(cond, /43%<\/td><td>78% \/ 45%<\/td>/);
   assert.match(grp, /safety car<\/td><td>–<\/td>.*<td>1<\/td><td>14\.8<\/td><td>\+2\.5<\/td><td>36%/);
 });
+
+test("mergeRuns: two runs of a race become one, each asset's weekends one after the other", () => {
+  const merge = pageModules(["worker.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } });
+  const got = JSON.parse(
+    merge(
+      `(() => { const m = mergeRuns(
+      { ids: ["a", "b"], N: 2, tot: Float32Array.from([1, 2, 10, 20]), nn: Float32Array.from([1, 2, 10, 20]), stats: [] },
+      { ids: ["a", "b"], N: 3, tot: Float32Array.from([3, 4, 5, 30, 40, 50]), nn: Float32Array.from([3, 4, 5, 30, 40, 50]) });
+      return JSON.stringify({ N: m.N, batches: m.batches, tot: Array.from(m.tot), nn: Array.from(m.nn) }); })()`,
+    ),
+  );
+  assert.equal(got.N, 5);
+  assert.equal(got.batches, 2);
+  assert.deepEqual(got.tot, [1, 2, 3, 4, 5, 10, 20, 30, 40, 50]);
+  assert.deepEqual(got.nn, got.tot);
+});

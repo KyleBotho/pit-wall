@@ -5,6 +5,17 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, the last two deferred items (user: "continue with the two remaining items"). (1) Stochastic planner:
+      Engine.planStoch values each plan the beam search kept over the joint simulated futures (points and price
+      changes from the same sample): race 1 as planned; from race 2, the planned team where its transfers fit that
+      future's budget, else the team held from then on (no transfers or penalty, its best expected Boost); value =
+      mean + race 1's price-value terms (e - x). Plans rank by it (the 90% afford gate goes). Test: a move that fits
+      half the time (320 / 265 -> 292.5) now loses to taking the asset early at a -10 hit (295). Live R16-R18: the
+      best plan holds in 36% of futures and loses 1.9 pts for it (572.0 vs 573.9 if every move fit); the old gate
+      would have demoted it (afford 64%). (2) Adaptive sampling: the Calculator's independent check run (near-ties
+      ≈ / ↑) grows by 10,000-weekend batches (own seeds) while a top-6 team is still within its noise of #1, up to
+      50,000 (forecast.js checkSim grow, worker.js mergeRuns); seen live: a ≈ at 10,000 settled at 20,000. The main
+      run is untouched (aligned futures, presim).
 - [x] 2026-09-28, retirements by distance / by confirmed cause (user: "go on with retirements"): checked, not built.
       Race 66 retirements in 330 starts (20%), sprint 8 in 110 (7.3%: 0.36 x the race, SIM.sprintDnf hand-set 0.4);
       a hazard over distance (a start spike, 10 of 66 at share 0, then flat, none after 0.85: a car past 90% is
