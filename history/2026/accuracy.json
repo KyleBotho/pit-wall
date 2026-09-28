@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-28T08:38Z",
- "key": "7cf1e14a90ad",
+ "generated": "2026-09-28T08:49Z",
+ "key": "d1403b9789ee",
  "N": 3000,
  "config": {},
  "rounds": [
@@ -83,10 +83,10 @@
    "gd": 10,
    "frozen": null,
    "walk": {
-    "crps": 7.27,
-    "mae": 9.79,
-    "bias": 0.77,
-    "rho": 0.83,
+    "crps": 6.62,
+    "mae": 9.34,
+    "bias": 0.79,
+    "rho": 0.85,
     "team": 180
    }
   },
@@ -116,10 +116,10 @@
    "gd": 13,
    "frozen": null,
    "walk": {
-    "crps": 10.65,
-    "mae": 15.21,
-    "bias": -6.47,
-    "rho": 0.73,
+    "crps": 10.34,
+    "mae": 14.93,
+    "bias": -6.35,
+    "rho": 0.75,
     "team": 238
    }
   },
@@ -238,13 +238,13 @@
  },
  "season": {
   "from": 5,
-  "crps": 8.67,
-  "mae": 11.86,
-  "maeD": 10.36,
-  "maeC": 14.87,
-  "bias": 1.12,
+  "crps": 8.59,
+  "mae": 11.8,
+  "maeD": 10.32,
+  "maeC": 14.76,
+  "bias": 1.14,
   "rho": 0.73,
-  "cover80": 0.81,
+  "cover80": 0.8,
   "cover50": 0.53,
   "team": 2042,
   "best": 3170,
@@ -257,18 +257,18 @@
    "drivers": {
     "rounds": 11,
     "n": 242,
-    "crps": 7.61,
-    "mae": 10.36,
+    "crps": 7.55,
+    "mae": 10.32,
     "bias": 0.86,
     "cover80": 0.8,
-    "cover50": 0.55
+    "cover50": 0.56
    },
    "constructors": {
     "rounds": 11,
     "n": 121,
-    "crps": 10.8,
-    "mae": 14.87,
-    "bias": 1.66,
+    "crps": 10.66,
+    "mae": 14.76,
+    "bias": 1.68,
     "cover80": 0.82,
     "cover50": 0.48
    },
@@ -284,11 +284,11 @@
    "normal": {
     "rounds": 8,
     "n": 264,
-    "crps": 8.74,
-    "mae": 11.99,
-    "bias": 0.99,
+    "crps": 8.62,
+    "mae": 11.9,
+    "bias": 1,
     "cover80": 0.78,
-    "cover50": 0.49
+    "cover50": 0.5
    },
    "wet": {
     "rounds": 1,
@@ -303,21 +303,21 @@
    "dry": {
     "rounds": 10,
     "n": 330,
-    "crps": 8.75,
-    "mae": 12.08,
-    "bias": 0.87,
-    "cover80": 0.81,
-    "cover50": 0.51,
+    "crps": 8.65,
+    "mae": 12.01,
+    "bias": 0.89,
+    "cover80": 0.8,
+    "cover50": 0.52,
     "cond": null
    },
    "safety car": {
     "rounds": 5,
     "n": 165,
-    "crps": 9.47,
-    "mae": 13.5,
-    "bias": -0.6,
-    "cover80": 0.74,
-    "cover50": 0.43,
+    "crps": 9.27,
+    "mae": 13.35,
+    "bias": -0.57,
+    "cover80": 0.73,
+    "cover50": 0.44,
     "cond": null
    },
    "no safety car": {
