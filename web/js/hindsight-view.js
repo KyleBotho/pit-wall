@@ -3,11 +3,20 @@ import { $, $$, CHIPS, DATA, Hind, byId, code, esc, infoTip, f0, f1, money, sgn 
 import { activeTeam, state } from "./state.js";
 import { LEAGUE_DATA, save } from "./sync.js";
 import { chip, codeBox, heat } from "./forecast.js";
-import { teamHist, teamKey } from "./league.js";
+import { teamHist, teamKey, tracked } from "./league.js";
 import { filterUI, filters, teamText } from "./filters.js";
 import { addDraft, copyText, inclExcl, matchSearch } from "./calc.js";
 import { toast } from "./main.js";
-export const lineups = (key) => (LEAGUE_DATA && LEAGUE_DATA.lineups && LEAGUE_DATA.lineups[key]) || null; // by teamKey
+// A team's rounds by gameday (by teamKey): the export's records where they exist, else the round worked out from the
+// league feeds (league.js tracked = Hind.track: the line-up seen after the race + the official points; src "seen").
+// Before 2026-09-28 this read the exports only, so every round after the last export was empty here.
+const byGd = new WeakMap();
+export const lineups = (key) => {
+  const tr = LEAGUE_DATA && key ? tracked(key) : null;
+  if (!tr) return (LEAGUE_DATA && LEAGUE_DATA.lineups && LEAGUE_DATA.lineups[key]) || null;
+  if (!byGd.has(tr)) byGd.set(tr, Object.fromEntries(tr.rounds.map((r) => [r.gd, r])));
+  return byGd.get(tr);
+};
 // budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
 // fair comparison)
 const hdCapMode = () => state.hdCap || `team:${state.active}`;
@@ -312,7 +321,7 @@ export function renderHind() {
             return (
               sec(`<b>${esc(t.name)}</b>`) +
               wide(
-                `No line-up saved for R${gd}. Line-ups come from a data export; collect a fresh one to fill new rounds.`,
+                `No line-up for R${gd}: it isn't in a data export, and the league feeds didn't have this team after that race.`,
               )
             );
           const b = Hind.own(r, gd),
@@ -354,7 +363,12 @@ export function renderHind() {
               : "",
           ].filter(Boolean);
           return (
-            sec(`<b>${esc(t.name)}</b>${chipName ? ` <span class="tag sprint">${esc(chipName)}</span>` : ""}`) +
+            sec(
+              `<b>${esc(t.name)}</b>${chipName ? ` <span class="tag sprint">${esc(chipName)}</span>` : ""}` +
+                (r.src === "seen"
+                  ? ` <span class="dim">· worked out from the league feed${r.unexplained ? ": this line-up doesn't rebuild the official score, so Boost and chip are unknown" : r.sure ? "" : " (Boost or chip could be another that scores the same)"}</span>`
+                  : ""),
+            ) +
             hdRow(
               `<span title="The line-up you played">${PERSON_ICON}</span>`,
               hdCells(r.ids, r.boost, r.x3, null, gd, r.chip, r.ff),

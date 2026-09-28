@@ -57,7 +57,7 @@ function lvTeam(team) {
       boost: String(r.boost || ""),
       x3: String(r.x3 || ""),
       chip: r.chip,
-      src: "from your data export",
+      src: r.src === "seen" ? "worked out from the league feed" : "from your data export",
     };
   if (team.example) return null;
   const ids = team.team.slice(),
@@ -71,7 +71,10 @@ function lvTeam(team) {
     boost,
     x3: "",
     chip: null,
-    src: NEXT && gd === NEXT.gd ? "your current team" : "your current team (this round's line-up needs an export)",
+    src:
+      NEXT && gd === NEXT.gd
+        ? "your current team"
+        : "your current team (this round's line-up shows once the league feed has it)",
     autoB: team.boost === "auto",
   };
 }
