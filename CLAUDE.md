@@ -334,10 +334,12 @@ there before re-deciding something.
   - Models: chip timing across races (the planner plays a chip in the first race only). DONE 2026-09-28: the
     stochastic planner (Engine.planStoch: plans valued over the simulated futures, a later transfer made where it
     fits, else the team held; replaces the 90% afford gate; chips scored per future by Engine.chipScore, fourth
-    review). DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): a
-    hierarchical race-pace model (laps.py `hier`: pooling moved a driver by max 0.161% (R6), mean <= 0.044%; the
-    review's screen, pooled vs unpooled: CRPS -0.006 +/- 0.010, inconclusive; before a challenger: residuals by
-    stint / compound, race-stint resampling, actual compounds across races), timed SC events (the matching-event
+    review). CHALLENGER since 2026-09-28 (user: deferred for want of evidence = let it collect evidence): the pooled
+    race pace, `racepool` (MODEL.racePace "pool": laps.py pool_rounds writes `pacePool` into each finished round's
+    race record from extras.race_info, round k pooled with rounds <= k; weights from the race-alone paceSe, as the
+    review screened it). Walk-forward R5-R15 at N 3000: vs shipped +0.025 +/- 0.022, vs racectx +0.003 +/- 0.017
+    (tie). Later refinements if it earns it: residuals by stint / compound, actual compounds across races.
+    DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): timed SC events (the matching-event
     check explained the coverage gap, but onset / duration / pit timing are untested; look at race control's SC
     windows first), retirements by distance / confirmed cause (sprints: 7 unclassified of 110 entries incl. 2 DNS,
     5 of 108 starters, too few to tell 0.36 / 0.40 / 0.45 apart; separate DNS / DSQ / incident / mechanical; causes:
@@ -381,7 +383,7 @@ there before re-deciding something.
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
      2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
-      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
+      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
       records, FastF1 archive, weather vintages + ensemble, Kalshi quotes, FIA index arriving on their own (health
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session

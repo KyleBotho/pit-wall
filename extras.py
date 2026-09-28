@@ -240,6 +240,12 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
                 print(f"  R{gd}: lap records checked against FastF1 {rec['race'].get('lapCheck')}")
         except Exception as e:  # noqa: BLE001
             _warn(f"lap check for gameday {gd}", e)
+    # the pooled race pace (challenger racepool), each round pooled with the rounds up to it
+    try:
+        for gd, rec in lapmod.pool_rounds(archived, read_json, write_json, sorted(out)).items():
+            out[gd] = rec
+    except Exception as e:  # noqa: BLE001
+        _warn("pooled race pace", e)
     return out
 
 

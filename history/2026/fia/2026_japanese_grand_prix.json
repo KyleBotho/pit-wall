@@ -157,7 +157,8 @@
    "title": "Doc 23 - Decision - Car 30 - Alleged incident with car 55",
    "url": "https://www.fia.com/system/files/decision-document/2026_japanese_grand_prix_-_decision_-_car_30_-_alleged_incident_with_car_55.pdf",
    "published": "2026-03-27T06:18+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 24,
@@ -171,14 +172,16 @@
    "title": "Doc 25 - Decision - Car 23 - Alleged incident with car 11",
    "url": "https://www.fia.com/system/files/decision-document/2026_japanese_grand_prix_-_decision_-_car_23_-_alleged_incident_with_car_11.pdf",
    "published": "2026-03-27T06:29+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 26,
    "title": "Doc 26 - Decision - Car 44 - Alleged incident with car 3",
    "url": "https://www.fia.com/system/files/decision-document/2026_japanese_grand_prix_-_decision_-_car_44_-_alleged_incident_with_car_3.pdf",
    "published": "2026-03-27T06:49+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 27,
@@ -227,7 +230,8 @@
    "title": "Doc 33 - Infringement - Car 43 - Impeding of Car 3",
    "url": "https://www.fia.com/system/files/decision-document/2026_japanese_grand_prix_-_infringement_-_car_43_-_impeding_of_car_3.pdf",
    "published": "2026-03-27T08:23+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 34,
@@ -306,7 +310,8 @@
    "title": "Doc 44 - Infringement - Car 81 - Impeding of Car 27",
    "url": "https://www.fia.com/system/files/decision-document/2026_japanese_grand_prix_-_infringement_-_car_81_-_impeding_of_car_27.pdf",
    "published": "2026-03-28T04:34+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 45,

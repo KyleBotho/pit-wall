@@ -246,6 +246,35 @@ class FiaPenalties(unittest.TestCase):
 
 
 class HierPace(unittest.TestCase):
+    def test_pooled_pace_of_a_round_never_sees_a_later_one(self):
+        """pool_rounds (the racepool challenger's input): round k's pooled pace is the same whether the season stops
+        at k or runs on, so the walk-forward and the frozen forecasts never use a later race."""
+        import shutil
+
+        import laps
+
+        src = os.path.join(ROOT, "history", "2026", "laps")
+        if not os.path.isdir(src) or len(os.listdir(src)) < 5:
+            self.skipTest("no lap archive")
+        gds = sorted(int(f[2:4]) for f in os.listdir(src) if re.match(r"gd\d\d\.json$", f))[:6]
+        with tempfile.TemporaryDirectory() as d:
+
+            def archived(*p):
+                return os.path.join(d, *p)
+
+            os.makedirs(archived("laps"))
+            os.makedirs(archived("races"))
+            for gd in gds:
+                shutil.copy(os.path.join(src, f"gd{gd:02d}.json"), archived("laps", f"gd{gd:02d}.json"))
+                refresh.write_json(archived("races", f"gd{gd:02d}.json"), {"race": {}})
+            k = gds[3]
+            laps.pool_rounds(archived, refresh.read_json, refresh.write_json, [g for g in gds if g <= k])
+            early = refresh.read_json(archived("races", f"gd{k:02d}.json"))["race"].get("pacePool")
+            self.assertTrue(early)
+            wrote = laps.pool_rounds(archived, refresh.read_json, refresh.write_json, gds)
+            self.assertNotIn(k, wrote)  # unchanged: nothing to rewrite
+            self.assertEqual(refresh.read_json(archived("races", f"gd{k:02d}.json"))["race"]["pacePool"], early)
+
     def test_pooling_follows_the_spread_between_races(self):
         import laps
 

@@ -1183,6 +1183,33 @@ test("planHorizon: each plan is checked against the sampled price paths (afford)
   assert.equal(waitS.valueFit, 320); // every move made, fitting or not: what holding costs = 320 - 292.5
 });
 
+test("racePace pool: the pooled pace (challenger racepool), weighted by the race-alone fit's errors", () => {
+  const { loadData, readJson, ROOT } = require("./helpers.js");
+  const path = require("node:path"),
+    fs = require("node:fs");
+  const d = loadData();
+  if (!d || !d.raceInfo) return;
+  // the pooled pace from the race archive (laps.py pool_rounds), whatever the last build fetched
+  for (const [gd, ri] of Object.entries(d.raceInfo)) {
+    const f = path.join(ROOT, "history", String(d.season), "races", `gd${String(gd).padStart(2, "0")}.json`);
+    const rec = fs.existsSync(f) ? readJson(f) : null;
+    if (ri.race && rec && rec.race && rec.race.pacePool) ri.race.pacePool = rec.race.pacePool;
+  }
+  if (!Object.values(d.raceInfo).some((x) => x.race && x.race.pacePool)) return;
+  const pace = (set) =>
+    E.withSettings(set, () =>
+      Object.fromEntries(E.buildModel(d, { halfLife: 4, adj: {} }).drivers.map((x) => [x.tla, x.rPace])),
+    );
+  const ctx = pace({ "MODEL.racePace": "ctx" }),
+    pool = pace({ "MODEL.racePace": "pool" }),
+    med = pace({});
+  assert.notDeepStrictEqual(pool, med);
+  assert.notDeepStrictEqual(pool, ctx);
+  // pooling moves race pace by at most a few tenths of a percent (0.16% max on R1-R15)
+  for (const t of Object.keys(pool))
+    if (Number.isFinite(pool[t]) && Number.isFinite(ctx[t])) assert.ok(Math.abs(pool[t] - ctx[t]) < 0.5, t);
+});
+
 test("chipScore: one weekend's points with each chip", () => {
   const p = { a: 30, b: 10, c: -5, d: 0, e: 2, KA: 12, KB: 4 };
   const ids = Object.keys(p),

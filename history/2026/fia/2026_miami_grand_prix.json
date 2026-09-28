@@ -143,7 +143,8 @@
    "title": "Doc 21 - Infringement - Car 16 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_16_-_pit_lane_speeding.pdf",
    "published": "2026-05-01T19:01+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 23,
@@ -185,7 +186,8 @@
    "title": "Doc 28 - Infringement - Car 23 - Track Limits",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_23_-_track_limits.pdf",
    "published": "2026-05-01T23:32+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 29,
@@ -206,21 +208,24 @@
    "title": "Doc 31 - Decision - Car 1 - Alleged failure to follow Race Director's Instructions (SC2-1 Time)",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_1_-_alleged_failure_to_follow_race_directors_instructions_sc2-1_time.pdf",
    "published": "2026-05-01T23:52+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 32,
    "title": "Doc 32 - Decision - Car 18 - Permission to start",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_18_-_permission_to_start.pdf",
    "published": "2026-05-02T00:00+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 33,
    "title": "Doc 33 - Decision - Car 14 - Permission to start",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_14_-_permission_to_start.pdf",
    "published": "2026-05-02T00:08+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 34,
@@ -269,7 +274,8 @@
    "title": "Doc 40 - Infringement - Car 41 - Parc Ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_41_-_parc_ferme.pdf",
    "published": "2026-05-02T14:54+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 41,
@@ -320,7 +326,8 @@
    "title": "Doc 49 - Infringement - Car 12 - Leaving the track without a justifiable reason multiple times",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_12_-_leaving_the_track_without_a_justifiable_reason_multiple_times.pdf",
    "published": "2026-05-02T17:34+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 50,
@@ -334,7 +341,8 @@
    "title": "Doc 51 - Infringement - Car 05 - Engine Intake Air Pressure",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_05_-_engine_intake_air_pressure.pdf",
    "published": "2026-05-02T17:49+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 52,
@@ -355,7 +363,8 @@
    "title": "Doc 54 - Infringement - Car 5 - Technical non-conformity (Engine intake air pressure)",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_5_-_technical_non-conformity_engine_intake_air_pressure.pdf",
    "published": "2026-05-02T19:07+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 55,
@@ -434,7 +443,8 @@
    "title": "Doc 67 - Infringement - Car 06 - Floor Board",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_06_-_floor_board.pdf",
    "published": "2026-05-03T00:25+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 68,
@@ -455,14 +465,16 @@
    "title": "Doc 70 - Infringement - Car 6 - Technical nonconformity (Floor Board)",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_6_-_technical_nonconformity_floor_board.pdf",
    "published": "2026-05-03T11:30+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 71,
    "title": "Doc 71 - Decision - Car 6 - Permission to start",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_6_-_permission_to_start.pdf",
    "published": "2026-05-03T11:45+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 72,
@@ -490,7 +502,8 @@
    "title": "Doc 75 - Infringement - Car 6 - PU Elements changed under Parc Ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_6_-_pu_elements_changed_under_parc_ferme.pdf",
    "published": "2026-05-03T14:43+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 99
   },
   {
    "doc": 76,
@@ -526,7 +539,8 @@
    "title": "Doc 80 - Infringement - Car 77 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_77_-_pit_lane_speeding.pdf",
    "published": "2026-05-03T18:47+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 81,
@@ -603,35 +617,40 @@
    "title": "Doc 91 - Decision - Car 31 - Alleged yellow flag infringement",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_31_-_alleged_yellow_flag_infringement.pdf",
    "published": "2026-05-03T21:10+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 92,
    "title": "Doc 92 - Decision - Car 23 - Alleged yellow flag infringement",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_23_-_alleged_yellow_flag_infringement.pdf",
    "published": "2026-05-03T21:11+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 93,
    "title": "Doc 93 - Decision - Car 14 - Alleged yellow flag infringement",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_14_-_alleged_yellow_flag_infringement.pdf",
    "published": "2026-05-03T21:13+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 94,
    "title": "Doc 94 - Decision - Car 3 - Alleged incident with Car 63",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_3_-_alleged_incident_with_car_63.pdf",
    "published": "2026-05-03T21:22+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 95,
    "title": "Doc 95 - Decision - Car 63 - Alleged incident with Car 3",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_63_-_alleged_incident_with_car_3.pdf",
    "published": "2026-05-03T21:21+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 96,
@@ -645,21 +664,24 @@
    "title": "Doc 97 - Infringement - Car 16 - Leaving the track multiple times and driving in an unsafe condition",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_16_-_leaving_the_track_multiple_times_and_driving_in_an_unsafe_condition_.pdf",
    "published": "2026-05-03T21:24+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 99,
    "title": "Doc 99 - Infringement - Car 3 - Pit Exit Incident",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_3_-_pit_exit_incident.pdf",
    "published": "2026-05-03T21:48+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 100,
    "title": "Doc 100 - Decision - Car 30 - Alleged incident with Car 10",
    "url": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_decision_-_car_30_-_alleged_incident_with_car_10.pdf",
    "published": "2026-05-03T21:55+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 101,

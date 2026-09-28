@@ -5,6 +5,14 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, the pooled race pace as a challenger (user: "if it is deferred for lack of evidence, should it not
+      then be built as a challenger so it can collect data over time?"). `racepool` = MODEL.racePace "pool":
+      laps.py pool_rounds (called by extras.race_info after the FastF1 check, so every new round gets it on its own)
+      writes `pacePool` into history/<season>/races/gdNN.json, round k pooled with the rounds up to k (test: a
+      round's value doesn't change when later rounds come in); the engine weights it with the race-alone fit's
+      paceSe, the variant the fourth review screened. R1-R15 backfilled. Walk-forward R5-R15, N 3000: shipped CRPS
+      8.674, racectx 8.696, racepool 8.699; racepool - shipped +0.025 +/- 0.022, - racectx +0.003 +/- 0.017: a tie,
+      as expected. Frozen and scored from R16 like the others.
 - [x] 2026-09-28, fourth review (`docs/reviews/2026-09-27/F1-third-round-review.md` + evidence, 7.9/10 unchanged: no
       default predictive gain on matching inputs, CRPS 8.686 both engines; new work credited). Its five findings:
       (1) As at lock the sims still got a circuit model built from the live data (forecast.js trackFit, worker.js

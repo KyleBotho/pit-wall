@@ -29,8 +29,9 @@
     paceShrink: 0.8, // fitted (npm run fit): share of each driver's gap to the field median that's kept
     rankSlope: 0.1, // hand-set: % per place when a round has no lap-time pace (only its finishing order)
     // race pace per round: "median" = median clean lap (extras.lap_pace); "ctx" = the contextual lap model
-    // (laps.py: tyres, fuel, traffic, neutralised and wet laps taken out), median where it has no estimate.
-    // Review batch 3 (2026-09-27): see docs/history.md for the backtest.
+    // (laps.py: tyres, fuel, traffic, neutralised and wet laps taken out), median where it has no estimate; "pool"
+    // = the same with those context terms pooled across the rounds up to it (laps.py pool_rounds, challenger
+    // racepool). Review batch 3 (2026-09-27): see docs/history.md for the backtest.
     racePace: "median",
     // with "ctx": each round's estimate counts ctxTau^2 / (ctxTau^2 + (ctxSeInflate x its standard error)^2), so a
     // driver the lap model barely pinned down (few clean laps) counts little. Hand-set: ctxTau ~ how much a
@@ -167,7 +168,7 @@
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
-  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
+  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
@@ -1163,18 +1164,27 @@
       gInc = gN ? gI / gN : M.dnfFallback * 0.15;
     return { tD, tN, gRate, tM, dI, dN, gMech, gInc };
   }
+  /** The race block's contextual pace MODEL.racePace picks: "ctx" = the race-alone lap model (paceCtx), "pool" = the
+   * same with its tyre / fuel / traffic terms pooled across the rounds up to it (pacePool, laps.py pool_rounds);
+   * "median" (none) = the median clean lap. @param {typeof MODEL} M */
+  const ctxKey = (M) => (M.racePace === "ctx" ? "paceCtx" : M.racePace === "pool" ? "pacePool" : null);
   /** A round's race pace per driver (% off the fastest) as MODEL.racePace picks it. @param {Data} data
    * @param {number} r @param {typeof MODEL} M @returns {Record<string, number>} */
   function racePaceOf(data, r, M) {
     const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
     if (!b) return {};
-    return M.racePace === "ctx" && b.paceCtx ? { ...b.pace, ...b.paceCtx } : b.pace || {};
+    const k = ctxKey(M),
+      ctx = k ? /** @type {Record<string, number> | undefined} */ (b[k]) : undefined;
+    return ctx ? { ...b.pace, ...ctx } : b.pace || {};
   }
   /** How much a round's race pace for a driver counts (1, or less for a contextual estimate with a wide standard
-   * error, MODEL.ctxTau). @param {Data} data @param {number} r @param {string} tla @param {typeof MODEL} M */
+   * error, MODEL.ctxTau; the pooled pace takes the race-alone fit's paceSe, as the fourth review screened it).
+   * @param {Data} data @param {number} r @param {string} tla @param {typeof MODEL} M */
   function racePaceWeight(data, r, tla, M) {
     const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
-    const se = M.racePace === "ctx" && b && b.paceCtx && b.paceCtx[tla] != null && b.paceSe ? b.paceSe[tla] : null;
+    const k = ctxKey(M),
+      ctx = b && k ? /** @type {Record<string, number> | undefined} */ (b[k]) : undefined;
+    const se = ctx && ctx[tla] != null && b && b.paceSe && b.paceSe[tla] != null ? b.paceSe[tla] : null;
     if (se == null) return 1;
     const t2 = M.ctxTau * M.ctxTau,
       e = M.ctxSeInflate * se;
@@ -3952,6 +3962,12 @@
       label: "Race pace from the lap model (tyres, fuel, traffic)",
       set: { "MODEL.racePace": "ctx" },
       why: "review batch 3: steadier round to round (rank corr 0.85 vs 0.83); R5-R15 CRPS +0.020 +/- 0.034 (tie)",
+    },
+    {
+      id: "racepool",
+      label: "Race pace from the lap model, its tyre / fuel / traffic terms pooled across races",
+      set: { "MODEL.racePace": "pool" },
+      why: "deferred for want of evidence (fourth review): pooled vs race-alone CRPS -0.006 +/- 0.010 (inconclusive); pooling moves a driver's pace by at most 0.16% (R6). Collects its evidence from R16",
     },
     {
       id: "dnfcauses",

@@ -494,6 +494,34 @@ def _race_canons(archived, read_json, done):
     return out
 
 
+def pool_rounds(archived, read_json, write_json, done):
+    """The challenger `racepool`'s input (MODEL.racePace "pool", user 2026-09-28: deferred for want of evidence, so
+    let it collect evidence): each finished round's pooled race pace (`pacePool`, % off the fastest), round k pooled
+    with rounds <= k only, written into its race record (history/<season>/races) where it changed. The engine weights
+    it with the race-alone fit's standard errors (paceSe), as the fourth review screened it. Returns {gd: record}
+    for the rounds rewritten."""
+    designs, raw = {}, {}
+    for gd, canon in _race_canons(archived, read_json, done).items():
+        d = hier_design(canon)
+        if d:
+            designs[gd], raw[gd] = d, hier_fit(d)
+    out = {}
+    for gd in sorted(designs):
+        mu, tau2 = pool_terms([raw[g] for g in raw if g <= gd])
+        pace = hier_fit(designs[gd], mu, tau2)["pace"]
+        path = archived("races", f"gd{gd:02d}.json")
+        if not os.path.exists(path):
+            continue
+        rec = read_json(path)
+        race = rec.get("race")
+        if race is None or race.get("pacePool") == pace:
+            continue
+        race["pacePool"] = pace
+        write_json(path, rec, indent=1, sort_keys=True)
+        out[gd] = rec
+    return out
+
+
 def hier_report(archived, read_json, done):
     """The pooled race pace for every finished round with lap records, round k pooled with rounds <= k, next to the
     race-alone fit: [{gd, fuel {alone, fit, season, tau}, maxShift, meanShift (% of a lap, driver terms)}].
