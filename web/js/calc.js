@@ -980,7 +980,7 @@ export function menuAction(a) {
 
 /* ---------- drivers / constructors ---------- */
 // search terms separated by "+" match any of code, name, team
-const matchSearch = (a, q) =>
+export const matchSearch = (a, q) =>
   !q ||
   q
     .split("+")

@@ -205,6 +205,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - How-it-works text goes in an ⓘ popover, not a paragraph on the page (user, 2026-09-26): static ones as
   `<details class="info">` in the title row, dynamic ones via a `<span class="tipslot">` filled with core.js
   `infoTip(html)`. What the user must see stays visible: status (data as of…), warnings, instructions to act.
+- UI system (2026-09-28): `docs/ui-system.md`. The Calculator and Live Scoring are the reference look; other pages
+  are brought in line with them (no new palette). Page templates: Workspace (`main.ws`: Calculator, Hindsight;
+  main.js `PANE_KEY`), Board, Table. Panel names and heat colours stay as they are (user); rename alternatives noted.
 - Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 

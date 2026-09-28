@@ -508,8 +508,8 @@ details.info .infobox {
   color: #d4d4d8;
   white-space: normal;
 }
-/* the Calculator's panes clip overflow: there the popover is fixed at its place, so it isn't cut off */
-#view-calc details.info .infobox {
+/* a workspace's panes clip overflow: there the popover is fixed at its place, so it isn't cut off */
+.ws details.info .infobox {
   position: fixed;
   top: auto;
   left: auto;
@@ -722,7 +722,8 @@ details.grp > summary:hover {
   width: 48px;
 }
 /* the Best Teams pane's two bodies (Best Teams, Compare) lay out like the panel itself */
-#view-calc div[data-bm] {
+#view-calc div[data-bm],
+#view-hind div[data-hm] {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1238,11 +1239,11 @@ table {
   width: 100%;
   font-size: 14px;
 }
-/* the Calculator's panes are tight: keep its tables and notes a size smaller */
-#view-calc table {
+/* a workspace's panes are tight: keep its tables and notes a size smaller */
+.ws table {
   font-size: 13px;
 }
-#view-calc .note {
+.ws .note {
   font-size: 13px;
 }
 th,
@@ -1577,18 +1578,6 @@ td.al-r input[type="number"] {
   font-size: 12px;
   padding: 0 6px;
 }
-.dec {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 12px;
-  color: var(--muted);
-  border-top: 1px solid #18181b;
-  padding-top: 4px;
-}
-.dec b {
-  white-space: nowrap;
-}
 .stat td[data-stcell] {
   cursor: pointer;
 }
@@ -1715,7 +1704,7 @@ td.al-r input[type="number"] {
 .bestt td.rk .n.hide {
   display: none;
 }
-#view-calc {
+.ws {
   position: relative;
 }
 .pill {
@@ -1996,6 +1985,55 @@ td.al-r input[type="number"] {
   margin: 2px 0;
   text-align: center;
 }
+/* Hindsight (a workspace like the Calculator): the gap to #1 under the points, the "why" line under a team */
+.bestt .gap {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.bestt .gap.bad {
+  color: var(--bad);
+}
+.bestt .gap.good {
+  color: var(--good);
+}
+.bestt tr.joined td {
+  border-bottom: 0;
+}
+.bestt tr.why td {
+  padding: 0 5px 10px;
+  text-align: left;
+  white-space: normal;
+  font-size: 12px;
+  color: var(--muted);
+}
+/* the rounds as a grid of equal buttons (Hindsight's Settings) */
+.seg.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+}
+.seg.grid button {
+  padding-inline: 0;
+  text-align: center;
+}
+/* a heading inside a pane (Hindsight's Season tab) */
+.subh {
+  margin: 8px 0 0;
+  font: 600 16px var(--display);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.subh:first-child {
+  margin-top: 0;
+}
+.subh small {
+  font: 400 13px var(--ui);
+  color: var(--muted);
+}
 td.chl {
   outline: 2px solid var(--fg);
   outline-offset: -3px;
@@ -2018,7 +2056,7 @@ td.chl {
 }
 @media (max-width: 900px) {
   details.info .infobox,
-  #view-calc details.info .infobox {
+  .ws details.info .infobox {
     position: fixed;
     left: 16px;
     right: 16px;
@@ -2028,8 +2066,7 @@ td.chl {
     margin: 0;
   }
   #leagueDash,
-  #eliteDash,
-  #hindDash {
+  #eliteDash {
     grid-template-columns: 1fr !important;
   }
   .seg.bmode button {
@@ -2115,20 +2152,20 @@ td.chl {
   .shell {
     padding-block: 0 calc(24px + env(safe-area-inset-bottom, 0px));
   }
-  body:has(#view-calc:not([hidden])) {
+  body:has(.ws:not([hidden])) {
     overflow: hidden;
   }
-  body:has(#view-calc:not([hidden])) .shell {
+  body:has(.ws:not([hidden])) .shell {
     height: 100dvh;
     display: flex;
     flex-direction: column;
     padding-bottom: 0;
   }
-  body:has(#view-calc:not([hidden])) .bar {
+  body:has(.ws:not([hidden])) .bar {
     flex: none;
     margin-bottom: 10px;
   }
-  #view-calc:not([hidden]) {
+  .ws:not([hidden]) {
     flex: 1;
     min-height: 0;
     display: flex;
@@ -2205,7 +2242,7 @@ td.chl {
     text-underline-offset: 7px;
     text-decoration-thickness: 2px;
   }
-  #view-calc .calc {
+  .ws .calc {
     flex: 1;
     min-height: 0;
     display: flex;
@@ -2217,10 +2254,10 @@ td.chl {
     overscroll-behavior-x: contain;
     scrollbar-width: none;
   }
-  #view-calc .calc::-webkit-scrollbar {
+  .ws .calc::-webkit-scrollbar {
     display: none;
   }
-  #view-calc .calc > .col {
+  .ws .calc > .col {
     flex: 0 0 100%;
     min-width: 0;
     height: 100%;
@@ -2233,10 +2270,10 @@ td.chl {
     gap: 12px;
     padding-bottom: 12px;
   }
-  #view-calc .calc > .col-c {
+  .ws .calc > .col-c {
     display: contents;
   }
-  #view-calc .calc > .col-c > .panel {
+  .ws .calc > .col-c > .panel {
     flex: 0 0 100%;
     min-width: 0;
     height: 100%;
@@ -2324,10 +2361,10 @@ td.chl {
   .bestt td.rk {
     width: 26px;
   }
-  #view-calc .panel {
+  .ws .panel {
     padding: 12px;
   }
-  #view-calc .tw {
+  .ws .tw {
     margin-inline: -12px;
     padding-inline: 12px;
   }
@@ -2361,30 +2398,40 @@ td.chl {
     background: var(--tile);
   }
 }
-/* Calculator on wide screens: fits the window; each pane scrolls on its own, the page doesn't */
+/* a workspace on wide screens: fits the window; each pane scrolls on its own, the page doesn't */
 @media (min-width: 1281px) {
-  body:has(#view-calc:not([hidden])) {
+  body:has(.ws:not([hidden])) {
     overflow: hidden;
   }
-  body:has(#view-calc:not([hidden])) .shell {
+  body:has(.ws:not([hidden])) .shell {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
     padding-bottom: 12px;
   }
-  #view-calc .calc {
-    height: calc(100dvh - 92px);
+  .ws:not([hidden]) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .ws .calc {
+    flex: 1;
+    min-height: 0;
     align-items: stretch;
   }
-  #view-calc .calc > .col {
+  .ws .calc > .col {
     min-height: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
   }
-  #view-calc .calc .panel {
+  .ws .calc .panel {
     min-height: 0;
   }
-  #view-calc [data-pane="best"],
-  #view-calc [data-pane="drivers"],
-  #view-calc [data-pane="cons"] {
+  .ws [data-pane="best"],
+  .ws [data-pane="drivers"],
+  .ws [data-pane="cons"] {
     flex: 1 1 0;
     overflow: hidden;
   }
@@ -2393,6 +2440,19 @@ td.chl {
     flex: 1 1 0;
     min-height: 0;
   }
+  #view-hind [data-pane="best"] > div[data-hm="best"] {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  #view-hind [data-pane="best"] > div[data-hm]:not([data-hm="best"]) {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #view-hind div[data-hm]:not([data-hm="best"]) > * {
+    flex: none;
+  }
   #view-calc [data-pane="best"] > div[data-bm="cmp"] {
     flex: 1 1 0;
     min-height: 0;
@@ -2400,17 +2460,18 @@ td.chl {
     overflow-x: hidden;
   }
   #view-calc div[data-bm="best"] .tw,
-  #view-calc [data-pane="drivers"] .tw,
-  #view-calc [data-pane="cons"] .tw {
+  #view-hind div[data-hm="best"] .tw,
+  .ws [data-pane="drivers"] .tw,
+  .ws [data-pane="cons"] .tw {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
   }
-  #view-calc [data-pane="settings"]:first-child {
+  .ws [data-pane="settings"]:first-child {
     flex: 1 1 auto;
     overflow-y: auto;
   }
-  #view-calc [data-pane="settings"]:not(:first-child) {
+  .ws [data-pane="settings"]:not(:first-child) {
     flex: 0 1 auto;
     min-height: 0;
     overflow-y: auto;
@@ -2459,13 +2520,13 @@ td.chl {
   #view-calc .col:has(#simPast:not([hidden])) > [data-pane="settings"] {
     flex: 1 1 0;
   }
-  #view-calc thead th {
+  .ws thead th {
     position: sticky;
     top: 0;
     z-index: 3;
     background: var(--card);
   }
-  #view-calc thead th:first-child {
+  .ws thead th:first-child {
     z-index: 4;
   }
 }

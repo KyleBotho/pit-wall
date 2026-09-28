@@ -213,7 +213,7 @@ export function save() {
 export const SB_URL = "https://tfljgylwpkpammzsapin.supabase.co";
 const SB_KEY = "sb_publishable_5XxT7rr5X-XS1HyduNK1qQ_TfoP2PLV"; // public by design (RLS protects the rows)
 const SK = "pitwall.sync"; // {uid, at, dirty}: the row version this browser last matched, and whether it has unsent changes
-const NOSYNC = ["view", "pane", "bmode", "sub", "showN", "calcGrp"]; // where you are on this device, not settings
+const NOSYNC = ["view", "pane", "bmode", "sub", "showN", "calcGrp", "hdPane", "hdMode", "hdShowN"]; // where you are on this device, not settings
 export const syncState = {
   sb: null,
   user: null,

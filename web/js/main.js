@@ -28,7 +28,7 @@ import {
 import { renderLeague } from "./league.js";
 import { renderElite, renderEliteSeason } from "./elite.js";
 import { fprops } from "./filters.js";
-import { renderHind } from "./hindsight-view.js";
+import { hdMenuAction, openHdMenu, renderHind, renderHindAssets, showHdMode } from "./hindsight-view.js";
 import { renderStats, stCell, stExcluded } from "./stats.js";
 import { lvCell, pullLive, renderLive } from "./live.js";
 import {
@@ -190,30 +190,33 @@ export function showView(v) {
   closeMenu();
   $$("[data-v]").forEach((m) => (m.hidden = m.id !== "view-" + v));
   if (stale.has(v)) renderView(v);
-  if (v === "calc" && isPhone())
-    requestAnimationFrame(() => showPane(PANES.includes(state.pane) ? state.pane : "best", true));
+  if (PANE_KEY[v] && isPhone()) requestAnimationFrame(() => showPane(paneOf(v), true, v));
   if (v === "live") pullLive();
   save();
 }
 
-/* ---------- the Calculator's panes (a swipe strip on phones) ---------- */
+/* ---------- a workspace's panes (Calculator, Hindsight: main.ws), a swipe strip on phones ---------- */
 const PANES = ["best", "settings", "drivers", "cons"];
 const isPhone = () => matchMedia("(max-width:900px)").matches;
-// the page a pane lives on in the phone's swipe strip: Best Teams and Settings (+ Simulation) are whole columns
-const paneEl = (p) => {
-  const el = document.querySelector(`#view-calc [data-pane="${p}"]`);
+const PANE_KEY = { calc: "pane", hind: "hdPane" }; // the state key where each workspace remembers its pane
+const paneOf = (v) => (PANES.includes(state[PANE_KEY[v]]) ? state[PANE_KEY[v]] : "best");
+const wsView = () => (PANE_KEY[state.view] ? state.view : "calc");
+// the page a pane lives on in the phone's swipe strip: the teams and Settings (+ Simulation) are whole columns
+const paneEl = (p, v = wsView()) => {
+  const el = document.querySelector(`#view-${v} [data-pane="${p}"]`);
   return el && (p === "best" || p === "settings") ? el.closest(".col") : el;
 };
-function markPane(p) {
-  state.pane = p;
-  $$("[data-pane]").forEach((el) => el.classList.toggle("on", el.dataset.pane === p));
-  $$("[data-pane-btn]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.paneBtn === p)));
+function markPane(p, v = wsView()) {
+  state[PANE_KEY[v]] = p;
+  $$(`#view-${v} [data-pane]`).forEach((el) => el.classList.toggle("on", el.dataset.pane === p));
+  $$(`#view-${v} [data-pane-btn]`).forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.paneBtn === p)));
 }
-function showPane(p, instant) {
-  markPane(p);
-  if (isPhone() && !$("#view-calc").hidden) {
-    const strip = $("#view-calc .calc"),
-      el = paneEl(p);
+function showPane(p, instant, v = wsView()) {
+  markPane(p, v);
+  const root = $(`#view-${v}`);
+  if (isPhone() && !root.hidden) {
+    const strip = $(".calc", root),
+      el = paneEl(p, v);
     if (el) strip.scrollTo({ left: el.offsetLeft - strip.offsetLeft, behavior: instant ? "auto" : "smooth" });
   }
   save();
@@ -342,7 +345,7 @@ const CLICK = [
       renderLab();
     },
   ],
-  ["paneBtn", (d) => showPane(d.paneBtn)],
+  ["paneBtn", (d, t) => showPane(d.paneBtn, false, t.closest(".ws").id.slice(5))],
   [
     "bmode",
     (d) => {
@@ -613,10 +616,39 @@ const CLICK = [
   [
     "hch",
     (d) => {
-      state.hdChip = d.hch;
+      state.hdChip = state.hdChip === d.hch ? "" : d.hch; // like the Calculator's chips: click again for none
       saveAnd(renderHind);
     },
   ],
+  [
+    "hdmode",
+    (d) => {
+      state.hdMode = d.hdmode;
+      save();
+      showHdMode();
+    },
+  ],
+  [
+    "hdmore",
+    () => {
+      state.hdShowN = Math.min(50, (state.hdShowN || 10) + 10);
+      saveAnd(renderHind);
+    },
+  ],
+  [
+    "hdreset",
+    () => {
+      delete state.hdGd;
+      delete state.hdCap;
+      state.hdChip = "";
+      state.hdMarks = {};
+      state.hdShowN = 10;
+      if (state.filters) state.filters.hd = [];
+      saveAnd(renderHind);
+    },
+  ],
+  ["hmenu", (d, t) => openHdMenu(t)],
+  ["hmi", (d) => hdMenuAction(d.hmi)],
   [
     "hmark",
     (d) => {
@@ -833,6 +865,7 @@ const CLICK_ON = [
 function closePopovers(target) {
   if (!target.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
   if (!target.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
+  if (!target.closest("#hdMenu, [data-hmenu]")) $("#hdMenu").hidden = true;
   for (const d of $$("details.info[open]")) if (!d.contains(target)) d.open = false;
 }
 document.addEventListener("click", (e) => {
@@ -1020,6 +1053,8 @@ const INPUT_ID = {
     recomputeTimer = setTimeout(rerender, 250);
   },
   drvSearch: () => renderAssetPanels(),
+  hdDrvSearch: () => renderHindAssets(),
+  hdConSearch: () => renderHindAssets(),
   conSearch: () => renderAssetPanels(),
   bank: (t) => {
     const v = parseFloat(t.value);
@@ -1060,11 +1095,12 @@ document.addEventListener("keydown", (e) => {
   if (!$("#modal").hidden) closeModal();
   $$(".pop").forEach((x) => (x.hidden = true));
   $("#rowMenu").hidden = true;
+  $("#hdMenu").hidden = true;
   $$("details.info[open]").forEach((d) => (d.open = false));
 });
-// phone: swiping the Calculator's panes moves the tab bar with you
-{
-  const strip = $("#view-calc .calc");
+// phone: swiping a workspace's panes moves its tab bar with you
+for (const v of Object.keys(PANE_KEY)) {
+  const strip = $(`#view-${v} .calc`);
   let t = null;
   strip.addEventListener(
     "scroll",
@@ -1074,11 +1110,11 @@ document.addEventListener("keydown", (e) => {
         if (!isPhone()) return;
         const x = strip.scrollLeft;
         const best = PANES.reduce((b, p) => {
-          const d = Math.abs(paneEl(p).offsetLeft - strip.offsetLeft - x);
+          const d = Math.abs(paneEl(p, v).offsetLeft - strip.offsetLeft - x);
           return !b || d < b.d ? { p, d } : b;
         }, null);
-        if (best && best.p !== state.pane) {
-          markPane(best.p);
+        if (best && best.p !== state[PANE_KEY[v]]) {
+          markPane(best.p, v);
           save();
         }
       }, 60);
@@ -1178,7 +1214,8 @@ function start() {
   renderHeader();
   showView(state.view);
   $$("table").forEach(alignTable);
-  if (!SEASON_OVER) showPane(PANES.includes(state.pane) ? state.pane : "best");
+  if (!SEASON_OVER) showPane(paneOf("calc"), false, "calc");
+  if (state.view === "hind") showPane(paneOf("hind"), false, "hind");
   forgetOldKeys();
   syncInit();
   setInterval(() => {

@@ -1,11 +1,12 @@
 /* ---------- hindsight: best teams on actual points (scoring in hindsight.js, as Hind) ---------- */
 import { $, $$, CHIPS, DATA, Hind, byId, code, esc, infoTip, f0, f1, money, sgn } from "./core.js";
 import { activeTeam, state } from "./state.js";
-import { LEAGUE_DATA } from "./sync.js";
-import { chip, heat, who } from "./forecast.js";
+import { LEAGUE_DATA, save } from "./sync.js";
+import { chip, codeBox, heat } from "./forecast.js";
 import { teamHist, teamKey } from "./league.js";
 import { filterUI, filters, teamText } from "./filters.js";
-import { inclExcl } from "./calc.js";
+import { addDraft, copyText, inclExcl, matchSearch } from "./calc.js";
+import { toast } from "./main.js";
 export const lineups = (key) => (LEAGUE_DATA && LEAGUE_DATA.lineups && LEAGUE_DATA.lineups[key]) || null; // by teamKey
 // budget for the best teams: $100m, no cap, or one of your teams' budget that round ("team:i"; the default, the
 // fair comparison)
@@ -137,107 +138,249 @@ function hdDecisions(name, gd) {
     });
   return out;
 }
-const decHtml = (dec) =>
-  dec.list
-    .map(
-      (x) =>
-        `<div class="dec"><span>${esc(x.label)}</span><span>${x.pts == null ? "" : `<b class="${x.pts > 0 ? "good" : x.pts < 0 ? "bad" : "muted"}">${sgn(x.pts, 0) || "0"}</b>`}${x.d ? ` <span class="muted">Δ$ ${sgn(x.d, 1)}</span>` : ""}</span></div>`,
-    )
-    .join("");
+// one decision in a team's "why" line: what it was, what it was worth, and (transfers) the price change it bought
+const decHtml = (x) =>
+  `${esc(x.label)}${x.pts == null ? "" : ` <b class="${x.pts > 0 ? "good" : x.pts < 0 ? "bad" : "muted"}">${sgn(x.pts, 0) || "0"}</b>`}${x.d ? ` <span class="muted">Δ$ ${sgn(x.d, 1)}</span>` : ""}`;
+
+// A line-up in the Calculator's columns: constructors, the Boosted driver(s), the other drivers (Final Fix: the driver
+// brought in sits with the drivers, marked FF, the one taken out faded).
+function hdCells(ids, boost, x3, start, gd, chipK, ff) {
+  if (ff) ids = ids.concat([ff.in]);
+  const slotB = ff && (boost === ff.in || boost === ff.out),
+    isFF = (id) => ff && (id === ff.in || id === ff.out);
+  const m = (id) => (isFF(id) ? (slotB ? 2 : 1) : id === x3 ? 3 : id === boost ? 2 : 1);
+  const pts = (id) => (!isFF(id) ? Hind.pts(id, gd, chipK) : Hind.sess(id, gd, ff.cat, id === ff.in ? "post" : "pre"));
+  const one = (id) => {
+    const h = Hind.at(id, gd);
+    return chip(id, {
+      a: h ? f0(pts(id) * m(id)) : "—",
+      b: h ? h.price.toFixed(1) : "",
+      x: ff && id === ff.in ? "FF" : ff && id === ff.out ? "" : id === x3 ? "3×" : id === boost ? "2×" : "",
+      cls: [start && !start.includes(id) && !isFF(id) ? "in" : "", ff && id === ff.out ? "out" : ""].join(" "),
+    });
+  };
+  const byM = (a, b) => m(b) - m(a) || pts(b) - pts(a);
+  const cons = ids.filter((id) => byId[id]?.kind === "C"),
+    boosted = ids.filter((id) => byId[id]?.kind === "D" && !isFF(id) && (id === x3 || id === boost)).sort(byM),
+    drs = ids.filter((id) => byId[id]?.kind === "D" && !boosted.includes(id)).sort(byM);
+  const tiles = (xs) => `<div class="chips">${xs.map(one).join("")}</div>`;
+  return `<td class="tl cr">${tiles(cons)}</td><td class="tl">${tiles(boosted)}</td><td class="tl dr">${tiles(drs)}</td>`;
+}
+const PERSON_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`;
+const pill = (v, on, cls = "", title = "") =>
+  `<span class="pill ${cls}${on ? " on" : ""}"${title ? ` title="${esc(title)}"` : ""}>${v}</span>`;
+const NCOL = 9;
+const HEAD =
+  `<thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th>` +
+  `<th title="Cost at that round's prices">$</th><th data-vc="1" aria-sort="descending">Pts ↓</th><th data-vc="1" title="Price change of the seven after the round">Δ$</th>` +
+  `<th class="mv">Pts ↓<br>Δ$</th><th class="dots"></th></tr></thead>`;
+const sec = (html) => `<tr class="sec"><td colspan="${NCOL}">${html}</td></tr>`;
+const wide = (html, center) =>
+  `<tr><td colspan="${NCOL}" class="${center ? "" : "muted"}" style="position:static;text-align:${center ? "center" : "left"}">${html}</td></tr>`;
+// one line-up row, the Calculator's: rank, the three chip columns, cost, points (white), Δ$, ⋯
+function hdRow(rank, cells, cost, pts, gap, dv, menu) {
+  const d = pill(sgn(dv, 1), false, dv >= 0 ? "good" : "bad");
+  const more = menu ? `<button class="tbtn" data-hmenu="${menu}" aria-label="More actions">⋯</button>` : "";
+  return `<tr><td class="rk">${rank}${menu ? `<br><button class="tbtn mobonly" data-hmenu="${menu}" aria-label="More actions">⋯</button>` : ""}</td>${cells}
+    <td>${pill(cost == null ? "—" : cost.toFixed(1), false, "", "Total cost")}</td>
+    <td data-vc="1">${pill(pts, true)}${gap}</td><td data-vc="1" class="${dv >= 0 ? "good" : "bad"}">${sgn(dv, 1)}</td>
+    <td class="mv">${pill(pts, true)}${d}${gap}</td><td class="dots">${more}</td></tr>`;
+}
+const HD_MODES = ["best", "mine", "season"];
+export function showHdMode() {
+  const m = HD_MODES.includes(state.hdMode) ? state.hdMode : "best";
+  $$("#hdMode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.hdmode === m)));
+  $$("#view-hind [data-hm]").forEach((el) => (el.hidden = el.dataset.hm !== m));
+}
+// what the ⋯ menus act on: the rows as last drawn
+let hdRows = { best: [], mine: [] };
+let hdCtx = null; // the round, projection and best team behind the Drivers / Constructors panes
 
 export function renderHind() {
   const done = DATA.done || [];
   $("#hindEmpty").hidden = !!done.length;
   $("#hindDash").hidden = !done.length;
+  $("#view-hind .panel-tabs").hidden = !done.length;
   if (!done.length) return;
   const gd = done.includes(state.hdGd) ? state.hdGd : done[done.length - 1],
     cap = hdCap(gd),
-    chipK = state.hdChip || "";
+    chipK = state.hdChip || "",
+    chipLabel = { x3: "X3", noneg: "No Negative", finalfix: "Final Fix" }[chipK];
   const name = (g) => DATA.schedule.find((x) => x.gd === g)?.name || "";
+  showHdMode();
+
+  // Settings: round, budget, chip, filters (each section summarised in its header, as in the Calculator)
+  for (const d of $$("#view-hind details.grp")) {
+    const open = state.calcGrp[d.dataset.grp] !== false;
+    if (d.open !== open) d.open = open;
+  }
   $("#hdRound").innerHTML = done
     .map((g) => `<button data-hg="${g}" aria-pressed="${g === gd}" title="${esc(name(g))}">R${g}</button>`)
     .join("");
+  $("#hdRoundName").textContent = `R${gd} ${name(gd)}`;
+  $("#hdGrpRound").textContent = `R${gd} · ${name(gd).replace(" Grand Prix", " GP")}`;
   const capM = hdCapMode();
-  $("#hdCap").innerHTML = [["100", "$100m"], ...state.teams.map((t, i) => [`team:${i}`, t.name]), ["none", "No cap"]]
+  $("#hdCapTeam").innerHTML = state.teams
     .map(
-      ([k, n]) =>
-        `<button data-hc="${k}" aria-pressed="${k === capM}"${k.startsWith("team:") ? ' title="This team\'s budget that round"' : ""}>${esc(n)}</button>`,
+      (t, i) =>
+        `<button data-hc="team:${i}" aria-pressed="${capM === "team:" + i}" title="${esc(t.name)}'s budget going into that round">${esc(t.name)}</button>`,
     )
     .join("");
+  $("#hdCapFix").innerHTML = [
+    ["100", "$100m"],
+    ["none", "No cap"],
+  ]
+    .map(([k, n]) => `<button data-hc="${k}" aria-pressed="${k === capM}">${n}</button>`)
+    .join("");
+  $("#hdGrpCap").textContent = capM.startsWith("team:")
+    ? `${(state.teams[+capM.slice(5)] || activeTeam()).name} · ${money(cap)}`
+    : cap == null
+      ? "no cap"
+      : money(cap);
   $$("#hdChip button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.hch === chipK)));
+  $("#hdGrpChip").textContent = chipLabel || "none";
+  const nf = filters("hd").length,
+    nm = Object.keys(state.hdMarks || {}).length;
   $("#hdFilters").innerHTML = filterUI("hd");
+  $("#hdGrpFilt").textContent = nf ? `${nf} filter${nf > 1 ? "s" : ""}` : "none";
 
   // best possible teams
-  const list = hdBestList(gd, 10),
-    nf = filters("hd").length,
-    nm = Object.keys(state.hdMarks || {}).length;
+  const showN = state.hdShowN || 10,
+    list = hdBestList(gd, showN);
   $("#hdBestNote").textContent =
-    `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipK ? " · " + { x3: "X3", noneg: "No Negative", finalfix: "Final Fix" }[chipK] : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} Incl/Excl` : ""}`;
-  $("#hdBest").innerHTML = list.length
-    ? list
-        .map((b, i) => {
-          const ids = b.drivers.concat(b.cons),
-            x3 = b.boost2 ? b.boost : null,
-            boost = b.boost2 || b.boost,
-            dv = ids.reduce((s, id) => s + Hind.delta(id, gd), 0);
-          const txt =
-            teamText(`R${gd} best #${i + 1}`, b.cons, b.drivers, boost, x3, b.cost, b.score) +
-            (b.ff ? ` | Final Fix ${code(byId[b.ff.out])} → ${code(byId[b.ff.in])}` : "");
-          return `<div class="bt"><span class="rk">${i + 1}</span><div class="chips">${hdChips(ids, boost, x3, null, gd, chipK === "finalfix" ? "" : chipK, b.ff)}</div>
-      <div class="num"><b>${f0(b.score)}</b>${i ? `<span class="bad">${sgn(b.score - list[0].score, 0)}</span>` : '<span class="muted">pts</span>'}</div>
-      <div class="sub"><span>${money(b.cost)}</span><span class="${dv >= 0 ? "good" : "bad"}">Δ$ ${sgn(dv, 1)}</span><span class="acts"><button class="btn ghost sm" data-copy="${esc(txt)}">Copy</button></span></div></div>`;
-        })
-        .join("")
-    : '<p class="note">No team fits this budget and these filters.</p>';
+    `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipLabel ? " · " + chipLabel : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} Incl / Excl` : ""}`;
+  $("#hdBestTip").innerHTML = infoTip(
+    "The best line-ups for that round on the points each asset actually scored, at that round's prices and within the budget in Settings. Pts is the round score; the grey figure under it is the gap to #1. Δ$ is the price change the seven got after the round.",
+  );
+  hdRows.best = list.map((b, i) => {
+    const boost = b.boost2 || b.boost,
+      x3 = b.boost2 ? b.boost : null;
+    return {
+      ids: b.drivers.concat(b.cons),
+      txt:
+        teamText(`R${gd} best #${i + 1}`, b.cons, b.drivers, boost, x3, b.cost, b.score) +
+        (b.ff ? ` | Final Fix ${code(byId[b.ff.out])} → ${code(byId[b.ff.in])}` : ""),
+    };
+  });
+  $("#hdBest").innerHTML =
+    HEAD +
+    "<tbody>" +
+    (list.length
+      ? list
+          .map((b, i) => {
+            const ids = b.drivers.concat(b.cons),
+              x3 = b.boost2 ? b.boost : null,
+              boost = b.boost2 || b.boost,
+              dv = ids.reduce((s, id) => s + Hind.delta(id, gd), 0);
+            const gap = i ? `<span class="gap">${sgn(b.score - list[0].score, 0)}</span>` : "";
+            return hdRow(
+              i + 1,
+              hdCells(ids, boost, x3, null, gd, chipK === "finalfix" ? "" : chipK, b.ff),
+              b.cost,
+              f0(b.score),
+              gap,
+              dv,
+              `best:${i}`,
+            );
+          })
+          .join("") +
+        (list.length >= showN && showN < 50
+          ? wide('<button class="btn ghost sm" data-hdmore="1">Load more teams</button>', true)
+          : "")
+      : wide(
+          "No team fits this budget and these filters. Try another budget, or remove some filters or Incl / Excl marks.",
+        )) +
+    "</tbody>";
 
-  // your teams: what was used, what it was worth, and the best move available from the line-up going in
+  // your teams: the line-up used, then the best move you had from the line-up going in
   const mine = state.teams.map((t) => ({
     t,
     r: (lineups(teamKey(t)) || {})[gd],
     off: teamHist(teamKey(t)).find((h) => h.gd === gd)?.pts,
   }));
-  if (!LEAGUE_DATA) $("#hdMine").innerHTML = '<p class="note">Sign in to see your teams here.</p>';
+  hdRows.mine = [];
+  if (!LEAGUE_DATA)
+    $("#hdMine").innerHTML =
+      `<p class="note">Sign in and link your F1 Fantasy account to see the teams you played, and the best move each one had, round by round.</p>` +
+      `<div class="chipbar"><button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button></div>`;
   else
-    $("#hdMine").innerHTML = mine
-      .map(({ t, r, off }) => {
-        if (!r)
-          return `<div class="bt"><span class="rk"></span><div><b>${esc(t.name)}</b><p class="note">No line-up saved for R${gd}. Line-ups come from a data export; collect a fresh one to fill new rounds.</p></div><div class="num"></div></div>`;
-        const b = Hind.own(r, gd),
-          chipName = (CHIPS.find(([k]) => k === r.chip) || [])[2],
-          fresh = Hind.fresh(gd, r.start);
-        const bids = b.drivers.concat(b.cons),
-          outs = r.start.filter((id) => !bids.includes(id)),
-          ins = bids.filter((id) => !r.start.includes(id));
-        const moves =
-          fresh || ["wildcard", "limitless"].includes(r.chip)
-            ? `${chipName || "Free"} rebuild`
-            : ins.length
-              ? `${ins.length} transfer${ins.length > 1 ? "s" : ""}: ` +
-                outs.map((id) => code(byId[id])).join(", ") +
-                " → " +
-                ins.map((id) => code(byId[id])).join(", ") +
-                (b.penalty ? ` (−${b.penalty})` : "")
-              : "No transfers";
-        const miss = off == null ? null : b.score - off,
-          dec = hdDecisions(teamKey(t), gd);
-        const txt = teamText(
-          `${t.name} R${gd} best`,
-          b.cons,
-          b.drivers,
-          b.boost2 || b.boost,
-          b.boost2 ? b.boost : null,
-          b.cost,
-          b.score,
-        );
-        return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0">
-      <b>${esc(t.name)}${chipName ? ` <span class="tag sprint">${esc(chipName)}</span>` : ""}</b>
-      <span class="muted" style="font-size:12px">Used · ${off == null ? "—" : off + " pts"}</span><div class="chips">${hdChips(r.ids, r.boost, r.x3, null, gd, r.chip, r.ff)}</div>
-      ${dec && dec.list.length ? `<div>${decHtml(dec)}</div>` : ""}
-      <span class="muted" style="font-size:12px">Best from your line-up · ${esc(moves)} <button class="btn ghost sm" data-copy="${esc(txt)}">Copy</button></span><div class="chips">${hdChips(bids, b.boost2 || b.boost, b.boost2 ? b.boost : null, fresh ? null : r.start, gd, r.chip, b.ff)}</div>
-      ${b.ff ? `<p class="note">Best Final Fix: ${esc(code(byId[b.ff.out]))} → ${esc(code(byId[b.ff.in]))} before the race (+${f0(b.ff.gain)}).</p>` : ""}</div>
-      <div class="num"><b>${f0(b.score)}</b><span class="muted">best</span>${miss == null ? "" : `<span class="${miss > 0 ? "bad" : "good"}">${miss > 0 ? "−" + f0(miss) + " left" : "optimal"}</span>`}</div></div>`;
-      })
-      .join("");
+    $("#hdMine").innerHTML =
+      `<div class="tw"><table class="bestt">${HEAD}<tbody>` +
+      mine
+        .map(({ t, r, off }, k) => {
+          if (!r)
+            return (
+              sec(`<b>${esc(t.name)}</b>`) +
+              wide(
+                `No line-up saved for R${gd}. Line-ups come from a data export; collect a fresh one to fill new rounds.`,
+              )
+            );
+          const b = Hind.own(r, gd),
+            chipName = (CHIPS.find(([c]) => c === r.chip) || [])[2],
+            fresh = Hind.fresh(gd, r.start);
+          const bids = b.drivers.concat(b.cons),
+            outs = r.start.filter((id) => !bids.includes(id)),
+            ins = bids.filter((id) => !r.start.includes(id));
+          const moves =
+            fresh || ["wildcard", "limitless"].includes(r.chip)
+              ? `${chipName || "Free"} rebuild`
+              : ins.length
+                ? `${ins.length} transfer${ins.length > 1 ? "s" : ""}: ` +
+                  outs.map((id) => code(byId[id])).join(", ") +
+                  " → " +
+                  ins.map((id) => code(byId[id])).join(", ") +
+                  (b.penalty ? ` (−${b.penalty})` : "")
+                : "no transfers";
+          const miss = off == null ? null : b.score - off,
+            dec = hdDecisions(teamKey(t), gd);
+          const boost = b.boost2 || b.boost,
+            x3 = b.boost2 ? b.boost : null;
+          hdRows.mine[k] = {
+            ids: bids,
+            txt: teamText(`${t.name} R${gd} best`, b.cons, b.drivers, boost, x3, b.cost, b.score),
+          };
+          const usedCost = r.ids.reduce((s, id) => s + (Hind.at(id, gd)?.price || 0), 0),
+            usedDv = r.ids.reduce((s, id) => s + Hind.delta(id, gd), 0),
+            bestDv = bids.reduce((s, id) => s + Hind.delta(id, gd), 0);
+          const left =
+            miss == null
+              ? ""
+              : `<span class="gap ${miss > 0 ? "bad" : "good"}">${miss > 0 ? "+" + f0(miss) + " missed" : "optimal"}</span>`;
+          const why = [
+            `Best move: ${esc(moves)}`,
+            ...(dec ? dec.list.map(decHtml) : []),
+            b.ff
+              ? `Best Final Fix: ${esc(code(byId[b.ff.out]))} → ${esc(code(byId[b.ff.in]))} (+${f0(b.ff.gain)})`
+              : "",
+          ].filter(Boolean);
+          return (
+            sec(`<b>${esc(t.name)}</b>${chipName ? ` <span class="tag sprint">${esc(chipName)}</span>` : ""}`) +
+            hdRow(
+              `<span title="The line-up you played">${PERSON_ICON}</span>`,
+              hdCells(r.ids, r.boost, r.x3, null, gd, r.chip, r.ff),
+              usedCost,
+              off ?? "—",
+              "",
+              usedDv,
+              "",
+            ).replace("<tr>", '<tr title="The line-up you played, with its official round points">') +
+            hdRow(
+              '<span class="dim" title="The best line-up you could have reached">★</span>',
+              hdCells(bids, boost, x3, fresh ? null : r.start, gd, r.chip, b.ff),
+              b.cost,
+              f0(b.score),
+              left,
+              bestDv,
+              `mine:${k}`,
+            ).replace(
+              "<tr>",
+              '<tr class="joined" title="The best you could have reached from that line-up, budget and free transfers">',
+            ) +
+            `<tr class="why"><td></td><td colspan="${NCOL - 1}">${why.join(" · ")}</td></tr>`
+          );
+        })
+        .join("") +
+      "</tbody></table></div>";
 
   // season: official vs best reachable, every finished round
   const teams = mine.filter(({ t }) => lineups(teamKey(t)));
@@ -274,7 +417,7 @@ export function renderHind() {
       .join("") +
     "</tr>";
   $("#hdSeason").innerHTML =
-    `<thead><tr><th>Round</th><th title="Best team from scratch with the settings above">Best possible</th>${teams.map(({ t }) => `<th>${esc(t.name)}</th><th title="Best reachable from that team's line-up, budget, free transfers and chip">Best reachable</th>`).join("")}</tr></thead><tbody>${tot}${rows.join("")}</tbody>`;
+    `<thead><tr><th>Round</th><th title="Best team from scratch with the budget and chip in Settings">Best possible</th>${teams.map(({ t }) => `<th>${esc(t.name)}</th><th title="Best reachable from that team's line-up, budget, free transfers and chip">Best reachable</th>`).join("")}</tr></thead><tbody>${tot}${rows.join("")}</tbody>`;
   $("#hdFoot").innerHTML = infoTip(
     teams.length
       ? "Best reachable starts from the team's actual line-up going into the round, with its budget, free transfers (extra ones at −10) and the chip it played. The % is how much of that you banked."
@@ -332,29 +475,75 @@ export function renderHind() {
 
   renderModelTeam(gd);
 
-  // every asset's round, with this model's pre-lock projection where it was saved
-  const proj = (DATA.projHist || {})[gd];
-  $("#hdAssetsNote").textContent =
-    `R${gd}` +
-    (proj ? ` · projection frozen at lock (${modelAccuracy(gd)})` : "") +
-    " · Incl / Excl apply to the best teams above";
-  const bestIds = list[0] ? list[0].drivers.concat(list[0].cons) : [];
-  const alist = DATA.assets
-    .map((a) => ({ a, h: Hind.at(a.id, gd) }))
-    .filter((x) => x.h && (x.h.active || x.a.kind === "C"))
-    .sort((x, y) => y.h.pts - x.h.pts);
-  $("#hdAssets").innerHTML =
-    `<thead><tr><th>Asset</th><th>Price</th><th title="Price change after the round">Δ$</th><th>Pts</th><th title="No Negative points: negative events count as 0">NN</th><th title="Points per $1m">Pts/$m</th><th title="Share of all teams that picked it">Own</th>${proj ? "<th>Projected</th>" : ""}<th style="text-align:left">Best</th><th style="text-align:left">Your teams</th><th>Incl / Excl</th></tr></thead><tbody>` +
-    alist
-      .map(({ a, h }) => {
-        const m = (state.hdMarks || {})[a.id] || "",
-          dv = Hind.delta(a.id, gd);
-        return `<tr><td>${who(a)}</td><td class="muted">${money(h.price)}</td><td class="${dv > 0 ? "good" : dv < 0 ? "bad" : "muted"}">${sgn(dv, 1)}</td><td${heat(h.pts, -20, 60)}><b>${f0(h.pts)}</b></td><td class="muted">${f0(h.nn)}</td><td>${f1(h.pts / h.price)}</td><td class="muted">${f0(h.own)}%</td>${proj ? `<td class="muted">${f1(proj[a.id])}</td>` : ""}
-      <td style="text-align:left">${bestIds.includes(a.id) ? '<span class="good">✓</span>' : ""}</td><td style="text-align:left">${state.teams.map((t, i) => (((lineups(teamKey(t)) || {})[gd]?.ids || []).includes(a.id) ? `<span class="chiptok" title="${esc(t.name)}">T${i + 1}</span>` : "")).join("")}</td>
-      <td>${inclExcl(a.id, m, "hmark")}</td></tr>`;
-      })
-      .join("") +
-    "</tbody>";
+  // Drivers / Constructors: every asset's round, with this model's pre-lock projection where it was saved
+  hdCtx = { gd, proj: (DATA.projHist || {})[gd], best: list[0] ? list[0].drivers.concat(list[0].cons) : [] };
+  $("#hdAssetsNote").textContent = `R${gd}`;
+  $("#hdAssetsTip").innerHTML = infoTip(
+    `Each asset's points that round, its price then and its price change after it. ● = in the #1 best team; T1–T3 = in your teams. Incl / Excl apply to the best teams.` +
+      (hdCtx.proj ? ` Proj = this site's projection frozen at lock (${modelAccuracy(gd)}).` : ""),
+  );
+  renderHindAssets();
+}
+
+// the Drivers and Constructors panes (also redrawn alone as you type in their search boxes)
+export function renderHindAssets() {
+  if (!hdCtx) return;
+  const { gd, proj, best } = hdCtx;
+  const table = (kind, q) => {
+    const list = DATA.assets
+      .filter((a) => a.kind === kind && matchSearch(a, q))
+      .map((a) => ({ a, h: Hind.at(a.id, gd) }))
+      .filter((x) => x.h && (x.h.active || kind === "C"))
+      .sort((x, y) => y.h.pts - x.h.pts);
+    const head =
+      `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th><th title="Price that round">$</th><th title="Points that round" aria-sort="descending">Pts ↓</th>` +
+      (proj ? '<th title="Projection frozen at lock">Proj</th>' : "") +
+      `<th title="Price change after the round">Δ$</th><th title="Include / exclude in the best teams">Incl / Excl</th></tr></thead>`;
+    const line = ({ a, h }) => {
+      const dv = Hind.delta(a.id, gd),
+        tok = state.teams
+          .map((t, i) =>
+            ((lineups(teamKey(t)) || {})[gd]?.ids || []).includes(a.id)
+              ? `<span class="chiptok" title="In ${esc(t.name)}">T${i + 1}</span>`
+              : "",
+          )
+          .join("");
+      return `<tr><td><span class="who">${codeBox(a)}${best.includes(a.id) ? '<span title="In the #1 best team" style="color:var(--accent)">●</span>' : ""}${tok}</span></td>
+        <td>${f1(h.price)}</td><td${heat(h.pts, -20, 60)} title="No Negative ${f0(h.nn)} · ${f1(h.pts / h.price)} pts per $1m · owned by ${f0(h.own)}%"><b>${f0(h.pts)}</b></td>${proj ? `<td class="muted">${f1(proj[a.id])}</td>` : ""}
+        <td class="${dv > 0 ? "good" : dv < 0 ? "bad" : "muted"}">${sgn(dv, 1)}</td><td>${inclExcl(a.id, (state.hdMarks || {})[a.id] || "", "hmark")}</td></tr>`;
+    };
+    return head + "<tbody>" + list.map(line).join("") + "</tbody>";
+  };
+  $("#hdDrv").innerHTML = table("D", $("#hdDrvSearch").value);
+  $("#hdCon").innerHTML = table("C", $("#hdConSearch").value);
+}
+
+// the ⋯ menu on a Hindsight line-up: copy it, or keep it as a manual team (at today's prices) for the Calculator
+let hdMenuRow = null;
+export function openHdMenu(btn) {
+  const [k, i] = btn.dataset.hmenu.split(":"),
+    r = (hdRows[k] || [])[+i],
+    m = $("#hdMenu");
+  if (!r) return;
+  if (!m.hidden && hdMenuRow === r) return void (m.hidden = true);
+  hdMenuRow = r;
+  m.innerHTML =
+    '<button data-hmi="copy">Copy team as text</button><button data-hmi="save">Save as manual team</button>';
+  const host = $("#view-hind").getBoundingClientRect(),
+    b = btn.getBoundingClientRect();
+  m.hidden = false;
+  m.style.top = b.bottom - host.top + 4 + "px";
+  m.style.left = Math.max(0, Math.min(host.width - m.offsetWidth, b.right - host.left - m.offsetWidth)) + "px";
+}
+export function hdMenuAction(a) {
+  const r = hdMenuRow;
+  $("#hdMenu").hidden = true;
+  if (!r) return;
+  if (a === "copy") return copyText(r.txt);
+  if (a === "save" && addDraft("Hindsight " + (state.drafts.length + 1), r.ids)) {
+    save();
+    toast("Saved as a manual team, at today's prices (Calculator → Compare).");
+  }
 }
 
 // How far the frozen projection was from what happened: this round's mean absolute error and rank correlation,

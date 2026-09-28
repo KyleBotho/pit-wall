@@ -97,7 +97,7 @@
   <!-- the open group's views (main.js GROUPS) -->
 
   <!-- TEAM CALCULATOR -->
-  <main id="view-calc" data-v>
+  <main id="view-calc" class="ws" data-v>
     <div class="panel-tabs">
       <div class="seg" id="paneTabs">
         <button data-pane-btn="best">
@@ -560,85 +560,141 @@
     </div>
   </main>
 
-  <!-- HINDSIGHT -->
-  <main id="view-hind" data-v hidden>
+  <!-- HINDSIGHT: the Calculator's workspace (teams | Settings | Drivers + Constructors), on actual points -->
+  <main id="view-hind" class="ws" data-v hidden>
     <div id="hindEmpty" class="panel" hidden>
       <h3>Hindsight</h3>
       <p class="note">No finished rounds yet. Hindsight fills in after the first race.</p>
     </div>
-    <div class="dash" id="hindDash" style="grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr)">
-      <section class="panel" style="grid-column: 1/-1">
-        <h3>Hindsight <small>scored on the points each asset actually got</small></h3>
-        <div class="seg" id="hdRound" style="align-self: flex-start"></div>
-        <div class="fields">
-          <div class="field">
-            Budget for the best teams
-            <div class="seg" id="hdCap"></div>
+    <div class="panel-tabs">
+      <div class="seg">
+        <button data-pane-btn="best">
+          <svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" /></svg
+          ><span class="t">Teams</span></button
+        ><button data-pane-btn="settings">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3.2 14H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 9 4.6V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.8 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 19.4 9V9a1.7 1.7 0 0 0 1.6 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
+            /></svg
+          ><span class="t">Settings</span></button
+        ><button data-pane-btn="drivers">
+          <svg viewBox="0 0 24 24"><path d="M3 14a9 9 0 0 1 18 0v3H3v-3zM3 17h18M12 5v4M14 11h7" /></svg><span class="t">Drivers</span></button
+        ><button data-pane-btn="cons">
+          <svg viewBox="0 0 24 24"><path d="M3 15h18M5 15l2-5h10l2 5M7 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM10 10V7h4v3" /></svg
+          ><span class="t">Constructors</span>
+        </button>
+      </div>
+    </div>
+    <div class="dash calc" id="hindDash">
+      <div class="col">
+        <section class="panel" data-pane="best">
+          <h3>
+            <span class="seg bmode" id="hdMode"
+              ><button data-hdmode="best">Best teams</button><button data-hdmode="mine">Your teams</button><button data-hdmode="season">Season</button></span
+            >
+          </h3>
+          <div data-hm="best">
+            <p class="note"><span id="hdBestNote"></span> <span class="tipslot" id="hdBestTip"></span></p>
+            <div class="tw"><table class="bestt" id="hdBest"></table></div>
           </div>
-          <div class="field">
-            Chip
-            <div class="seg" id="hdChip">
-              <button data-hch="">None</button><button data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button
-              ><button data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button
-              ><button data-hch="finalfix" title="Final Fix: swap one driver after qualifying; the new one scores the race">FF</button>
-            </div>
+          <div data-hm="mine" hidden>
+            <div id="hdMine"></div>
           </div>
-          <div class="field full">
-            Team filters
-            <div id="hdFilters"></div>
+          <div data-hm="season" hidden>
+            <h4 class="subh">Season <small>your official points against the best you could reach</small><span class="tipslot" id="hdFoot"></span></h4>
+            <div class="tw"><table id="hdSeason"></table></div>
+            <h4 class="subh">
+              Decisions <small>what your transfers, Boost changes and chips were worth</small>
+              <details class="info">
+                <summary aria-label="About this">i</summary>
+                <div class="infobox">
+                  Transfers: points of the assets brought in minus the ones sold, in that round, minus any penalty. Boost change: the new Boost driver's points
+                  minus the previous one's, when both were in the team. Chips: X3 = the X3 driver's points plus the Boost driver's (what the chip added over
+                  plain Boost), No Negative = negative events wiped, Wildcard = penalties avoided, Limitless = against keeping the previous team, Final Fix =
+                  the new driver's race points minus the old driver's (times the slot's Boost).
+                </div>
+              </details>
+            </h4>
+            <div class="tw"><table id="hdDecide"></table></div>
+            <h4 class="subh">
+              Model team <small id="hdModelNote">a hands-off follower of the projections</small>
+              <details class="info">
+                <summary aria-label="About this">i</summary>
+                <div class="infobox">
+                  What a hands-off follower of this model would have scored. It starts with a fresh $100m pick in the first round the model had data for, then
+                  each round takes the best team for that race on the model's projection, from last round's team: 2 free transfers a race (one unused carries, 3
+                  at most), −10 for each extra, a budget that moves with the price changes of the team held, the Boost on the top projected driver, no chips.
+                  Frozen = the projection the site saved before lock. Rebuilt = the data as it stood before the round run through today's model; today's
+                  settings were fitted on those rounds, so they flatter it a little. A benchmark for your own teams, not advice.
+                </div>
+              </details>
+            </h4>
+            <p class="note" id="hdModelSum"></p>
+            <div class="tw"><table id="hdModel"></table></div>
           </div>
-        </div>
-      </section>
-      <section class="panel">
-        <h3>Best possible teams <small id="hdBestNote"></small></h3>
-        <div class="bts" id="hdBest"></div>
-      </section>
-      <section class="panel">
-        <h3>Your teams <small>what you did, and the best move you had</small></h3>
-        <div class="bts" id="hdMine"></div>
-      </section>
-      <section class="panel" style="grid-column: 1/-1">
-        <h3>Season <small>your official points against the best you could reach</small><span class="tipslot" id="hdFoot"></span></h3>
-        <div class="tw"><table id="hdSeason"></table></div>
-      </section>
-      <section class="panel" style="grid-column: 1/-1">
-        <h3>
-          Model team
-          <details class="info">
-            <summary aria-label="About this">i</summary>
-            <div class="infobox">
-              What a hands-off follower of this model would have scored. It starts with a fresh $100m pick in the first round the model had data for, then each
-              round takes the best team for that race on the model's projection, from last round's team: 2 free transfers a race (one unused carries, 3 at
-              most), −10 for each extra, a budget that moves with the price changes of the team held, the Boost on the top projected driver, no chips. Frozen =
-              the projection the site saved before lock. Rebuilt = the data as it stood before the round run through today's model; today's settings were fitted
-              on those rounds, so they flatter it a little. A benchmark for your own teams, not advice.
+          <div class="menu" id="hdMenu" hidden></div>
+        </section>
+      </div>
+      <div class="col">
+        <section class="panel" data-pane="settings">
+          <h3>
+            Settings
+            <button class="tbtn" data-hdreset="1" title="Back to the latest round, your team's budget, no chip, no filters, no Incl / Excl" aria-label="Reset">
+              ↺
+            </button>
+          </h3>
+          <details class="grp" data-grp="hdRound" open>
+            <summary><span>Round</span><small id="hdGrpRound"></small></summary>
+            <div class="grpbody">
+              <div class="seg grid" id="hdRound"></div>
+              <span class="note" id="hdRoundName"></span>
             </div>
           </details>
-          <small id="hdModelNote">a hands-off follower of the projections</small>
-        </h3>
-        <p class="note" id="hdModelSum"></p>
-        <div class="tw"><table id="hdModel"></table></div>
-      </section>
-      <section class="panel" style="grid-column: 1/-1">
-        <h3>
-          Decisions
-          <details class="info">
-            <summary aria-label="About this">i</summary>
-            <div class="infobox">
-              Transfers: points of the assets brought in minus the ones sold, in that round, minus any penalty. Boost change: the new Boost driver's points
-              minus the previous one's, when both were in the team. Chips: X3 = the X3 driver's points plus the Boost driver's (what the chip added over plain
-              Boost), No Negative = negative events wiped, Wildcard = penalties avoided, Limitless = against keeping the previous team, Final Fix = the new
-              driver's race points minus the old driver's (times the slot's Boost).
+          <details class="grp" data-grp="hdBudget" open>
+            <summary><span>Budget</span><small id="hdGrpCap"></small></summary>
+            <div class="grpbody">
+              <div class="field">
+                Your team's budget that round
+                <div class="seg" id="hdCapTeam"></div>
+              </div>
+              <div class="or">OR</div>
+              <div class="field">
+                A fixed budget
+                <div class="seg" id="hdCapFix"></div>
+              </div>
             </div>
           </details>
-          <small>what your transfers, Boost changes and chips were worth</small>
-        </h3>
-        <div class="tw"><table id="hdDecide"></table></div>
-      </section>
-      <section class="panel" style="grid-column: 1/-1">
-        <h3>Round scores <small id="hdAssetsNote"></small></h3>
-        <div class="tw"><table id="hdAssets"></table></div>
-      </section>
+          <details class="grp" data-grp="hdChip" open>
+            <summary><span>Chip</span><small id="hdGrpChip"></small></summary>
+            <div class="grpbody">
+              <div class="field">
+                Played by the best teams
+                <div class="chipbar" id="hdChip">
+                  <button class="tbtn" data-hch="x3" title="Extra DRS: 3× one driver, 2× another">X3</button
+                  ><button class="tbtn" data-hch="noneg" title="No Negative: every negative scoring event counts as 0">NN</button
+                  ><button class="tbtn" data-hch="finalfix" title="Final Fix: swap one driver after qualifying; the new one scores the race">FF</button>
+                </div>
+              </div>
+            </div>
+          </details>
+          <details class="grp" data-grp="hdFilt" open>
+            <summary><span>Team filters</span><small id="hdGrpFilt"></small></summary>
+            <div class="grpbody"><div id="hdFilters"></div></div>
+          </details>
+        </section>
+      </div>
+      <div class="col col-c">
+        <section class="panel" data-pane="drivers">
+          <h3>Drivers <small id="hdAssetsNote"></small><span class="tipslot" id="hdAssetsTip"></span></h3>
+          <input class="inp" id="hdDrvSearch" placeholder="Find a driver… (e.g. VER+NOR)" aria-label="Find a driver" />
+          <div class="tw"><table id="hdDrv"></table></div>
+        </section>
+        <section class="panel" data-pane="cons">
+          <h3>Constructors</h3>
+          <input class="inp" id="hdConSearch" placeholder="Find a constructor… (e.g. RED+MCL)" aria-label="Find a constructor" />
+          <div class="tw"><table id="hdCon"></table></div>
+        </section>
+      </div>
     </div>
   </main>
 

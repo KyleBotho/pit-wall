@@ -73,6 +73,8 @@ export const defaults = () => ({
   pane: "best",
   calcGrp: {}, // the Calculator's Settings sections: key -> open (true unless closed by the user)
   bmode: "best", // the Calculator's left pane: "best" (Best Teams) or "cmp" (Compare)
+  hdPane: "best", // Hindsight's pane on a phone (a workspace like the Calculator)
+  hdMode: "best", // Hindsight's left pane: "best" (Best teams), "mine" (Your teams) or "season"
   sub: {}, // the view last open in each tool group (main.js GROUPS)
   kind: "D",
   raceIdx: 0,
@@ -177,6 +179,8 @@ const CARRY = [
   "priceMode",
   "hdCap",
   "hdChip",
+  "hdPane",
+  "hdMode",
   "showN",
   "simPreset",
   "simDecay",
