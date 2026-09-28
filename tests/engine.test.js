@@ -1155,6 +1155,31 @@ test("planHorizon: each plan is checked against the sampled price paths (afford)
   assert.ok(risky[0].afford >= 0.9 && risky[0].total < 320);
   const wait = risky.find((p) => !p.steps[0].team.includes("f") && p.steps[1].team.includes("f"));
   assert.ok(!wait || wait.afford === 0.5);
+
+  // the stochastic planner: the same futures' points too (here every future scores the expected points)
+  const ids = Object.keys(r1),
+    idx = Object.fromEntries(ids.map((id, i) => [id, i]));
+  const tot = (r) => Float32Array.from(ids.flatMap((id) => new Array(N).fill(r[id])));
+  const samples = [
+    { tot: tot(r1), idx },
+    { tot: tot(r2), idx },
+  ];
+  // prices never move: every plan fits, value = total
+  const [calmS] = run({ priceSteps: { f: new Int8Array(3 * N) }, priceN: N, samples });
+  assert.equal(Math.round(calmS.value), 320);
+  assert.equal(calmS.afford, 1);
+  assert.equal(calmS.held, 0);
+  // f rises in half the futures: waiting for it scores 320 where it fits, and where it doesn't the team is held
+  // (e scores 5 instead of f's 40, Boost 20 instead of 40): 265; (320 + 265) / 2 = 292.5. Taking f now costs a
+  // -10 hit and f's 5 in race 1 but always fits: 125 - 10 + 180 = 295, so it ranks first
+  const stoch = run({ priceSteps: { f }, priceN: N, samples });
+  assert.ok(stoch[0].steps[0].team.includes("f"), JSON.stringify(stoch[0].steps.map((x) => x.team)));
+  assert.equal(Math.round(stoch[0].value * 10) / 10, 295);
+  const waitS = stoch.find((p) => !p.steps[0].team.includes("f") && p.steps[1].team.includes("f"));
+  assert.ok(waitS, "the waiting plan is still listed");
+  assert.equal(waitS.value, 292.5);
+  assert.equal(waitS.afford, 0.5);
+  assert.equal(waitS.held, 0.5);
 });
 
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {

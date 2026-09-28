@@ -3091,7 +3091,7 @@
 
   /* ---------- optimiser ---------- */
   /**
-   * @typedef {{ id: string, kind: "D" | "C", price: number, e: number, boostE?: number | number[], active: boolean, f?: Record<string, number> }} Candidate
+   * @typedef {{ id: string, kind: "D" | "C", price: number, e: number, x?: number, boostE?: number | number[], active: boolean, f?: Record<string, number> }} Candidate
    * e is the asset's value (summed over the horizon); boostE the value the Boost adds: one number, or one per race
    * of the horizon (the Boost goes to the team's best driver in each race; chips only apply to the first race).
    * @typedef {{ k: string, min?: number | null, max?: number | null }} Filter
@@ -3294,7 +3294,10 @@
    *   one race of the horizon: that race's candidates (e = that race's expected points, boostE that race's Boost
    *   value) and the expected price change of each asset after it (its budget effect for the next race)
    * @typedef {{ team: string[], boost: string, boost2: string | null, transfers: number, penalty: number, pts: number, cost: number, cap: number, free: number }} PlanStep
-   * @typedef {{ total: number, steps: PlanStep[], afford?: number }} Plan
+   * @typedef {{ total: number, steps: PlanStep[], afford?: number, value?: number, held?: number }} Plan
+   * @typedef {{ tot: Float32Array, idx: Record<string, number>, shift?: Record<string, number> }} PlanSamples
+   *   one race's simulated weekends for the stochastic planner: asset idx[id]'s points in sample s at tot[idx * N + s]
+   *   (plus shift[id], the projection's shift), the races' samples one future each (the same persist seed)
    */
   /** Best sequence of teams race by race: transfers can wait for a later race, free transfers carry over (2 a race,
    * at most one unused carries: 3 max), and the budget grows or shrinks with the price changes of the team held.
@@ -3303,8 +3306,11 @@
    * first race's transfers only (what banking transfers is worth: plan with at most k now, the rest carried over).
    * The search plans on expected price changes; with o.priceSteps (each asset's sampled change per race, pricePath
    * steps) every plan gets `afford`: the share of simulated futures in which each of its transfers still fits the
-   * budget as those prices turn out, and plans that fit in at least 90% of them rank first.
-   * @param {Stage[]} stages @param {string[]} team @param {OptOpts & { beam?: number, bank?: number, perFree?: number, carryMax?: number, firstMaxT?: number, priceSteps?: Record<string, Int8Array>, priceN?: number }} o
+   * budget as those prices turn out, and plans that fit in at least 90% of them rank first. With o.samples too (each
+   * race's simulated weekends, the same futures as the price steps) the plans kept are ranked by `value` instead:
+   * their points over those futures, a later race's transfers made only where they fit and the team held otherwise
+   * (planStoch; the stochastic planner, 2026-09-28).
+   * @param {Stage[]} stages @param {string[]} team @param {OptOpts & { beam?: number, bank?: number, perFree?: number, carryMax?: number, firstMaxT?: number, priceSteps?: Record<string, Int8Array>, priceN?: number, samples?: PlanSamples[] }} o
    * @returns {Plan[]} best plans first */
   function planHorizon(stages, team, o) {
     const beam = o.beam || 12,
@@ -3435,11 +3441,100 @@
       plans = next.slice(0, beam * 2);
     }
     plans.sort((a, b) => b.total - a.total);
-    if (o.priceSteps && H > 1) {
+    if (o.priceSteps && o.samples && o.priceN && H > 1 && o.samples.length >= H) {
+      for (const p of plans) Object.assign(p, planStoch(p, stages, priceOf, o.priceSteps, o.priceN, o.samples, o));
+      plans.sort((a, b) => /** @type {number} */ (b.value) - /** @type {number} */ (a.value));
+    } else if (o.priceSteps && H > 1) {
       for (const p of plans) p.afford = planAfford(p, priceOf, o.priceSteps, o.priceN || 0);
       plans.sort((a, b) => +((b.afford ?? 1) >= 0.9) - +((a.afford ?? 1) >= 0.9) || b.total - a.total);
     }
     return plans.slice(0, 10);
+  }
+  /** A plan over the simulated futures (the stochastic planner). In each future s: race 1 as planned (a Limitless
+   * race at its expected points: its team isn't kept in the plan); from race 2 on, the planned team if its transfers
+   * fit the budget at that future's prices, else the team held from then on (no transfers, no penalty, its best
+   * expected Boost), which is what a manager does when a move no longer fits. Points from that future's weekends:
+   * the Boost twice (race 1 with X3: three times, the second driver twice). value = the mean over the futures plus
+   * the plan's price-value terms (a candidate's e above its expected points x, race 1: xΔ$Pts); afford = the share
+   * of futures in which every planned transfer fit; held = the share that had to hold.
+   * @param {Plan} p @param {Stage[]} stages @param {Record<string, Candidate>} priceOf today's prices
+   * @param {Record<string, Int8Array>} steps sampled price changes (tenths, race k's sample s at k * N + s)
+   * @param {number} N @param {PlanSamples[]} samples @param {{ chip?: string }} o */
+  function planStoch(p, stages, priceOf, steps, N, samples, o) {
+    const H = p.steps.length;
+    const pts = (/** @type {string} */ id, /** @type {number} */ h, /** @type {number} */ s) => {
+      const sm = samples[h],
+        i = sm.idx[id];
+      return i == null ? 0 : sm.tot[i * N + s] + ((sm.shift && sm.shift[id]) || 0);
+    };
+    const price = (/** @type {string} */ id, /** @type {number} */ h, /** @type {number} */ s) => {
+      let v = priceOf[id] ? priceOf[id].price : 0;
+      const st = steps[id];
+      if (st) for (let k = 0; k < h; k++) v += st[k * N + s] / 10;
+      return v;
+    };
+    // the expected Boost of a held team in race h: its driver with the best boostE there
+    const boostOf = (/** @type {string[]} */ ids, /** @type {number} */ h) => {
+      let best = null,
+        bv = -Infinity;
+      for (const c of stages[h].cand)
+        if (ids.includes(c.id) && c.kind === "D") {
+          const v = Array.isArray(c.boostE) ? c.boostE[0] : c.boostE || 0;
+          if (v > bv) ((bv = v), (best = c.id));
+        }
+      return best;
+    };
+    const s0 = p.steps[0],
+      c0 = Object.fromEntries(stages[0].cand.map((c) => [c.id, c]));
+    const limitless = o.chip === "limitless";
+    // race 1's price-value terms: e above the expected points x (none without x)
+    const extra = limitless
+      ? 0
+      : s0.team.reduce(
+          (t, id) => t + (c0[id] && c0[id].x != null ? c0[id].e - /** @type {number} */ (c0[id].x) : 0),
+          0,
+        );
+    let sum = 0,
+      fitAll = 0,
+      held = 0;
+    for (let s = 0; s < N; s++) {
+      let v = 0;
+      if (limitless) v += s0.pts;
+      else {
+        for (const id of s0.team) v += pts(id, 0, s);
+        v += pts(s0.boost, 0, s) * (o.chip === "x3" ? 2 : 1) + (s0.boost2 ? pts(s0.boost2, 0, s) : 0) - s0.penalty;
+      }
+      let bank = s0.cap - s0.team.reduce((t, id) => t + price(id, 0, s), 0),
+        team = s0.team,
+        hold = false,
+        fit = true;
+      for (let h = 1; h < H; h++) {
+        const st = p.steps[h];
+        const budget = bank + team.reduce((t, id) => t + price(id, h, s), 0);
+        if (!hold && st.transfers > 0) {
+          const cost = st.team.reduce((t, id) => t + price(id, h, s), 0);
+          if (cost > budget + 1e-6) {
+            hold = true;
+            fit = false;
+          }
+        }
+        if (hold) {
+          const b = boostOf(team, h);
+          for (const id of team) v += pts(id, h, s);
+          if (b) v += pts(b, h, s);
+          bank = budget - team.reduce((t, id) => t + price(id, h, s), 0);
+        } else {
+          for (const id of st.team) v += pts(id, h, s);
+          v += pts(st.boost, h, s) - st.penalty;
+          bank = Math.max(0, budget - st.team.reduce((t, id) => t + price(id, h, s), 0));
+          team = st.team;
+        }
+      }
+      sum += v;
+      if (fit) fitAll++;
+      if (hold) held++;
+    }
+    return { value: sum / N + extra, afford: fitAll / N, held: held / N };
   }
   /** The share of sampled price futures in which every later race's transfers fit the budget: a sample's budget is
    * what was left in the bank plus the value of the team held, at that sample's prices (a race without transfers

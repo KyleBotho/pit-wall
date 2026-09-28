@@ -1038,6 +1038,7 @@ function planStages(ctx, H) {
         price: a.price,
         active: a.kind === "C" || a.active,
         e: pk(a.id, k) + (k === 0 ? vp(a.id) : 0),
+        x: pk(a.id, k), // the expected points alone (the stochastic planner adds e - x as planned)
         boostE: a.kind === "D" ? pk(a.id, k) : 0,
       }));
     // price changes: each race's expected change on the price paths (the races share each sample's future)
@@ -1069,15 +1070,24 @@ export function openPlan() {
         .map(([id, v]) => [id, v.path.steps]),
     ),
     priceN: forecast.sims[0].N,
+    // the same futures' points, so each plan is valued over them (Engine.planStoch): the projection's shift on
+    // every sample, No Negative's points in race 1 with that chip (as pk)
+    samples: forecast.sims.slice(0, H).map((sim, k) => ({
+      tot: k === 0 && chipK === "noneg" ? sim.nn : sim.tot,
+      idx: Object.fromEntries(sim.ids.map((id, i) => [id, i])),
+      shift: Object.fromEntries(sim.ids.map((id) => [id, (forecast.proj[k][id] || {}).shift || 0])),
+    })),
   });
   const keep = bestRows.best[0];
   const p = plans[0];
   const races = forecast.races.slice(0, H);
   const body = p
-    ? `<p class="note">Expected <b>${f1(p.total)}</b> pts over ${H} races${keep ? ` (the best team kept for all ${H}: ${f1(keep.st.x + (keep.st.xdp || 0))})` : ""}. Transfers beyond the free ones cost −10 each.${
-        p.afford != null && p.afford < 0.995
-          ? ` <span class="${p.afford < 0.9 ? "warn" : "muted"}">Affordable in ${Math.round(p.afford * 100)}% of the simulated price paths: in the rest a later transfer no longer fits the budget.</span>`
-          : ""
+    ? `<p class="note">Expected <b>${f1(p.value ?? p.total)}</b> pts over ${H} races${keep ? ` (the best team kept for all ${H}: ${f1(keep.st.x + (keep.st.xdp || 0))})` : ""}. Transfers beyond the free ones cost −10 each.${
+        p.held != null && p.held > 0.005
+          ? ` <span class="${p.held > 0.1 ? "warn" : "muted"}">In ${Math.round(p.held * 100)}% of the simulated futures a later transfer no longer fits the budget; there the team is kept instead, which is counted (${f1(p.total)} pts if every move fit).</span>`
+          : p.afford != null && p.afford < 0.995
+            ? ` <span class="${p.afford < 0.9 ? "warn" : "muted"}">Affordable in ${Math.round(p.afford * 100)}% of the simulated price paths: in the rest a later transfer no longer fits the budget.</span>`
+            : ""
       }</p>` +
       p.steps
         .map((st, k) => {
@@ -1094,7 +1104,7 @@ export function openPlan() {
         .join("")
     : `<p class="note">No legal plan within the budget and transfer limits.</p>`;
   $("#modalBody").innerHTML =
-    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race. Every race's price changes are simulated (the same futures race to race). Plans are made on the expected price changes and checked against every simulated price path (those that fit in 90%+ of them first). The check ranks the plans the search kept; it doesn't look for plans that are safe from the start, and 90% is a chosen tolerance, not a tested one.</p>`;
+    `<h3>Race-by-race plan</h3>${body}<p class="note dim">Beam search over the best teams for the first race and for keeping all ${H} races, then the best few moves each race, made on the expected points and price changes. The plans it keeps are then valued over the simulated futures (the same futures race to race, points and prices together): in each, a later race's transfers are made if that future's prices let them fit the budget, else the team is kept from there on. Plans rank by that value, so a move that often won't fit counts for what it's really worth. The search itself still plans on expected values: it doesn't look for plans that are safe from the start.</p>`;
   openModal("plan");
 }
 
