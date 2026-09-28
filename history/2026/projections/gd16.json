@@ -902,9 +902,9 @@
   "s": 0.1656859280319779
  },
  "record": {
-  "built": "2026-09-28T07:31:40+00:00",
-  "commit": "0275ec73e9dc74879398695c87bcd09a6b96491c",
-  "dataGenerated": "2026-09-28T07:31+00:00",
+  "built": "2026-09-28T08:23:11+00:00",
+  "commit": "1c77b6a12595c874dc83a1e300561b4790d4af81",
+  "dataGenerated": "2026-09-28T08:22+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -921,7 +921,7 @@
   "inputs": {
    "assets": "db0cda5669ff",
    "bands": "2187c0461e30",
-   "cfg": "725e5f0bd0cb",
+   "cfg": "316ca3bfb5ce",
    "evNames": "b1a52eb2b5a9",
    "live": "20b31dfb488a",
    "odds": "2be88ca4242c",
@@ -931,7 +931,7 @@
    "results": "8593c2164317",
    "schedule": "6035d999051c",
    "trackStats": "2293a535916b",
-   "weather": "02da01294341",
+   "weather": "07bd95eb1f5f",
    "weekend": "1e7d3cf53da7"
   },
   "lock": "2026-10-03T16:00:00+08:00",
