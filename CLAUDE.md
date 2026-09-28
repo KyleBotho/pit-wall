@@ -334,6 +334,24 @@ there before re-deciding something.
   - Data: tyre-set inventory (not in the FIA documents). DONE 2026-09-27: PU elements, upgrades, parc-fermé parts
     and tyre choices from the FIA documents (collect.py `fia_tech`), R1-R15 backfilled. The `oddsq` challenger
     needs Kalshi spreads (bid/ask are archived in quotes/ from R16).
+- [ ] Past seasons' data where the 2026 rules didn't change it (user, 2026-09-28; the sim already takes circuit priors
+      from 2014+, which helped only retirement levels and rain climatology). Each as a prior, judged walk-forward on
+      2026 like everything else; not pace / team order, tyre and fuel effects, overtaking (no DRS) or the
+      reliability level (new PUs). In this order:
+  1. Rain forecast calibration: our rain chance runs high (25% forecast vs 9% seen R5-R15, one wet race). 2023-2025
+     races give ~70 with OpenF1's observed rain. FIRST check that forecasts as they stood before lock exist for
+     them (Open-Meteo's previous-runs archive was thin for 2026's early rounds, backtest/weather_rounds.py); if
+     only after-the-fact forecasts exist, it can't be done honestly. The most valuable: rain drives spread,
+     retirements and qualifying.
+  2. Sprint vs race retirement ratio and when retirements happen: 2023-2025's ~18 sprints to pin SIM.sprintDnf
+     (hand-set 0.4; 2026's 8 sprint retirements can't tell 0.36 / 0.40 / 0.45 apart) and the start-spike + per-lap
+     shape; the level stays 2026's (the new PUs fail about twice as often).
+  3. Retirement causes: Jolpica has detailed statuses up to ~2022 ("Collision damage", "Power Unit", "Undertray";
+     2024-2026 only "Retired"): a prior for the mechanical / incident split (now: race control's incidents only).
+  4. The sim's noise settings (qSd, rSd, teamSd, drvSd, tau, SC noise): how results scatter around pace, fitted on
+     2022-2025 (the previous car rules, ~90 races vs 2026's 11; the fitted values sit on flat optima). The biggest
+     job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
+     2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
       all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
