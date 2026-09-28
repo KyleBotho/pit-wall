@@ -87,6 +87,15 @@
     scPerDnf: 0.15, // hand-set: chance a retirement brings out the safety car (2026: ~3 retirements, 43% safety cars)
     scNoise: 1.35, // fitted: race noise under a safety car
     scTau: 0.75, // hand-set: grid slot cost under a safety car (the field bunches up)
+    // the timed safety car (challenger sctimed; 0 = off): each simulated safety car gets an onset (the share of the
+    // race run when the last one came, drawn from the circuit's scAt: past seasons' and this season's races) and
+    // its effect above (noise, grid slot cost, overtakes) scaled by max(0, scTimeA + scTimeB x onset), normalised
+    // so the average safety car keeps the average effect. Measured 2026-09-28 on 31 dry safety-car races 2023-2026
+    // (priors.py + this season): places moved per car above no-SC races = -0.146 + 1.258 x onset (slope se 0.50):
+    // an early safety car reshuffles nothing, a late one ~3x the average
+    scTimed: 0,
+    scTimeA: -0.146,
+    scTimeB: 1.258,
     rainNoise: 1.6, // measured (priors.py wet vs dry races): noise in a wet session
     rainDnf: 1.4, // measured: retirements in a wet race
     // hand-set (review batch 4): latent correlation of the weekend's wet sessions (one weather regime), used when
@@ -159,7 +168,7 @@
   ];
   const PIT_FASTEST = 5;
 
-  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
+  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, scAt?: number[], rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
   /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean, dsq?: boolean }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
@@ -167,8 +176,8 @@
   /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string, sessions?: { type: string, start?: string, end?: string }[] }} Gameday */
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
-  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null }} PriorRow */
-  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSe?: Record<string, number>, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
+  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | null)[][], lapsRun?: number }} PriorRow */
+  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSe?: Record<string, number>, scLaps?: (number | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
@@ -967,6 +976,7 @@
       id && km[id] && lap ? (km[id] * 3600) / lap : null;
     const nextGd = (data.schedule.find((x) => !(data.done || []).includes(x.gd)) || {}).gd;
     const sp = speedFit(season, rounds, data, cid, kmh, o);
+    const scAt = scOnsets(P, data);
 
     return {
       fitted: fitted || !!P,
@@ -1020,12 +1030,28 @@
         c.rain.q = c.rain.r;
         c.rain.s = c.rain.r;
         c.scOv = scOv;
+        if (scAt.length) c.scAt = scAt;
         c.teamShift = Object.fromEntries(
           Object.entries(bTeam).map(([t, b]) => [t, clamp(dot(b, x), -o.teamShiftMax, o.teamShiftMax)]),
         );
         return c;
       },
     };
+  }
+  /** When races' last safety car came, as the share of the race run (rounded to 0.01): every past race with one
+   * (priors, OpenF1 2023 on) and this season's finished rounds (raceInfo; a walk-forward's data holds only the
+   * rounds before). The timed safety car (SIM.scTimed) draws from them. Empty without timings.
+   * @param {PriorRow[] | null} P @param {Data} data @returns {number[]} */
+  function scOnsets(P, data) {
+    /** @type {number[]} */
+    const out = [];
+    const add = (/** @type {{ scLaps?: (number | null)[][], lapsRun?: number } | undefined} */ x) => {
+      const last = x && x.scLaps && x.scLaps.length ? x.scLaps[x.scLaps.length - 1][0] : null;
+      if (last != null && x && x.lapsRun) out.push(Math.round(clamp(last / x.lapsRun, 0, 1) * 100) / 100);
+    };
+    for (const x of P || []) add(x);
+    for (const ri of Object.values(data.raceInfo || {})) add(ri && ri.race);
+    return out;
   }
   /** A weekend's practice reference lap (s): the fastest finished session's `ref` (practice.py ref_lap), else null.
    * @param {PracticeSession[] | undefined} sessions */
@@ -1871,7 +1897,7 @@
    * a car that fails is held SIM.lapFollow s behind. Stops reorder without passes. A retiring car drops out on a
    * random lap (its passes before that count); a safety car bunches the field at a random lap and freezes passing
    * for 3 laps. Returns the running cars in finishing order; passes[i] = passes made.
-   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, scAt?: number, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
    * @param {Rng} r @param {Float64Array} passes @returns {number[]}
    */
   function raceLaps(o, r, passes) {
@@ -1892,7 +1918,12 @@
       stopLap[i] = o.sprint ? -1 : 1 + Math.floor(laps * (0.25 + 0.5 * r()));
       outLap[i] = o.out[i] ? 1 + Math.floor(r() * laps) : laps + 1;
     }
-    const scLap = o.sc ? 2 + Math.floor(r() * Math.max(1, laps - 5)) : -1;
+    // the safety car's lap: at its drawn onset (SIM.scTimed, o.scAt = share of the race), else anywhere
+    const scLap = !o.sc
+      ? -1
+      : o.scAt != null && o.scAt >= 0
+        ? clamp(Math.round(o.scAt * laps), 1, laps)
+        : 2 + Math.floor(r() * Math.max(1, laps - 5));
     const sd = SIM.lapSd * (o.wet ? SIM.rainNoise : 1);
     let frozen = 0;
     for (let l = 1; l <= laps; l++) {
@@ -1972,7 +2003,7 @@
    * lap, the segment pass curve SIM.segKernel (a car just passed by the car ahead tries less), held-up gaps drawn
    * from SIM.followMin + exponential(SIM.followMean), and the yo-yo: each segment two cars run < 0.3 s apart, both
    * make a pass-and-repass with chance SIM.yoyo (counted as overtakes, the order unchanged).
-   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
+   * @param {{ grid: Int32Array, base: Float64Array, out: Uint8Array, ovU: number[], laps: number, T: number, sc: boolean, scAt?: number, wet: boolean, sprint: boolean, theta: number, kappa?: number, trace?: LapTrace }} o
    * @param {Rng} r @param {Float64Array} passes @returns {number[]}
    */
   function raceSegs(o, r, passes) {
@@ -1998,7 +2029,11 @@
       stopSeg[i] = o.sprint ? -1 : S * Math.floor(o.laps * (0.25 + 0.5 * r())) + S;
       outSeg[i] = o.out[i] ? 1 + Math.floor(r() * segs) : segs + 1;
     }
-    const scSeg = o.sc ? S * (1 + Math.floor(r() * Math.max(1, o.laps - 5))) + 1 : -1;
+    const scSeg = !o.sc
+      ? -1
+      : o.scAt != null && o.scAt >= 0
+        ? S * clamp(Math.round(o.scAt * o.laps) - 1, 0, o.laps - 1) + 1
+        : S * (1 + Math.floor(r() * Math.max(1, o.laps - 5))) + 1;
     const sd = (SIM.lapSd * (o.wet ? SIM.rainNoise : 1)) / Math.sqrt(S),
       Ts = o.T / S;
     let frozen = 0;
@@ -2176,6 +2211,9 @@
       ovLvl,
       ovNoSc,
       ovSc: ovNoSc * scOv,
+      scOv,
+      // the timed safety car (SIM.scTimed): the onsets to draw from and the mean of their weights
+      ...scTiming(circuit),
       // team reliability: Beta around the team's mechanical rate with its effective number of races, one draw per
       // team a weekend; each driver adds his own incident rate (MODEL.dnfModel "causes"), so team-mates keep
       // their own chances whichever comes first
@@ -2371,6 +2409,21 @@
     }
     return { th, ka };
   }
+  /** The timed safety car's inputs (SIM.scTimed): the onsets a safety car is drawn from (circuit.scAt) and the mean
+   * of their weights, so the weights average 1. Off, or without onsets: none. @param {Circuit} circuit */
+  function scTiming(circuit) {
+    const at = SIM.scTimed && circuit.scAt && circuit.scAt.length ? circuit.scAt : null;
+    const bar = at ? at.reduce((s, u) => s + scRawWeight(u), 0) / at.length : 0;
+    return { scAt: at && bar > 0 ? at : null, scWBar: bar };
+  }
+  /** A safety car's weight by its onset u (share of the race run), before normalising. @param {number} u */
+  const scRawWeight = (u) => Math.max(0, SIM.scTimeA + SIM.scTimeB * u);
+  /** The timed safety car's weight for onset u among the onsets `at` (1 = the average safety car's effect).
+   * @param {number} u @param {number[]} at */
+  function scWeight(u, at) {
+    const bar = at.reduce((s, x) => s + scRawWeight(x), 0) / at.length;
+    return bar > 0 ? scRawWeight(u) / bar : 1;
+  }
   /** A race or sprint from the grid: retirements, safety car, finishing order and every driver's points.
    * @param {SimState} S @param {Int32Array} grid @param {boolean} isSprint @param {{ i: number }} dotdOut
    * @param {boolean} wet @param {string[] | undefined} fixed */
@@ -2431,10 +2484,23 @@
       S.ev[S.cur] |= 1;
     }
     const fin = [];
-    const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? SIM.scNoise : 1);
-    const tauNow = tau * (sc ? SIM.scTau : 1);
+    // the timed safety car (SIM.scTimed): when it comes (the share of the race run) and so how much of the average
+    // safety car's effect this one has (an early one reshuffles nothing); untimed, the average effect as before
+    let scAtU = -1,
+      scNoise = SIM.scNoise,
+      scTau = SIM.scTau,
+      ovScNow = ovSc;
+    if (sc && S.scAt) {
+      scAtU = S.scAt[Math.floor(r() * S.scAt.length)];
+      const w = scRawWeight(scAtU) / S.scWBar;
+      scNoise = 1 + (SIM.scNoise - 1) * w;
+      scTau = Math.max(0, 1 + (SIM.scTau - 1) * w);
+      ovScNow = ovNoSc * (1 + (S.scOv - 1) * w);
+    }
+    const sd = SIM.rSd * (isSprint ? SIM.sprintSd : 1) * (wet ? SIM.rainNoise : 1) * (sc ? scNoise : 1);
+    const tauNow = tau * (sc ? scTau : 1);
     const laps = lapMode && !fixed;
-    const lvl = (sc ? ovSc : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1) * S.ovMult;
+    const lvl = (sc ? ovScNow : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1) * S.ovMult;
     const ret = model.ovRet;
     for (let i = 0; i < nd; i++) {
       if (out[i]) {
@@ -2479,6 +2545,7 @@
           laps: isSprint ? lapNs : lapN,
           T: lapT,
           sc,
+          scAt: scAtU,
           wet,
           sprint: isSprint,
           theta: isSprint ? calS.th : calR.th,
@@ -3970,6 +4037,12 @@
       why: "deferred for want of evidence (fourth review): pooled vs race-alone CRPS -0.006 +/- 0.010 (inconclusive); pooling moves a driver's pace by at most 0.16% (R6). Collects its evidence from R16",
     },
     {
+      id: "sctimed",
+      label: "Safety car timed: a late one reshuffles the order, an early one hardly",
+      set: { "SIM.scTimed": 1 },
+      why: "measured on 31 dry safety-car races 2023-2026: places moved per car above no-SC races -0.15 + 1.26 x onset share (slope 2.5 se); the average safety car keeps its fitted effect. Deferred by the fourth review for want of a target; collects its evidence from R16",
+    },
+    {
       id: "dnfcauses",
       label: "Retirements by cause (team mechanical + field incidents)",
       set: { "MODEL.dnfModel": "causes", "MODEL.incShrink": 1e6 },
@@ -4272,6 +4345,7 @@
     pairedCompare,
     lookZ,
     chipScore,
+    scWeight,
     withFitLog,
     priceStep,
     priceSteps,

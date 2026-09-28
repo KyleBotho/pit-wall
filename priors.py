@@ -16,6 +16,7 @@ import json
 import os
 from datetime import datetime
 
+import laps
 from f1feeds import VSC_DEPLOYED, FeedError, get, load_config
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -111,6 +112,9 @@ def openf1_race(session_key, reuse=True):
         "vsc": sum(1 for m in msgs if m.startswith(VSC_DEPLOYED)),
         "red": int(any(m.get("flag") == "RED" for m in rc)),
         "rain": int(sum(1 for w in wx if w.get("rainfall")) >= 3),  # a few wet readings, not one stray drop
+        # when each safety car came ([deployed lap, in lap]) and the laps run: the timed safety car's evidence
+        "scLaps": laps.sc_laps(rc),
+        "lapsRun": max((m.get("lap_number") or 0 for m in rc), default=0),
     }
     try:
         ov = get(

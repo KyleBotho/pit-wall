@@ -91,6 +91,21 @@ def neutral_windows(rc, lap_s):
     return out
 
 
+def sc_laps(rc):
+    """Each safety car of a session as [deployed lap, in lap] by race control's lap numbers (the leader's); the in
+    lap None when no "in this lap" message closes it (a red flag, or the race ending under it). Safety cars only,
+    not VSCs or red flags. For the timed safety car challenger (SIM.scTimed): when a race's safety car comes."""
+    out = []
+    for m in sorted(rc or [], key=lambda m: m.get("date") or ""):
+        msg, lap = (m.get("message") or "").upper(), m.get("lap_number")
+        if msg.startswith("SAFETY CAR DEPLOYED"):
+            if not out or out[-1][1] is not None:
+                out.append([lap, None])
+        elif msg.startswith("SAFETY CAR IN THIS LAP") and out and out[-1][1] is None:
+            out[-1][1] = lap
+    return out
+
+
 def rain_times(wx):
     """Epoch seconds of the weather readings reporting rain."""
     return sorted(t for w in wx or [] if w.get("rainfall") and (t := _t(w.get("date"))) is not None)

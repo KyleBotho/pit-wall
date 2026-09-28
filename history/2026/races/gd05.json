@@ -16,6 +16,7 @@
    "ok": true,
    "shift": 0
   },
+  "lapsRun": 68,
   "pace": {
    "ALB": 4.593,
    "ALO": 6.391,
@@ -183,6 +184,7 @@
    }
   },
   "sc": 0,
+  "scLaps": [],
   "vsc": 3,
   "wx": {
    "air": 12.8,
@@ -200,6 +202,7 @@
    "ok": true,
    "shift": 0
   },
+  "lapsRun": 23,
   "pace": {
    "ALB": 3.222,
    "ALO": 4.708,
@@ -316,6 +319,7 @@
   "rain": 0,
   "red": 0,
   "sc": 0,
+  "scLaps": [],
   "vsc": 0,
   "wx": {
    "air": 20.1,

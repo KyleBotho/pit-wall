@@ -79,14 +79,16 @@
    "title": "Doc 12 - Infringement - Car 11 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_11_-_pit_lane_speeding.pdf",
    "published": "2026-09-11T12:00+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 13,
    "title": "Doc 13 - Infringement - Car 11 - Second Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_11_-_second_pit_lane_speeding.pdf",
    "published": "2026-09-11T12:01+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 14,
@@ -128,7 +130,8 @@
    "title": "Doc 19 - Infringement - Car 23 - Leaving the track and re-joining unsafely",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_23_-_leaving_the_track_and_re-joining_unsafely_.pdf",
    "published": "2026-09-11T14:41+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 20,
@@ -227,7 +230,8 @@
    "title": "Doc 33 - Infringement - Car 77 - Failure to follow Race Director's Instructions (Escape Roads)",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_77_-_failure_to_follow_race_directors_instructions_escape_roads.pdf",
    "published": "2026-09-12T12:25+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 34,
@@ -248,7 +252,8 @@
    "title": "Doc 36 - Infringement - Car 1 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_1_-_pit_lane_speeding.pdf",
    "published": "2026-09-12T14:44+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 37,
@@ -283,7 +288,8 @@
    "title": "Doc 41 - Infringement - Car 18 - PU Elements changed",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_18_-_pu_elements_changed.pdf",
    "published": "2026-09-12T14:56+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 40
   },
   {
    "doc": 42,
@@ -318,7 +324,8 @@
    "title": "Doc 46 - Infringement - Car 55 - Impeding of Car 77",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_55_-_impeding_of_car_77.pdf",
    "published": "2026-09-12T16:29+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 3
   },
   {
    "doc": 47,
@@ -339,7 +346,8 @@
    "title": "Doc 49 - Infringement - Car 5 - Failure to Follow RD Instructions (SCL2 - SCL1)",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_5_-_failure_to_follow_rd_instructions_scl2_-_scl1.pdf",
    "published": "2026-09-12T17:15+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 50,
@@ -353,21 +361,24 @@
    "title": "Doc 51 - Infringement - Car 12 - Failure to follow RD instructions (SCL2 - SCL1)",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_12_-_failure_to_follow_rd_instructions_scl2_-_scl1.pdf",
    "published": "2026-09-12T17:23+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 52,
    "title": "Doc 52 - Infringement - Car 63 - Failure to follow Race Director Instructions - (SCL2 - SCL1)",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_63_-_failure_to_follow_race_director_instructions_-_scl2_-_scl1.pdf",
    "published": "2026-09-12T17:26+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 53,
    "title": "Doc 53 - Infringement - Car 16 - Failure to follow RD instructions (SCL2 - SCL1)",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_16_-_failure_to_follow_rd_instructions_scl2_-_scl1.pdf",
    "published": "2026-09-12T17:35+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 54,
@@ -437,7 +448,8 @@
    "title": "Doc 63 - Infringement - Car 87 - PU elements changed during Parc Ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_87_-_pu_elements_changed_during_parc_ferme.pdf",
    "published": "2026-09-13T11:20+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 99
   },
   {
    "doc": 64,
@@ -459,28 +471,32 @@
    "title": "Doc 66 - Infringement - Car 22 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_22_-_pit_lane_speeding.pdf",
    "published": "2026-09-13T13:56+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 67,
    "title": "Doc 67 - Infringement - Car 55 - Causing a Collision with Car 14",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_55_-_causing_a_collision_with_car_14.pdf",
    "published": "2026-09-13T14:13+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 68,
    "title": "Doc 68 - Infringement - Car 10 - Pit Lane Speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_10_-_pit_lane_speeding.pdf",
    "published": "2026-09-13T14:50+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 69,
    "title": "Doc 69 - Infringement - Car 5 - Moving Under Braking",
    "url": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_5_-_moving_under_braking.pdf",
    "published": "2026-09-13T15:04+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 70,

@@ -16,6 +16,7 @@
    "ok": true,
    "shift": 0
   },
+  "lapsRun": 66,
   "pace": {
    "ALB": 4.675,
    "ALO": 6.015,
@@ -244,6 +245,7 @@
    }
   },
   "sc": 0,
+  "scLaps": [],
   "vsc": 2,
   "wx": {
    "air": 30.5,

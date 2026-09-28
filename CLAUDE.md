@@ -322,9 +322,9 @@ there before re-deciding something.
       just its model run time (Open-Meteo's previous-runs archive mostly starts Jan 2024, ECMWF HRES single runs Mar
       2024), and check coverage for our exact variable / model / location. Normal equations are fine while fits are
       well conditioned (QR / SVD only if not).
-      UNFINISHED: the past rounds' stewards' decisions (grid penalties for walk.js) are mostly unread: on
-      2026-09-28 the FIA site answered 504 / 502 to nearly every PDF. Re-run `python backtest/fia_rounds.py`
-      (reads only what's missing) until it prints no "not read" lines, then commit history/2026/fia.
+      Past stewards' decisions: all 244 read 2026-09-28 (26 grid penalties); walk-forward CRPS 8.674 -> 8.586.
+      OPEN: a decision "for the next race" is in the previous event's index; penAt (walk.js) and refresh.py's
+      fia_penalties look only at the coming event's own documents, so carried-over penalties are missed.
 - [ ] Deferred from the reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
       rounds show the error it addresses, and judge it as a challenger:
   - Market fit: now the challenger `odds8` (SIM.oddsIters 8, SIM.oddsN 5000; 2026-09-27), scored from R16. Found
@@ -339,9 +339,10 @@ there before re-deciding something.
     race record from extras.race_info, round k pooled with rounds <= k; weights from the race-alone paceSe, as the
     review screened it). Walk-forward R5-R15 at N 3000: vs shipped +0.025 +/- 0.022, vs racectx +0.003 +/- 0.017
     (tie). Later refinements if it earns it: residuals by stint / compound, actual compounds across races.
-    DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): timed SC events (the matching-event
-    check explained the coverage gap, but onset / duration / pit timing are untested; look at race control's SC
-    windows first), retirements by distance / confirmed cause (sprints: 7 unclassified of 110 entries incl. 2 DNS,
+    CHALLENGER since 2026-09-28: the timed safety car, `sctimed` (SIM.scTimed: onset drawn from past races' last-SC
+    onsets, effect scaled by a line measured on 31 dry SC races 2023-2026, early = none, late ~3x; scLaps /
+    lapsRun in race records and priors). Walk-forward R5-R15: +0.038 +/- 0.018 vs shipped (leaning worse).
+    DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): retirements by distance / confirmed cause (sprints: 7 unclassified of 110 entries incl. 2 DNS,
     5 of 108 starters, too few to tell 0.36 / 0.40 / 0.45 apart; separate DNS / DSQ / incident / mechanical; causes:
     no AUTOMATED source, a small hand-checked labelled subset would be the start). DONE 2026-09-28: settings are values, not shared state (engine.js
     withSettings swaps in a changed copy; Engine.SIM / MODEL / TRACK are read-only views, a write throws; the fit,
@@ -383,7 +384,7 @@ there before re-deciding something.
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
      2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
-      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, dnfcauses, ovenv)
+      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
       records, FastF1 archive, weather vintages + ensemble, Kalshi quotes, FIA index arriving on their own (health
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session

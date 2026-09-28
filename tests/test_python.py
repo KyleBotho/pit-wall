@@ -245,6 +245,26 @@ class FiaPenalties(unittest.TestCase):
         self.assertEqual(reads, ["a", "b", "c"])
 
 
+class ScLaps(unittest.TestCase):
+    def test_safety_car_windows_by_lap(self):
+        """The timed safety car's data: [deployed lap, in lap] per safety car, VSCs left out, an unclosed one open."""
+        import laps
+
+        def m(t, lap, msg):
+            return {"date": f"2026-09-20T12:{t:02d}:00Z", "lap_number": lap, "message": msg}
+
+        rc = [
+            m(1, 3, "VSC DEPLOYED"),
+            m(2, 4, "VSC ENDING"),
+            m(10, 22, "SAFETY CAR DEPLOYED"),
+            m(11, 23, "SAFETY CAR DEPLOYED"),  # repeated while it's out: the same one
+            m(15, 27, "SAFETY CAR IN THIS LAP"),
+            m(30, 51, "SAFETY CAR DEPLOYED"),
+        ]
+        self.assertEqual(laps.sc_laps(rc), [[22, 27], [51, None]])
+        self.assertEqual(laps.sc_laps([]), [])
+
+
 class HierPace(unittest.TestCase):
     def test_pooled_pace_of_a_round_never_sees_a_later_one(self):
         """pool_rounds (the racepool challenger's input): round k's pooled pace is the same whether the season stops

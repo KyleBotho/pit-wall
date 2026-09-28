@@ -1210,6 +1210,29 @@ test("racePace pool: the pooled pace (challenger racepool), weighted by the race
     if (Number.isFinite(pool[t]) && Number.isFinite(ctx[t])) assert.ok(Math.abs(pool[t] - ctx[t]) < 0.5, t);
 });
 
+test("timed safety car: off changes nothing; weights average 1, none for an early one, rising later", () => {
+  const m = toyModel();
+  const run = (c, set) => E.withSettings(set, () => E.simulate(m, c, false, 3000, 11));
+  // off (the shipped model): onsets on the circuit draw nothing, the run is the same sample for sample
+  const plain = run(circuit, {}),
+    withAt = run({ ...circuit, scAt: [0.1, 0.9] }, {});
+  assert.deepStrictEqual(Array.from(withAt.tot), Array.from(plain.tot));
+  // the weights: average 1 over the onsets (the average safety car keeps its fitted effect), none for a lap-1 one,
+  // rising with the onset
+  const at = [0.02, 0.1, 0.3, 0.5, 0.7, 0.95];
+  const w = at.map((u) => E.scWeight(u, at));
+  assert.ok(Math.abs(w.reduce((s, x) => s + x, 0) / at.length - 1) < 1e-12);
+  assert.equal(w[0], 0);
+  assert.ok(w.every((x, k) => k === 0 || x >= w[k - 1]));
+  // on, a safety car every race: it runs, and the mean points stay close to the untimed ones (same average effect)
+  const sc = { ...circuit, sc: 0.99, scAt: at };
+  const on = run(sc, { "SIM.scTimed": 1 }),
+    off = run(sc, {});
+  const mean = (sim) => sim.stats.reduce((s, st) => s + st.mean, 0) / sim.stats.length;
+  assert.notDeepStrictEqual(Array.from(on.tot), Array.from(off.tot));
+  assert.ok(Math.abs(mean(on) - mean(off)) < 0.5, `${mean(on)} vs ${mean(off)}`);
+});
+
 test("chipScore: one weekend's points with each chip", () => {
   const p = { a: 30, b: 10, c: -5, d: 0, e: 2, KA: 12, KB: 4 };
   const ids = Object.keys(p),

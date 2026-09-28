@@ -130,14 +130,16 @@
    "title": "Doc 19 - Infringement - Car 12 - Changes to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_12_-_changes_to_pu_elements.pdf",
    "published": "2026-09-04T15:10+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 30
   },
   {
    "doc": 20,
    "title": "Doc 20 - Infringement - Car 23 - Changes to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_23_-_changes_to_pu_elements.pdf",
    "published": "2026-09-04T15:11+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 20
   },
   {
    "doc": 21,
@@ -186,14 +188,16 @@
    "title": "Doc 27 - Infringement - Car 12 - Pit lane speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_12_-_pit_lane_speeding.pdf",
    "published": "2026-09-04T16:22+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 28,
    "title": "Doc 28 - Infringement - Car 18 - Impeding of Car 1",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_18_-_impeding_of_car_1.pdf",
    "published": "2026-09-04T17:29+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 29,
@@ -221,7 +225,8 @@
    "title": "Doc 32 - Infringement - Car 25 - Technical Non-Conformity (CDS)",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_25_-_technical_non-conformity_cds.pdf",
    "published": "2026-09-05T15:52+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 33,
@@ -271,21 +276,24 @@
    "title": "Doc 39 - Infringement - Car 23 - Failure to slow for double yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_23_-_failure_to_slow_for_double_yellow_flags.pdf",
    "published": "2026-09-05T14:20+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 40,
    "title": "Doc 40 - Infringement - Car 55 - Failure to slow for double yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_55_-_failure_to_slow_for_double_yellow_flags.pdf",
    "published": "2026-09-05T14:20+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 41,
    "title": "Doc 41 - Infringement - Car 30 - Change to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_30_-_change_to_pu_elements.pdf",
    "published": "2026-09-05T15:02+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 35
   },
   {
    "doc": 42,
@@ -327,7 +335,8 @@
    "title": "Doc 47 - Infringement - Car 81 - Impeding of Car 30",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_81_-_impeding_of_car_30.pdf",
    "published": "2026-09-05T16:27+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 3
   },
   {
    "doc": 48,
@@ -383,21 +392,24 @@
    "title": "Doc 55 - Infringement - Car 23 - Failure to follow Race Directors instructions",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_23_-_failure_to_follow_race_directors_instructions_.pdf",
    "published": "2026-09-06T10:06+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 56,
    "title": "Doc 56 - Infringement - Car 14 - PU elements changed during Parc Ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_14_-_pu_elements_changed_during_parc_ferme.pdf",
    "published": "2026-09-06T10:54+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 99
   },
   {
    "doc": 57,
    "title": "Doc 57 - Infringement - Car 30 - Changes made under parc ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_30_-_changes_made_under_parc_ferme.pdf",
    "published": "2026-09-06T11:01+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 99
   },
   {
    "doc": 58,
@@ -419,14 +431,16 @@
    "title": "Doc 60 - Infringement - Car 11 - Failure to follow Race Directors Instruction - Pit Exit",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_11_-_failure_to_follow_race_directors_instruction_-_pit_exit.pdf",
    "published": "2026-09-06T14:04+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 61,
    "title": "Doc 61 - Infringement - Car 43 - Failure to follow Race Directors Instruction - Practice Start",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_43_-_failure_to_follow_race_directors_instruction_-_practice_start.pdf",
    "published": "2026-09-06T14:04+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 62,
@@ -440,21 +454,24 @@
    "title": "Doc 63 - Decision - Car 30 - Turn 4 Incident with Car 27",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_decision_-_car_30_-_turn_4_incident_with_car_27.pdf",
    "published": "2026-09-06T14:43+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 64,
    "title": "Doc 64 - Infringement - Car 11 - Failure to follow Race Directors Instruction - Turns 1 and 2",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_11_-_failure_to_follow_race_directors_instruction_-_turns_1_and_2.pdf",
    "published": "2026-09-06T14:56+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 65,
    "title": "Doc 65 - Decision - Car 63 - Alleged failure to slow for yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_decision_-_car_63_-_alleged_failure_to_slow_for_yellow_flags.pdf",
    "published": "2026-09-06T15:02+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 66,
@@ -482,7 +499,8 @@
    "title": "Doc 69 - Decision - Car 22 - Alleged Start Procedure Infringement",
    "url": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_decision_-_car_22_-_alleged_start_procedure_infringement.pdf",
    "published": "2026-09-06T17:45+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 70,

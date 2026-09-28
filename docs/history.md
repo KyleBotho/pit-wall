@@ -5,6 +5,21 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, the timed safety car as a challenger (user: "yes for the timed safety car as challenger"). Data:
+      laps.py sc_laps (race control -> [deployed lap, in lap] per safety car) into each race record (`scLaps`,
+      `lapsRun`; extras.race_info, and once for rounds archived before) and into the priors (priors.py, 70 races
+      2023-2025 from the cached race control; no other priors value changed). Measured: dry races 2023-2026 by the
+      last safety car: none 35 races, mean |grid - finish| 2.76; early (first third) 15, 2.77; mid 7, 3.11; late 5,
+      3.63; finished under it 4, 3.55. Fit on the 31 dry SC races: excess places moved = -0.146 + 1.258 x onset share
+      (slope se 0.50). Model: SIM.scTimed draws each simulated safety car's onset from circuit.scAt (the past
+      seasons' and this season's finished rounds' last-SC onsets, trackModel scOnsets) and scales its effect (noise,
+      grid slot cost, overtake uplift) by max(0, a + b u) normalised over those onsets (the average safety car keeps
+      the fitted effect); the lap engines put it at that lap. Off = output-identical (test). Challenger `sctimed`.
+      Walk-forward R5-R15 (N 3000): +0.038 +/- 0.018 vs shipped, leaning worse; it collects frozen rounds from R16.
+      Also found: with every past stewards' decision now read (244, 26 with grid penalties; the user re-ran
+      fia_rounds.py), the shipped walk-forward CRPS went 8.674 -> 8.586: penalties published before lock matter.
+      Gap left: a decision "for the next race" sits in the previous event's index; neither penAt nor the live
+      refresh looks there.
 - [x] 2026-09-28, the pooled race pace as a challenger (user: "if it is deferred for lack of evidence, should it not
       then be built as a challenger so it can collect data over time?"). `racepool` = MODEL.racePace "pool":
       laps.py pool_rounds (called by extras.race_info after the FastF1 check, so every new round gets it on its own)

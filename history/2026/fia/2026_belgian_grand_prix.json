@@ -93,7 +93,8 @@
    "title": "Doc 13 - Infringement - Car 31 - Media Commitment",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_31_-_media_commitment.pdf",
    "published": "2026-07-17T10:27+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 14,
@@ -129,14 +130,16 @@
    "title": "Doc 18 - Infringement - Car 34 - Pit lane speeding",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_34_-_pit_lane_speeding.pdf",
    "published": "2026-07-17T14:47+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 19,
    "title": "Doc 19 - Infringement - Car 55 - Crossing the white line at pit entry",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_55_-_crossing_the_white_line_at_pit_entry.pdf",
    "published": "2026-07-17T14:33+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 20,
@@ -150,14 +153,16 @@
    "title": "Doc 22 - Infringement - Car 18 - Change to PU element",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_18_-_change_to_pu_element.pdf",
    "published": "2026-07-17T14:53+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 10
   },
   {
    "doc": 23,
    "title": "Doc 23 - Infringement - Car 1 - Change to PU element",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_1_-_change_to_pu_element.pdf",
    "published": "2026-07-17T14:53+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 10
   },
   {
    "doc": 24,
@@ -206,7 +211,8 @@
    "title": "Doc 30 - Infringement - Car 27 - Failure to slow under double yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_27_-_failure_to_slow_under_double_yellow_flags.pdf",
    "published": "2026-07-17T16:58+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 31,
@@ -284,21 +290,24 @@
    "title": "Doc 43 - Decision - Car 55 - Alleged failure to slow for double yellow flags",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_decision_-_car_55_-_alleged_failure_to_slow_for_double_yellow_flags_.pdf",
    "published": "2026-07-18T13:09+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 44,
    "title": "Doc 44 - Corrected Infringement - Car 6 - Changes to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_6_-_changes_to_pu_elements.pdf",
    "published": "2026-07-18T13:51+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 30
   },
   {
    "doc": 45,
    "title": "Doc 45 - Corrected Infringement - Car 14 - Change to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_14_-_change_to_pu_elements.pdf",
    "published": "2026-07-18T13:52+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 20
   },
   {
    "doc": 46,
@@ -362,7 +371,8 @@
    "title": "Doc 54 - Infringement - Car 55 - Change to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_55_-_change_to_pu_elements.pdf",
    "published": "2026-07-19T10:22+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 10
   },
   {
    "doc": 56,
@@ -376,7 +386,8 @@
    "title": "Doc 57 - Infringement - Car 44 - Causing a collision with Car 63 in turn 5",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_44_-_causing_a_collision_with_car_63_in_turn_5.pdf",
    "published": "2026-07-19T14:20+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 58,
@@ -390,7 +401,8 @@
    "title": "Doc 59 - Decision - Car 16 - Collision with Car 81 in turn 5",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_decision_-_car_16_-_collision_with_car_81_in_turn_5.pdf",
    "published": "2026-07-19T14:21+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 60,
@@ -425,7 +437,8 @@
    "title": "Doc 64 - Infringement - Car 23 - Car Safety Lights",
    "url": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_23_-_car_safety_lights_.pdf",
    "published": "2026-07-19T17:09+00:00",
-   "backfill": "2026-09-27T19:54+00:00"
+   "backfill": "2026-09-27T19:54+00:00",
+   "grid": 0
   },
   {
    "doc": 65,
