@@ -165,16 +165,30 @@ function renderLeagueRounds(league) {
   const gds = [...new Set(rows.flatMap((x) => x.tr.rounds.map((r) => r.gd)))].sort((a, b) => a - b);
   const gd = gds.includes(state.lgRound) ? state.lgRound : gds[gds.length - 1];
   $("#lgRoundPick").innerHTML = gds
-    .map((g) => `<option value="${g}" ${g === gd ? "selected" : ""}>R${g} ${esc(raceName(g))}</option>`)
+    .map((g) => `<button data-lground="${g}" aria-pressed="${g === gd}" title="${esc(raceName(g))}">R${g}</button>`)
     .join("");
+  $("#lgRoundStamp").textContent = `R${gd} ${raceName(gd)}`;
   const cards = rows
     .map(({ m, tr }) => ({ m, r: tr.rounds.find((x) => x.gd === gd) }))
     .filter((x) => x.r)
     .sort((a, b) => (b.r.pts ?? -1e9) - (a.r.pts ?? -1e9));
-  $("#lgRounds").innerHTML = cards.map(({ m, r }) => roundCard(m, r)).join("");
+  $("#lgRounds").innerHTML =
+    `<div class="tw"><table class="bestt"><thead><tr><th>#</th><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th><th>Pts</th></tr></thead><tbody>` +
+    cards.map(({ m, r }, i) => roundRows(m, r, i + 1)).join("") +
+    "</tbody></table></div>";
 }
+// A line-up in the Calculator's team-row columns (constructors, Boosted driver, the other drivers), for a table.bestt
+export const lineupCells = (cons, boosted, drs, tile) =>
+  [cons, boosted, drs]
+    .map(
+      (xs, i) =>
+        `<td class="tl${i === 0 ? " cr" : i === 2 ? " dr" : ""}"><div class="chips">${xs.map(tile).join("")}</div></td>`,
+    )
+    .join("");
 const raceName = (gd) => ((DATA.schedule.find((x) => x.gd === gd) || {}).name || "").replace(" Grand Prix", "");
-function roundCard(m, r) {
+// one member's round, as the Calculator's rows: a header row (team, chip, bank, transfers, where it came from), then
+// the line-up with each asset's points and the round score in the white pill
+function roundRows(m, r, rank) {
   const boost = String(r.boost ?? ""),
     ffIn = r.ff ? String(r.ff.in) : null,
     ffOut = r.ff ? String(r.ff.out) : null;
@@ -195,7 +209,8 @@ function roundCard(m, r) {
     });
   };
   const ids = r.ids.map(String),
-    drs = ids.filter(isDriver).sort((a, b) => mult(b) - mult(a)),
+    boosted = ids.filter((id) => isDriver(id) && mult(id) > 1).sort((a, b) => mult(b) - mult(a)),
+    drs = ids.filter((id) => isDriver(id) && mult(id) === 1),
     cons = ids.filter((id) => !isDriver(id));
   const pen =
     r.chip === "wildcard" || r.chip === "limitless" || r.subs == null || r.free == null
@@ -219,17 +234,18 @@ function roundCard(m, r) {
       : r.unexplained
         ? '<span class="bad" title="No Boost and chip rebuild the official score: a Final Fix we could not place, or a line-up changed after the race">not worked out</span>'
         : `<span class="dim" title="Worked out from the line-up after the race and the official points${r.sure ? "" : ". More than one Boost or chip fits; the points are the same either way"}">worked out${r.sure ? "" : "?"}</span>`;
-  return `<div class="rcard${m.mine ? " mine" : ""}"><div class="rch"><b>${esc(m.name)}</b>${r.chip ? `<span class="chiptok used" title="${esc(chipName(r.chip))}">${chipShort(r.chip)}</span>` : ""}<span class="rcp">${f0(r.pts)} <small>pts</small></span></div>
-    <div class="chips">${cons.map(tile).join("")}<span class="sep"></span>${drs.map(tile).join("")}</div>
-    <div class="note">${facts.join(" · ")}${facts.length ? " · " : ""}${src}</div></div>`;
+  return (
+    `<tr class="sec"><td colspan="5"><b>${esc(m.name)}</b>${m.mine ? ' <span class="tag sprint">you</span>' : ""}${r.chip ? ` <span class="tag sprint" title="${esc(chipName(r.chip))}">${chipShort(r.chip)}</span>` : ""} <span class="dim">· ${facts.join(" · ")}${facts.length ? " · " : ""}</span>${src}</td></tr>` +
+    `<tr><td class="rk">${rank}</td>${lineupCells(cons, boosted, drs, tile)}<td><span class="pill on">${f0(r.pts)}</span></td></tr>`
+  );
 }
 // Next race: head-to-head against each rival's current line-up, and league ownership
 function renderLeagueForecast(league, myIds, myKey) {
   const rivals = league.members.filter((m) => mkey(m) !== myKey && m.ids);
   const h = h2h(myIds, rivals);
-  $("#lgH2hNote").textContent = `${activeTeam().name} (${f1(h.mean)} xPts) vs current rival line-ups`;
+  $("#lgH2hNote").textContent = `${activeTeam().name} · ${f1(h.mean)} xPts`;
   $("#lgH2hTip").innerHTML = infoTip(
-    "Green dot = an asset you don't have. Uses rivals' current line-ups; they can still transfer before lock.",
+    "Your team against each rival's current line-up on the same simulated weekends. Green dot = an asset you don't have. Rivals can still transfer before lock.",
   );
   $("#lgH2h").innerHTML = h.html;
   $("#lgOwn").innerHTML = ownTable(myIds, rivals, "Your line-up matches the whole league.");
@@ -256,22 +272,13 @@ export function h2h(myIds, rivals, opt = {}) {
         else if (d[s] === 0) tie++;
         gap += d[s];
       }
-      const drs = ds.slice().sort((x, y) => (x === boost ? -1 : y === boost ? 1 : xpts(y, 1) - xpts(x, 1)));
-      const chipsHtml =
-        m.ids
-          .slice(5)
-          .map((id) => chip(id, { pts: xpts(id, 1), cls: myIds.includes(id) ? "" : "in" }))
-          .join("") +
-        '<span class="sep"></span>' +
-        drs
-          .map((id) =>
-            chip(id, {
-              pts: xpts(id, 1) * (id === boost ? 2 : 1),
-              x: id === boost ? "2×" : "",
-              cls: myIds.includes(id) ? "" : "in",
-            }),
-          )
-          .join("");
+      const drs = ds.filter((id) => id !== boost).sort((x, y) => xpts(y, 1) - xpts(x, 1));
+      const tile = (id) =>
+        chip(id, {
+          pts: xpts(id, 1) * (id === boost ? 2 : 1),
+          x: id === boost ? "2×" : "",
+          cls: myIds.includes(id) ? "" : "in",
+        });
       const p = win / N;
       let range = "";
       if (opt.range) {
@@ -279,11 +286,20 @@ export function h2h(myIds, rivals, opt = {}) {
         const q = (f) => d[Math.min(N - 1, Math.floor(f * N))];
         range = `<span class="muted" title="Your points minus theirs: 10% of simulated weekends end below the first number, 10% above the second">${sgn(q(0.1), 0)} to ${sgn(q(0.9), 0)}</span>`;
       }
-      return `<div class="bt"><span class="rk"></span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><b>${esc(m.name)}${m.sub ? ` <small class="dim">${esc(m.sub)}</small>` : ""}</b><div class="chips">${chipsHtml}</div>${m.goal ? `<button class="btn ghost sm" data-rvgoal="${esc(m.key)}" style="align-self:flex-start">Aim to beat in the Calculator</button>` : ""}</div>
-      <div class="num"><b class="${p >= 0.5 ? "good" : "bad"}" title="${simRange(p, N)}">${pct(p)}</b><span class="muted">you win</span>${tie / N >= 0.005 ? `<span class="muted" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}<span class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)} pts</span>${range}</div></div>`;
+      return (
+        `<tr class="sec"><td colspan="5"><b>${esc(m.name)}</b>${m.sub ? ` <span class="dim">${esc(m.sub)}</span>` : ""}${m.goal ? ` <button class="btn ghost sm" data-rvgoal="${esc(m.key)}">Aim to beat in the Calculator</button>` : ""}</td></tr>` +
+        `<tr>${lineupCells(m.ids.slice(5), ds.includes(boost) ? [boost] : [], drs, tile)}` +
+        `<td><b class="h2hp ${p >= 0.5 ? "good" : "bad"}" title="${simRange(p, N)}">${pct(p)}</b>${tie / N >= 0.005 ? `<span class="gap" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}</td>` +
+        `<td class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)}${range ? `<span class="gap">${range}</span>` : ""}</td></tr>`
+      );
     })
     .join("");
-  return { html, mean };
+  return {
+    html: rivals.length
+      ? `<div class="tw"><table class="bestt"><thead><tr><th style="text-align:left">CR</th><th style="text-align:left">x2</th><th style="text-align:left">DR</th><th title="Share of the simulated weekends where you outscore them">You win</th><th title="Your expected points minus theirs">xPts</th></tr></thead><tbody>${html}</tbody></table></div>`
+      : "",
+    mean,
+  };
 }
 // Differentials: assets only you own (chances to gain) and assets rivals own that you don't (threats), with the
 // expected swing against the field of rivals.

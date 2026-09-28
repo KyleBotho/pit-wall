@@ -400,14 +400,13 @@
     </div>
     <div class="dash" id="leagueDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
       <section class="panel" style="grid-column: 1/-1">
-        <div class="seg" id="lgPick" style="align-self: flex-start"></div>
-        <h3><span id="lgTitle">League</span> <small id="lgStamp"></small></h3>
+        <h3><span id="lgTitle">League</span> <small id="lgStamp"></small><span class="seg" id="lgPick"></span></h3>
         <div class="tw"><table id="lgTable"></table></div>
       </section>
-      <section class="panel" id="lgRoundsBox" style="grid-column: 1/-1" hidden>
+      <section class="panel" id="lgRoundsBox" hidden>
         <h3>
           Round by round
-          <select id="lgRoundPick" class="inp" style="width: auto"></select>
+
           <details class="info">
             <summary aria-label="About this">i</summary>
             <div class="infobox">
@@ -417,8 +416,14 @@
               the top scorer and No Negative is invisible when nothing scored negative, so those two can go unnoticed.
             </div>
           </details>
+          <small id="lgRoundStamp"></small>
         </h3>
-        <div id="lgRounds" class="rcards"></div>
+        <div class="seg grid" id="lgRoundPick"></div>
+        <div id="lgRounds"></div>
+      </section>
+      <section class="panel">
+        <h3>Next race head-to-head <span class="tipslot" id="lgH2hTip"></span><small id="lgH2hNote"></small></h3>
+        <div id="lgH2h"></div>
       </section>
       <section class="panel">
         <h3>
@@ -437,10 +442,6 @@
         <div id="lgChart" style="position: relative"></div>
       </section>
       <section class="panel">
-        <h3>Next race head-to-head <small id="lgH2hNote"></small><span class="tipslot" id="lgH2hTip"></span></h3>
-        <div id="lgH2h" class="bts"></div>
-      </section>
-      <section class="panel" style="grid-column: 1/-1">
         <h3>
           Differentials
           <details class="info">
@@ -472,13 +473,13 @@
       <section class="panel" style="grid-column: 1/-1">
         <h3>
           My rivals <small id="rvStamp"></small>
-          <button class="btn ghost sm" data-rivals="open" style="margin-left: auto">Manage rivals</button>
+          <button class="btn ghost sm" data-rivals="open">Manage rivals</button>
         </h3>
         <div class="seg" id="rvMe" style="align-self: flex-start" title="Your team to compare"></div>
       </section>
       <section class="panel">
-        <h3>Next race head-to-head <small id="rvH2hNote"></small><span class="tipslot" id="rvH2hTip"></span></h3>
-        <div id="rvH2h" class="bts"></div>
+        <h3>Next race head-to-head <span class="tipslot" id="rvH2hTip"></span><small id="rvH2hNote"></small></h3>
+        <div id="rvH2h"></div>
       </section>
       <section class="panel">
         <h3>
@@ -521,7 +522,7 @@
     <div class="dash" id="eliteDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
       <section class="panel" style="grid-column: 1/-1">
         <h3>Global cut-offs <small id="elStamp"></small> <span class="seg" id="elTeamPick" title="Your team to compare"></span></h3>
-        <div class="kv" id="elCut"></div>
+        <div class="stats" id="elCut"></div>
         <div class="tw"><table id="elMine"></table></div>
       </section>
       <section class="panel" style="grid-column: 1/-1">
@@ -538,7 +539,7 @@
         <p class="note" id="elTemplateNote"></p>
       </section>
       <section class="panel">
-        <h3>Chip usage by round <small id="elChipNote"></small><span class="tipslot" id="elChipSub"></span></h3>
+        <h3>Chip usage by round <span class="tipslot" id="elChipSub"></span><small id="elChipNote"></small></h3>
         <div class="tw"><table id="elChips"></table></div>
       </section>
       <section class="panel" style="grid-column: 1/-1">
@@ -601,10 +602,10 @@
             <div id="hdMine"></div>
           </div>
           <div data-hm="season" hidden>
-            <h4 class="subh">Season <small>your official points against the best you could reach</small><span class="tipslot" id="hdFoot"></span></h4>
+            <h4 class="subh">Season <span class="tipslot" id="hdFoot"></span><small>your official points against the best you could reach</small></h4>
             <div class="tw"><table id="hdSeason"></table></div>
             <h4 class="subh">
-              Decisions <small>what your transfers, Boost changes and chips were worth</small>
+              Decisions
               <details class="info">
                 <summary aria-label="About this">i</summary>
                 <div class="infobox">
@@ -614,10 +615,11 @@
                   the new driver's race points minus the old driver's (times the slot's Boost).
                 </div>
               </details>
+              <small>what your transfers, Boost changes and chips were worth</small>
             </h4>
             <div class="tw"><table id="hdDecide"></table></div>
             <h4 class="subh">
-              Model team <small id="hdModelNote">a hands-off follower of the projections</small>
+              Model team
               <details class="info">
                 <summary aria-label="About this">i</summary>
                 <div class="infobox">
@@ -628,6 +630,7 @@
                   settings were fitted on those rounds, so they flatter it a little. A benchmark for your own teams, not advice.
                 </div>
               </details>
+              <small id="hdModelNote">a hands-off follower of the projections</small>
             </h4>
             <p class="note" id="hdModelSum"></p>
             <div class="tw"><table id="hdModel"></table></div>
@@ -685,7 +688,7 @@
       </div>
       <div class="col col-c">
         <section class="panel" data-pane="drivers">
-          <h3>Drivers <small id="hdAssetsNote"></small><span class="tipslot" id="hdAssetsTip"></span></h3>
+          <h3>Drivers <span class="tipslot" id="hdAssetsTip"></span><small id="hdAssetsNote"></small></h3>
           <input class="inp" id="hdDrvSearch" placeholder="Find a driver… (e.g. VER+NOR)" aria-label="Find a driver" />
           <div class="tw"><table id="hdDrv"></table></div>
         </section>

@@ -802,13 +802,20 @@ details.grp > summary:hover {
   font-weight: 400;
   color: var(--muted);
 }
-/* a title row: title, ⓘ, then the stamp (which race, which sim); the stamp, not the ⓘ, pushes the controls right */
-.panel h3 .stamp {
+/* a title row: title, ⓘ, then the stamp (a small: which race, which sim, as of when); the stamp, not the ⓘ, pushes
+   the controls right */
+.panel h3 > small {
   margin-right: auto;
 }
-.panel h3 details.info:has(~ .stamp),
-.panel h3 .tipslot:has(~ .stamp) details.info {
+.panel h3 details.info:has(~ small),
+.panel h3 .tipslot:has(~ small) details.info {
   margin-right: 0;
+}
+/* a head-to-head's chance of winning */
+.h2hp {
+  display: block;
+  font-size: 16px;
+  text-align: center;
 }
 .col {
   display: flex;
@@ -1079,46 +1086,6 @@ details.edit[open] summary::before {
   text-decoration: none;
 }
 
-/* ---------- league: round by round ---------- */
-.rcards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 10px;
-}
-.rcard {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--raise);
-  min-width: 0;
-}
-.rcard.mine {
-  border-color: var(--accent);
-}
-.rch {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.rch b {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rcp {
-  margin-left: auto;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.rcard .note {
-  margin: 0;
-}
-
 /* ---------- settings ---------- */
 .fields {
   display: grid;
@@ -1175,65 +1142,6 @@ details.edit[open] summary::before {
 input[type="range"] {
   accent-color: var(--accent);
   width: 100%;
-}
-
-/* ---------- best teams ---------- */
-.bts {
-  display: flex;
-  flex-direction: column;
-}
-.bt {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) auto;
-  gap: 6px 10px;
-  align-items: center;
-  padding: 12px 4px;
-  border-top: 1px solid var(--line);
-}
-.bt:first-child {
-  border-top: 0;
-}
-.bt.cur {
-  background: linear-gradient(90deg, var(--raise), transparent);
-  border-radius: 8px;
-}
-.bt .rk {
-  color: var(--muted);
-  font-weight: 500;
-  align-self: start;
-  padding-top: 8px;
-  text-align: center;
-}
-.bt .num {
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  align-self: start;
-  padding-top: 4px;
-}
-.bt .num b {
-  font-size: 18px;
-  font-weight: 600;
-}
-.bt .num span {
-  font-size: 12px;
-  font-weight: 600;
-}
-.bt .sub {
-  grid-column: 2/-1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 12px;
-  font-size: 12px;
-  color: var(--muted);
-  align-items: center;
-}
-.bt .sub .acts {
-  margin-left: auto;
-  display: flex;
-  gap: 6px;
 }
 
 /* ---------- tables ---------- */
@@ -2006,6 +1914,9 @@ td.al-r input[type="number"] {
 }
 .bestt .gap.good {
   color: var(--good);
+}
+.bestt tr.sec td {
+  white-space: normal; /* a team's header line (name, chip, bank, transfers) wraps on a phone */
 }
 .bestt tr.joined td {
   border-bottom: 0;

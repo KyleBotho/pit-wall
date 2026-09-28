@@ -81,6 +81,20 @@ export async function pullLeagues() {
   if (first) toast(`Loaded ${leagueCount()} from your account.`);
   if (forecast) refreshViews(LEAGUE_VIEWS);
 }
+// Local preview only (localhost with ?league in the address): build/dev-league.json, the league payload and the linked
+// account rebuilt from the private clone's snapshots (never committed or deployed; see docs/ui-system.md), loaded as
+// if signed in, so the league views can be worked on with real data. Does nothing anywhere else.
+export async function devLeague() {
+  if (!["localhost", "127.0.0.1"].includes(location.hostname) || !new URLSearchParams(location.search).has("league"))
+    return;
+  const r = await fetch("dev-league.json").catch(() => null);
+  if (!r || !r.ok) return;
+  const d = await r.json();
+  LEAGUES = d.league;
+  ACCOUNT = d.account;
+  useData(true);
+  if (forecast) refreshViews(LEAGUE_VIEWS);
+}
 // Until 2026-09-26 leagues were unlocked with a passphrase, kept in this browser as a key (IndexedDB "pitwall") or,
 // before that, in plain text (localStorage "pitwall.lk"). Neither is used now: remove them.
 export function forgetOldKeys() {

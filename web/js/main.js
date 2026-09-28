@@ -13,6 +13,7 @@ import {
   syncInit,
   syncState,
   forgetOldKeys,
+  devLeague,
 } from "./sync.js";
 import {
   compute,
@@ -647,6 +648,13 @@ const CLICK = [
       saveAnd(renderHind);
     },
   ],
+  [
+    "lground",
+    (d) => {
+      state.lgRound = +d.lground;
+      saveAnd(renderLeague);
+    },
+  ],
   ["hmenu", (d, t) => openHdMenu(t)],
   ["hmi", (d) => hdMenuAction(d.hmi)],
   [
@@ -955,10 +963,6 @@ const CHANGE_ID = {
     state.rvChips = t.checked;
     saveAnd(renderRivals);
   },
-  lgRoundPick: (t) => {
-    state.lgRound = +t.value;
-    saveAnd(renderLeague);
-  },
   stMetric: (t) => {
     state.stMetric = t.value;
     state.stSort = null;
@@ -1218,6 +1222,7 @@ function start() {
   if (state.view === "hind") showPane(paneOf("hind"), false, "hind");
   forgetOldKeys();
   syncInit();
+  devLeague(); // local preview only (sync.js)
   setInterval(() => {
     renderHeader();
     renderSync();

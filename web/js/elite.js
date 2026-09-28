@@ -44,18 +44,19 @@ export function renderElite() {
     const a = auto.find((m) => (m.tk || m.team) === teamKey(tm));
     return a ? +a.pts : (tm.ovPts ?? null);
   };
-  const anyPts = state.teams.some((tm) => ptsOf(tm) != null);
+  const anyPts = state.teams.some((tm) => ptsOf(tm) != null),
+    anyRank = state.teams.some((tm) => tm.ovRank); // only an old import had global ranks
   $("#elMine").innerHTML =
-    `<thead><tr><th>Your team</th><th>Points</th><th title="From your last import">Global rank</th><th>To top 500</th><th>To top 100</th><th>To #1</th></tr></thead><tbody>` +
+    `<thead><tr><th>Your team</th><th>Points</th>${anyRank ? '<th title="From your last import">Global rank</th>' : ""}<th>To top 500</th><th>To top 100</th><th>To #1</th></tr></thead><tbody>` +
     (!anyPts
-      ? `<tr><td colspan="6" style="text-align:left"><span class="muted">Sign in and link your F1 Fantasy account to see where your teams stand.</span> <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button> <button class="btn sm" data-setup="join" data-needlink="1" hidden>Link your F1 Fantasy account</button></td></tr>`
+      ? `<tr><td colspan="${anyRank ? 6 : 5}" style="text-align:left"><span class="muted">Sign in and link your F1 Fantasy account to see where your teams stand.</span> <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button> <button class="btn sm" data-setup="join" data-needlink="1" hidden>Link your F1 Fantasy account</button></td></tr>`
       : "") +
     state.teams
       .filter(() => anyPts)
       .map((tm) => {
         const a = auto.find((m) => (m.tk || m.team) === teamKey(tm)),
           p = a ? +a.pts : (tm.ovPts ?? null);
-        return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">—</span>' : Math.round(p).toLocaleString()}</td><td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>
+        return `<tr><td><b>${esc(tm.name)}</b></td><td>${p == null ? '<span class="dim">—</span>' : Math.round(p).toLocaleString()}</td>${anyRank ? `<td class="muted">${tm.ovRank ? tm.ovRank.toLocaleString() : "—"}</td>` : ""}
         <td>${gap(p, El.cut["500"])}</td><td>${gap(p, El.cut["100"])}</td><td>${gap(p, El.cut["1"])}</td></tr>`;
       })
       .join("") +

@@ -62,8 +62,7 @@ function draw() {
       rv.map((r) => ({ ...r, sub: r.user, goal: true })),
       { range: true },
     );
-    $("#rvH2hNote").textContent =
-      `${me.name}${me.example ? " (example team)" : ""} (${f1(h.mean)} xPts) vs your rivals, R${NEXT.gd}`;
+    $("#rvH2hNote").textContent = `${me.name}${me.example ? " (example team)" : ""} · ${f1(h.mean)} xPts · R${NEXT.gd}`;
     $("#rvH2hTip").innerHTML = infoTip(
       "Same simulated weekends for everyone. Green dot = an asset you don't have. The range is your points minus theirs on 80% of weekends. Rivals' line-ups are the ones F1's standings showed after the last race; they can still transfer before lock.",
     );

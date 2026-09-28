@@ -58,6 +58,24 @@ https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic.
   "green in Practice Q" explanation moved into its ⓘ.
 - Positions: driver names next to the codes, as on Points. Budget keeps its four tier tables (codes only, to fit).
 
+## Leagues group (2026-09-28)
+- A small in a title row is its stamp: `.panel h3 > small` takes `margin-right: auto`, the ⓘ goes before it
+  (title, ⓘ, stamp, then controls). Title rows across the page were reordered to match.
+- My leagues: the league switch sits in the standings' title row. Round by round: rounds as a button grid (was a
+  dropdown) and the member cards became the Calculator's team rows (a header row per team: name, chip, bank,
+  transfers, where it came from; then CR / x2 / DR and the round score in the white pill; league.js
+  `lineupCells`). Panels in pairs: Round by round | Next race head-to-head, Points race | Differentials.
+- Head-to-head (My leagues and My rivals, league.js `h2h`): the same team rows, then "You win" and the xPts gap.
+- Global elite: the cut-offs are one joined tile strip (`.stats`); the Global rank column shows only when a team
+  has one (only old imports did).
+- The old card styles (`.rcard`, `.bt`, `.bts`) are gone: nothing uses them.
+
+## Previewing the league pages locally
+Sign-in doesn't work on the local preview, so the league views would be empty. `python tools/dev_league.py`
+rebuilds the league payload and your linked account from the private clone's snapshots into `build/dev-league.json`
+(gitignored, never deployed); `http://localhost:8765/?league` then loads it as if signed in (sync.js `devLeague`, a
+no-op anywhere but localhost).
+
 ## Also fixed on the way
 - `lineups()` (hindsight-view.js) now returns league.js `tracked()`: rounds after the last data export are worked
   out from the league feeds, so Hindsight's Your teams, the Statistics highlight, Global elite's chip rounds and

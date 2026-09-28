@@ -213,7 +213,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 
 ## Commands
 - New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`.
-- Local preview: `.claude/launch.json` "pit-wall-build" serves `build/` on :8765.
+- Local preview: `.claude/launch.json` "pit-wall-build" serves `build/` on :8765. With league data (sign-in doesn't
+  work locally): `python tools/dev_league.py` (reads ../pit-wall-private; writes the gitignored
+  build/dev-league.json), then open `http://localhost:8765/?league`.
 - Rebuild locally: `python refresh.py` (run from this folder; `PYTHONIOENCODING=utf-8` on Windows bash);
   `python refresh.py --offline` rebuilds the page from the last fetch (page/CSS/JS edits).
 - Checks: `npm run check` (ESLint, Prettier, tsc on engine/hindsight, node tests; `npm install` once),
