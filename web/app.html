@@ -701,14 +701,17 @@
           <summary aria-label="About this">i</summary>
           <div class="infobox">
             Prices move after each race on the average points per $1m over the races in the last three rounds (a round the asset sat out doesn't count as a
-            zero), rounded to 3 decimals: below 0.605 is a big drop, 0.605–0.9 a small drop, 0.9–1.195 a small rise, 1.195+ a big rise. $18.5m+ assets move
-            ±0.1/0.3m, cheaper ones ±0.2/0.6m. <b>Needs</b> is the points required this weekend for each band (green: projected to reach it).
+            zero), rounded to 3 decimals: below 0.605 is a big drop, 0.605–0.9 a small drop, 0.9–1.195 a small rise, 1.195+ a big rise. Tier A ($18.5m+) moves
+            ±0.1/0.3m, Tier B ±0.2/0.6m; nothing goes below $3m or above $34m (a 0.0 or +0.2 column shows where that bites).<br /><b>Required points</b>: the
+            points this race needs for each step: at least that many, or at most for "≤". <b>Odds</b>: the simulated chance of each step. In both, the colour
+            deepens with the chance and the most likely step is outlined. xΔ$: the expected change after the next race, and over the next races with each
+            simulated future carried race to race.
           </div>
         </details>
+        <span class="seg" id="priceMode"><button data-pricemode="need">Required points</button><button data-pricemode="odds">Odds</button></span>
       </h3>
 
-      <div class="hkey" id="priceKey"></div>
-      <div class="tw"><table id="priceTable"></table></div>
+      <div class="pricegrid" id="priceTables"></div>
     </section>
   </main>
 

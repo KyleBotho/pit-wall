@@ -5,6 +5,14 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, Budget view like f1fantasytools' budget builder (user sent their Required Points / Simulation Odds
+      screenshots: "match what they are doing ... easy to read and needs little interpreting", split by tier): four
+      tables (drivers / constructors x Tier A $18.5m+ / Tier B), a column per price step (the $3m floor / $34m cap
+      add 0.0 / +0.2 only where they bite), last two rounds' points, xPts, xΔ$ next race and over the forecast.
+      Switch "Required points" (Engine.priceSteps: the points this race needs per step, "≤" for the bottom one) /
+      "Odds" (the simulated chance of each step); both shade each step by its chance and outline the most likely.
+      Checked against their screenshot: VER ≤ -31 / -30 / -6 / 18, HUL ≤ -8 / -7 / -2 / 3, PER floor ≤ 15, MER cap
+      -53, AST ≤ 62 / 63 / 68 / 73, all equal. state.priceMode (carried over seasons).
 - [x] 2026-09-28, the reviews' buildable deferred items (user: "get started with the still buildable now list"):
       (1) fit log: `solve` reports the real 2-norm condition number (Jacobi eigenvalues of the symmetric normal
       matrix; was max/min pivot, e.g. [[2,1],[1,2]] 3 vs 1.33); Poisson fits note theirs and need < 1e12. Live fits:

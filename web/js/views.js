@@ -282,40 +282,75 @@ const pathCell = (pa) =>
   pa
     ? `<td class="${pa.cum >= 0 ? "good" : "bad"}" title="10–90%: ${sgn(pa.p10, 1)} to ${sgn(pa.p90, 1)}; up ${pct(pa.up)}, down ${pct(pa.down)}; per race ${pa.d.map((v) => sgn(v, 2)).join(" · ")}">${sgn(pa.cum, 2)}</td>`
     : "<td>—</td>";
+// the price change after the next race, split like the game's price rule: drivers and constructors, each in Tier A
+// ($18.5m+, steps of 0.1 / 0.3) and Tier B (0.2 / 0.6), one column per step (the $3m floor or $34m cap adds a
+// 0.0 / +0.2 column only where an asset hits it). "Required points": the points the race needs for each step;
+// "Odds": the simulated chance of each. Both shade each step by its chance and outline the most likely one.
+const stepLbl = (d) => (d > 0 ? "+" : d < 0 ? "−" : "") + Math.abs(d).toFixed(1);
 export function renderPrices() {
-  const binLbl = ["−0.6", "−0.3", "−0.2", "−0.1", "0", "+0.1", "+0.2", "+0.3", "+0.6"];
-  const group = (title, list) =>
-    !list.length
-      ? ""
-      : `<tr class="tier"><td colspan="12">${title}</td></tr>` +
-        list
-          .map((a) => {
-            const pi = forecast.price[a.id],
-              p = forecast.proj[0][a.id];
-            const needCell = (v) => `<td class="${p.mean >= v ? "good" : "muted"}">${f0(v)}</td>`;
-            const dist = pi.dist
-              ? `<span class="dist" title="${pi.dist.map((v, i) => binLbl[i] + ": " + Math.round(v * 100) + "%").join(" · ")}">${pi.dist.map((v, i) => `<span class="${i < 4 ? "dn" : i > 4 ? "up" : "z"}" style="height:${Math.max(1, v * 22)}px"></span>`).join("")}</span>`
-              : "—";
-            return `<tr><td>${who(a)}</td>
-      <td>${f1(a.price)}</td><td class="muted" title="Points in the last two rounds; — = didn't race (doesn't count in the price average)">${f0(pi.p2)} · ${f0(pi.p1)}</td><td><b>${f1(p.mean)}</b></td>
-      ${needCell(pi.need[0])}${needCell(pi.need[1])}${needCell(pi.need[2])}
-      <td class="good">${pct(pi.up)}</td><td class="bad">${pct(pi.down)}</td><td>${dist}</td>
-      <td${heat(pi.ev, -0.6, 0.6)} class="${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td>${pathCell(pi.path)}</tr>`;
+  const mode = state.priceMode === "odds" ? "odds" : "need";
+  $$("#priceMode button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.pricemode === mode)));
+  const [r1, r2] = DATA.done.slice(-2),
+    nx = forecast.races[0] && forecast.races[0].gd,
+    nR = forecast.sims.length;
+  const lastPts = (v) =>
+    v == null
+      ? `<td class="muted" title="Didn't race: doesn't count in the price average">–</td>`
+      : `<td>${f0(v)}</td>`;
+  const table = (title, sub, list) => {
+    if (!list.length) return "";
+    const cols = [...new Set(list.flatMap((a) => forecast.price[a.id].steps.map((x) => x.d)))].sort((x, y) => x - y);
+    const head =
+      `<thead><tr><th class="tiercap">${title}</th><th>$</th><th>${r1 ? "R" + r1 : ""}</th><th>${r2 ? "R" + r2 : ""}</th><th>R${nx}</th>` +
+      cols.map((d) => `<th class="step ${d > 0 ? "up" : d < 0 ? "dn" : "z"}">${stepLbl(d)}</th>`).join("") +
+      `<th>R${nx}</th><th>${nR} races</th></tr>` +
+      `<tr><th class="tiercap"><small>${sub}</small></th><th></th><th>Pts</th><th>Pts</th><th title="Projected points">xPts</th>` +
+      cols
+        .map((d) =>
+          mode === "odds"
+            ? `<th class="step">Odds</th>`
+            : `<th class="step" title="The points this race needs for ${stepLbl(d)}: at least this many (≤: at most)">Pts</th>`,
+        )
+        .join("") +
+      `<th title="Expected price change after the next race">xΔ$</th><th title="Expected price change over the next ${nR} races, each simulated future carried race to race (hover for its range)">xΔ$</th></tr></thead>`;
+    const rows = list
+      .map((a) => {
+        const pi = forecast.price[a.id],
+          p = forecast.proj[0][a.id],
+          odds = pi.odds,
+          top = odds ? Math.max(...Object.values(odds)) : -1;
+        const cells = cols
+          .map((d) => {
+            const st = pi.steps.find((x) => x.d === d);
+            if (!st) return "<td></td>";
+            const pr = odds ? odds[d.toFixed(1)] || 0 : null;
+            const range =
+              st.lo == null
+                ? `${st.hi} points or fewer`
+                : st.hi == null
+                  ? `${st.lo} points or more`
+                  : `${st.lo} to ${st.hi} points`;
+            const txt = mode === "odds" ? (pr == null ? "–" : pct(pr)) : st.lo == null ? `≤ ${st.hi}` : `${st.lo}`;
+            const rgb = d > 0 ? "34,197,94" : d < 0 ? "239,68,68" : "139,139,148";
+            const bg = pr ? ` style="background-color:rgba(${rgb},${(0.06 + 0.6 * pr).toFixed(3)})"` : "";
+            return `<td class="step${pr != null && pr === top && pr > 0 ? " likely" : ""}"${bg} title="${stepLbl(d)}: ${range}${pr != null ? ` · ${pct(pr)} chance` : ""}">${txt}</td>`;
           })
           .join("");
+        return (
+          `<tr><td>${codeBox(a)}</td><td>${f1(a.price)}</td>${lastPts(pi.p2)}${lastPts(pi.p1)}<td><b>${f1(p.mean)}</b></td>${cells}` +
+          `<td${heat(pi.ev, -0.6, 0.6)} class="${pi.ev >= 0 ? "good" : "bad"}"><b>${sgn(pi.ev, 2)}</b></td>${pathCell(pi.path)}</tr>`
+        );
+      })
+      .join("");
+    return `<div class="tw"><table class="heat pricet">${head}<tbody>${rows}</tbody></table></div>`;
+  };
   const act = DATA.assets
     .filter((a) => a.active || a.kind === "C")
     .sort((x, y) => forecast.price[y.id].ev - forecast.price[x.id].ev);
-  const hi = (k) => act.filter((a) => a.kind === k && a.price >= 18.5),
-    lo = (k) => act.filter((a) => a.kind === k && a.price < 18.5);
-  $("#priceKey").innerHTML = heatKey("price falls", "price rises");
-  $("#priceTable").innerHTML =
-    `<thead><tr><th>Asset</th><th>$</th><th title="Points in the last two races">Last 2</th><th>xPts</th><th title="Points needed to avoid the big drop">≥0.605</th><th title="Points needed for a rise">≥0.9</th><th title="Points needed for the big rise">≥1.195</th><th>P(rise)</th><th>P(drop)</th><th title="Distribution from −0.6 to +0.6">Spread</th><th>xΔ$</th><th title="Expected price change over the next ${forecast.sims.length} races, each simulated future carried race to race (hover for its range)">xΔ$ ${forecast.sims.length}R</th></tr></thead><tbody>` +
-    group("Drivers · $18.5m+", hi("D")) +
-    group("Drivers · under $18.5m", lo("D")) +
-    group("Constructors · $18.5m+", hi("C")) +
-    group("Constructors · under $18.5m", lo("C")) +
-    "</tbody>";
+  const tier = (k, A) => act.filter((a) => a.kind === k && a.price >= 18.5 === A);
+  $("#priceTables").innerHTML =
+    `<div>${table("Drivers · Tier A", "$18.5m+", tier("D", true))}${table("Drivers · Tier B", "under $18.5m", tier("D", false))}</div>` +
+    `<div>${table("Constructors · Tier A", "$18.5m+", tier("C", true))}${table("Constructors · Tier B", "under $18.5m", tier("C", false))}</div>`;
 }
 
 /* ---------- calendar ---------- */

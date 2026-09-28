@@ -174,6 +174,7 @@ const CARRY = [
   "stMetric",
   "lvKind",
   "lvBy",
+  "priceMode",
   "hdCap",
   "hdChip",
   "showN",

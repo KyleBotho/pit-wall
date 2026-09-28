@@ -2977,6 +2977,38 @@
     const d = big ? step * 0.1 : step * 0.2;
     return Math.max(3, Math.min(34, Math.round((price + d) * 10) / 10)) - price;
   }
+  /** The points the coming race needs for each price step (the Budget view): [{d, lo, hi}] in step order, d the
+   * change ($m, rounded to 0.1; the $3m floor / $34m cap applied, steps they make equal merged into one), lo / hi
+   * whole points (null = open). sum2 / n as from priceBase. @param {number} price @param {number} sum2
+   * @param {number} n @returns {{ d: number, lo: number | null, hi: number | null }[]} */
+  function priceSteps(price, sum2, n) {
+    const step = (/** @type {number} */ p) => Math.round(priceStep(price, (sum2 + p) / n) * 10) / 10;
+    // the fewest whole points that clear each band (priceStep's own rounding of points per $1m)
+    const ppm = (/** @type {number} */ p) => Math.round(((sum2 + p) / n / price) * 1000) / 1000;
+    const first = (/** @type {number} */ t) => {
+      let lo = -1000,
+        hi = 2000;
+      while (lo < hi) {
+        const m = Math.floor((lo + hi) / 2);
+        if (ppm(m) >= t) hi = m;
+        else lo = m + 1;
+      }
+      return lo;
+    };
+    const T = PRICE_BANDS.map(first);
+    /** @type {{ d: number, lo: number | null, hi: number | null }[]} */
+    const out = [];
+    for (let j = 0; j <= T.length; j++) {
+      const lo = j === 0 ? null : T[j - 1],
+        hi = j === T.length ? null : T[j] - 1;
+      if (lo != null && hi != null && hi < lo) continue; // an empty band
+      const d = step(lo ?? /** @type {number} */ (hi));
+      const last = out[out.length - 1];
+      if (last && last.d === d) last.hi = hi;
+      else out.push({ d, lo, hi });
+    }
+    return out;
+  }
 
   /** The points already in an asset's next price change: its last two rounds (p1 = the last), counting only rounds
    * it raced. The game averages over the races in the last three rounds, the coming one included: an inactive round
@@ -4076,6 +4108,7 @@
     pairedCompare,
     withFitLog,
     priceStep,
+    priceSteps,
     priceBase,
     pricePath,
     streamFor,

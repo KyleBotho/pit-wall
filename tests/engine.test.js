@@ -24,6 +24,41 @@ test("priceStep: bands, sizes and clamps", () => {
   assert.equal(step(33.9, 100), 0.1);
 });
 
+test("priceSteps: the points for each step agree with priceStep at every whole number; floor and cap merge", () => {
+  const step = (price, sum2, n, p) => Math.round(E.priceStep(price, (sum2 + p) / n) * 10) / 10;
+  for (const [price, sum2, n] of [
+    [27.6, 81, 3], // Tier A (VER before Bahrain: ≤ -31 / -30 / -6 / 18)
+    [5.4, 17, 3], // Tier B
+    [3, -7, 3], // at the floor: the drops are 0.0
+    [33.8, 175, 3], // near the cap: +0.3 becomes +0.2
+    [12, 10, 2], // a round sat out: two races in the average
+  ]) {
+    const st = E.priceSteps(price, sum2, n);
+    for (let p = -200; p <= 300; p++) {
+      const r = st.find((x) => (x.lo == null || p >= x.lo) && (x.hi == null || p <= x.hi));
+      assert.ok(r, `$${price}m, ${p} pts: in no range`);
+      assert.equal(r.d, step(price, sum2, n, p), `$${price}m, ${p} pts`);
+    }
+    // in order, no two neighbours the same step, open at both ends
+    assert.equal(st[0].lo, null);
+    assert.equal(st[st.length - 1].hi, null);
+    st.slice(1).forEach((x, i) => assert.ok(x.d > st[i].d && x.lo === st[i].hi + 1));
+  }
+  assert.deepEqual(
+    E.priceSteps(27.6, 81, 3).map((x) => [x.d, x.lo, x.hi]),
+    [
+      [-0.3, null, -31],
+      [-0.1, -30, -7],
+      [0.1, -6, 17],
+      [0.3, 18, null],
+    ],
+  );
+  assert.deepEqual(
+    E.priceSteps(3, -7, 3).map((x) => x.d),
+    [0, 0.2, 0.6],
+  );
+});
+
 test("ridge solves a well-posed system", () => {
   const b = [1.5, -2, 0.5];
   const X = [];

@@ -2631,3 +2631,45 @@ td.chl {
 .rivhit {
   flex-direction: column;
 }
+
+/* Budget: the price-change tables, drivers and constructors side by side, each tier its own table */
+.pricegrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr));
+  gap: 14px;
+  align-items: start;
+}
+.pricegrid > div {
+  display: grid;
+  gap: 14px;
+}
+.pricet th.tiercap {
+  text-align: left;
+  white-space: nowrap;
+}
+.pricet th.step:is(.up, .dn, .z) {
+  color: #fff;
+  font-weight: 700;
+}
+.pricet th.step.dn {
+  background: rgba(239, 68, 68, 0.45);
+}
+.pricet th.step.up {
+  background: rgba(34, 197, 94, 0.45);
+}
+.pricet th.step.z {
+  background: rgba(139, 139, 148, 0.3);
+}
+/* "≤ 13" and "14" in one column: centred, whatever the auto-alignment makes of the "≤" */
+.pricet :is(td, th).step {
+  text-align: center;
+}
+.pricet td.step {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.pricet td.step.likely {
+  outline: 2px solid var(--fg);
+  outline-offset: -2px;
+  font-weight: 700;
+}

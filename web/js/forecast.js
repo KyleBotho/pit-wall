@@ -300,11 +300,14 @@ function priceInfo(a) {
   const { p1, p2, sum2, n } = Engine.priceBase(a, DATA.done);
   const need = Engine.PRICE_BANDS.map((t) => t * n * a.price - sum2);
   const i = forecast.idx[a.id];
-  if (i == null || !a.active) return { sum2, p1, p2, need, dist: null, ev: 0, up: 0, down: 0 };
+  // the points this race needs for each step (the Budget view's Required points)
+  const steps = Engine.priceSteps(a.price, sum2, n);
+  if (i == null || !a.active) return { sum2, p1, p2, need, steps, odds: null, dist: null, ev: 0, up: 0, down: 0 };
   const sim = forecast.sims[0],
     N = sim.N,
     sh = forecast.proj[0][a.id].shift,
-    dist = BINS.map(() => 0);
+    dist = BINS.map(() => 0),
+    odds = Object.fromEntries(steps.map((x) => [x.d.toFixed(1), 0])); // the chance of each step
   let ev = 0,
     up = 0,
     down = 0;
@@ -313,6 +316,7 @@ function priceInfo(a) {
     ev += d;
     if (d > 0) up++;
     if (d < 0) down++;
+    odds[d.toFixed(1)] = (odds[d.toFixed(1)] || 0) + 1 / N;
     let k = BINS.indexOf(d);
     if (k < 0) k = BINS.reduce((b, v, j) => (Math.abs(v - d) < Math.abs(BINS[b] - d) ? j : b), 0);
     dist[k]++;
@@ -322,6 +326,8 @@ function priceInfo(a) {
     p1,
     p2,
     need,
+    steps,
+    odds,
     dist: dist.map((v) => v / N),
     ev: ev / N,
     up: up / N,

@@ -679,6 +679,13 @@ const CLICK = [
     },
   ],
   [
+    "pricemode",
+    (d) => {
+      state.priceMode = d.pricemode;
+      saveAnd(renderPrices);
+    },
+  ],
+  [
     "lvby",
     (d) => {
       state.lvBy = d.lvby;
