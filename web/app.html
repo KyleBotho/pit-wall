@@ -739,6 +739,7 @@
             <b>Pace</b> nudges a driver faster or slower (grid places). <b>Incl / Excl</b> forces an asset into or out of Best Teams.
           </div>
         </details>
+        <small class="stamp" id="assetStamp"></small>
         <span class="seg" id="assetKind"><button data-kind="D">Drivers</button><button data-kind="C">Constructors</button></span>
       </h3>
       <div class="seg" id="assetRace" style="align-self: flex-start"></div>
@@ -764,6 +765,7 @@
             simulated future carried race to race.
           </div>
         </details>
+        <small class="stamp" id="priceStamp"></small>
         <span class="seg" id="priceMode"><button data-pricemode="need">Required points</button><button data-pricemode="odds">Odds</button></span>
       </h3>
 
@@ -781,11 +783,13 @@
           <div class="infobox">
             From OpenF1 lap times, shortly after each session. <b>Short run</b> = best lap or best-sector sum as a gap to the fastest; it feeds qualifying pace
             at 50%. <b>Long run</b> = median of 5+ lap stints adjusted for tyre, fuel and wear; it feeds race pace at 10%. Weights backtested on rounds 4–14;
-            change them with Practice weight in Settings.
+            change them with Practice weight in Settings. Green in Practice Q means practice has a driver faster than their season form.
           </div>
         </details>
+        <small class="stamp" id="pracStamp"></small>
       </h3>
-      <div class="kv" id="pracSessions"></div>
+      <div class="chipbar" id="pracSessions"></div>
+      <p class="note" id="pracNote"></p>
 
       <div class="tw"><table id="pracTable"></table></div>
     </section>
@@ -795,7 +799,7 @@
   <main id="view-grid" data-v hidden>
     <section class="panel">
       <h3>
-        Positions <span class="tipslot" id="gridNote"></span
+        Positions <span class="tipslot" id="gridNote"></span><small class="stamp" id="gridStamp"></small
         ><span class="seg" id="gridKind"><button data-gridmode="q">Qualifying</button><button data-gridmode="r">Race</button></span>
       </h3>
       <div class="hkey" id="gridKey"></div>

@@ -802,6 +802,14 @@ details.grp > summary:hover {
   font-weight: 400;
   color: var(--muted);
 }
+/* a title row: title, ⓘ, then the stamp (which race, which sim); the stamp, not the ⓘ, pushes the controls right */
+.panel h3 .stamp {
+  margin-right: auto;
+}
+.panel h3 details.info:has(~ .stamp),
+.panel h3 .tipslot:has(~ .stamp) details.info {
+  margin-right: 0;
+}
 .col {
   display: flex;
   flex-direction: column;

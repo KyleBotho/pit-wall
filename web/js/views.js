@@ -10,12 +10,20 @@ import {
   heat,
   heatKey,
   priceEv,
+  simStage,
   teamSamples,
   trackFit,
   who,
   xpts,
 } from "./forecast.js";
 import { inclExcl } from "./calc.js";
+// the stamp in a Projections title row: which sim the numbers come from, and how far into the weekend it is
+const simLabel = () => {
+  if (state.simPreset === "sim") return `Pit Wall sim · ${simStage()}`;
+  const pre = $("#simPreset").selectedOptions[0];
+  return `${pre ? pre.textContent : state.simPreset} preset`;
+};
+const shortName = (g) => (g ? `R${g.gd} ${g.name.replace(" Grand Prix", "")}` : "");
 export function renderHeader() {
   $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : `${DATA.season} season complete`;
   const age = Math.round((Date.now() - new Date(DATA.generated)) / 6e4);
@@ -116,6 +124,7 @@ function spark(a) {
 }
 export function renderAssets() {
   $("#assetKey").innerHTML = heatKey("fewer xPts", "more xPts");
+  $("#assetStamp").textContent = simLabel();
   const pre = $("#simPreset").selectedOptions[0];
   $("#assetPreset").hidden = state.simPreset === "sim";
   $("#assetPreset").textContent =
@@ -185,16 +194,21 @@ export function renderPractice() {
   const ps = DATA.practice || [];
   const fmtT = (iso) =>
     new Date(iso).toLocaleString(undefined, { weekday: "short", hour: "2-digit", minute: "2-digit" });
-  $("#pracSessions").innerHTML = ps.length
-    ? ps
-        .map(
-          (p) =>
-            `<div class="stat"><span class="l">${esc(p.name)}</span><span class="v">${p.done ? Object.keys(p.drivers).length + " drivers" : "Pending"}</span><span class="s">${esc(fmtT(p.start))}</span></div>`,
-        )
-        .join("")
-    : `<div class="stat"><span class="l">Practice</span><span class="v">No sessions found</span><span class="s">for R${NEXT.gd}</span></div>`;
+  $("#pracStamp").textContent = shortName(NEXT);
+  $("#pracSessions").innerHTML = ps
+    .map((p) =>
+      p.done
+        ? `<span class="tag done" title="${esc(fmtT(p.start))}">${esc(p.name)} ✓ · ${Object.keys(p.drivers).length} drivers</span>`
+        : `<span class="tag up">${esc(p.name)} · ${esc(fmtT(p.start))}</span>`,
+    )
+    .join("");
   const ms = forecast.model.drivers,
     done = ps.filter((p) => p.done);
+  $("#pracNote").textContent = !ps.length
+    ? `No practice sessions found for R${NEXT.gd}: the model uses season form.`
+    : done.length
+      ? `${done.length} of ${ps.length} sessions in: practice pulls on the model's pace below.`
+      : "No practice laps yet, so the model uses season form.";
   const pr = Engine.practiceRanks(
     ps,
     ms.map((d) => d.tla),
@@ -215,9 +229,6 @@ export function renderPractice() {
       })
       .join("");
   $("#pracTable").innerHTML =
-    (done.length
-      ? ""
-      : `<caption style="caption-side:top;text-align:left;padding:4px 0 10px;color:var(--muted)">No practice laps yet, so the model uses season form. Once practice runs, green in Practice Q means a driver looks faster than their form.</caption>`) +
     `<thead><tr><th>DR</th>${done.map((p) => `<th>${esc(p.name.replace("Practice ", "FP"))}</th>`).join("")}<th>Short run</th><th>Long run</th><th title="Grid position implied by practice alone">Practice Q</th><th title="From season form">Form Q</th><th title="What the simulation uses (practice and the market included)">Model Q</th><th>Form R</th><th title="Places the betting market moves race pace (+ = the market rates the driver higher than the model)">Market</th><th>Model R</th></tr></thead><tbody>` +
     rows
       .map((d) => {
@@ -238,6 +249,7 @@ export function renderGrid() {
   $("#gridKey").innerHTML = state.heat
     ? `<span class="muted">less likely</span><span class="ramp" style="background:linear-gradient(90deg,rgba(168,85,247,.04),rgba(168,85,247,.85))"></span><span class="muted">more likely</span>${q ? "" : '<span class="sw" style="background:rgba(239,68,68,.6)"></span><span class="muted">not classified</span>'}`
     : "";
+  $("#gridStamp").textContent = `${shortName(NEXT)} · ${simLabel()}`;
   $("#gridNote").innerHTML = infoTip(
     esc(
       `${q ? "Qualifying" : "Race"} position probabilities (%) for ${NEXT.name}, from ${state.sims.toLocaleString()} simulated weekends${q ? "" : "; last column = not classified"}.`,
@@ -261,7 +273,7 @@ export function renderGrid() {
     rows
       .map(
         ({ a, v }) =>
-          `<tr><td>${codeBox(a)}</td>` +
+          `<tr><td>${who(a)}</td>` +
           v
             .slice(0, cols)
             .map((p, i) => {
@@ -293,6 +305,7 @@ export function renderPrices() {
   const [r1, r2] = DATA.done.slice(-2),
     nx = forecast.races[0] && forecast.races[0].gd,
     nR = forecast.sims.length;
+  $("#priceStamp").textContent = forecast.races[0] ? `after ${shortName(forecast.races[0])}` : "";
   const lastPts = (v) =>
     v == null
       ? `<td class="muted" title="Didn't race: doesn't count in the price average">–</td>`

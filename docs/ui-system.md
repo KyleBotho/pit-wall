@@ -51,6 +51,18 @@ https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic.
 - The Calculator's layout CSS became the shared `.ws` rules; wide screens now size the workspace with flex instead
   of `calc(100dvh - 92px)`, so it fills to the bottom padding whatever sits above it (16px taller than before).
 
+## Projections group (2026-09-28)
+- Every title row: title, ⓘ, then a `.stamp` (which race, which sim: "Pit Wall sim · early", "after R16 Bahrain"),
+  then the switches on the right. CSS: the stamp, not the ⓘ, takes `margin-right: auto`.
+- Practice: the session cards became Live Scoring's session tags (`.tag.done` / `.tag.up`) and one status line; the
+  "green in Practice Q" explanation moved into its ⓘ.
+- Positions: driver names next to the codes, as on Points. Budget keeps its four tier tables (codes only, to fit).
+
+## Also fixed on the way
+- `lineups()` (hindsight-view.js) now returns league.js `tracked()`: rounds after the last data export are worked
+  out from the league feeds, so Hindsight's Your teams, the Statistics highlight, Global elite's chip rounds and
+  Live Scoring's finished round no longer go empty after the last export (seen: R15 empty for all three teams).
+
 ## Still to do (proposed in the audit; not yet agreed page by page)
 Shared team / round pickers, one signed-out state, title-row order, tokens for the chart colours hard-coded in
 calc.js / league.js / elite.js / views.js, and the type (13 sizes) and radius (11 values) scales.
