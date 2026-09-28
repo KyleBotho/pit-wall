@@ -6,6 +6,7 @@ import { TEMPLATES, pickKey } from "./tracking.js";
 import { rivalRows } from "./sync.js";
 import { labOwner } from "./lab.js";
 import { gunzip, presimSamples } from "./presim.js";
+import { inWorker, racesJob, simJob, workerOk } from "./worker.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
@@ -29,10 +30,41 @@ export const setupOpts = (g, k, track = trackFit) => ({
 // 2026-09-27); the owner and admins (labOwner) get the live one, orders and all, and so do My rivals and Live Scoring
 // (withLive). A UI gate: the data is in the public build. Variants: "lock" (as at lock) and "live".
 let liveFc = null; // the live forecast for withLive when the page's own is the one at lock (built on first use)
+// Rebuild the forecast. Returns true when it's current; false when the sims it needs are running in the engine
+// worker (worker.js): the forecast on screen stays until they're in, then onSimDone redraws. The first build, the
+// build's own sims (presim) and sims already run for these settings (simCache) are done here, straight away.
+let simJobId = 0,
+  onSimDone = null;
+export let simPending = false;
+/** What to do once a run in the worker is in (main.js: redraw, save, clear the busy tag). */
+export const setSimDone = (fn) => (onSimDone = fn);
 export function compute() {
   liveFc = null;
-  build(labOwner ? "live" : "lock");
-  if (PRE && !pre.loading && simDefault()) presimLoad(); // back on the defaults: the build's sims, once they're in
+  const v = labOwner ? "live" : "lock";
+  const id = ++simJobId;
+  const key = simKey(v);
+  if (!forecast || SEASON_OVER || (pre.vars && simDefault()) || simCache.has(key) || !workerOk()) {
+    simPending = false;
+    build(v);
+    if (PRE && !pre.loading && simDefault()) presimLoad(); // back on the defaults: the build's sims, once they're in
+    return true;
+  }
+  simPending = true;
+  if (PRE && !pre.loading && simDefault()) presimLoad();
+  const job = localJob(v);
+  inWorker("races", [job])
+    .then(
+      ([r]) => r,
+      () => racesJob(Engine, DATA, job, { tm: trackFit }), // no worker after all: run here
+    )
+    .then((r) => {
+      remember(key, { ...r, pre: 0 });
+      if (id !== simJobId) return; // settings changed again meanwhile: a newer run is on its way
+      simPending = false;
+      build(v);
+      if (onSimDone) onSimDone();
+    });
+  return false;
 }
 // An independent run of the next race (other seeds, the same setup and size), to judge near-ties among the teams the
 // main run picked without the winner's curse (second review): picking the best of many teams on the same samples
@@ -43,17 +75,26 @@ export function checkSim(onReady) {
   if (fc.check) return fc.check;
   if (!fc.checkPending) {
     fc.checkPending = true;
-    setTimeout(() => {
+    const g = fc.races[0],
+      su = fc.setup,
+      { seed, persist } = Engine.raceSeeds(g, g);
+    const job = {
+      model: su.model,
+      circuit: su.circuit,
+      sprint: sprintNext(),
+      N: fc.sims[0].N,
+      seed: seed + 1,
+      opt: { ...su.simOpt, persist: persist + 1 },
+    };
+    const done = (sim) => {
       if (forecast !== fc) return;
-      const g = fc.races[0],
-        su = fc.setup,
-        { seed, persist } = Engine.raceSeeds(g, g);
-      fc.check = Engine.simulate(su.model, su.circuit, sprintNext(), fc.sims[0].N, seed + 1, {
-        ...su.simOpt,
-        persist: persist + 1,
-      });
+      fc.check = sim;
       if (onReady) onReady();
-    }, 60);
+    };
+    // in the engine worker, else here once the page has drawn
+    const here = () => setTimeout(() => forecast === fc && done(simJob(Engine, DATA, job)), 60);
+    if (workerOk()) inWorker("sim", [job]).then(([sim]) => done(sim), here);
+    else here();
   }
   return null;
 }
@@ -126,7 +167,41 @@ export function presimStart(onFull) {
   if (!PRE || !simDefault()) return Promise.resolve();
   return Promise.race([presimLoad(), new Promise((r) => setTimeout(r, 15000))]);
 }
-// the forecast's races, setups and simulations: the build's when on the defaults and in, else run here
+// Sims already run, by everything they depend on (simKey): the blend, presets, typed xPts and the like apply after
+// the sims, so changing them reuses the runs instead of simulating again. The latest few are kept (lock and live).
+const simCache = new Map();
+function simKey(v) {
+  return JSON.stringify([
+    v,
+    state.halfLife,
+    state.pw,
+    state.oddsW,
+    state.sims,
+    state.adj,
+    state.pen,
+    upcoming.slice(0, 3).map((g) => state.circuits[g.gd] || null),
+    sprintNext(),
+  ]);
+}
+function remember(key, r) {
+  simCache.delete(key);
+  simCache.set(key, r);
+  while (simCache.size > 4) simCache.delete(simCache.keys().next().value);
+}
+// the job for worker.js racesJob: the page's setupOpts for each race, without the track model (the worker builds
+// its own from the same data)
+function localJob(v) {
+  return {
+    v,
+    opts: upcoming.slice(0, 3).map((g, k) => {
+      const { track, ...o } = setupOpts(g, k);
+      return o;
+    }),
+    sprint0: sprintNext(),
+    sims: state.sims,
+  };
+}
+// the forecast's races, setups and simulations: the build's when on the defaults and in, else run (or reused) here
 function runRaces(v) {
   if (pre.vars && simDefault()) {
     const x = PRE.vars[v] || PRE.vars.lock, // before lock there's one: both are the same
@@ -142,8 +217,9 @@ function runRaces(v) {
       pre: pre.N,
     };
   }
-  const data = v === "live" ? DATA : Engine.atLock(DATA);
-  return { ...Engine.forecastRaces(data, { setup: setupOpts, sprint0: sprintNext(), sims: state.sims }), pre: 0 };
+  const key = simKey(v);
+  if (!simCache.has(key)) remember(key, { ...racesJob(Engine, DATA, localJob(v), { tm: trackFit }), pre: 0 });
+  return simCache.get(key);
 }
 function build(v) {
   const form = Object.fromEntries(DATA.assets.map((a) => [a.id, recentForm(a)]));

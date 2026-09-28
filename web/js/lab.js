@@ -7,6 +7,7 @@ import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming 
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
 import { BINS, codeBox, compute, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
+import { inWorker, labJob, workerOk } from "./worker.js";
 import { rerender, showView } from "./main.js";
 import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
@@ -119,84 +120,18 @@ function labSetOwner(ok) {
 /* ---------- a run ---------- */
 // One race's simulation under a set of switches ({"SIM.x": v}, applied with Engine.withSettings and put back
 // after), with this page's settings (penalties and circuit edits for the next race, sims from the lab). A job is
-// plain data so the same function runs here or in the lab's worker. Setup (track model, practice, the market fit)
-// and the sims are timed apart: the market fit is most of a default run.
-function labJob(set, g, k, N) {
+// plain data so the same function (worker.js labJob) runs here or in the worker. Setup (track model, practice, the
+// market fit) and the sims are timed apart: the market fit is most of a default run.
+function labJobOf(set, g, k, N) {
   const { track, ...opts } = setupOpts(g, k);
   // the page's own seeds (persist included), so the shipped model's run here is the Calculator's run
   return { set, g, opts, sprint: k === 0 ? sprintNext() : g.sprint, N, ...Engine.raceSeeds(g, upcoming[0]) };
 }
-function runJob(E, data, job) {
-  return E.withSettings(job.set, () => {
-    const t0 = performance.now();
-    const tm = E.trackModel(data);
-    // the Calculator's options; the lab's switches act through the engine settings (practiceQ inside buildModel),
-    // except the market weight, which raceSetup takes as an option
-    const setup = E.raceSetup(data, job.g, {
-      ...job.opts,
-      track: tm,
-      ...("SIM.oddsW" in job.set ? { oddsW: E.SIM.oddsW } : {}),
-    });
-    const t1 = performance.now();
-    const sim = E.simulate(setup.model, setup.circuit, job.sprint, job.N, job.seed, {
-      ...setup.simOpt,
-      persist: job.persist,
-      trace: true,
-    });
-    return { setup, sim, msSetup: t1 - t0, ms: performance.now() - t1 };
-  });
-}
-// the lab's worker: the page's own engine script plus runJob, so a long run (the lap models take seconds) doesn't
-// freeze the page. Null where it can't start (then runs happen here, as before).
-let worker = null,
-  workerTried = false;
-function labWorker() {
-  if (workerTried) return worker;
-  workerTried = true;
-  try {
-    // the engine script: it starts with its header (the bundle only quotes it, mid-text)
-    const eng = [...document.scripts].find((s) =>
-      /^\s*\/\/ @ts-check\s+\/\* Pit Wall engine/.test(s.textContent || ""),
-    );
-    if (!eng || typeof Worker === "undefined") return null;
-    const code =
-      eng.textContent +
-      `
-const runJob = ${runJob.toString()};
-let data = null;
-` +
-      `self.onmessage = (e) => { if (e.data.data) data = e.data.data; ` +
-      `try { const out = e.data.jobs.map((j) => runJob(self.Engine, data, j)); ` +
-      `self.postMessage({ id: e.data.id, out }); } catch (err) { self.postMessage({ id: e.data.id, error: String(err) }); } };`;
-    worker = new Worker(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
-    worker.sent = false;
-  } catch {
-    worker = null;
-  }
-  return worker;
-}
-let jobId = 0;
+// the runs go to the shared engine worker (worker.js), else run here after a paint
 function runJobs(jobs, done) {
-  const w = labWorker();
-  if (!w) {
-    setTimeout(() => done(jobs.map((j) => runJob(Engine, DATA, j))), 30);
-    return;
-  }
-  const id = ++jobId;
-  w.onmessage = (e) => {
-    if (e.data.id !== id) return;
-    if (e.data.error) {
-      // a worker failure falls back to running here
-      worker = null;
-      done(jobs.map((j) => runJob(Engine, DATA, j)));
-    } else done(e.data.out);
-  };
-  w.onerror = () => {
-    worker = null;
-    done(jobs.map((j) => runJob(Engine, DATA, j)));
-  };
-  w.postMessage(w.sent ? { id, jobs } : { id, jobs, data: DATA });
-  w.sent = true;
+  const here = () => setTimeout(() => done(jobs.map((j) => labJob(Engine, DATA, j))), 30);
+  if (!workerOk()) return here();
+  inWorker("lab", jobs).then(done, here);
 }
 export function labRerun() {
   const races = upcoming.slice(0, 3);
@@ -206,8 +141,8 @@ export function labRerun() {
   $("#labStatus").textContent = "Running…";
   document.body.classList.add("busy");
   const changed = labChanged();
-  const jobs = [labJob(lab.set, g, k, lab.N)];
-  if (changed.length && lab.compare) jobs.push(labJob({}, g, k, lab.N));
+  const jobs = [labJobOf(lab.set, g, k, lab.N)];
+  if (changed.length && lab.compare) jobs.push(labJobOf({}, g, k, lab.N));
   runJobs(jobs, ([run, base]) => {
     labRun = { g, k, N: lab.N, ...run, base: base || null, changed };
     document.body.classList.remove("busy");

@@ -21,6 +21,7 @@ import {
   lockedChips,
   presimStart,
   rivalTeams,
+  setSimDone,
   startKind,
   startTeam,
 } from "./forecast.js";
@@ -121,10 +122,11 @@ const busy = (on) => {
 function recompute(delay = 120) {
   clearTimeout(recomputeTimer);
   busy(true);
-  // at least 30ms: the tag gets painted before the work (synchronous) holds up the page
+  // at least 30ms: the tag gets painted before any work done here holds up the page. Sims that need running go to
+  // the engine worker: the page stays usable and busy until they're in (setSimDone below)
   recomputeTimer = setTimeout(
     () => {
-      compute();
+      if (!compute()) return;
       renderAll();
       save();
       busy(false);
@@ -132,6 +134,11 @@ function recompute(delay = 120) {
     Math.max(delay, 30),
   );
 }
+setSimDone(() => {
+  renderAll();
+  save();
+  busy(false);
+});
 export function rerender() {
   renderAll();
   save();
