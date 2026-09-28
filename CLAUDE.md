@@ -322,6 +322,9 @@ there before re-deciding something.
       just its model run time (Open-Meteo's previous-runs archive mostly starts Jan 2024, ECMWF HRES single runs Mar
       2024), and check coverage for our exact variable / model / location. Normal equations are fine while fits are
       well conditioned (QR / SVD only if not).
+      UNFINISHED: the past rounds' stewards' decisions (grid penalties for walk.js) are mostly unread: on
+      2026-09-28 the FIA site answered 504 / 502 to nearly every PDF. Re-run `python backtest/fia_rounds.py`
+      (reads only what's missing) until it prints no "not read" lines, then commit history/2026/fia.
 - [ ] Deferred from the reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
       rounds show the error it addresses, and judge it as a challenger:
   - Market fit: now the challenger `odds8` (SIM.oddsIters 8, SIM.oddsN 5000; 2026-09-27), scored from R16. Found
