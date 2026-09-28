@@ -257,13 +257,9 @@ test("numerical edges: a singular system stays finite, zero weights never win, n
     E.pick([0, 0, 0, 0], () => 0.6),
     2,
   ); // none positive: equally likely
-  const keep = [E.SIM.drvSd, E.SIM.teamSd];
-  try {
-    E.SIM.drvSd = E.SIM.teamSd = 0;
-    assert.deepEqual(E.expectedPositions([0, 0, 1], ["A", "B", "C"], 0), [1.5, 1.5, 3]);
-  } finally {
-    [E.SIM.drvSd, E.SIM.teamSd] = keep;
-  }
+  E.withSettings({ "SIM.drvSd": 0, "SIM.teamSd": 0 }, () =>
+    assert.deepEqual(E.expectedPositions([0, 0, 1], ["A", "B", "C"], 0), [1.5, 1.5, 3]),
+  );
   assert.throws(() => E.simulate(toyModel(), circuit, false, 0, 1), RangeError);
   assert.throws(() => E.simulate(toyModel(), circuit, false, 10.5, 1), RangeError);
 });
@@ -530,21 +526,16 @@ test("simulate: the safety-car rate matches the circuit's, with and without mult
   const m = toyModel();
   m.drivers.forEach((d) => (d.dnf = 0.1));
   const c = { ...circuit, rain: {}, sc: 0.5 };
-  const keep = E.SIM.incident;
-  try {
-    for (const inc of [0, 0.15, 0.5]) {
-      E.SIM.incident = inc;
-      const sim = E.simulate(m, c, false, 40000, 7, { unc: 0 });
-      assert.ok(Math.abs(sim.sc - 0.5) < 0.012, `incident share ${inc}: safety car ${sim.sc}`);
-      assert.equal(sim.scOver, 0);
-    }
-    // a target below what retirements alone make can't be met: counted, not hidden
-    E.SIM.incident = 0.15;
-    const low = E.simulate(m, { ...c, sc: 0.1 }, false, 4000, 7, { unc: 0 });
-    assert.ok(low.scOver > 0.9 && low.sc > 0.25, `${low.scOver} ${low.sc}`); // 1 - E[0.85^N] = 28%
-  } finally {
-    E.SIM.incident = keep;
+  for (const inc of [0, 0.15, 0.5]) {
+    const sim = E.withSettings({ "SIM.incident": inc }, () => E.simulate(m, c, false, 40000, 7, { unc: 0 }));
+    assert.ok(Math.abs(sim.sc - 0.5) < 0.012, `incident share ${inc}: safety car ${sim.sc}`);
+    assert.equal(sim.scOver, 0);
   }
+  // a target below what retirements alone make can't be met: counted, not hidden
+  const low = E.withSettings({ "SIM.incident": 0.15 }, () =>
+    E.simulate(m, { ...c, sc: 0.1 }, false, 4000, 7, { unc: 0 }),
+  );
+  assert.ok(low.scOver > 0.9 && low.sc > 0.25, `${low.scOver} ${low.sc}`); // 1 - E[0.85^N] = 28%
 });
 
 test("simulate: a retired car keeps the overtakes it made before stopping; one that didn't start has none", () => {
@@ -838,17 +829,12 @@ test("simulate: the official race grid, once published, is the race's grid (pena
 
 test("simulate: team-mates share their weekend form (it widens a constructor's range)", () => {
   const m = toyModel(),
-    keep = E.SIM.teamSd,
     c = m.drivers.length + 5; // a midfield constructor
-  try {
-    E.SIM.teamSd = 0;
-    const flat = E.simulate(m, circuit, false, 6000, 4).stats[c].sd;
-    E.SIM.teamSd = 0.4;
-    const shared = E.simulate(m, circuit, false, 6000, 4).stats[c].sd;
-    assert.ok(shared > flat * 1.1, `constructor spread ${flat.toFixed(2)} -> ${shared.toFixed(2)}`);
-  } finally {
-    E.SIM.teamSd = keep;
-  }
+  const sd = (teamSd) =>
+    E.withSettings({ "SIM.teamSd": teamSd }, () => E.simulate(m, circuit, false, 6000, 4).stats[c].sd);
+  const flat = sd(0),
+    shared = sd(0.4);
+  assert.ok(shared > flat * 1.1, `constructor spread ${flat.toFixed(2)} -> ${shared.toFixed(2)}`);
 });
 
 test("simulate: pit points are resampled from the team's recent races", () => {
@@ -1137,17 +1123,14 @@ test("planHorizon: each plan is checked against the sampled price paths (afford)
 });
 
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {
-  const m = toyModel(),
-    keep = E.SIM.qualiNoTime;
-  try {
-    E.SIM.qualiNoTime = 1; // nobody sets a time
-    const dry = E.simulate(m, { ...circuit, rain: { q: 0, s: 0, r: 0 } }, false, 200, 1);
-    const wet = E.simulate(m, { ...circuit, rain: { q: 1, s: 0, r: 0 } }, false, 200, 1);
-    assert.equal(dry.stats[0].cat.q, -5);
-    assert.equal(wet.stats[0].cat.q, 0);
-  } finally {
-    E.SIM.qualiNoTime = keep;
-  }
+  const m = toyModel();
+  // nobody sets a time
+  const run = (q) =>
+    E.withSettings({ "SIM.qualiNoTime": 1 }, () =>
+      E.simulate(m, { ...circuit, rain: { q, s: 0, r: 0 } }, false, 200, 1),
+    );
+  assert.equal(run(0).stats[0].cat.q, -5);
+  assert.equal(run(1).stats[0].cat.q, 0);
 });
 
 test("simulate: Driver of the Day follows each driver's popularity", () => {
@@ -1231,28 +1214,24 @@ test("raceSegs: the yo-yo credits both cars and never changes the order", () => 
     sprint: true,
     theta: -50,
   };
-  const passes = new Float64Array(n),
-    keep = E.SIM.yoyo;
-  try {
-    E.SIM.yoyo = 0;
+  const passes = new Float64Array(n);
+  E.withSettings({ "SIM.yoyo": 0 }, () => {
     assert.deepEqual(E.raceSegs(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7]);
     assert.equal(
       passes.reduce((a, b) => a + b, 0),
       0,
     );
-    E.SIM.yoyo = 1; // every close pair swaps and swaps back each segment
+  });
+  // every close pair swaps and swaps back each segment
+  E.withSettings({ "SIM.yoyo": 1 }, () => {
     assert.deepEqual(E.raceSegs(o, r, passes), [0, 1, 2, 3, 4, 5, 6, 7]);
     assert.ok(passes.filter((v) => v > 0).length >= 2); // both cars of a swap are credited
     assert.equal(passes.reduce((a, b) => a + b, 0) % 2, 0); // they come in pairs
-  } finally {
-    E.SIM.yoyo = keep;
-  }
+  });
 });
 
 test("simulate: the lap-by-lap race makes the circuit's overtake level", () => {
-  const keep = E.SIM.raceModel;
-  try {
-    E.SIM.raceModel = "laps";
+  E.withSettings({ "SIM.raceModel": "laps" }, () => {
     const m = toyModel();
     for (const ov of [0.5, 1.5]) {
       const c = { ...circuit, ov, laps: 50, lapT: 90 };
@@ -1260,9 +1239,7 @@ test("simulate: the lap-by-lap race makes the circuit's overtake level", () => {
       const got = sim.stats.slice(0, m.drivers.length).reduce((a, s) => a + s.cat.ovt, 0) / m.drivers.length;
       assert.ok(Math.abs(got / (4 * ov) - 1) < 0.12, `level ${4 * ov}: simulated ${got}`);
     }
-  } finally {
-    E.SIM.raceModel = keep;
-  }
+  });
 });
 
 test("ovScenarios: low / high weekends from the spread of this season's rounds", () => {

@@ -5,6 +5,21 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, the reviews' buildable deferred items (user: "get started with the still buildable now list"):
+      (1) fit log: `solve` reports the real 2-norm condition number (Jacobi eigenvalues of the symmetric normal
+      matrix; was max/min pivot, e.g. [[2,1],[1,2]] 3 vs 1.33); Poisson fits note theirs and need < 1e12. Live fits:
+      circuit features ~2.4, overtakes 54. (2) weekly fit: FIT_FOLDS (3) held-out folds, each a fit on the rounds
+      before its test round, scored paired on it; the proposal fitted on every round (it used to leave out the newest
+      3); per change, how many folds agree (Model health "Folds agree"); workflow timeout 90 -> 240 min (4 fits). A
+      smoke run (N 400) already showed the point: the full fit proposed tau / flDecay, no fold did. (3) Calculator
+      worker: web/js/worker.js (the lab's worker generalised: jobs lab / races / sim), compute() returns false while
+      a run is out, the old forecast stays, setSimDone redraws; runs cached by simKey. Measured in the browser: a new
+      market weight 1 s in the worker with the main thread blocked <= 24 ms (was the whole run); back to defaults /
+      a cached setting ~0.35 s incl. the 120 ms debounce; the worker's numbers equal a direct Node run (MER 65.7, FER
+      56.3, HAD 15.5 x2). (4) Sim lab price matrix / violins: already built (b1efaf4). (5) settings as values:
+      MODEL / SIM / TRACK are swapped by withSettings (a changed copy), never edited; exports are read-only Proxy
+      views (a frozen object can't be proxied for nested views, and would fail silently in sloppy-mode callers).
+      Output-identical: 8 switch sets x (3 forecast races + R12 walk-forward) hashes and R13-R15 CRPS/MAE equal.
 - [x] 2026-09-27, FIA technical documents (deferred "Data" item; user: "get cracking on the open items"): collect.py
       `fia_tech` reads each event's PU elements used / new, Car Presentation Submissions, the parc-fermé parts list
       and the Pirelli preview once each (6 PDFs a run around race weekends), keeps the text (`fia/text/`, 1.2 MB for
@@ -634,8 +649,8 @@ commit hashes and backtest numbers are as of then).
         shipped), qualifying/race position matrices with average position, points-vs-price scatter, the starting
         team's points distribution (shipped model dashed), per-asset points histograms, and (2026-09-26) average
         position / gap to the leader by lap (lap races only: `simulate(..., { trace: true })` returns
-        `sim.laps` {n, pos, gap, run} from raceLaps/raceSegs; your starting team bold). Not yet: price-step matrices
-        beyond P(rise/drop), violins.
+        `sim.laps` {n, pos, gap, run} from raceLaps/raceSegs; your starting team bold). Price-step matrix and violins:
+        built in b1efaf4 (this "not yet" was stale until 2026-09-28).
 - [ ] After each round: `npm run backtest 6 7` (the gate + frozen projection vs result). After a few more rounds,
       `npm run fit` again; with ~20 rounds the ±0.1 differences may become readable. `python backtest/odds_rounds.py`
       is only needed for rounds before the live odds archive (history/2026/odds, from R15).

@@ -70,7 +70,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   entry `main.js`; `tools/bundle.js` (esbuild) bundles them and supabase-js from npm into one script that refresh.py
   inlines (so `python refresh.py` needs `npm ci`). Engine and Hindsight stay classic scripts (also used by Node);
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
-  setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). `worker.js` = the engine worker shared by the lab
+  and the Calculator (2026-09-28): `compute()` runs non-default sims there (returns false; `setSimDone` redraws),
+  and caches runs by their inputs (`simKey`) so blend / xPts / preset changes don't re-simulate. Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
@@ -127,7 +129,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   against the shipped model (`EXP=<group>`, `EXP_GRID=1`), 10 (only on request) ceilings: the sim told the round's
   real answer for one input. `backtest/walk.js` = the shared walk-forward
   harness (`asOf(r)` rebuilds the data as it stood before round r; exact CRPS). `backtest/fit.js` (`npm run fit`) =
-  coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS. `backtest/practice_rounds.py` and
+  coordinate-descent fit of SIM/MODEL settings on walk-forward CRPS; held out in folds (each of the last 3 rounds
+  scored by a fit on the rounds before it), the proposal fitted on every round, each change with how many folds
+  agree (Model health). `backtest/practice_rounds.py` and
   `backtest/odds_rounds.py` rebuild `practice_by_round.json` / `odds_by_round.json` (Kalshi prices at each past lock;
   settled events need the `historical/` API, one request per driver). `backtest/weather_rounds.py` ->
   `weather_by_round.json` (rain at each past lock, Open-Meteo previous runs), used by walk.js `asOf` with the
@@ -312,14 +316,15 @@ there before re-deciding something.
     (laps.py lumps them); SC / VSC / red flag as timed events (only the experimental lap models, SIM.raceModel
     "laps" / "segments", put the SC and retirements on a lap; VSC and red flags nowhere; the default rank model
     is per race); a fully stochastic transfer / chip planner (planHorizon searches on expected prices, then only
-    re-ranks the plans it kept by `afford`); explicit configuration objects instead of the mutable MODEL / SIM /
-    TRACK globals (withSettings).
+    re-ranks the plans it kept by `afford`). DONE 2026-09-28: settings are values, not shared state (engine.js
+    withSettings swaps in a changed copy; Engine.SIM / MODEL / TRACK are read-only views, a write throws; the fit,
+    section 9 and the tests go through withSettings). Checked output-identical (8 switch sets x 4 races, hashes).
   - Sampling and speed: adaptive sample counts / sequential stopping when the top teams are within noise; the
-    precision of quantile ranges; a worker for the Calculator's own runs (the Sim lab has one; the build's presim
-    covers default settings, so only custom settings run on the main thread).
-  - Evaluation: repeated walk-forward validation for the weekly fit (now one 3-round holdout); MODEL.ctxSeInflate
-    (hand-set x2) estimated from held-out stints; a real condition number in the fit log (now a pivot ratio).
-    DONE 2026-09-27: calibration by group (walk.js `groups`: drivers / constructors, sprint / normal, wet / dry,
+    precision of quantile ranges. DONE 2026-09-28: the Calculator's own runs (and its near-tie check) in the engine
+    worker (web/js/worker.js).
+  - Evaluation: MODEL.ctxSeInflate (hand-set x2) estimated from held-out stints. DONE 2026-09-28: repeated
+    held-out folds for the weekly fit (fit.js), the real condition number in the fit log (eigenvalues). DONE
+    2026-09-27: calibration by group (walk.js `groups`: drivers / constructors, sprint / normal, wet / dry,
     safety car or not) in section 6 and Model health (walk-forward + frozen). First read, R5-R15: SC races
     under-covered (74% / 43% in the 10-90 / 25-75% ranges), no-SC races projected +2.6 too high. Not retuned:
     watch it on the frozen rounds.

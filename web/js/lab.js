@@ -1,8 +1,8 @@
 /* ---------- Sim lab (owner only): every engine switch, a rerun, and panels built from our own simulations ----------
    Shown only to accounts in the Supabase `owners` table (RLS: each user can read only their own row), or on
    localhost with ?lab=1. It's a UI gate: everything here comes from the public build. Runs are in this browser, on
-   demand: the switches are applied to Engine.SIM / TRACK / MODEL for the run only and put back afterwards, so the
-   Calculator and every other view keep the shipped model. Settings live in this browser only (LAB_KEY). */
+   demand, in the engine worker (worker.js): the switches are in force for the run only (Engine.withSettings), so
+   the Calculator and every other view keep the shipped model. Settings live in this browser only (LAB_KEY). */
 import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming } from "./core.js";
 import { state } from "./state.js";
 import { syncState } from "./sync.js";

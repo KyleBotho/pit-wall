@@ -22,7 +22,7 @@
   /* Model settings. "backtested"/"fitted" values were chosen by walk-forward tests (`npm run backtest`, `npm run
      fit`; latest results in CLAUDE.md). "hand-set" values were picked by eye and are only checked by the calibration
      section there. "measured" values are counted from data. */
-  const MODEL = {
+  let MODEL = {
     prior: 1.5, // backtested (flat 0.5-4): pseudo-races of the team-mate average mixed into each driver's pace
     defaultGap: 2.5, // hand-set: % off the fastest for a team with no history
     gapCap: 4, // hand-set: a round's gap above this (%) counts as this (a problem lap, damage)
@@ -71,7 +71,7 @@
     offPrior: 3, // "car" only: pseudo-races of zero offset behind each driver's offset to his car (1.5-6 all tie)
     offHalfLife: Infinity, // "car" only: recency half-life of the offset (8 was slightly worse)
   };
-  const SIM = {
+  let SIM = {
     qualiNoTime: 0.012, // hand-set: chance a driver sets no qualifying time (-5, starts last)
     qSd: 0.2, // fitted: qualifying noise, % of a lap
     rSd: 0.15, // fitted: race noise, %
@@ -565,7 +565,7 @@
      more or fewer. What the trend leaves unexplained is regressed on track features (power / street / fast corners).
      The trend restarts with each season (it only uses this season's rounds; priors.py adds the finished season to
      the history). Without priors, the old feature-only fit on this season is used. */
-  const TRACK = {
+  let TRACK = {
     ovLambda: 0.5, // backtested (LOO): ridge on features for overtakes
     dnfLambda: 2, // backtested (LOO): retirements
     teamPace: false, // backtested: team-specific track pace is off (no better than none)
@@ -3697,15 +3697,20 @@
   // (second review, 2026-09-27; rho >= 0 draws as in 3)
   // 5: gauss uses both Box-Muller halves (second review, performance)
   const RNG_VERSION = "mulberry32+box-muller-pair/5";
-  /** Run fn() with some engine settings changed ({"SIM.qSkew": 2, ...}), then put the shipped values back.
-   * @template T @param {Record<string, unknown>} set @param {() => T} fn @returns {T} */
+  /* Settings are values, not shared state (the reviews' deferred item, 2026-09-28): MODEL / SIM / TRACK hold the
+     settings in force, the shipped objects unless a withSettings call has swapped in a changed copy for its fn().
+     Nothing edits a settings object in place, and what leaves the engine (Engine.SIM, ...) is a read-only view, so
+     a caller can't change the shipped settings by accident or leave them changed. */
+  /** Run fn() with some engine settings changed ({"SIM.qSkew": 2, ...}): fn sees copies with the changes; the
+   * settings in force before are back afterwards (calls nest). Every key and value is checked before anything
+   * changes. @template T @param {Record<string, unknown>} set @param {() => T} fn @returns {T} */
   function withSettings(set, fn) {
-    const objs = /** @type {Record<string, Record<string, unknown>>} */ ({ MODEL, SIM, TRACK });
-    // check every key and value before changing anything, so a bad one can't leave the others changed
-    const plan = Object.keys(set).map((k) => {
+    const cur = /** @type {Record<string, Record<string, unknown>>} */ ({ MODEL, SIM, TRACK });
+    const next = { ...cur };
+    for (const k of Object.keys(set)) {
       const [o, f] = k.split(".");
-      if (!objs[o] || !(f in objs[o])) throw new Error(`withSettings: unknown setting ${k}`);
-      const old = objs[o][f],
+      if (!cur[o] || !(f in cur[o])) throw new Error(`withSettings: unknown setting ${k}`);
+      const old = cur[o][f],
         v = set[k];
       if (old != null && typeof old !== "object" && typeof v !== typeof old)
         throw new Error(`withSettings: ${k} must be a ${typeof old}`);
@@ -3713,14 +3718,38 @@
       const inf = v === Infinity && (old === Infinity || /HalfLife$/.test(f));
       if (typeof v === "number" && !Number.isFinite(v) && !inf)
         throw new Error(`withSettings: ${k} must be finite${/HalfLife$/.test(f) ? " or Infinity" : ""}`);
-      return { obj: objs[o], f, old, v };
-    });
+      if (next[o] === cur[o]) next[o] = { ...cur[o] };
+      next[o][f] = v;
+    }
+    const keep = { MODEL, SIM, TRACK };
+    MODEL = /** @type {typeof MODEL} */ (next.MODEL);
+    SIM = /** @type {typeof SIM} */ (next.SIM);
+    TRACK = /** @type {typeof TRACK} */ (next.TRACK);
     try {
-      for (const x of plan) x.obj[x.f] = x.v;
       return fn();
     } finally {
-      for (const x of plan.reverse()) x.obj[x.f] = x.old;
+      ({ MODEL, SIM, TRACK } = keep);
     }
+  }
+  const views = new WeakMap();
+  /** A read-only view of a settings object (nested objects too): reads as usual, a write throws, in sloppy-mode
+   * callers as well (a frozen object would ignore it silently there). @template T @param {T} o @returns {T} */
+  function readOnly(o) {
+    if (!o || typeof o !== "object") return o;
+    let v = views.get(o);
+    if (!v) {
+      const no = (/** @type {object} */ _t, /** @type {string | symbol} */ k) => {
+        throw new TypeError(`Engine settings are read-only (${String(k)}): use Engine.withSettings({...}, fn)`);
+      };
+      v = new Proxy(o, {
+        get: (t, k) => readOnly(Reflect.get(t, k)),
+        set: no,
+        defineProperty: no,
+        deleteProperty: no,
+      });
+      views.set(o, v);
+    }
+    return v;
   }
   /** Challengers: named variants frozen next to the shipped model at every lock (tools/freeze.js) and scored against
    * it once the round is certified (backtest/accuracy.js, Model health). Adopt one only on evidence from rounds it
@@ -4002,9 +4031,16 @@
     QPTS,
     RPTS,
     SPTS,
-    MODEL,
-    SIM,
-    TRACK,
+    // the current settings (the shipped ones, or a withSettings call's), read-only: a write throws
+    get MODEL() {
+      return readOnly(MODEL);
+    },
+    get SIM() {
+      return readOnly(SIM);
+    },
+    get TRACK() {
+      return readOnly(TRACK);
+    },
     PIT_BANDS,
     PIT_FASTEST,
     FEAT_NAMES,

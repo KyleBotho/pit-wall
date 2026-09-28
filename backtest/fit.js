@@ -23,67 +23,63 @@ const FOLDS = +(process.env.FIT_FOLDS ?? 3);
 const MIN_TRAIN = 3; // rounds a fold's fit needs before its test round
 const ALL = W.D.done.filter((g) => g >= 5);
 const TESTS = ALL.slice(-FOLDS).filter((gd) => ALL.indexOf(gd) >= MIN_TRAIN);
-// [object, key, candidate values]
+// [setting, candidate values]
 const SPACE = [
-  [E.MODEL, "paceShrink", [0.5, 0.6, 0.7, 0.8, 0.9, 1]],
-  [E.SIM, "qSd", [0.12, 0.16, 0.2, 0.25, 0.3, 0.4]],
-  [E.SIM, "rSd", [0.15, 0.2, 0.25, 0.3, 0.4, 0.5]],
-  [E.SIM, "teamSd", [0, 0.05, 0.1, 0.15, 0.2]],
-  [E.SIM, "drvSd", [0, 0.05, 0.08, 0.12, 0.16]],
-  [E.SIM, "tau", [0.02, 0.03, 0.04, 0.05, 0.07, 0.1]],
-  [E.SIM, "unc", [0, 0.5, 1, 1.5]],
-  [E.SIM, "scNoise", [1, 1.2, 1.35, 1.6, 2]],
-  [E.SIM, "incident", [0, 0.15, 0.3, 0.45]],
-  [E.SIM, "oddsW", [0, 0.25, 0.5, 0.75, 1]],
-  [E.SIM, "flDecay", [0.8, 1.1, 1.6, 2.2]],
-  [E.SIM, "scPerDnf", [0.05, 0.1, 0.15, 0.25]],
-  [E.MODEL, "prior", [0.5, 1, 1.5, 3, 5]],
-  [E.MODEL, "gapCap", [2, 3, 4, 6]],
-  [E.MODEL, "ovShrink", [3, 6, 12, 25, 1e6]],
-  [E.SIM, "ovModel", [0, 1]],
-  [E.SIM, "pitStops", [0, 1]],
+  ["MODEL.paceShrink", [0.5, 0.6, 0.7, 0.8, 0.9, 1]],
+  ["SIM.qSd", [0.12, 0.16, 0.2, 0.25, 0.3, 0.4]],
+  ["SIM.rSd", [0.15, 0.2, 0.25, 0.3, 0.4, 0.5]],
+  ["SIM.teamSd", [0, 0.05, 0.1, 0.15, 0.2]],
+  ["SIM.drvSd", [0, 0.05, 0.08, 0.12, 0.16]],
+  ["SIM.tau", [0.02, 0.03, 0.04, 0.05, 0.07, 0.1]],
+  ["SIM.unc", [0, 0.5, 1, 1.5]],
+  ["SIM.scNoise", [1, 1.2, 1.35, 1.6, 2]],
+  ["SIM.incident", [0, 0.15, 0.3, 0.45]],
+  ["SIM.oddsW", [0, 0.25, 0.5, 0.75, 1]],
+  ["SIM.flDecay", [0.8, 1.1, 1.6, 2.2]],
+  ["SIM.scPerDnf", [0.05, 0.1, 0.15, 0.25]],
+  ["MODEL.prior", [0.5, 1, 1.5, 3, 5]],
+  ["MODEL.gapCap", [2, 3, 4, 6]],
+  ["MODEL.ovShrink", [3, 6, 12, 25, 1e6]],
+  ["SIM.ovModel", [0, 1]],
+  ["SIM.pitStops", [0, 1]],
 ];
-const label = ([obj, key]) => `${obj === E.SIM ? "SIM" : "MODEL"}.${key}`;
-const shipped = SPACE.map(([obj, key]) => obj[key]);
-const setAll = (vals) => SPACE.forEach(([obj, key], i) => (obj[key] = vals[i]));
+// the shipped value of a setting ("SIM.qSd" -> Engine.SIM.qSd; the engine's settings are read-only)
+const shipped = SPACE.map(([k]) => k.split(".").reduce((o, f) => o[f], E));
+// evaluate with a set of values for SPACE in force (engine withSettings: nothing stays changed)
+const withVals = (vals, fn) => E.withSettings(Object.fromEntries(SPACE.map(([k], i) => [k, vals[i]])), fn);
 const fmt = (r) =>
   `CRPS ${r.crps.toFixed(3)}  MAE ${r.mae.toFixed(3)}  rho ${r.rho.toFixed(3)}  80% ${(100 * r.cover80).toFixed(1)}%  50% ${(100 * r.cover50).toFixed(1)}%  logQ ${r.lsQ.toFixed(3)}  logR ${r.lsR.toFixed(3)}`;
 const r3 = (x) => Math.round(x * 1000) / 1000;
 
-/** Coordinate descent from the shipped settings on `rounds`: {start, best, vals}. Leaves the shipped settings set. */
+/** Coordinate descent from the shipped settings on `rounds`: {start, best, vals}. */
 function search(rounds, log) {
-  setAll(shipped);
-  const score = () => W.evaluate({ N, seed: 3, rounds });
+  const vals = shipped.slice();
+  const score = () => withVals(vals, () => W.evaluate({ N, seed: 3, rounds }));
   let best = score();
   const start = best;
   if (log) console.log(`start      ${fmt(best)}`);
   for (let pass = 0; pass < PASSES; pass++)
-    for (const [obj, key, vals] of SPACE) {
-      const keep = obj[key];
+    SPACE.forEach(([key, cands], i) => {
+      const keep = vals[i];
       let bestV = keep;
-      for (const v of vals) {
+      for (const v of cands) {
         if (v === keep) continue;
-        obj[key] = v;
+        vals[i] = v;
         const r = score();
         if (r.crps < best.crps - 0.005) {
           best = r;
           bestV = v;
         }
       }
-      obj[key] = bestV;
-      if (log) console.log(`${key.padEnd(10)} ${String(bestV).padEnd(6)} ${fmt(best)}`);
-    }
-  const vals = SPACE.map(([obj, key]) => obj[key]);
-  setAll(shipped);
+      vals[i] = bestV;
+      if (log) console.log(`${key.split(".")[1].padEnd(10)} ${String(bestV).padEnd(6)} ${fmt(best)}`);
+    });
   return { start, best, vals };
 }
 
 /** Round gd's CRPS under the given settings, averaged over two seeds the search never used. */
 function scoreOn(gd, vals) {
-  setAll(vals);
-  const c = W.mean([11, 12].map((seed) => W.evaluate({ N, seed, rounds: [gd] }).crps));
-  setAll(shipped);
-  return c;
+  return withVals(vals, () => W.mean([11, 12].map((seed) => W.evaluate({ N, seed, rounds: [gd] }).crps)));
 }
 
 const t0 = Date.now();
@@ -93,7 +89,7 @@ const folds = TESTS.map((gd) => {
   const fit = search(train, false);
   const a = scoreOn(gd, shipped),
     b = scoreOn(gd, fit.vals);
-  const changes = SPACE.map((s, i) => ({ setting: label(s), fitted: fit.vals[i] })).filter(
+  const changes = SPACE.map(([k], i) => ({ setting: k, fitted: fit.vals[i] })).filter(
     (c, i) => c.fitted !== shipped[i],
   );
   console.log(
@@ -119,15 +115,14 @@ if (folds.length) {
 }
 // the proposal: fitted on every round
 const fit = search(ALL, true);
-setAll(fit.vals);
 console.log("\nbest settings:");
-for (const s of SPACE) console.log(`  ${label(s)} = ${s[0][s[1]]}`);
-const changes = SPACE.map((s, i) => ({
-  setting: label(s),
+SPACE.forEach(([k], i) => console.log(`  ${k} = ${fit.vals[i]}`));
+const changes = SPACE.map(([k], i) => ({
+  setting: k,
   shipped: shipped[i],
   fitted: fit.vals[i],
   // how many folds' fits made the same change (a change only the full fit makes is fragile)
-  folds: folds.filter((f) => f.changes.some((c) => c.setting === label(s) && c.fitted === fit.vals[i])).length,
+  folds: folds.filter((f) => f.changes.some((c) => c.setting === k && c.fitted === fit.vals[i])).length,
 })).filter((c) => c.shipped !== c.fitted);
 for (const c of changes) console.log(`  ${c.setting}: chosen by ${c.folds} of ${folds.length} folds`);
 if (SAVE) {

@@ -440,11 +440,11 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
     return `${m >= 0 ? "+" : ""}${m.toFixed(3)} ± ${se.toFixed(3)}`;
   };
   for (const [label, set, extra] of variants) {
-    const keep = set.map(([obj, k]) => obj[k]);
-    set.forEach(([obj, k, v]) => (obj[k] = v));
-    const v = runAll(extra),
-      vG = grid && !(extra && extra.oracle) ? runAll({ ...extra, oracle: { grid: 1 } }) : null;
-    set.forEach(([obj, k], i) => (obj[k] = keep[i]));
+    // set: [["SIM.qSkew", 2], ...], in force for this variant's runs only
+    const [v, vG] = E.withSettings(Object.fromEntries(set), () => [
+      runAll(extra),
+      grid && !(extra && extra.oracle) ? runAll({ ...extra, oracle: { grid: 1 } }) : null,
+    ]);
     const per = (vs, bs, f) =>
       bs[0].byRound.map((_, k) => mean(seeds.map((_, j) => f(vs[j].byRound[k]) - f(bs[j].byRound[k]))));
     const d = (f) => {
@@ -481,82 +481,82 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
   // review batch 4: a race-wide overtaking factor (SIM.ovEnv), and the fastest-stop bonus the old way (pitBonus 0)
-  ovenv: [["race-wide overtaking factor", [[E.SIM, "ovEnv", 1]]]],
-  pitbonus: [["fastest-stop bonus in each team's line (old)", [[E.SIM, "pitBonus", 0]]]],
-  raincorr: [["weather sessions independent (old)", [[E.SIM, "rainCorr", 0]]]],
+  ovenv: [["race-wide overtaking factor", [["SIM.ovEnv", 1]]]],
+  pitbonus: [["fastest-stop bonus in each team's line (old)", [["SIM.pitBonus", 0]]]],
+  raincorr: [["weather sessions independent (old)", [["SIM.rainCorr", 0]]]],
   // review batch 3 (2026-09-27): race pace from the contextual lap model (laps.py) instead of the median lap
-  racepace: [["race pace from the lap model (tyres, fuel, traffic)", [[E.MODEL, "racePace", "ctx"]]]],
+  racepace: [["race pace from the lap model (tyres, fuel, traffic)", [["MODEL.racePace", "ctx"]]]],
   // review batch 2 (2026-09-27): the season's overtake level weighted towards recent rounds (TRACK.ovHalfLife)
   ovrecent: [
-    ["overtake level, half-life 3 rounds", [[E.TRACK, "ovHalfLife", 3]]],
-    ["overtake level, half-life 6 rounds", [[E.TRACK, "ovHalfLife", 6]]],
-    ["overtake level, half-life 10 rounds", [[E.TRACK, "ovHalfLife", 10]]],
+    ["overtake level, half-life 3 rounds", [["TRACK.ovHalfLife", 3]]],
+    ["overtake level, half-life 6 rounds", [["TRACK.ovHalfLife", 6]]],
+    ["overtake level, half-life 10 rounds", [["TRACK.ovHalfLife", 10]]],
   ],
   // item 9 stage 3a: the race run lap by lap (SIM.raceModel)
-  laps: [["lap-by-lap race", [[E.SIM, "raceModel", "laps"]]]],
+  laps: [["lap-by-lap race", [["SIM.raceModel", "laps"]]]],
   // item 9 stages 2-5 together vs each alone ("is the sum more than its parts"; stage 2 is in the shipped model,
   // so its own part is minus the "without stage 2" row)
   combo: [
-    ["without stage 2 (flat overtake level)", [[E.TRACK, "speed", false]]],
-    ["+ stage 3 (timing segments + yo-yo)", [[E.SIM, "raceModel", "segments"]]],
+    ["without stage 2 (flat overtake level)", [["TRACK.speed", false]]],
+    ["+ stage 3 (timing segments + yo-yo)", [["SIM.raceModel", "segments"]]],
     [
       "+ stage 4 (fast-corner band shift)",
       [
-        [E.MODEL, "bandQ", 1],
-        [E.MODEL, "bandR", 1],
+        ["MODEL.bandQ", 1],
+        ["MODEL.bandR", 1],
       ],
     ],
     ["+ stage 5 (minisector practice pace)", [], { practiceMini: true }],
     [
       "stages 2+3+4+5 together",
       [
-        [E.SIM, "raceModel", "segments"],
-        [E.MODEL, "bandQ", 1],
-        [E.MODEL, "bandR", 1],
+        ["SIM.raceModel", "segments"],
+        ["MODEL.bandQ", 1],
+        ["MODEL.bandR", 1],
       ],
       { practiceMini: true },
     ],
   ],
   // item 9 stage 3b: timing segments, the segment pass curve and the between-line yo-yo (SIM.raceModel "segments")
-  segs: [["race in timing segments with the yo-yo", [[E.SIM, "raceModel", "segments"]]]],
+  segs: [["race in timing segments with the yo-yo", [["SIM.raceModel", "segments"]]]],
   lapsreg: [
     [
       "lap race, overtakes from the regression",
       [
-        [E.SIM, "raceModel", "laps"],
-        [E.SIM, "lapOv", "regression"],
+        ["SIM.raceModel", "laps"],
+        ["SIM.lapOv", "regression"],
       ],
     ],
   ],
   // item 9 stage 2: the round's overtake level from the track's average speed (TRACK.speed)
   speed: [
-    ["overtake level from average speed", [[E.TRACK, "speed", true]]],
+    ["overtake level from average speed", [["TRACK.speed", true]]],
     [
       "average speed, mean level",
       [
-        [E.TRACK, "speed", true],
-        [E.TRACK, "speedVar", 1],
+        ["TRACK.speed", true],
+        ["TRACK.speedVar", 1],
       ],
     ],
     [
       "average speed, ridge 5",
       [
-        [E.TRACK, "speed", true],
-        [E.TRACK, "speedLambda", 5],
+        ["TRACK.speed", true],
+        ["TRACK.speedLambda", 5],
       ],
     ],
   ],
   // 2026-09-25, none adopted (see docs/history.md)
   skew: [
-    ["qualifying noise skewed, shape 2", [[E.SIM, "qSkew", 2]]],
-    ["qualifying noise skewed, shape 5", [[E.SIM, "qSkew", 5]]],
-    ["race noise skewed, shape 2", [[E.SIM, "rSkew", 2]]],
-    ["race noise skewed, shape 5", [[E.SIM, "rSkew", 5]]],
+    ["qualifying noise skewed, shape 2", [["SIM.qSkew", 2]]],
+    ["qualifying noise skewed, shape 5", [["SIM.qSkew", 5]]],
+    ["race noise skewed, shape 2", [["SIM.rSkew", 2]]],
+    ["race noise skewed, shape 5", [["SIM.rSkew", 5]]],
     [
       "both skewed, shape 3",
       [
-        [E.SIM, "qSkew", 3],
-        [E.SIM, "rSkew", 3],
+        ["SIM.qSkew", 3],
+        ["SIM.rSkew", 3],
       ],
     ],
   ],
@@ -564,37 +564,37 @@ const EXPERIMENTS = {
     [
       "car + driver offset, offset prior 1.5",
       [
-        [E.MODEL, "mate", "car"],
-        [E.MODEL, "offPrior", 1.5],
+        ["MODEL.mate", "car"],
+        ["MODEL.offPrior", 1.5],
       ],
     ],
     [
       "car + driver offset, offset prior 3",
       [
-        [E.MODEL, "mate", "car"],
-        [E.MODEL, "offPrior", 3],
+        ["MODEL.mate", "car"],
+        ["MODEL.offPrior", 3],
       ],
     ],
     [
       "car + driver offset, offset prior 6",
       [
-        [E.MODEL, "mate", "car"],
-        [E.MODEL, "offPrior", 6],
+        ["MODEL.mate", "car"],
+        ["MODEL.offPrior", 6],
       ],
     ],
     [
       "car + offset, prior 3, offset half-life 8",
       [
-        [E.MODEL, "mate", "car"],
-        [E.MODEL, "offPrior", 3],
-        [E.MODEL, "offHalfLife", 8],
+        ["MODEL.mate", "car"],
+        ["MODEL.offPrior", 3],
+        ["MODEL.offHalfLife", 8],
       ],
     ],
   ],
   fl: [
-    ["fastest lap from the market, 25%", [[E.SIM, "flOddsW", 0.25]]],
-    ["fastest lap from the market, 50%", [[E.SIM, "flOddsW", 0.5]]],
-    ["fastest lap from the market, 100%", [[E.SIM, "flOddsW", 1]]],
+    ["fastest lap from the market, 25%", [["SIM.flOddsW", 0.25]]],
+    ["fastest lap from the market, 50%", [["SIM.flOddsW", 0.5]]],
+    ["fastest lap from the market, 100%", [["SIM.flOddsW", 1]]],
   ],
 };
 function experiments() {
