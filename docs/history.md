@@ -5,6 +5,17 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, retirements by distance / by confirmed cause (user: "go on with retirements"): checked, not built.
+      Race 66 retirements in 330 starts (20%), sprint 8 in 110 (7.3%: 0.36 x the race, SIM.sprintDnf hand-set 0.4);
+      a hazard over distance (a start spike, 10 of 66 at share 0, then flat, none after 0.85: a car past 90% is
+      classified) predicts ~9% (0.45 x): 0.36 / 0.40 / 0.45 can't be told apart with 8 sprint retirements, and a DNF
+      scores -20 whenever it comes (the share already sets the overtakes kept). Confirmed mechanical: no public source
+      (Jolpica's 2026 status is only "Retired" / "Did not start" / "Lapped" / "Disqualified"; OpenF1 names incidents,
+      not failures; the FIA classification gives no causes). Fixed on the way: a disqualification (BOR R4) counted as
+      a retirement in reliability, the circuit's retirement level and the retirement-share draw (results rows now
+      carry `dsq`). And sim.ev (the per-sample flags added earlier today) went into the page's presim summaries as a
+      JSON object: the live page grew 1.21 -> 1.57 MB for a few hours; presim.js now leaves it out and refuses any
+      per-sample array in a summary.
 - [x] 2026-09-28, hierarchical race pace (the user: "please start"): laps.py `hier_design` / `hier_fit` / `pool_terms`
       (fixed S / M / H layout, offsets vs M; context terms drawn to the season's value with DerSimonian-Laird tau,
       round k pooled with rounds <= k) and cluster-robust (driver-stint) standard errors. Result: races differ for

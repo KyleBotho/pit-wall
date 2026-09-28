@@ -76,7 +76,7 @@ test(
       assert.ok(finite(ref.setups[0]), `${v}: setup survives JSON`);
       assert.deepStrictEqual(meta.vars[v].setup, JSON.parse(JSON.stringify(ref.setups[0])), `${v}: setup`);
       ref.sims.forEach((sim, k) => {
-        const { tot, nn, ...rest } = sim;
+        const { tot, nn, ev, ...rest } = sim;
         assert.ok(finite(rest), `${v} R${k}: summaries survive JSON`);
         const shipped = meta.vars[v].sims[k] || meta.vars.lock.sims[k];
         if (v === "live") assert.strictEqual(meta.vars[v].sims[k] === null, k > 0, `live R${k}: shipped once`);
@@ -100,7 +100,7 @@ test(
       // while only part a is in, the page's summaries are the short run's: they describe exactly those weekends
       const short = E.forecastRaces(v === "lock" ? E.atLock(D) : D, { ...opts, sims: meta.first });
       short.sims.forEach((sim, k) => {
-        const { tot, nn, ...rest } = sim;
+        const { tot, nn, ev, ...rest } = sim;
         const shipped = meta.vars[v].first[k] || meta.vars.lock.first[k];
         assert.deepStrictEqual(shipped, JSON.parse(JSON.stringify(rest)), `${v} R${k}: first-part summaries`);
         const n = meta.first,

@@ -235,6 +235,9 @@ def load_results(done):
                         row["laps"] = int(r.get("laps") or 0)
                         if r.get("status") == "Did not start":
                             row["dns"] = True
+                        # not classified for a rules breach, not a failure (reliability leaves it out)
+                        if r.get("status") == "Disqualified":
+                            row["dsq"] = True
                     else:
                         row["qt"] = [lap_secs(r.get(k)) for k in ("Q1", "Q2", "Q3")]
                     rows.append(row)

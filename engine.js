@@ -159,7 +159,7 @@
   const PIT_FASTEST = 5;
 
   /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
-  /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean }} ResultRow */
+  /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean, dsq?: boolean }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
   /** @typedef {{ name: string, done: boolean, ref?: number | null, drivers: Record<string, { q: number | null, r: number | null, laps: number }> }} PracticeSession */
@@ -520,7 +520,7 @@
       out[gd] = {
         ov: ts ? ts.ovt : null,
         move: moves.length ? moves.reduce((a, b) => a + b, 0) / moves.length : null,
-        dnf: rows.filter((x) => !x.cls).length / rows.length,
+        dnf: rows.filter((x) => !x.cls && !x.dsq).length / rows.length,
         corr: spearman(
           cls.map((x) => /** @type {number} */ (x.grid)),
           cls.map((x) => x.pos),
@@ -1143,7 +1143,8 @@
         gN += w;
         tN[row.team] = (tN[row.team] || 0) + w;
         dN[row.tla] = (dN[row.tla] || 0) + w;
-        if (!row.cls) {
+        // a disqualified car ran the race: not a retirement (Jolpica "Disqualified"; 2026: BOR R4)
+        if (!row.cls && !row.dsq) {
           gD += w;
           tD[row.team] = (tD[row.team] || 0) + w;
           if ((causes[row.tla] || {}).cause === "incident") {
@@ -1669,7 +1670,8 @@
       const rows = data.results.race[gd] || [];
       const lapsRun = rows.map((r) => r.laps ?? -1),
         full = Math.max(...lapsRun);
-      for (const row of rows) if (!row.cls && full > 0 && row.laps != null) shares.push(row.dns ? -1 : row.laps / full);
+      for (const row of rows)
+        if (!row.cls && !row.dsq && full > 0 && row.laps != null) shares.push(row.dns ? -1 : row.laps / full);
       const ts = data.trackStats && data.trackStats[gd];
       if (!ts || !(ts.ovt > 0)) continue;
       for (const row of rows) {

@@ -23,7 +23,15 @@ const arg = (name, dflt) => {
 const same = (a, b) =>
   a.tot.every((x, i) => x === b.tot[i]) &&
   a.nn.every((x, i) => x === b.nn[i]) &&
-  JSON.stringify({ ...a, tot: 0, nn: 0 }) === JSON.stringify({ ...b, tot: 0, nn: 0 });
+  JSON.stringify({ ...a, tot: 0, nn: 0, ev: 0 }) === JSON.stringify({ ...b, tot: 0, nn: 0, ev: 0 });
+
+// a sim's summary goes into the page as JSON: a typed array there (a new per-sample field) would ship as an object
+// of every sample (sim.ev did, +360 KB, 2026-09-28), so any is refused here
+function summary(rest) {
+  for (const [k, v] of Object.entries(rest))
+    if (ArrayBuffer.isView(v)) throw new Error(`presim: sim.${k} is per sample; leave it out of the page's summaries`);
+  return rest;
+}
 
 function run(data, first) {
   const next = data.schedule.find((g) => !data.done.includes(g.gd));
@@ -66,8 +74,8 @@ function run(data, first) {
             if (sim.tot[i * first + s] !== full.tot[i * N + s])
               throw new Error("the short run isn't the full run's prefix");
         if (v !== "lock" && same(full, variants.lock.sims[k])) return null;
-        const { tot, nn, ...rest } = sim;
-        return rest;
+        const { tot, nn, ev, ...rest } = sim; // ev (per-sample flags): backtests only
+        return summary(rest);
       }),
       sims: f.sims.map((sim, k) => {
         if (sim.N !== N) throw new Error(`expected ${N} weekends, got ${sim.N}`);
@@ -83,8 +91,8 @@ function run(data, first) {
             parts[1].push(row.subarray(first));
           }
         }
-        const { tot, nn, ...rest } = sim;
-        return rest;
+        const { tot, nn, ev, ...rest } = sim; // ev (per-sample flags): backtests only
+        return summary(rest);
       }),
     };
   }
