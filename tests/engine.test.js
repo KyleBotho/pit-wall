@@ -1180,6 +1180,101 @@ test("planHorizon: each plan is checked against the sampled price paths (afford)
   assert.equal(waitS.value, 292.5);
   assert.equal(waitS.afford, 0.5);
   assert.equal(waitS.held, 0.5);
+  assert.equal(waitS.valueFit, 320); // every move made, fitting or not: what holding costs = 320 - 292.5
+});
+
+test("chipScore: one weekend's points with each chip", () => {
+  const p = { a: 30, b: 10, c: -5, d: 0, e: 2, KA: 12, KB: 4 };
+  const ids = Object.keys(p),
+    ds = ["a", "b", "c", "d", "e"],
+    pts = (id) => p[id];
+  const base = 53;
+  assert.equal(E.chipScore(ids, ds, "b", null, "", pts), base + 10); // Boost: once more
+  assert.equal(E.chipScore(ids, ds, "a", "b", "x3", pts), base + 60 + 10); // X3: twice more + the second once more
+  assert.equal(E.chipScore(ids, ds, "b", null, "autopilot", pts), base + 30); // Autopilot: whoever scores most
+  // No Negative is the points given (the chip's no-negative points), boosted as usual
+  const nn = (id) => Math.max(0, p[id]);
+  assert.equal(E.chipScore(ids, ds, "c", null, "noneg", nn), base + 5 + 0);
+});
+
+// Fourth review, finding 2: the planner scores the chip on each simulated future as the Calculator does
+test.describe("planHorizon with samples: chips on the simulated futures", () => {
+  const mk = (vals) =>
+    Object.entries(vals).map(([id, e]) => ({
+      id,
+      kind: id[0] === "K" ? "C" : "D",
+      price: 10,
+      e,
+      x: e,
+      boostE: id[0] === "K" ? 0 : e,
+      active: true,
+    }));
+  const team = ["a", "b", "c", "d", "e", "KA", "KB"];
+  const o = { cap: 70, free: 0, maxT: 0, locks: new Set(), bans: new Set(), priceN: 2, priceSteps: {} };
+  // two futures: a scores 100 in the first, b in the second; everything else 0
+  const r1 = { a: 50, b: 50, c: 0, d: 0, e: 0, KA: 0, KB: 0 };
+  const r2 = { a: 0, b: 0, c: 0, d: 0, e: 0, KA: 0, KB: 0 };
+  const ids = Object.keys(r1),
+    idx = Object.fromEntries(ids.map((id, i) => [id, i]));
+  const tot1 = new Float32Array(ids.length * 2);
+  tot1.set([100, 0], idx.a * 2);
+  tot1.set([0, 100], idx.b * 2);
+  const samples = [
+    { tot: tot1, idx },
+    { tot: new Float32Array(ids.length * 2), idx },
+  ];
+  const stages = [{ cand: mk(r1) }, { cand: mk(r2) }];
+  test("Autopilot: the Boost on the top scorer of each future (200, not the fixed Boost's 150)", () => {
+    const [ap] = E.planHorizon(stages, team, { ...o, chip: "autopilot", samples });
+    assert.equal(ap.value, 200);
+    const [plain] = E.planHorizon(stages, team, { ...o, chip: "", samples });
+    assert.equal(plain.value, 150);
+    const [x3] = E.planHorizon(stages, team, { ...o, chip: "x3", samples });
+    assert.equal(x3.value, 100 + (2 * 100 + 0 + 2 * 0 + 100) / 2); // 3x a and 2x b, or the other way: 250
+  });
+  test("Limitless: the team played scores race 1, the plan goes on from the starting team", () => {
+    const withF = { ...r1, f: 100 };
+    const tf = new Float32Array((ids.length + 1) * 2);
+    tf.set(tot1);
+    tf.set([100, 100], ids.length * 2);
+    const sm = [{ tot: tf, idx: { ...idx, f: ids.length } }, samples[1]];
+    const [lim] = E.planHorizon([{ cand: mk(withF) }, { cand: mk({ ...r2, f: 0 }) }], team, {
+      ...o,
+      maxT: 7,
+      chip: "limitless",
+      samples: sm,
+    });
+    assert.ok(lim.steps[0].played.includes("f") && !lim.steps[0].team.includes("f"));
+    // f (100, Boost 100) and one of a / b (100 in each future)
+    assert.equal(lim.value, 300);
+  });
+});
+
+test("lookZ: a margin for repeated looks keeps false separations at 5% (fourth review)", () => {
+  assert.ok(Math.abs(E.lookZ(1) - 1.96) < 0.01);
+  assert.ok(Math.abs(E.lookZ(5) - 2.576) < 0.01);
+  // equal means, looked at after each of 5 batches: 2 SE separates them far more often than 5%; lookZ(5) doesn't
+  let seed = 7;
+  const u = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) + 0.5) / 2147483648;
+  const gauss = () => Math.sqrt(-2 * Math.log(u())) * Math.cos(2 * Math.PI * u());
+  const paths = 20000;
+  let naive = 0,
+    fixed = 0;
+  for (let p = 0; p < paths; p++) {
+    let s = 0,
+      hitN = false,
+      hitF = false;
+    for (let k = 1; k <= 5; k++) {
+      s += gauss(); // each batch's mean difference, in units of one batch's SE
+      const z = Math.abs(s) / Math.sqrt(k);
+      hitN = hitN || z > 2;
+      hitF = hitF || z > E.lookZ(5);
+    }
+    naive += hitN;
+    fixed += hitF;
+  }
+  assert.ok(naive / paths > 0.1, `naive ${naive / paths}`);
+  assert.ok(fixed / paths <= 0.05, `lookZ ${fixed / paths}`);
 });
 
 test("simulate: no qualifying time costs -5 in the dry, nothing in the wet", () => {

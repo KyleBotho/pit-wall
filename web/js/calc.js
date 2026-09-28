@@ -680,7 +680,7 @@ export function runOptimiser() {
     );
   if (mc)
     bits.push(
-      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are closer to #1 than that: the order between them could flip${mc.checked ? ` (judged on ${mc.checkN.toLocaleString()} independent weekends, the set that picked #1 flatters it; more are added while a team near the top is within their noise, up to ${CHECK_MAX.toLocaleString()})` : ""}.`,
+      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are too close to #1 to call: the order between them could flip${mc.checked ? ` (judged on ${mc.checkN.toLocaleString()} independent weekends, as the set that picked #1 flatters it, with a margin of ${mc.z.toFixed(2)} standard errors since that set grows while a top team is within it and the margin is wider than ±${TIE_TOL} pts, up to ${CHECK_MAX.toLocaleString()} weekends)` : ""}.`,
     );
   if (near)
     bits.push(
@@ -715,15 +715,22 @@ export function runOptimiser() {
   renderBestTable(ctx);
 }
 // Monte Carlo error of the next race's xPts (one race, ranked by xPts): each shown team's standard error and, on the
-// same simulated weekends as #1 (shared assets cancel), whether its gap to #1 is inside twice the gap's standard error
-// (marked ≈). The gap is measured on an independent run (checkSim) once it's in: on the samples that picked #1 it
-// looks bigger than it is. Returns the typical 95% half-width and whether the check run was used, or null.
+// same simulated weekends as #1 (shared assets cancel), whether its gap to #1 is inside the gap's noise (marked ≈).
+// The gap is measured on an independent run (checkSim) once it's in: on the samples that picked #1 it looks bigger
+// than it is. Returns the typical 95% half-width and whether the check run was used, or null.
+// Fourth review: the standard error shown is the main run's (the xPts shown come from it; the check run only
+// estimates the spread, sd / √N with the main run's N); the check run can grow up to CHECK_MAX / N times, so its
+// margin allows for that many looks (Engine.lookZ: 2.58 for five, not 2); it grows only while one of the top six
+// ranked teams (not the starting or pinned ones) is still within that margin of #1 and the margin is wider than
+// TIE_TOL points: a tie narrower than that doesn't matter to a pick.
+const TIE_TOL = 0.5;
 function simNoise(rows, chipK, H, sortK) {
   const all = [rows.cur, ...rows.pin, ...rows.best.slice(0, state.showN || 20)].filter(Boolean);
   all.forEach((r) => {
     r.st.se = null;
     r.st.near1 = false;
     r.st.rev1 = false;
+    r.st.tieW = 0;
   });
   if (H !== 1 || sortK !== "x" || !rows.best.length) return null;
   const redraw = () => {
@@ -731,8 +738,9 @@ function simNoise(rows, chipK, H, sortK) {
   };
   const chk = checkSim(redraw);
   const sim = chk || forecast.sims[0],
-    N = sim.N,
-    top = rows.best[0];
+    N0 = forecast.sims[0].N,
+    top = rows.best[0],
+    z = chk ? Engine.lookZ(Math.floor(CHECK_MAX / N0)) : 2;
   const s0 = teamSamples(top.ids, top.boost, chipK, top.boost2, sim);
   const sd = (xs) => {
     let m = 0,
@@ -749,22 +757,22 @@ function simNoise(rows, chipK, H, sortK) {
   const p0 = top.st.pen || 0;
   for (const r of all) {
     const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2, sim);
-    r.st.se = sd(si) / Math.sqrt(N);
+    r.st.se = sd(si) / Math.sqrt(N0); // the displayed xPts' error: the main run's N
     ses.push(r.st.se);
     if (r === top) continue;
     // #1's lead on the independent run (Engine.pairedCompare: within the noise both ways = a near tie ≈; convincingly
     // behind = the check reverses the order ↑). Until that run is in, the lead as selected, against the same noise
-    const c = Engine.pairedCompare(s0, si, p0, r.st.pen || 0);
+    const c = Engine.pairedCompare(s0, si, p0, r.st.pen || 0, z);
     const gap = chk ? c.gap : top.st.x - r.st.x;
-    r.st.near1 = Math.abs(gap) <= 2 * c.se;
+    r.st.near1 = Math.abs(gap) <= z * c.se;
     r.st.rev1 = !!chk && c.reversed;
+    r.st.tieW = z * c.se; // the margin's half-width, for the growth rule
   }
   ses.sort((a, b) => a - b);
-  // adaptive: while a team near the top is still within the check run's noise of #1, another independent batch
-  // (checkSim grow, up to CHECK_MAX weekends); a tie that survives is within a fraction of a point. Stopping at the
-  // first look that settles it makes the 2-SE rule a little lenient (repeated looks)
-  if (chk && all.slice(0, 6).some((r) => r !== top && r.st.near1)) checkSim(redraw, true);
-  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk, checkN: chk ? chk.N : 0 };
+  // adaptive: while one of the top six ranked teams is still within the check run's margin of #1 and that margin is
+  // wider than TIE_TOL, another independent batch (checkSim grow, up to CHECK_MAX weekends)
+  if (chk && rows.best.slice(0, 6).some((r) => r !== top && r.st.near1 && r.st.tieW > TIE_TOL)) checkSim(redraw, true);
+  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk, checkN: chk ? chk.N : 0, z };
 }
 function renderBestTable(ctx) {
   const { chipK, T: team, vp, tilePts } = ctx,
@@ -1056,6 +1064,25 @@ function planStages(ctx, H) {
   }
   return stages;
 }
+// the simulated futures the planner values plans over (Engine.planStoch): each asset's sampled price changes and,
+// race by race, its points (the projection's shift on every sample, No Negative's points in race 1 with that chip,
+// as pk). The race-by-race plan and "What is a transfer worth?" both use them (fourth review: the latter planned on
+// expected values only)
+function planFutures(chipK, H) {
+  return {
+    priceSteps: Object.fromEntries(
+      Object.entries(forecast.price)
+        .filter(([, v]) => v && v.path)
+        .map(([id, v]) => [id, v.path.steps]),
+    ),
+    priceN: forecast.sims[0].N,
+    samples: forecast.sims.slice(0, H).map((sim, k) => ({
+      tot: k === 0 && chipK === "noneg" ? sim.nn : sim.tot,
+      idx: Object.fromEntries(sim.ids.map((id, i) => [id, i])),
+      shift: Object.fromEntries(sim.ids.map((id) => [id, (forecast.proj[k][id] || {}).shift || 0])),
+    })),
+  };
+}
 export function openPlan() {
   const ctx = calcCtx(),
     { chipK, H, T: team, pk } = ctx;
@@ -1070,19 +1097,7 @@ export function openPlan() {
     locks,
     bans,
     beam: 10,
-    priceSteps: Object.fromEntries(
-      Object.entries(forecast.price)
-        .filter(([, v]) => v && v.path)
-        .map(([id, v]) => [id, v.path.steps]),
-    ),
-    priceN: forecast.sims[0].N,
-    // the same futures' points, so each plan is valued over them (Engine.planStoch): the projection's shift on
-    // every sample, No Negative's points in race 1 with that chip (as pk)
-    samples: forecast.sims.slice(0, H).map((sim, k) => ({
-      tot: k === 0 && chipK === "noneg" ? sim.nn : sim.tot,
-      idx: Object.fromEntries(sim.ids.map((id, i) => [id, i])),
-      shift: Object.fromEntries(sim.ids.map((id) => [id, (forecast.proj[k][id] || {}).shift || 0])),
-    })),
+    ...planFutures(chipK, H),
   });
   const keep = bestRows.best[0];
   const p = plans[0];
@@ -1090,7 +1105,7 @@ export function openPlan() {
   const body = p
     ? `<p class="note">Expected <b>${f1(p.value ?? p.total)}</b> pts over ${H} races${keep ? ` (the best team kept for all ${H}: ${f1(keep.st.x + (keep.st.xdp || 0))})` : ""}. Transfers beyond the free ones cost −10 each.${
         p.held != null && p.held > 0.005
-          ? ` <span class="${p.held > 0.1 ? "warn" : "muted"}">In ${Math.round(p.held * 100)}% of the simulated futures a later transfer no longer fits the budget; there the team is kept instead, which is counted (${f1(p.total)} pts if every move fit).</span>`
+          ? ` <span class="${p.held > 0.1 ? "warn" : "muted"}">In ${Math.round(p.held * 100)}% of the simulated futures a later transfer no longer fits the budget; there the team is kept instead, which is counted (${f1(p.valueFit ?? p.total)} pts if every move fit).</span>`
           : p.afford != null && p.afford < 0.995
             ? ` <span class="${p.afford < 0.9 ? "warn" : "muted"}">Affordable in ${Math.round(p.afford * 100)}% of the simulated price paths: in the rest a later transfer no longer fits the budget.</span>`
             : ""
@@ -1404,8 +1419,22 @@ export function openTransferValue() {
       stages = planStages(ctx, n),
       free = Math.max(0, +team.free || 0);
     const marks = (to) => new Set(Object.keys(state.marks).filter((k) => state.marks[k] === to));
-    const o = { cap: cap(), free, maxT: 7, chip: chipK, locks: marks("lock"), bans: marks("ban"), beam: 6 };
-    const plan = (x) => Engine.planHorizon(stages, team.team, { ...o, ...x })[0] || null;
+    // valued over the simulated futures, as the race-by-race plan (planFutures): a later move that often won't fit
+    // counts for what it's worth
+    const o = {
+      cap: cap(),
+      free,
+      maxT: 7,
+      chip: chipK,
+      locks: marks("lock"),
+      bans: marks("ban"),
+      beam: 6,
+      ...planFutures(chipK, n),
+    };
+    const plan = (x) => {
+      const p = Engine.planHorizon(stages, team.team, { ...o, ...x })[0];
+      return p ? { ...p, total: p.value ?? p.total } : null;
+    };
     const rows = [];
     // one row per number actually used: a cap of k that still uses fewer repeats the row above
     for (let k = 0; k <= Math.min(7, free + 2); k++) {
@@ -1435,7 +1464,7 @@ export function openTransferValue() {
           `One more free transfer now would be worth <b class="${gainExtra > 0.05 ? "good" : "muted"}">${sgn(gainExtra ?? 0, 1)}</b> over ${races}.</p>`
         : `<p class="note">No legal plan within the budget.</p>`);
     html +=
-      `<div class="tw"><table class="stat"><thead><tr><th title="Transfers made in the first race">Transfers now</th><th>Penalty now</th><th title="Expected points over the simulated races, penalties included">Plan total</th><th>vs best</th><th style="text-align:left">Now</th><th title="Transfers in the later races of the plan">Later</th></tr></thead><tbody>` +
+      `<div class="tw"><table class="stat"><thead><tr><th title="Transfers made in the first race">Transfers now</th><th>Penalty now</th><th title="Expected points over the simulated futures, penalties included; where a later move doesn't fit a future's budget, the team is kept there">Plan total</th><th>vs best</th><th style="text-align:left">Now</th><th title="Transfers in the later races of the plan">Later</th></tr></thead><tbody>` +
       rows
         .map(({ k, p }) => {
           if (!p) return `<tr><td>${k}</td><td colspan="5" class="dim">no legal plan</td></tr>`;
@@ -1448,7 +1477,7 @@ export function openTransferValue() {
         })
         .join("") +
       "</tbody></table></div>" +
-      `<p class="note dim">Beam search, like the race-by-race plan. A transfer still banked after ${forecast.races[n - 1] ? "R" + forecast.races[n - 1].gd : "the last race"} counts for nothing here, so banking looks slightly worse than it is. Incl / Excl marks apply; the maximum penalty setting doesn't (every hit is shown).</p>`;
+      `<p class="note dim">Beam search, like the race-by-race plan, and like it valued over the simulated futures (points and prices together: a later move that doesn't fit a future's budget isn't made there). A transfer still banked after ${forecast.races[n - 1] ? "R" + forecast.races[n - 1].gd : "the last race"} counts for nothing here, so banking looks slightly worse than it is. Incl / Excl marks apply; the maximum penalty setting doesn't (every hit is shown).</p>`;
     $("#modalBody").innerHTML = html;
   }, 30);
 }

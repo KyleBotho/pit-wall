@@ -37,7 +37,7 @@
     // driver's race pace moves between races (%); ctxSeInflate for lap errors that are correlated within a stint
     // (laps.py's standard errors treat them as independent)
     ctxTau: 0.4,
-    ctxSeInflate: 2, // measured 2026-09-28: 1.85 on held-out stints (laps.py inflate, 64 driver-races R1-R15)
+    ctxSeInflate: 2, // data-informed 2026-09-28: 1.85 from odd vs even stints (laps.py inflate, 64 driver-races R1-R15; per round 0.05-3.07, ~1.47 without R8): a conservative provisional value, not a held-out test
     dnfHalfLife: Infinity, // backtested: no recency weighting of retirements (every race counts the same)
     dnfShrink: 16, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
     dnfFallback: 0.12, // hand-set: retirement rate before any race has run
@@ -2818,11 +2818,12 @@
   }
 
   /** Two teams' net scores compared weekend by weekend (the same simulated weekends: shared assets cancel): a's lead
-   * over b after their transfer penalties, and whether it's inside twice its standard error ("near", exact ties with
-   * no noise included) or convincingly the other way ("reversed": b ahead).
+   * over b after their transfer penalties, and whether it's inside z standard errors ("near", exact ties with no
+   * noise included) or convincingly the other way ("reversed": b ahead). z 2 for one look; more where the same
+   * comparison is looked at repeatedly as samples are added (lookZ).
    * @param {ArrayLike<number>} a @param {ArrayLike<number>} b @param {number} penA @param {number} penB
-   * @returns {{ gap: number, se: number, near: boolean, reversed: boolean }} */
-  function pairedCompare(a, b, penA, penB) {
+   * @param {number} [z] @returns {{ gap: number, se: number, near: boolean, reversed: boolean }} */
+  function pairedCompare(a, b, penA, penB, z = 2) {
     const n = a.length;
     let m = 0,
       m2 = 0;
@@ -2833,8 +2834,12 @@
     }
     m /= n;
     const se = Math.sqrt(Math.max(0, m2 / n - m * m) / n);
-    return { gap: m, se, near: Math.abs(m) <= 2 * se, reversed: m < -2 * se };
+    return { gap: m, se, near: Math.abs(m) <= z * se, reversed: m < -z * se };
   }
+  /** The z for a two-sided 5% test that may be looked at up to `looks` times as samples are added (Bonferroni over
+   * the looks: conservative, but valid however the looks fall; fourth review: 2 SE at any of five looks separated
+   * equal means 13% of the time, not 5%). lookZ(1) = 1.96. @param {number} looks */
+  const lookZ = (looks) => normInv(1 - 0.025 / Math.max(1, looks));
 
   /* ---------- the betting market (next race) ---------- */
   /** Move each driver's pace so the simulated chances of winning, a podium, a top 10 and pole move towards the
@@ -3293,8 +3298,8 @@
    * @typedef {{ cand: Candidate[], dPrice?: Record<string, number> }} Stage
    *   one race of the horizon: that race's candidates (e = that race's expected points, boostE that race's Boost
    *   value) and the expected price change of each asset after it (its budget effect for the next race)
-   * @typedef {{ team: string[], boost: string, boost2: string | null, transfers: number, penalty: number, pts: number, cost: number, cap: number, free: number }} PlanStep
-   * @typedef {{ total: number, steps: PlanStep[], afford?: number, value?: number, held?: number }} Plan
+   * @typedef {{ team: string[], boost: string, boost2: string | null, transfers: number, penalty: number, pts: number, cost: number, cap: number, free: number, played?: string[] }} PlanStep
+   * @typedef {{ total: number, steps: PlanStep[], afford?: number, value?: number, valueFit?: number, held?: number }} Plan
    * @typedef {{ tot: Float32Array, idx: Record<string, number>, shift?: Record<string, number> }} PlanSamples
    *   one race's simulated weekends for the stochastic planner: asset idx[id]'s points in sample s at tot[idx * N + s]
    *   (plus shift[id], the projection's shift), the races' samples one future each (the same persist seed)
@@ -3378,13 +3383,15 @@
         ],
       });
     }
-    // a Limitless team reverts after the race: plan the later races from the starting team
+    // a Limitless team reverts after the race: plan the later races from the starting team (the team played in race
+    // 1 kept as `played`)
     if (o.chip === "limitless")
       plans = plans.map((p) => ({
         ...p,
         steps: [
           {
             ...p.steps[0],
+            played: p.steps[0].team,
             team: team.slice(),
             cost: team.reduce((s, id) => s + (priceOf[id] ? priceOf[id].price : 0), 0),
             free: Math.min(carryMax, perFree + Math.min(1, o.free)),
@@ -3450,13 +3457,33 @@
     }
     return plans.slice(0, 10);
   }
-  /** A plan over the simulated futures (the stochastic planner). In each future s: race 1 as planned (a Limitless
-   * race at its expected points: its team isn't kept in the plan); from race 2 on, the planned team if its transfers
-   * fit the budget at that future's prices, else the team held from then on (no transfers, no penalty, its best
-   * expected Boost), which is what a manager does when a move no longer fits. Points from that future's weekends:
-   * the Boost twice (race 1 with X3: three times, the second driver twice). value = the mean over the futures plus
-   * the plan's price-value terms (a candidate's e above its expected points x, race 1: xΔ$Pts); afford = the share
-   * of futures in which every planned transfer fit; held = the share that had to hold.
+  /** A team's points in one simulated weekend with the race's chip (chipScore; the Calculator's teamSamples and the
+   * planner both score with it, fourth review): every asset once, plus the Boost once more (X3: the Boost twice more
+   * and boost2 once more; Autopilot: once more on whichever driver scores most that weekend). pts(id) = the asset's
+   * points that weekend (No Negative: its points with the chip). @param {string[]} ids @param {string[]} ds the
+   * team's drivers @param {string | null} boost @param {string | null} boost2 @param {string} chip
+   * @param {(id: string) => number} pts */
+  function chipScore(ids, ds, boost, boost2, chip, pts) {
+    let v = 0;
+    for (const id of ids) v += pts(id);
+    if (chip === "autopilot") {
+      let m = -Infinity;
+      for (const id of ds) m = Math.max(m, pts(id));
+      if (ds.length) v += m;
+      return v;
+    }
+    if (boost) v += pts(boost) * (chip === "x3" ? 2 : 1);
+    if (boost2) v += pts(boost2);
+    return v;
+  }
+  /** A plan over the simulated futures (the stochastic planner). In each future s: race 1 as planned, scored with
+   * the chip (chipScore; a Limitless race on the team played, `played`); from race 2 on, the planned team if its
+   * transfers fit the budget at that future's prices, else the team held from then on (no transfers, no penalty,
+   * its best expected Boost), which is what a manager does when a move no longer fits. Points from that future's
+   * weekends. value = the mean over the futures plus the plan's price-value terms (a candidate's e above its
+   * expected points x, race 1: xΔ$Pts); valueFit = the same with every planned move made whether it fits or not
+   * (value - valueFit = what holding costs); afford = the share of futures in which every planned transfer fit;
+   * held = the share that had to hold.
    * @param {Plan} p @param {Stage[]} stages @param {Record<string, Candidate>} priceOf today's prices
    * @param {Record<string, Int8Array>} steps sampled price changes (tenths, race k's sample s at k * N + s)
    * @param {number} N @param {PlanSamples[]} samples @param {{ chip?: string }} o */
@@ -3486,24 +3513,30 @@
     };
     const s0 = p.steps[0],
       c0 = Object.fromEntries(stages[0].cand.map((c) => [c.id, c]));
-    const limitless = o.chip === "limitless";
-    // race 1's price-value terms: e above the expected points x (none without x)
-    const extra = limitless
-      ? 0
-      : s0.team.reduce(
-          (t, id) => t + (c0[id] && c0[id].x != null ? c0[id].e - /** @type {number} */ (c0[id].x) : 0),
-          0,
-        );
+    const t0 = s0.played || s0.team,
+      ds0 = t0.filter((id) => c0[id] && c0[id].kind === "D");
+    // race 1's price-value terms: e above the expected points x (none without x; none with Limitless, whose team
+    // reverts)
+    const extra =
+      o.chip === "limitless"
+        ? 0
+        : t0.reduce((t, id) => t + (c0[id] && c0[id].x != null ? c0[id].e - /** @type {number} */ (c0[id].x) : 0), 0);
     let sum = 0,
+      sumFit = 0,
       fitAll = 0,
-      held = 0;
-    for (let s = 0; s < N; s++) {
-      let v = 0;
-      if (limitless) v += s0.pts;
-      else {
-        for (const id of s0.team) v += pts(id, 0, s);
-        v += pts(s0.boost, 0, s) * (o.chip === "x3" ? 2 : 1) + (s0.boost2 ? pts(s0.boost2, 0, s) : 0) - s0.penalty;
+      held = 0,
+      s = 0;
+    const pts0 = (/** @type {string} */ id) => pts(id, 0, s);
+    for (; s < N; s++) {
+      let v = chipScore(t0, ds0, s0.boost, s0.boost2, o.chip || "", pts0) - s0.penalty;
+      // the same future with every planned move made, fitting or not (valueFit: what holding costs, like for like)
+      let vFit = v;
+      for (let h = 1; h < H; h++) {
+        const st = p.steps[h];
+        for (const id of st.team) vFit += pts(id, h, s);
+        vFit += pts(st.boost, h, s) - st.penalty;
       }
+      sumFit += vFit;
       let bank = s0.cap - s0.team.reduce((t, id) => t + price(id, 0, s), 0),
         team = s0.team,
         hold = false,
@@ -3534,7 +3567,7 @@
       if (fit) fitAll++;
       if (hold) held++;
     }
-    return { value: sum / N + extra, afford: fitAll / N, held: held / N };
+    return { value: sum / N + extra, valueFit: sumFit / N + extra, afford: fitAll / N, held: held / N };
   }
   /** The share of sampled price futures in which every later race's transfers fit the budget: a sample's budget is
    * what was left in the bank plus the value of the team held, at that sample's prices (a race without transfers
@@ -3667,7 +3700,13 @@
    * @param {Data} data @param {{ setup: (g: Gameday, k: number) => Parameters<typeof raceSetup>[2], sprint0: boolean, sims: number }} o */
   function forecastRaces(data, o) {
     const races = data.schedule.filter((g) => !data.done.includes(g.gd)).slice(0, 3);
-    const setups = races.map((g, k) => raceSetup(data, g, o.setup(g, k)));
+    // the circuit model from this same data unless the caller gives one built from it (fourth review: a model built
+    // from the live data kept the live practice in a run as at lock)
+    let tm = /** @type {ReturnType<typeof trackModel> | null} */ (null);
+    const setups = races.map((g, k) => {
+      const so = o.setup(g, k) || {};
+      return raceSetup(data, g, so.track ? so : { ...so, track: (tm = tm || trackModel(data)) });
+    });
     const sims = races.map((g, k) => {
       const { seed, persist } = raceSeeds(g, races[0]);
       return simulate(setups[k].model, setups[k].circuit, k === 0 ? o.sprint0 : g.sprint, o.sims, seed, {
@@ -4215,6 +4254,8 @@
     sameAgeBooks,
     oddsCheck,
     pairedCompare,
+    lookZ,
+    chipScore,
     withFitLog,
     priceStep,
     priceSteps,

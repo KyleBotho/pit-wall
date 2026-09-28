@@ -28,12 +28,14 @@ export function labJob(E, data, job) {
   });
 }
 /** The Calculator: the next three races (Engine.forecastRaces) under the page's settings; job.opts[k] = setupOpts
- * without the track model, which is built once per worker (ctx.tm). */
+ * without the track model, which is built once per variant from that variant's data (ctx.tm[v]: as at lock, the
+ * practice frozen at lock sets the next race's overtake level, not the live one; fourth review). */
 export function racesJob(E, data, job, ctx) {
-  ctx.tm = ctx.tm || E.trackModel(data);
   const d = job.v === "live" ? data : E.atLock(data);
+  ctx.tm = ctx.tm || {};
+  const tm = ctx.tm[job.v] || (ctx.tm[job.v] = E.trackModel(d));
   return E.forecastRaces(d, {
-    setup: (g, k) => ({ ...job.opts[k], track: ctx.tm }),
+    setup: (g, k) => ({ ...job.opts[k], track: tm }),
     sprint0: job.sprint0,
     sims: job.sims,
   });
@@ -43,11 +45,14 @@ export function simJob(E, data, job) {
   return E.simulate(job.model, job.circuit, job.sprint, job.N, job.seed, job.opt);
 }
 
-// two runs of the same race (the same assets in the same order) as one: each asset's weekends one after the other
+// two runs of the same race (the same assets in the same order) as one: each asset's weekends one after the other.
+// Only the samples (ids, N, tot, nn, batches): the runs' summaries and flags describe one batch each, so they're left
+// out rather than passed on under the combined N (fourth review). a null = b alone, as the same narrow object.
 export function mergeRuns(a, b) {
+  if (!a) return { ids: b.ids, N: b.N, tot: b.tot, nn: b.nn, batches: 1 };
   const A = a.ids.length,
     n = a.N + b.N,
-    out = { ...a, N: n, batches: (a.batches || 1) + 1 };
+    out = { ids: a.ids, N: n, batches: (a.batches || 1) + 1 };
   for (const k of ["tot", "nn"]) {
     const x = new Float32Array(A * n);
     for (let i = 0; i < A; i++) {

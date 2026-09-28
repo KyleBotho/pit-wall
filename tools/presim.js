@@ -36,13 +36,12 @@ function summary(rest) {
 function run(data, first) {
   const next = data.schedule.find((g) => !data.done.includes(g.gd));
   if (!next) return null;
-  const track = E.trackModel(data);
   const D = E.DEFAULTS;
-  // web/js/forecast.js setupOpts with every setting at its default (state.js defaults())
+  // web/js/forecast.js setupOpts with every setting at its default (state.js defaults()); no track model: each
+  // variant's forecastRaces builds its own from its own data (as at lock: the practice frozen at lock)
   const opts = {
     setup: (g, k) => ({
       next: k === 0,
-      track,
       halfLife: D.halfLife,
       adj: {},
       pw: D.pw,

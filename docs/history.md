@@ -5,6 +5,44 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, fourth review (`docs/reviews/2026-09-27/F1-third-round-review.md` + evidence, 7.9/10 unchanged: no
+      default predictive gain on matching inputs, CRPS 8.686 both engines; new work credited). Its five findings:
+      (1) As at lock the sims still got a circuit model built from the live data (forecast.js trackFit, worker.js
+      racesJob, presim.js): trackModel reads practice's reference lap for the next race's overtake level, so live
+      practice leaked in (fixture: multiplier 0.6254 at lock -> 0.9344 live, reproduced exactly here). Fixed:
+      Engine.forecastRaces builds the model from the data it runs unless given one; the page / worker keep one per
+      variant (ctx.tm[v]); presim.js passes none. Test (presim.test.js): live practice changed after lock gives the
+      same samples as at lock on the engine and the page path, and the old wiring is shown to differ. (2) The
+      stochastic planner scored Autopilot as a fixed Boost (the review's fixture: 150 instead of 200). Engine.chipScore
+      = one weekend's points with any chip, used by the Calculator (forecast.js teamSamples) and planStoch; a
+      Limitless race is scored on the team played (step.played); planStoch also returns valueFit (every move made),
+      so the plan dialog's "if every move fit" compares like for like (it showed the expected-value total, below the
+      value once Autopilot counted). "What is a transfer worth?" now values plans over the same futures. Tests:
+      chipScore per chip, Autopilot 200 / plain 150 / X3 250, Limitless 300. (3) Adaptive sampling: the shown
+      standard error used the check run's N for the main run's estimate (now sd / √N_main); growth looked at
+      `all.slice(0, 6)` (starting + pinned teams first; now the top six ranked); repeated looks at 2 SE separate
+      equal means ~13%, not 5%: the check run's margin is Engine.lookZ(looks) (Bonferroni over the up-to-5 looks:
+      2.58), and it grows only while that margin is wider than ±0.5 pt (TIE_TOL: a narrower tie doesn't matter to a
+      pick; seen live: #1 / #2 both 165.8 stop at 10,000). mergeRuns returns the samples only. Test: lookZ keeps a
+      5-look null at <= 5% (2 SE: > 10%). (4) accuracy.js's key lacked the WX_LATEST mode: walk.js CONFIG goes into
+      the key and the file, and a sensitivity run writes accuracy-wxlatest.json. (5) FIA: "( PU-ANC)" (space inside
+      the brackets) was missed and its table read as MGU-K: Spain car 18 MGU-K 6 (real 4, PU-ANC 6), Monaco car 11
+      likewise, Monaco car 1's PU-ANC 3 missing (3 of 38 documents differ; the rest identical). Each table now needs
+      its own "Previously used <element>" header and a conflicting count leaves the element unknown; real-document
+      tests. Barcelona's index (the FIA's file `2026_barcelona-catalunya_grand_prix`) was never found: the aliases
+      moved to config/season.json fiaNames, one resolver (collect.fia_event_path, walk.js fiaFile). Past rounds'
+      stewards' decisions had never been read for grid penalties (only the coming race's), so walk.js's empty
+      penalties for R1-R14 meant "not read": fia_rounds.py now reads them (collect.fia_penalties keeps what it read
+      when the FIA site times out). laps.py retirements skips a DSQ row.
+      Records corrected (the review's section 4): pooled race pace moved a driver by max 0.161% (R6; 0.113% R4),
+      0.044% was R6's mean (laps.py hier rerun: confirmed); its screen gave CRPS -0.006 ± 0.010 pooled vs unpooled,
+      so "deferred, not enough evidence", not "a duplicate". Sprint retirements: 7 unclassified of 110 entries (2
+      DNS, the BOR R4 DSQ out), 5 of 108 starters; races 66 / 330 entries (7 DNS), 59 / 323 starters: different
+      targets, don't mix them in a hazard; 0.4 stays (0.36 / 0.45 within noise). Causes: no AUTOMATED source; a
+      small hand-checked labelled subset (team reports, FIA documents) is possible. ctxSeInflate 1.85: from odd vs
+      even stints fitted together, not an untouched hold-out; per round 0.05-3.07, ~1.47 without R8: data-informed.
+      Timed SC: the matching-event check showed the coverage gap was mostly the grouping; it didn't test onset,
+      duration or pit timing, so deferred, not disproved.
 - [x] 2026-09-28, the last two deferred items (user: "continue with the two remaining items"). (1) Stochastic planner:
       Engine.planStoch values each plan the beam search kept over the joint simulated futures (points and price
       changes from the same sample): race 1 as planned; from race 2, the planned team where its transfers fit that

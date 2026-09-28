@@ -245,7 +245,11 @@ def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
             continue
         if fetched >= most:
             break
-        text = pdf_text(read_bytes(d["url"]))
+        try:
+            text = pdf_text(read_bytes(d["url"]))
+        except OSError as e:  # the FIA site is slow and times out: keep what's read, the rest next run
+            print(f"  ! FIA decision {d['url']}: {e}")
+            break
         fetched += 1
         if text is None:
             break
@@ -267,6 +271,27 @@ def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
 def event_slug(name, season):
     """The FIA's event slug for a meeting name: "Azerbaijan Grand Prix" -> "2026_azerbaijan_grand_prix"."""
     return f"{season}_" + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+def fia_names(name, aliases):
+    """A meeting's names on the FIA's pages: its own, then the FIA's where they differ (config/season.json
+    fiaNames)."""
+    return [name, *[a for a in (aliases or {}).get(name, []) if isinstance(a, str)]]
+
+
+def fia_event_path(name, season, archived, aliases):
+    """The archived FIA index of a meeting (history/<season>/fia/<event>.json). The FIA names its files itself
+    ("2026_barcelona-catalunya_grand_prix"), so an archived file matches any of the meeting's names with
+    punctuation ignored; without one yet, the path under its own name (fourth review: the Barcelona round's index
+    was never found under "2026_barcelona_grand_prix")."""
+    import glob
+    import os
+
+    want = {event_slug(n, season) for n in fia_names(name, aliases)}
+    for p in sorted(glob.glob(archived("fia", "*.json"))):
+        if re.sub(r"[^a-z0-9]+", "_", os.path.basename(p)[:-5].lower()).strip("_") in want:
+            return p
+    return archived("fia", f"{event_slug(name, season)}.json")
 
 
 def fia_documents(read_text, archived, read_json, write_json, now):
@@ -329,17 +354,36 @@ def parse_pu_used(text):
 
 
 def parse_pu_new(text):
-    """ "New PU elements for this Competition" -> {car number: {element: how many of it the car had used before}}."""
-    out = {}
+    """ "New PU elements for this Competition" -> {car number: {element: how many of it the car had used before}}.
+    Each heading's table only: its "Previously used <element>" header must name the heading's element, and its rows
+    run to the first line that isn't one. A car given two different counts for one element in the same document
+    is left out for it (unknown rather than wrong; fourth review: an unrecognised "( PU-ANC)" heading put its table
+    under MGU-K)."""
+    out, bad = {}, set()
     # "... start the Competition with a new turbocharger (TC):" / "... is using a new internal combustion engine
-    # (ICE) for the remainder of the Competition:"; the compliance lines say "(4) new", never "a new"
-    parts = re.split(r"\ban? new [^()]{3,60}?\(([A-Z][A-Z\-]*)\)", text)
-    for el, body in zip(parts[1::2], parts[2::2], strict=True):
-        for line in body.splitlines():
+    # (ICE) for the remainder of the Competition:" / "... a new power unit ancillary component ( PU-ANC)"; the
+    # compliance lines say "(4) new", never "a new"
+    parts = re.split(r"\ban? new [^()]{3,60}?\(\s*([A-Z][A-Z\-\s]*?)\s*\)", text)
+    for raw, body in zip(parts[1::2], parts[2::2], strict=True):
+        el = re.sub(r"\s+", "", raw)
+        head = re.search(r"Previously used\s+([A-Z][A-Z\-]*)", body)
+        if not head or head.group(1) != el:
+            continue  # no table, or another element's: skip rather than guess
+        for line in body[head.end() :].splitlines():
+            if not line.strip():
+                continue
             m = re.match(r"\s*(\d{1,2})\s+\D.*\s(\d+)\s*$", line)
-            if m:
-                out.setdefault(int(m.group(1)), {})[el] = int(m.group(2))
-    return out
+            if not m:
+                break
+            car, n = int(m.group(1)), int(m.group(2))
+            if (car, el) in bad:
+                continue
+            if out.get(car, {}).get(el, n) != n:
+                bad.add((car, el))
+                del out[car][el]
+                continue
+            out.setdefault(car, {})[el] = n
+    return {c: els for c, els in out.items() if els}
 
 
 def team_code(name, teams):

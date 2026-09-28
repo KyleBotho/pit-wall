@@ -25,7 +25,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   time (a `.at` stamp next to the cached copy): odds `at` / `asOf` / `stale`, weather `at` use it, never the
   refresh time. The private repo's `leagues.py` imports it from its checkout.
 - `config/season.json` — everything season-specific: teams (code, colour, Jolpica ids), circuit types, field size,
-  example team. Embedded as `DATA.cfg`; update it before a new season. `config/feeds.json` — user agent, pacing,
+  example team, `fiaNames` (the FIA's event names where they differ; collect.fia_event_path / walk.js fiaFile find
+  an event's archive file by any of them, punctuation ignored). Embedded as `DATA.cfg`; update it before a new season. `config/feeds.json` — user agent, pacing,
   scoring-event codes (shared by Python, the page data and the Supabase function).
 - `engine.js` — pure JS, no DOM, `// @ts-check` (model rework 2026-09-24, see Model decisions): `buildModel` (pace
   as % off the fastest from qualifying lap times and median clean race laps, DNF, overtake regression, pit points,
@@ -48,7 +49,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   documents read once each (PU elements used / new, Car Presentation Submissions = upgrades, the parc-fermé parts
   list, the Pirelli preview: compounds, Q3 tyre, mandatory race tyres), text kept in `fia/text/<event>/`, summary
   as the event index's `tech`; nothing uses them yet. `backtest/fia_rounds.py` backfilled R1-R15 (`--reparse`
-  rebuilds every summary after a parser change). Health warns when a finished round has < 3 kinds read.
+  rebuilds every summary after a parser change) and reads past rounds' stewards' decisions for grid penalties
+  (`grid` per document; an unread one is unknown, not "no penalty"). Health warns when a finished round has < 3 kinds read.
 - `laps.py` — canonical lap records (OpenF1 laps + stints + race control + weather, with context and quality
   flags) -> `history/<season>/laps/gdNN.json`, the contextual race-pace model (`paceCtx`, MODEL.racePace "ctx") and
   retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`;
@@ -73,7 +75,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   the data is a `<script type="application/json" id="pw-data">` block. A value another module reassigns needs a
   setter in its own module (`setState`, `keepUndo`, `endTeamEdit`, `resetSplit`). `lab.js` = the owner-only Sim lab (item 9 stage 6). `worker.js` = the engine worker shared by the lab
   and the Calculator (2026-09-28): `compute()` runs non-default sims there (returns false; `setSimDone` redraws),
-  and caches runs by their inputs (`simKey`) so blend / xPts / preset changes don't re-simulate. Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  and caches runs by their inputs (`simKey`) so blend / xPts / preset changes don't re-simulate. Every derived
+  model comes from the variant's own data (the track model per variant, `ctx.tm[v]`: as at lock = the practice
+  frozen at lock). Team scores with a chip: `Engine.chipScore` everywhere (Calculator and planner). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
@@ -120,7 +124,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
 - Model health: `backtest/accuracy.js` (`npm run accuracy`; refresh.py runs it after each fetch, ~3 s, skipped when
   unchanged) scores every certified round (frozen projection vs result, walk-forward CRPS/MAE) into
-  `history/<season>/accuracy.json`; `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
+  `history/<season>/accuracy.json` (a sensitivity run, e.g. WX_LATEST=1, keys and writes its own file:
+  walk.js CONFIG); `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
   into `history/<season>/fit.json`. Both are embedded as `DATA.modelHealth` and shown in the Sim lab's Model health
   panel (`web/js/model-health.js`). The fit only proposes; adopting a setting is a manual engine.js change.
 - `backtest/run.js` (`npm run backtest [section numbers]`) — 1 price rule, 2 track model (leave-one-round-out, circuit
@@ -150,7 +155,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   deployed by pasting one file); `tests/shared.test.js` fails if they drift.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
 - `docs/reviews/2026-09-27/` — an independent review of the simulator (7/10), its numerical/runtime follow-up and the
-  upgrade plan (phases 0-6). Batch 1 (correctness) done 2026-09-27; batches 2-4 in Open items.
+  upgrade plan (phases 0-6), then three more rounds (post-upgrade 7.5, second-round 7.8, third-round 7.9; each
+  with its evidence JSON). Batch 1 (correctness) done 2026-09-27; batches 2-4 in Open items.
 - `supabase/setup.sql` — the sign-in/sync database (item 12), the Sim lab's `owners` gate, and the private leagues:
   `league_data` (one row, the league payload) readable only by accounts in `league_readers` (RLS). Re-runnable in
   Supabase's SQL Editor. Add a reader there (see the comment in the file).
@@ -306,7 +312,17 @@ there before re-deciding something.
 - [ ] Third review (`docs/reviews/2026-09-27/F1-second-round-review.md`, 7.8/10): all five findings fixed
       2026-09-27 (history). Its advice: no new features now; leave this version running and judge it on the frozen
       rounds from R16 (champion vs challengers in Model health).
-- [ ] Deferred from the three reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
+- [ ] Fourth review (`docs/reviews/2026-09-27/F1-third-round-review.md`, 7.9/10, 2026-09-28): all five findings
+      fixed the same day (history: frozen sims' circuit model, chip-aware planner, adaptive-sampling margin, accuracy
+      config key, FIA PU-ANC / event names / past penalties, DSQ). Its advice, still open: keep the default and the
+      challenger set stable; score prospective rounds by WEEKEND (the independent unit), including paired team
+      differences and realistic transfer policies; "5 rounds and 2 SE" is not a true 95% test with several
+      challengers and repeated looks. Every research result should name its input snapshot, code and config.
+      Weather calibration (past-seasons item 1): check each forecast's PUBLIC AVAILABILITY time before lock, not
+      just its model run time (Open-Meteo's previous-runs archive mostly starts Jan 2024, ECMWF HRES single runs Mar
+      2024), and check coverage for our exact variable / model / location. Normal equations are fine while fits are
+      well conditioned (QR / SVD only if not).
+- [ ] Deferred from the reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
       rounds show the error it addresses, and judge it as a challenger:
   - Market fit: now the challenger `odds8` (SIM.oddsIters 8, SIM.oddsN 5000; 2026-09-27), scored from R16. Found
     while adding it: more steps help little, the residual levels off by ~step 6 (R13 0.42 -> ~0.35, R15 0.31 ->
@@ -314,16 +330,23 @@ there before re-deciding something.
     of results). If the market matters, the lever is a per-driver spread (variance) fitted to the market too.
   - Models: chip timing across races (the planner plays a chip in the first race only). DONE 2026-09-28: the
     stochastic planner (Engine.planStoch: plans valued over the simulated futures, a later transfer made where it
-    fits, else the team held; replaces the 90% afford gate). CHECKED 2026-09-28, not built as challengers: a
-    hierarchical race-pace model (laps.py `hier`: context terms pooled across races moved no driver's pace by more
-    than 0.044%), timed SC events (the SC groups were a grouping artifact; see Evaluation), retirements by distance
-    / confirmed cause (8 sprint retirements can't separate 0.36 / 0.40 / 0.45 x; no public source of causes). DONE 2026-09-28: settings are values, not shared state (engine.js
+    fits, else the team held; replaces the 90% afford gate; chips scored per future by Engine.chipScore, fourth
+    review). DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): a
+    hierarchical race-pace model (laps.py `hier`: pooling moved a driver by max 0.161% (R6), mean <= 0.044%; the
+    review's screen, pooled vs unpooled: CRPS -0.006 +/- 0.010, inconclusive; before a challenger: residuals by
+    stint / compound, race-stint resampling, actual compounds across races), timed SC events (the matching-event
+    check explained the coverage gap, but onset / duration / pit timing are untested; look at race control's SC
+    windows first), retirements by distance / confirmed cause (sprints: 7 unclassified of 110 entries incl. 2 DNS,
+    5 of 108 starters, too few to tell 0.36 / 0.40 / 0.45 apart; separate DNS / DSQ / incident / mechanical; causes:
+    no AUTOMATED source, a small hand-checked labelled subset would be the start). DONE 2026-09-28: settings are values, not shared state (engine.js
     withSettings swaps in a changed copy; Engine.SIM / MODEL / TRACK are read-only views, a write throws; the fit,
     section 9 and the tests go through withSettings). Checked output-identical (8 switch sets x 4 races, hashes).
   - Sampling and speed: the precision of quantile ranges. DONE 2026-09-28: the Calculator's own runs (and its
     near-tie check) in the engine worker (web/js/worker.js); adaptive sampling: the independent check run grows by
-    a batch while a top-6 team is within its noise of #1 (forecast.js checkSim grow, CHECK_MAX 50,000).
-  - Evaluation: DONE 2026-09-28: MODEL.ctxSeInflate measured on held-out stints (laps.py `inflate`: 1.85, keeps 2);
+    a batch while one of the top six ranked teams is within its margin of #1 (Engine.lookZ over the looks, 2.58)
+    and that margin is wider than ±0.5 pt (forecast.js checkSim grow, CHECK_MAX 50,000; calc.js simNoise).
+  - Evaluation: DONE 2026-09-28: MODEL.ctxSeInflate data-informed from odd vs even stints (laps.py `inflate`: 1.85,
+    per round 0.05-3.07, ~1.47 without R8; not an untouched hold-out; keeps 2);
     outcome groups (wet / SC) scored against the matching simulated races (sim.ev), SC / rain forecast calibration
     in section 6 (rain runs high: 25% vs 9%, one wet race; wait for the weather vintages). Repeated
     held-out folds for the weekly fit (fit.js), the real condition number in the fit log (eigenvalues). DONE
@@ -344,10 +367,12 @@ there before re-deciding something.
      only after-the-fact forecasts exist, it can't be done honestly. The most valuable: rain drives spread,
      retirements and qualifying.
   2. Sprint vs race retirement ratio and when retirements happen: 2023-2025's ~18 sprints to pin SIM.sprintDnf
-     (hand-set 0.4; 2026's 8 sprint retirements can't tell 0.36 / 0.40 / 0.45 apart) and the start-spike + per-lap
-     shape; the level stays 2026's (the new PUs fail about twice as often).
+     (hand-set 0.4; 2026's 5 sprint retirements among 108 starters can't tell 0.36 / 0.40 / 0.45 apart) and the
+     start-spike + per-lap shape; the level stays 2026's (the new PUs fail about twice as often). Count entries,
+     starts, laps at risk, DNS, DSQ separately; a late stop that's still classified is censored, not a zero hazard.
   3. Retirement causes: Jolpica has detailed statuses up to ~2022 ("Collision damage", "Power Unit", "Undertray";
-     2024-2026 only "Retired"): a prior for the mechanical / incident split (now: race control's incidents only).
+     a few in 2023; 2024-2026 mostly "Retired"): a weak prior for the mechanical / incident split with an era
+     effect (now: race control's incidents only); unknowns stay unknown, "no incident message" is not "mechanical".
   4. The sim's noise settings (qSd, rSd, teamSd, drvSd, tau, SC noise): how results scatter around pace, fitted on
      2022-2025 (the previous car rules, ~90 races vs 2026's 11; the fitted values sit on flat optima). The biggest
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on

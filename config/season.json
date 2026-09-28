@@ -21,6 +21,13 @@
     "Aston Martin": { "code": "AST", "color": "#229971", "jolpica": ["aston_martin"] },
     "Cadillac": { "code": "CAD", "color": "#9CA3AF", "jolpica": ["cadillac"] }
   },
+  "fiaNames": {
+    "_comment": "The FIA's event names where they differ from the fantasy schedule's: its documents pages and the archive's history/<season>/fia/<event>.json (collect.fia_event_path, backtest/walk.js penAt). Punctuation doesn't matter ('Barcelona-Catalunya' = 'Barcelona Catalunya').",
+    "Barcelona Grand Prix": ["Barcelona-Catalunya Grand Prix"],
+    "Spanish Grand Prix": ["Madrid Grand Prix"],
+    "Japanese Grand Prix": ["Grand Prix of Japan"],
+    "São Paulo Grand Prix": ["Brazilian Grand Prix"]
+  },
   "circuits": {
     "_comment": "Jolpica circuit id or meeting-name fragment (first match wins, ids are checked with the name) -> [power (straight-line emphasis), street (walls, low grip), fast corners (aero)], 0-1, and a note. Claude's classification; the effects are fitted in engine.js trackModel().",
     "list": [

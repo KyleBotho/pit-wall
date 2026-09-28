@@ -52,11 +52,9 @@ test(
     assert.strictEqual(part.N, meta.first);
     assert.strictEqual(full.N, meta.N);
 
-    const track = E.trackModel(D);
     const opts = {
       setup: (g, k) => ({
         next: k === 0,
-        track,
         halfLife: E.DEFAULTS.halfLife,
         adj: {},
         pw: E.DEFAULTS.pw,
@@ -113,5 +111,45 @@ test(
       });
     }
     fs.rmSync(out, { recursive: true, force: true });
+  },
+);
+
+// Fourth review, finding 1: the sim as at lock must not see practice that changed after lock through the circuit
+// model (the next race's overtake level comes from practice's reference lap). The engine's own path (forecastRaces
+// building the model from the data it runs) and the page's (worker.js racesJob, whose context already holds the live
+// model) both give exactly the run of data whose live practice never changed.
+test(
+  "as at lock: the circuit model comes from the practice frozen at lock",
+  { skip: !data && "no cache/data.json" },
+  () => {
+    const next = data.schedule.find((g) => !data.done.includes(g.gd));
+    const fp = (ref) => [{ name: "Practice 1", done: true, ref, drivers: {} }];
+    const D = {
+      ...data,
+      generated: new Date(Date.parse(next.lock) + 36e5).toISOString(),
+      lockSnap: { gd: next.gd, practice: fp(100), penalties: {} },
+      practice: fp(90), // live practice, changed after lock
+    };
+    const same = { ...D, practice: fp(100) };
+    const job = {
+      v: "lock",
+      opts: [0, 1, 2].map((k) => ({ next: k === 0, halfLife: E.DEFAULTS.halfLife, pw: E.DEFAULTS.pw, oddsW: 0 })),
+      sprint0: !!next.sprint,
+      sims: 400,
+    };
+    const opts = { setup: (g, k) => job.opts[k], sprint0: job.sprint0, sims: job.sims };
+    const ref = E.forecastRaces(E.atLock(same), opts).sims[0];
+    const eng = E.forecastRaces(E.atLock(D), opts).sims[0];
+    const run = pageModules(["worker.js"], D, { D, JOB: job });
+    const page = run("racesJob(Engine, D, JOB, { tm: { live: Engine.trackModel(D) } })").sims[0];
+    assert.deepStrictEqual(Array.from(eng.tot), Array.from(ref.tot), "engine path");
+    assert.deepStrictEqual(Array.from(page.tot), Array.from(ref.tot), "page path");
+    // the check has teeth: the live model in the run as at lock changes it
+    const leak = E.forecastRaces(E.atLock(D), {
+      ...opts,
+      setup: (g, k) => ({ ...job.opts[k], track: E.trackModel(D) }),
+    });
+    if (E.trackModel(D).forCircuit(next).kmh != null)
+      assert.notDeepStrictEqual(Array.from(leak.sims[0].tot), Array.from(ref.tot), "the live model leaks");
   },
 );

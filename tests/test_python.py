@@ -311,11 +311,60 @@ class FiaTech(unittest.TestCase):
             "combustion engine (ICE): \n \nNumber Car Driver Previously used ICE \n41 Racing Bulls RB Ford Arvid "
             "Lindblad 3 \n14 Aston Martin Aramco Honda Fernando Alonso 4 \n \nThe internal combustion engine used by "
             "Fernando Alonso is the fifth (5th) of the four (4) new \n2026 Formula One Sporting Regulations. \n"
-            "Championship with a new energy store unit (ES): \n81 McLaren Mercedes Oscar Piastri 2 \n"
+            "Championship with a new energy store unit (ES): \nNumber Car Driver Previously used ES \n"
+            "81 McLaren Mercedes Oscar Piastri 2 \n"
             "The following driver is using a new MGU-Kinetic (MGU-K)  for the remainder of the \nCompetition: \n"
-            "18 Aston Martin Aramco Honda Lance Stroll 6 \n"
+            "Number Car Driver Previously used MGU-K \n    \n18 Aston Martin Aramco Honda Lance Stroll 6 \n"
+            # a heading the header doesn't match: skipped, not read as the element before
+            "The following driver is using a new thing (XYZ) for the remainder: \n"
+            "Number Car Driver Previously used ES \n18 Aston Martin Aramco Honda Lance Stroll 9 \n"
         )
         self.assertEqual(collect.parse_pu_new(new), {41: {"ICE": 3}, 14: {"ICE": 4}, 81: {"ES": 2}, 18: {"MGU-K": 6}})
+        # the same car given two counts for one element: unknown, not the last one read
+        twice = "a new energy store (ES): \nNumber Car Driver Previously used ES \n5 Audi Gabriel Bortoleto 2 \n"
+        self.assertEqual(collect.parse_pu_new(twice + twice.replace(" 2 ", " 3 ")), {})
+
+    def test_new_power_unit_elements_real_documents(self):
+        """Fourth review: "( PU-ANC)" (a space inside the brackets) went unrecognised and its table was read as
+        MGU-K, overwriting Stroll's 4 with 6 (Spain) and giving Pérez's PU-ANC to MGU-K (Monaco)."""
+        import collect
+
+        def doc(event, name):
+            p = os.path.join(ROOT, "history", "2026", "fia", "text", event, name)
+            if not os.path.exists(p):
+                self.skipTest("no archived FIA text")
+            with open(p, encoding="utf-8") as f:
+                return f.read().replace("\xa0", " ")
+
+        spain = doc("2026_spanish_grand_prix", "2026_spanish_grand_prix_-_new_pu_elements_for_this_competition.txt")
+        self.assertEqual(collect.parse_pu_new(spain), {18: {"ICE": 4, "TC": 4, "ES": 5, "MGU-K": 4, "PU-ANC": 6}})
+        monaco = doc("2026_monaco_grand_prix", "2026_monaco_grand_prix_-_new_pu_elements_for_this_competition_1.txt")
+        self.assertEqual(collect.parse_pu_new(monaco), {23: {"ES": 1, "PU-CE": 1}, 1: {"MGU-K": 1}, 11: {"PU-ANC": 2}})
+
+    def test_fia_event_file_under_the_fias_own_name(self):
+        import collect
+
+        with tempfile.TemporaryDirectory() as d:
+
+            def archived(*p):
+                return os.path.join(d, *p)
+
+            os.makedirs(archived("fia"))
+            for f in ["2026_barcelona-catalunya_grand_prix.json", "2026_monaco_grand_prix.json"]:
+                open(archived("fia", f), "w").close()
+            aliases = {"Barcelona Grand Prix": ["Barcelona-Catalunya Grand Prix"]}
+            path = collect.fia_event_path
+            self.assertEqual(
+                os.path.basename(path("Barcelona Grand Prix", 2026, archived, aliases)),
+                "2026_barcelona-catalunya_grand_prix.json",
+            )
+            self.assertEqual(
+                os.path.basename(path("Monaco Grand Prix", 2026, archived, aliases)), "2026_monaco_grand_prix.json"
+            )
+            # none yet: its own name's path
+            self.assertEqual(
+                os.path.basename(path("Qatar Grand Prix", 2026, archived, {})), "2026_qatar_grand_prix.json"
+            )
 
     def test_upgrades_count_wrapped_items_and_teams_with_none(self):
         import collect
@@ -385,8 +434,10 @@ class FiaTech(unittest.TestCase):
             ]
             write_json(archived("fia", "e.json"), {"event": "e", "docs": docs})
             texts = {
-                "u/a.pdf": "Championship with a new turbocharger (TC): \n14 Aston Martin Fernando Alonso 4 \n",
-                "u/b.pdf": "Championship with a new exhaust set (EXH): \n14 Aston Martin Fernando Alonso 2 \n",
+                "u/a.pdf": "Championship with a new turbocharger (TC): \nNumber Car Driver Previously used TC \n"
+                "14 Aston Martin Fernando Alonso 4 \n",
+                "u/b.pdf": "Championship with a new exhaust set (EXH): \nNumber Car Driver Previously used EXH \n"
+                "14 Aston Martin Fernando Alonso 2 \n",
             }
             reads = []
 
@@ -908,6 +959,7 @@ class LapModel(unittest.TestCase):
             {"tla": "CRA", "cls": False, "laps": 20},
             {"tla": "ENG", "cls": False, "laps": 30},
             {"tla": "DNS", "cls": False, "laps": 0, "dns": True},
+            {"tla": "DSQ", "cls": False, "laps": 50, "dsq": True},  # ran the race: not a retirement
         ]
         canon = {
             "cols": laps.COLS,

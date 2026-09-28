@@ -55,6 +55,9 @@ if (D) {
 // sensitivity run. A session without a known forecast gets the circuit's climatology, as the engine does.
 const WX = read("weather_by_round.json");
 const WX_LATEST = process.env.WX_LATEST === "1";
+// the evaluation's own settings (fourth review: accuracy.js keys and labels its results with them, so a
+// sensitivity run never passes for, or overwrites, the standard one); {} = the standard evaluation
+const CONFIG = WX_LATEST ? { wxLatest: true } : {};
 const PROJ_DIR = D ? path.join(__dirname, "..", "history", String(D.season), "projections") : "";
 /** Round r's rain as at lock ({q, s, r}; a session missing = unknown), or null. */
 function wxAt(r) {
@@ -73,18 +76,32 @@ function wxAt(r) {
   }
   return Object.keys(out).length ? out : null;
 }
+// a round's FIA index, as collect.fia_event_path finds it: any of the meeting's names (config/season.json fiaNames:
+// the FIA's own where they differ), punctuation ignored (the FIA names its files: "2026_barcelona-catalunya_...")
+const FIA_NAMES = read(path.join("..", "config", "season.json")).fiaNames || {};
+const fiaKey = (s) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+function fiaFile(name) {
+  const dir = path.join(__dirname, "..", "history", String(D.season), "fia");
+  if (!fs.existsSync(dir)) return null;
+  const want = new Set(
+    [name, ...(Array.isArray(FIA_NAMES[name]) ? FIA_NAMES[name] : [])].map((n) => fiaKey(`${D.season} ${n}`)),
+  );
+  const f = fs
+    .readdirSync(dir)
+    .sort()
+    .find((x) => x.endsWith(".json") && want.has(fiaKey(x.slice(0, -5))));
+  return f ? path.join(dir, f) : null;
+}
 /** Grid penalties the stewards had published by round r's lock (history/<season>/fia, parsed decisions), as TLAs. */
 function penAt(r) {
   const g = D.schedule.find((x) => x.gd === r);
   if (!g) return {};
-  const slug =
-    `${D.season}_` +
-    g.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_|_$/g, "");
-  const f = path.join(__dirname, "..", "history", String(D.season), "fia", `${slug}.json`);
-  if (!fs.existsSync(f)) return {};
+  const f = fiaFile(g.name);
+  if (!f) return {};
   const num = Object.fromEntries((D.results.race[r] || []).filter((x) => x.num).map((x) => [x.num, x.tla]));
   /** @type {Record<string, number>} */
   const pen = {};
@@ -506,6 +523,7 @@ const INPUTS = [
   path.join(__dirname, "practice_by_round.json"),
   path.join(__dirname, "odds_by_round.json"),
   path.join(__dirname, "weather_by_round.json"),
+  path.join(__dirname, "..", "config", "season.json"), // fiaNames: which FIA index is a round's
   ...["practice", "odds", "projections", "fia", path.join("telemetry", "minisectors")].map((d) =>
     path.join(SEASON_DIR, d),
   ),
@@ -525,4 +543,5 @@ module.exports = {
   MINI,
   mean,
   INPUTS,
+  CONFIG,
 };

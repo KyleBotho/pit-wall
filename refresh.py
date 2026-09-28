@@ -525,15 +525,16 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
     # which kinds the last finished round has (health: none means the FIA page or its event name changed)
     if done:
         g = next(x for x in schedule if x["gd"] == done[-1])
-        p = archived("fia", f"{gather.event_slug(g['name'], SEASON)}.json")
+        p = gather.fia_event_path(g["name"], SEASON, archived, CFG.get("fiaNames"))
         docs = read_json(p)["docs"] if os.path.exists(p) else []
         out["fiaRead"] = {"gd": g["gd"], "kinds": sorted({d["read"] for d in docs if d.get("read")})}
     # grid penalties from the stewards' decisions (race control announces none in 2026): the PDFs of this
     # weekend's car infringements, read once each; car numbers to TLAs from the last race's classification
     if nxt_g and out.get("weekend") is not None and busy:
         try:
+            fia_file = gather.fia_event_path(nxt_g["name"], SEASON, archived, CFG.get("fiaNames"))
             pen, at, parts = gather.fia_penalties(
-                archived, read_json, write_json, gather.event_slug(nxt_g["name"], SEASON), fia_bytes
+                archived, read_json, write_json, os.path.basename(fia_file)[:-5], fia_bytes
             )
             last = max((int(k) for k in results["race"]), default=None)
             num = {r["num"]: r["tla"] for r in (results["race"].get(last) or []) if r.get("num")} if last else {}

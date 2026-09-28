@@ -19,13 +19,8 @@ import refresh  # noqa: E402
 
 REPARSE = "--reparse" in sys.argv  # after a parser change: every event's summary rebuilt from its kept texts
 EVENT_URL = collect.FIA_URL + "/season/season-{season}-2072/event/{name}"
-# the FIA's event names where they differ from the fantasy schedule's
-ALIASES = {
-    "Barcelona Grand Prix": ["Barcelona-Catalunya Grand Prix"],
-    "Spanish Grand Prix": ["Madrid Grand Prix"],
-    "Japanese Grand Prix": ["Grand Prix of Japan"],
-    "São Paulo Grand Prix": ["Brazilian Grand Prix"],
-}
+# the FIA's event names where they differ from the fantasy schedule's (config/season.json fiaNames)
+ALIASES = refresh.CFG.get("fiaNames") or {}
 
 
 def main():
@@ -37,9 +32,9 @@ def main():
         if datetime.fromisoformat(g["raceStart"]) > now:
             break
         slug = collect.event_slug(g["name"], season)
-        names = [g["name"], *ALIASES.get(g["name"], [])]
-        paths = [refresh.archived("fia", f"{collect.event_slug(n, season)}.json") for n in names]
-        if any(os.path.exists(p) and refresh.read_json(p)["docs"] for p in paths):
+        names = collect.fia_names(g["name"], ALIASES)
+        p = collect.fia_event_path(g["name"], season, refresh.archived, ALIASES)
+        if os.path.exists(p) and refresh.read_json(p)["docs"]:
             print(f"R{g['gd']} {g['name']}: index kept")
             continue
         for name in names:
@@ -59,6 +54,31 @@ def main():
                 break
         else:
             print(f"R{g['gd']} {g['name']}: no page found")
+    # the stewards' decisions of each finished round, read for grid penalties (`grid` on each car-infringement
+    # document, as refresh.py does for the coming race; fourth review: without them an empty list in walk.js penAt
+    # meant "never read", not "no penalties")
+    for g in data["schedule"]:
+        if datetime.fromisoformat(g["raceStart"]) > now:
+            break
+        p = collect.fia_event_path(g["name"], season, refresh.archived, ALIASES)
+        if not os.path.exists(p):
+            continue
+        before = None
+        while True:
+            left = [
+                d
+                for d in refresh.read_json(p)["docs"]
+                if collect.PEN_TITLE.search(d.get("title") or "") and "grid" not in d
+            ]
+            if not left or len(left) == before:  # all read, or none could be (no pypdf, the site down)
+                if left:
+                    print(f"R{g['gd']} {g['name']}: {len(left)} decisions not read; re-run later")
+                break
+            before = len(left)
+            pen, _, _ = collect.fia_penalties(
+                refresh.archived, refresh.read_json, refresh.write_json, os.path.basename(p)[:-5], refresh.fia_bytes
+            )
+            print(f"R{g['gd']} {g['name']}: decisions read, {len(left)} were left; grid penalties {pen or 'none'}")
     args = (refresh.archived, refresh.read_json, refresh.write_json, refresh.fia_bytes, refresh.CFG["teams"])
     if REPARSE:
         collect.fia_tech(*args, most=0, reparse=True)

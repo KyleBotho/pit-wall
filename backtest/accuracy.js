@@ -14,7 +14,14 @@ const { D, E, mean } = W;
 
 const N = +(process.env.ACC_N || 3000);
 const ROOT = path.join(__dirname, "..");
-const OUT = path.join(ROOT, "history", String(D.season), "accuracy.json");
+// a sensitivity run (walk.js CONFIG not empty, e.g. WX_LATEST=1) writes its own file: it never overwrites or passes
+// for the standard result the Sim lab shows (fourth review)
+const CONFIG = W.CONFIG;
+const TAG = Object.keys(CONFIG)
+  .sort()
+  .map((k) => k.toLowerCase())
+  .join("-");
+const OUT = path.join(ROOT, "history", String(D.season), TAG ? `accuracy-${TAG}.json` : "accuracy.json");
 const FROM = 5; // walk-forward needs a few rounds of this season first (as section 6)
 
 // F1 Fantasy certifies a race's points hours after it (MatchStatus 4); until then they can still change
@@ -60,7 +67,7 @@ const key = (() => {
     h.update(fs.readFileSync(f));
   h.update(JSON.stringify(Object.entries(D).filter(([k]) => !VOLATILE.has(k))));
   h.update(JSON.stringify(certified));
-  h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI, N]));
+  h.update(JSON.stringify([W.PRACTICE, W.ODDS, W.MINI, N, CONFIG]));
   const arch = path.join(ROOT, "history", String(D.season));
   for (const d of ["projections", "challengers", "samples"]) hashDir(h, path.join(arch, d));
   // everything walk.js's asOf reads (its manifest: weather at lock, the stewards' penalties, practice, odds, ...)
@@ -215,6 +222,7 @@ const out = {
   generated: new Date().toISOString().slice(0, 16) + "Z",
   key,
   N,
+  config: CONFIG, // {} = the standard evaluation
   rounds: roundRows,
   frozenGroups: frozenRecs.length ? rg(W.groups(frozenRecs)) : null,
   challengers: challengers(),

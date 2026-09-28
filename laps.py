@@ -497,8 +497,10 @@ def _race_canons(archived, read_json, done):
 def hier_report(archived, read_json, done):
     """The pooled race pace for every finished round with lap records, round k pooled with rounds <= k, next to the
     race-alone fit: [{gd, fuel {alone, fit, season, tau}, maxShift, meanShift (% of a lap, driver terms)}].
-    A check, not a model input: on R1-R15 2026 pooling moved no driver's race pace by more than 0.044% (race-to-race
-    spread ~0.4%), so it isn't a challenger (see docs/history.md). Re-run with a full season: python laps.py hier"""
+    A check, not a model input: on R1-R15 2026 pooling moved a driver's race pace by at most 0.161% (R6; 0.113% R4,
+    <= 0.021% elsewhere; mean <= 0.044%; race-to-race spread ~0.4%). Deferred for want of evidence, not shown useless:
+    the fourth review's screen (pooled vs unpooled contextual pace, uncertainty weights held) gave CRPS -0.006 +/-
+    0.010, inconclusive (docs/history.md). Re-run with a full season: python laps.py hier"""
     designs, raw = {}, {}
     for gd, canon in _race_canons(archived, read_json, done).items():
         d = hier_design(canon)
@@ -527,11 +529,13 @@ def hier_report(archived, read_json, done):
 
 
 def inflate_check(archived, read_json, done):
-    """How far the lap model's standard errors understate (MODEL.ctxSeInflate, hand-set 2), on held-out stints: each
-    driver's odd and even stints (>= 5 clean laps each) get a pace term each; their difference against its standard
-    error should be N(0, 1) if the errors were honest, so sqrt(mean z^2) is the inflation. Only drivers whose odd and
-    even stints share a compound (else the compound offset soaks the difference up). -> {rounds, drivers, inflation,
-    perRound}. python laps.py inflate"""
+    """How far the lap model's standard errors understate (MODEL.ctxSeInflate, hand-set 2), from a split of the
+    stints: each driver's odd and even stints (>= 5 clean laps each) get a pace term each, fitted together with the
+    shared context terms; their difference against its standard error should be N(0, 1) if the errors were honest,
+    so sqrt(mean z^2) is the inflation. Only drivers whose odd and even stints share a compound (else the compound
+    offset soaks the difference up). Not an untouched held-out prediction (both halves are in the fit), and the rows
+    aren't independent weekends: per round it ranges 0.05-3.07, leaving R8 out takes 1.85 to ~1.47 (fourth review).
+    Data-informed, not a validated constant. -> {rounds, drivers, inflation, perRound}. python laps.py inflate"""
     import numpy as np
 
     z2, per = [], {}
@@ -645,7 +649,8 @@ def retirements(results, rc, num_of, canon=None):
                 stops[t] = t0 + last[ix["start"]] + (last[ix["time"]] or 0)
     out = {}
     for r in results:
-        if r.get("cls"):
+        # a disqualified car ran the race: not a retirement (fourth review: one came out as "other")
+        if r.get("cls") or r.get("dsq"):
             continue
         t, laps = r["tla"], r.get("laps") or 0
         if r.get("dns"):

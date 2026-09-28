@@ -10,6 +10,9 @@ import { inWorker, mergeRuns, racesJob, simJob, workerOk } from "./worker.js";
 export let forecast = null; // the simulated races and projections behind every view (compute())
 const recentForm = Engine.recentForm;
 export const trackFit = Engine.trackModel(DATA);
+// the circuit models the sims use, one per variant (worker.js racesJob ctx): "live" is trackFit, "lock" is built
+// from the data as at lock on first use (the practice frozen at lock, not the live one)
+const trackCtx = { tm: { live: trackFit } };
 // circuit settings: fitted track values (past seasons x this season's trend) with this weekend's rain forecast,
 // overridden by anything set in Settings
 export const circ = (g) =>
@@ -55,7 +58,7 @@ export function compute() {
   inWorker("races", [job])
     .then(
       ([r]) => r,
-      () => racesJob(Engine, DATA, job, { tm: trackFit }), // no worker after all: run here
+      () => racesJob(Engine, DATA, job, trackCtx), // no worker after all: run here
     )
     .then((r) => {
       remember(key, { ...r, pre: 0 });
@@ -93,7 +96,7 @@ export function checkSim(onReady, grow = false) {
     };
     const done = (sim) => {
       if (forecast !== fc) return;
-      fc.check = fc.check ? mergeRuns(fc.check, sim) : sim;
+      fc.check = mergeRuns(fc.check, sim); // samples only (ids, N, tot, nn)
       fc.checkPending = false;
       if (onReady) onReady();
     };
@@ -224,7 +227,7 @@ function runRaces(v) {
     };
   }
   const key = simKey(v);
-  if (!simCache.has(key)) remember(key, { ...racesJob(Engine, DATA, localJob(v), { tm: trackFit }), pre: 0 });
+  if (!simCache.has(key)) remember(key, { ...racesJob(Engine, DATA, localJob(v), trackCtx), pre: 0 });
   return simCache.get(key);
 }
 function build(v) {
@@ -507,33 +510,19 @@ export function teamDist(ids, boost, chip, boost2) {
     p75: sorted[Math.floor(N * 0.75)],
   };
 }
-// joint next-race score of a team across the simulated weekends
+// joint next-race score of a team across the simulated weekends, with the chip (Engine.chipScore, as the planner
+// scores it: X3, No Negative's points, Autopilot's Boost on whoever scores most that weekend); an asset not in the
+// sim scores -25
 export function teamSamples(ids, boost, chip, boost2, sim = forecast.sims[0]) {
   const N = sim.N,
     arr = new Float64Array(N);
-  const ds = ids.filter(isDriver);
-  for (const id of ids) {
-    const i = forecast.idx[id],
-      p = forecast.proj[0][id];
-    if (i == null) {
-      for (let s = 0; s < N; s++) arr[s] += -25;
-      continue;
-    }
-    const src = chip === "noneg" ? sim.nn : sim.tot;
-    const mult = chip === "autopilot" ? 1 : id === boost ? (chip === "x3" ? 3 : 2) : id === boost2 ? 2 : 1;
-    for (let s = 0; s < N; s++) arr[s] += (src[i * N + s] + p.shift) * mult;
-  }
-  // Autopilot: the Boost goes to whoever scores most, weekend by weekend
-  if (chip === "autopilot")
-    for (let s = 0; s < N; s++) {
-      let m = -1e9;
-      for (const id of ds) {
-        const i = forecast.idx[id];
-        const v = i == null ? -25 : sim.tot[i * N + s] + forecast.proj[0][id].shift;
-        if (v > m) m = v;
-      }
-      arr[s] += m;
-    }
+  const ds = ids.filter(isDriver),
+    src = chip === "noneg" ? sim.nn : sim.tot;
+  const at = Object.fromEntries(ids.map((id) => [id, forecast.idx[id]])),
+    sh = Object.fromEntries(ids.map((id) => [id, (forecast.proj[0][id] || {}).shift || 0]));
+  let s = 0;
+  const pts = (id) => (at[id] == null ? -25 : src[at[id] * N + s] + sh[id]);
+  for (; s < N; s++) arr[s] = Engine.chipScore(ids, ds, boost, chip === "x3" ? boost2 : null, chip, pts);
   return arr;
 }
 export const horizon = () => (activeChip() === "limitless" ? 1 : Math.min(state.horizon, forecast.races.length));
