@@ -5,6 +5,16 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, hierarchical race pace (the user: "please start"): laps.py `hier_design` / `hier_fit` / `pool_terms`
+      (fixed S / M / H layout, offsets vs M; context terms drawn to the season's value with DerSimonian-Laird tau,
+      round k pooled with rounds <= k) and cluster-robust (driver-stint) standard errors. Result: races differ for
+      real (fuel over a full race -0.6% .. -4.9%, tau ~0.8%) and each race already pins its context well enough:
+      pooled vs alone moved driver pace by max 0.044%, mean <= 0.02% (race-to-race spread ~0.4%). So no challenger
+      (it would duplicate racectx); kept as `python laps.py hier`, no archive writes. MODEL.ctxSeInflate (hand-set
+      2) measured on held-out stints (`python laps.py inflate`: each driver's odd vs even stints as two terms, only
+      drivers whose odd and even stints share a compound, else the compound offset soaks up the difference and the
+      ratio falls to ~0.03): 1.85 over 64 driver-races in 8 rounds. Kept at 2 (marked measured). The sandwich
+      estimate (median 1.03) runs low with 2-3 stints per driver and isn't used.
 - [x] 2026-09-28, checked before building the "timed safety car" challenger (the group table had SC races
       under-covered, 74% / 43%): grouping by what happened splits even a perfect forecast (its range mixes SC and
       no-SC futures). The sim now marks each sample (sim.ev: bit 1 race SC, bit 2 wet race; no extra draws,

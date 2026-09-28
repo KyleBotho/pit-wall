@@ -37,7 +37,7 @@
     // driver's race pace moves between races (%); ctxSeInflate for lap errors that are correlated within a stint
     // (laps.py's standard errors treat them as independent)
     ctxTau: 0.4,
-    ctxSeInflate: 2,
+    ctxSeInflate: 2, // measured 2026-09-28: 1.85 on held-out stints (laps.py inflate, 64 driver-races R1-R15)
     dnfHalfLife: Infinity, // backtested: no recency weighting of retirements (every race counts the same)
     dnfShrink: 16, // backtested: pseudo-races of the grid-wide retirement rate mixed into each team's
     dnfFallback: 0.12, // hand-set: retirement rate before any race has run

@@ -51,7 +51,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   rebuilds every summary after a parser change). Health warns when a finished round has < 3 kinds read.
 - `laps.py` — canonical lap records (OpenF1 laps + stints + race control + weather, with context and quality
   flags) -> `history/<season>/laps/gdNN.json`, the contextual race-pace model (`paceCtx`, MODEL.racePace "ctx") and
-  retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`.
+  retirement causes (MODEL.dnfModel "causes"). Run by extras.race_info for each finished round; `backfill` / `audit`;
+  checks `hier` (the context terms pooled across races) and `inflate` (standard errors on held-out stints).
   `reconcile` (each refresh, once telemetry.py has the round): lap numbers lined up with FastF1's lap times,
   compound + tyre age from FastF1, pace refitted, `lapCheck` in the race block; < 90% agreement = no `paceCtx`.
 - `practice.py` — OpenF1 practice laps -> short-run (best lap / best-sector sum) and long-run (5+ lap stints,
@@ -311,18 +312,21 @@ there before re-deciding something.
     while adding it: more steps help little, the residual levels off by ~step 6 (R13 0.42 -> ~0.35, R15 0.31 ->
     ~0.27) because one pace per driver can't meet win, podium and top 10 together (the market sees a wider spread
     of results). If the market matters, the lever is a per-driver spread (variance) fitted to the market too.
-  - Models: a hierarchical race-pace model (tyres / fuel across races; laps.py fits each race alone, 6 fixed
-    reweightings); retirements by distance run, and "other" causes split into unknown vs confirmed mechanical
+  - Models: retirements by distance run, and "other" causes split into unknown vs confirmed mechanical
     (laps.py lumps them); SC / VSC / red flag as timed events (only the experimental lap models, SIM.raceModel
     "laps" / "segments", put the SC and retirements on a lap; VSC and red flags nowhere; the default rank model
     is per race); a fully stochastic transfer / chip planner (planHorizon searches on expected prices, then only
-    re-ranks the plans it kept by `afford`). DONE 2026-09-28: settings are values, not shared state (engine.js
+    re-ranks the plans it kept by `afford`). CHECKED 2026-09-28, not built as challengers: a hierarchical race-pace
+    model (laps.py `hier`: context terms pooled across races moved no driver's pace by more than 0.044%) and timed
+    SC events (the SC groups were a grouping artifact; see Evaluation). DONE 2026-09-28: settings are values, not shared state (engine.js
     withSettings swaps in a changed copy; Engine.SIM / MODEL / TRACK are read-only views, a write throws; the fit,
     section 9 and the tests go through withSettings). Checked output-identical (8 switch sets x 4 races, hashes).
   - Sampling and speed: adaptive sample counts / sequential stopping when the top teams are within noise; the
     precision of quantile ranges. DONE 2026-09-28: the Calculator's own runs (and its near-tie check) in the engine
     worker (web/js/worker.js).
-  - Evaluation: MODEL.ctxSeInflate (hand-set x2) estimated from held-out stints. DONE 2026-09-28: repeated
+  - Evaluation: DONE 2026-09-28: MODEL.ctxSeInflate measured on held-out stints (laps.py `inflate`: 1.85, keeps 2);
+    outcome groups (wet / SC) scored against the matching simulated races (sim.ev), SC / rain forecast calibration
+    in section 6 (rain runs high: 25% vs 9%, one wet race; wait for the weather vintages). Repeated
     held-out folds for the weekly fit (fit.js), the real condition number in the fit log (eigenvalues). DONE
     2026-09-27: calibration by group (walk.js `groups`: drivers / constructors, sprint / normal, wet / dry,
     safety car or not) in section 6 and Model health (walk-forward + frozen). First read, R5-R15: SC races

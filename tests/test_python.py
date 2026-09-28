@@ -245,6 +245,28 @@ class FiaPenalties(unittest.TestCase):
         self.assertEqual(reads, ["a", "b", "c"])
 
 
+class HierPace(unittest.TestCase):
+    def test_pooling_follows_the_spread_between_races(self):
+        import laps
+
+        n = len(laps.HIER_TERMS)
+
+        def fit(b, v, support=100):
+            return {"ctx": [b] * n, "ctxVar": [v] * n, "support": [support] * n}
+
+        # races that agree within their errors: tau 0, the mean is the precision-weighted one
+        mu, tau2 = laps.pool_terms([fit(1.0, 0.01), fit(1.1, 0.01), fit(0.9, 0.01)])
+        self.assertAlmostEqual(mu[0], 1.0)
+        self.assertAlmostEqual(tau2[0], 0.0)
+        # races far apart against their errors: tau2 about their spread (variance 1)
+        mu, tau2 = laps.pool_terms([fit(0.0, 1e-4), fit(1.0, 1e-4), fit(2.0, 1e-4)])
+        self.assertAlmostEqual(mu[0], 1.0, places=3)
+        self.assertAlmostEqual(tau2[0], 1.0, places=2)
+        # too few races, or too few laps on the term: not pooled
+        self.assertEqual(laps.pool_terms([fit(1, 0.1), fit(2, 0.1)]), ([None] * n, [None] * n))
+        self.assertIsNone(laps.pool_terms([fit(1, 0.1, 5)] * 4)[0][0])
+
+
 class FiaTech(unittest.TestCase):
     TEAMS = {
         "_comment": "",

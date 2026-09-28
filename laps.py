@@ -28,6 +28,7 @@ session whose lap times don't agree with FastF1's under any shift gets no contex
 """
 
 import argparse
+import json
 import math
 import os
 import re
@@ -282,8 +283,8 @@ def reconcile(archived, read_json, write_json, gd):
 # ---------------------------------------------------------------- the pace model
 
 
-def clean_laps(canon):
-    """(tla, time, cmp, age, fuel share, traffic) for laps fit for pace: not lap 1, not in / out laps, not
+def clean_laps(canon, stint=False):
+    """(tla, time, cmp, age, fuel share, traffic[, stint]) for laps fit for pace: not lap 1, not in / out laps, not
     neutralised, not wet, not slow, with a compound and a time."""
     ix = {c: i for i, c in enumerate(canon["cols"])}
     laps = canon["laps"]
@@ -297,7 +298,8 @@ def clean_laps(canon):
                 continue
             gap = r[ix["gap"]]
             traffic = max(0.0, TRAFFIC_GAP - gap) / TRAFFIC_GAP if gap is not None else 0.0
-            out.append((t, r[ix["time"]], r[ix["cmp"]], r[ix["age"]], r[ix["lap"]] / max(1, total), traffic))
+            row = (t, r[ix["time"]], r[ix["cmp"]], r[ix["age"]], r[ix["lap"]] / max(1, total), traffic)
+            out.append(row + (r[ix["stint"]],) if stint else row)
     return out
 
 
@@ -362,6 +364,247 @@ def fit_pace(canon):
         "laps": len(rows),
     }
     return {"pace": pace, "se": se, "n": {t: counts[t] for t in drivers}, "coef": coef}
+
+
+# ---------------------------------------------------------------- the pooled (hierarchical) pace model
+
+# fit_pace fits each race alone. Within one race fuel and tyre age move together, so its tyre, fuel and traffic
+# effects are loosely pinned (fuel over a full race: -0.6% to -4.9% across R1-R15) and that noise leaks into the
+# driver terms. Here the context terms of every race are drawn towards the season's typical values, as much as the
+# races agree (empirical Bayes: each term's between-race spread tau against its within-race standard error,
+# DerSimonian-Laird); the driver terms stay free per race. Round k is pooled with rounds up to k only, so a backtest
+# of round r never sees a later race. Compounds by letter (dry: S / M / H), offsets against M.
+HIER_CMPS = ("S", "M", "H")
+HIER_TERMS = ["cmp:S", "cmp:H", "age:S", "age:M", "age:H", "fuel", "traffic"]
+HIER_MIN_ROUNDS = 3  # races with a term before it's pooled
+HIER_MIN_LAPS = 30  # clean laps a race needs on a term for its estimate to count in the pooling
+
+
+def hier_design(canon):
+    """Clean dry laps -> (drivers, X, y, support per context term) with HIER_TERMS' fixed columns, or None."""
+    import numpy as np
+
+    rows = [r for r in clean_laps(canon, stint=True) if r[2] in HIER_CMPS]
+    counts = {}
+    for r in rows:
+        counts[r[0]] = counts.get(r[0], 0) + 1
+    drivers = sorted(t for t, n in counts.items() if n >= MIN_LAPS)
+    rows = [r for r in rows if counts.get(r[0], 0) >= MIN_LAPS]
+    if len(drivers) < 6:
+        return None
+    di, nd, nt = {t: k for k, t in enumerate(drivers)}, len(drivers), len(HIER_TERMS)
+    X = np.zeros((len(rows), nd + nt))
+    y = np.log(np.array([r[1] for r in rows]))
+    clusters = []
+    for i, (t, _, c, age, fuel, traffic, st) in enumerate(rows):
+        clusters.append(f"{t}:{st}")
+        X[i, di[t]] = 1
+        if c != "M":
+            X[i, nd + HIER_TERMS.index("cmp:" + c)] = 1
+        X[i, nd + HIER_TERMS.index("age:" + c)] = age
+        X[i, nd + HIER_TERMS.index("fuel")] = fuel
+        X[i, nd + HIER_TERMS.index("traffic")] = traffic
+    support = [int(np.count_nonzero(X[:, nd + j])) for j in range(nt)]
+    return drivers, X, y, support, clusters
+
+
+def hier_fit(design, mu=None, tau2=None):
+    """Huber IRLS on one race's design. Without a prior: a light ridge on the context terms (as fit_pace). With one
+    (mu, tau2 per term; None = not pooled): each term is drawn towards mu with weight sigma^2 / tau2. Standard errors
+    are cluster-robust by driver-stint (a stint's laps share tyres, traffic and set-up: their errors aren't
+    independent, and the plain ones come out too small). Returns {pace, se, n, ctx (log units), ctxVar, sigma2,
+    inflate (robust / plain standard error of the driver terms, median)}."""
+    import numpy as np
+
+    drivers, X, y, support, clusters = design
+    nd, nt = len(drivers), len(HIER_TERMS)
+    lam, m = np.zeros(nd + nt), np.zeros(nd + nt)
+    w = np.ones(len(y))
+    beta, sigma2 = None, 1e-4
+    for _ in range(8):
+        for j in range(nt):
+            if mu is not None and mu[j] is not None:
+                lam[nd + j], m[nd + j] = sigma2 / max(tau2[j], 1e-12), mu[j]
+            else:
+                lam[nd + j], m[nd + j] = RIDGE * 1e-4, 0.0
+        XtW = X.T * w
+        beta = np.linalg.solve(XtW @ X + np.diag(lam), XtW @ y + lam * m)
+        res = y - X @ beta
+        s = 1.4826 * np.median(np.abs(res - np.median(res))) or 1e-3
+        k = 1.5 * s
+        w = np.where(np.abs(res) <= k, 1.0, k / np.maximum(np.abs(res), 1e-12))
+        sigma2 = float(np.sum(w * res**2) / max(1, len(y) - nd - nt))
+    Ainv = np.linalg.inv((X.T * w) @ X + np.diag(lam))
+    plain = sigma2 * Ainv
+    # sandwich: A^-1 (sum over clusters of g g') A^-1, g = the cluster's weighted score; small-sample factor G/(G-1)
+    score = X * (w * res)[:, None]
+    ids = {}
+    for i, c in enumerate(clusters):
+        ids.setdefault(c, []).append(i)
+    G = len(ids)
+    meat = np.zeros((X.shape[1], X.shape[1]))
+    for rows_c in ids.values():
+        g = score[rows_c].sum(axis=0)
+        meat += np.outer(g, g)
+    cov = Ainv @ meat @ Ainv * (G / max(1, G - 1))
+    ratio = [math.sqrt(cov[k, k] / plain[k, k]) for k in range(nd) if plain[k, k] > 0]
+    d = beta[:nd]
+    best = float(np.min(d))
+    return {
+        "pace": {t: round((math.exp(d[k] - best) - 1) * 100, 3) for k, t in enumerate(drivers)},
+        "se": {t: round(math.sqrt(max(0.0, cov[k, k])) * 100, 3) for k, t in enumerate(drivers)},
+        "n": {t: int(np.count_nonzero(X[:, k])) for k, t in enumerate(drivers)},
+        "ctx": [float(beta[nd + j]) for j in range(nt)],
+        "ctxVar": [float(cov[nd + j, nd + j]) for j in range(nt)],
+        "support": support,
+        "sigma2": sigma2,
+        "inflate": statistics.median(ratio) if ratio else None,
+    }
+
+
+def pool_terms(fits):
+    """Each context term's season mean and between-race variance from unpooled race fits (DerSimonian-Laird, random
+    effects): -> (mu, tau2), None for a term fewer than HIER_MIN_ROUNDS races pin down."""
+    mu, tau2 = [], []
+    for j in range(len(HIER_TERMS)):
+        est = [(f["ctx"][j], f["ctxVar"][j]) for f in fits if f["support"][j] >= HIER_MIN_LAPS and f["ctxVar"][j] > 0]
+        if len(est) < HIER_MIN_ROUNDS:
+            mu.append(None)
+            tau2.append(None)
+            continue
+        w = [1 / v for _, v in est]
+        sw = sum(w)
+        m0 = sum(wi * b for wi, (b, _) in zip(w, est, strict=True)) / sw
+        q = sum(wi * (b - m0) ** 2 for wi, (b, _) in zip(w, est, strict=True))
+        t2 = max(0.0, (q - (len(est) - 1)) / (sw - sum(wi * wi for wi in w) / sw))
+        ws = [1 / (v + t2) for _, v in est]
+        mu.append(sum(wi * b for wi, (b, _) in zip(ws, est, strict=True)) / sum(ws))
+        tau2.append(t2)
+    return mu, tau2
+
+
+def _race_canons(archived, read_json, done):
+    """{gd: the race's lap records} for finished rounds whose laps line up with FastF1's (as fit_pace)."""
+    out = {}
+    for gd in sorted(done):
+        lp = archived("laps", f"gd{gd:02d}.json")
+        canon = read_json(lp).get("race") if os.path.exists(lp) else None
+        if canon and canon.get("laps") and ((canon.get("quality") or {}).get("ff") or {"ok": True})["ok"]:
+            out[gd] = canon
+    return out
+
+
+def hier_report(archived, read_json, done):
+    """The pooled race pace for every finished round with lap records, round k pooled with rounds <= k, next to the
+    race-alone fit: [{gd, fuel {alone, fit, season, tau}, maxShift, meanShift (% of a lap, driver terms)}].
+    A check, not a model input: on R1-R15 2026 pooling moved no driver's race pace by more than 0.044% (race-to-race
+    spread ~0.4%), so it isn't a challenger (see docs/history.md). Re-run with a full season: python laps.py hier"""
+    designs, raw = {}, {}
+    for gd, canon in _race_canons(archived, read_json, done).items():
+        d = hier_design(canon)
+        if d:
+            designs[gd], raw[gd] = d, hier_fit(d)
+    rows = []
+    for gd in sorted(designs):
+        mu, tau2 = pool_terms([raw[g] for g in raw if g <= gd])
+        f, a = hier_fit(designs[gd], mu, tau2), raw[gd]
+        j = HIER_TERMS.index("fuel")
+        shifts = [abs(f["pace"][t] - a["pace"][t]) for t in f["pace"]]
+        rows.append(
+            {
+                "gd": gd,
+                "fuel": {
+                    "alone": round(a["ctx"][j] * 100, 3),
+                    "fit": round(f["ctx"][j] * 100, 3),
+                    "season": None if mu[j] is None else round(mu[j] * 100, 3),
+                    "tau": None if tau2[j] is None else round(math.sqrt(tau2[j]) * 100, 3),
+                },
+                "maxShift": round(max(shifts), 3),
+                "meanShift": round(statistics.mean(shifts), 3),
+            }
+        )
+    return rows
+
+
+def inflate_check(archived, read_json, done):
+    """How far the lap model's standard errors understate (MODEL.ctxSeInflate, hand-set 2), on held-out stints: each
+    driver's odd and even stints (>= 5 clean laps each) get a pace term each; their difference against its standard
+    error should be N(0, 1) if the errors were honest, so sqrt(mean z^2) is the inflation. Only drivers whose odd and
+    even stints share a compound (else the compound offset soaks the difference up). -> {rounds, drivers, inflation,
+    perRound}. python laps.py inflate"""
+    import numpy as np
+
+    z2, per = [], {}
+    for gd, canon in _race_canons(archived, read_json, done).items():
+        rows = [r for r in clean_laps(canon, stint=True) if r[2] in HIER_CMPS]
+        laps_in, cmp_of = {}, {}
+        for r in rows:
+            laps_in[(r[0], r[6])] = laps_in.get((r[0], r[6]), 0) + 1
+            cmp_of.setdefault((r[0], r[6]), set()).add(r[2])
+        par = {}
+        for t in {k[0] for k in laps_in}:
+            good = sorted(s for (d, s), n in laps_in.items() if d == t and n >= 5)
+            odd = set().union(*(cmp_of[(t, s)] for s in good[0::2])) if good else set()
+            even = set().union(*(cmp_of[(t, s)] for s in good[1::2])) if len(good) > 1 else set()
+            if odd & even:
+                for k, s in enumerate(good):
+                    par[(t, s)] = k % 2
+        rows = [r for r in rows if (r[0], r[6]) in par]
+        keys = sorted({(r[0], par[(r[0], r[6])]) for r in rows})
+        if len(keys) < 6:
+            continue
+        ki, nk, nt = {k: i for i, k in enumerate(keys)}, len(keys), len(HIER_TERMS)
+        X = np.zeros((len(rows), nk + nt))
+        y = np.log(np.array([r[1] for r in rows]))
+        for i, (t, _, c, age, fuel, traffic, st) in enumerate(rows):
+            X[i, ki[(t, par[(t, st)])]] = 1
+            if c != "M":
+                X[i, nk + HIER_TERMS.index("cmp:" + c)] = 1
+            X[i, nk + HIER_TERMS.index("age:" + c)] = age
+            X[i, nk + HIER_TERMS.index("fuel")] = fuel
+            X[i, nk + HIER_TERMS.index("traffic")] = traffic
+        lam = np.r_[np.zeros(nk), np.full(nt, RIDGE * 1e-4)]
+        w = np.ones(len(y))
+        for _ in range(8):
+            XtW = X.T * w
+            beta = np.linalg.solve(XtW @ X + np.diag(lam), XtW @ y)
+            res = y - X @ beta
+            s = 1.4826 * np.median(np.abs(res - np.median(res))) or 1e-3
+            w = np.where(np.abs(res) <= 1.5 * s, 1.0, 1.5 * s / np.maximum(np.abs(res), 1e-12))
+        sigma2 = float(np.sum(w * res**2) / max(1, len(y) - nk - nt))
+        cov = sigma2 * np.linalg.inv((X.T * w) @ X + np.diag(lam))
+        zs = []
+        for t in sorted({k[0] for k in keys}):
+            if (t, 0) in ki and (t, 1) in ki:
+                a, b = ki[(t, 0)], ki[(t, 1)]
+                var = cov[a, a] + cov[b, b] - 2 * cov[a, b]
+                if var > 0:
+                    zs.append(float((beta[a] - beta[b]) ** 2 / var))
+        if zs:
+            z2 += zs
+            per[gd] = [len(zs), round(math.sqrt(statistics.mean(zs)), 2)]
+    return {
+        "rounds": len(per),
+        "drivers": len(z2),
+        "inflation": round(math.sqrt(statistics.mean(z2)), 2) if z2 else None,
+        "perRound": per,
+    }
+
+
+def _hier_cmd(args):
+    import refresh
+
+    data = refresh.read_json(refresh.cached("data.json"))
+    done = _rounds(args.rounds, data["done"])
+    if args.cmd == "inflate":
+        print(json.dumps(inflate_check(refresh.archived, refresh.read_json, done)))
+        return
+    for r in hier_report(refresh.archived, refresh.read_json, done):
+        f = r["fuel"]
+        print(
+            f"R{r['gd']}: fuel (full race) alone {f['alone']}%, pooled {f['fit']}% (season {f['season']}, tau "
+            f"{f['tau']}); driver pace moved max {r['maxShift']}%, mean {r['meanShift']}%"
+        )
 
 
 # ---------------------------------------------------------------- retirements
@@ -510,10 +753,10 @@ def audit(args):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["backfill", "audit"])
+    ap.add_argument("cmd", choices=["backfill", "audit", "hier", "inflate"])
     ap.add_argument("--rounds")
     args = ap.parse_args()
-    {"backfill": backfill, "audit": audit}[args.cmd](args)
+    {"backfill": backfill, "audit": audit, "hier": _hier_cmd, "inflate": _hier_cmd}[args.cmd](args)
 
 
 if __name__ == "__main__":
