@@ -70,7 +70,7 @@ import {
 } from "./views.js";
 import { lab, labCheck, labOwner, labRerun, labSave, labSet, loadLab, renderLab } from "./lab.js";
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
-import { pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
+import { openRivalMenu, pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
 import { renderRivals } from "./rivals-view.js";
 import { cfgSave, closeNotice, loadNotice, refreshNow, refreshStatus } from "./admin.js";
 
@@ -362,6 +362,7 @@ const CLICK = [
   ["linkacct", (d) => linkAccount(d.linkacct)],
   ["rivals", (d) => rivalsAction(d.rivals)],
   ["rival", (d) => toggleRivalPick(d.rival)],
+  ["rvmenu", (d, t) => openRivalMenu(t)],
   ["cfgsave", (d) => cfgSave(d.cfgsave)],
   ["refreshnow", () => refreshNow()],
   ["refreshstatus", () => refreshStatus()],
@@ -874,6 +875,7 @@ function closePopovers(target) {
   if (!target.closest(".pop, [data-pop]")) $$(".pop").forEach((x) => (x.hidden = true));
   if (!target.closest("#rowMenu, [data-menu]")) $("#rowMenu").hidden = true;
   if (!target.closest("#hdMenu, [data-hmenu]")) $("#hdMenu").hidden = true;
+  if (!target.closest("[data-rvmenu]")) $("#rvMenu").hidden = true; // also once one of its items is picked
   for (const d of $$("details.info[open]")) if (!d.contains(target)) d.open = false;
 }
 document.addEventListener("click", (e) => {
@@ -1100,6 +1102,7 @@ document.addEventListener("keydown", (e) => {
   $$(".pop").forEach((x) => (x.hidden = true));
   $("#rowMenu").hidden = true;
   $("#hdMenu").hidden = true;
+  $("#rvMenu").hidden = true;
   $$("details.info[open]").forEach((d) => (d.open = false));
 });
 // phone: swiping a workspace's panes moves its tab bar with you

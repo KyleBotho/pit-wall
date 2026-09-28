@@ -169,6 +169,22 @@ async function search() {
   rv.hits = error ? { error: "Search failed: " + error.message } : data;
   $("#rivalHits").innerHTML = hitsHtml();
 }
+// the ⋯ on a rival's head-to-head row (My rivals): aim to beat it in the Calculator, or drop it
+export function openRivalMenu(btn) {
+  const key = btn.dataset.rvmenu,
+    m = $("#rvMenu");
+  if (!m.hidden && m.dataset.key === key) return void (m.hidden = true);
+  const p = state.rivals.find((x) => pickKey(x) === key);
+  m.dataset.key = key;
+  m.innerHTML =
+    `<button data-rvgoal="${esc(key)}">Aim to beat in the Calculator</button>` +
+    (p ? `<button data-rival="${esc(pickVal(p))}">Remove from my rivals</button>` : "");
+  const host = $("#view-rivals").getBoundingClientRect(),
+    b = btn.getBoundingClientRect();
+  m.hidden = false;
+  m.style.top = b.bottom - host.top + 4 + "px";
+  m.style.left = Math.max(0, Math.min(host.width - m.offsetWidth, b.right - host.left - m.offsetWidth)) + "px";
+}
 // a pick button in the dialog (pickVal): add it, or take it out (with its Calculator settings)
 export function toggleRivalPick(v) {
   const i = v.indexOf(":"),

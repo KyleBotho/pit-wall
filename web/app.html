@@ -398,8 +398,8 @@
         <button class="btn sm" data-signin="1" data-needsync="1">Sign in with Google</button>
       </div>
     </div>
-    <div class="dash" id="leagueDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
-      <section class="panel" style="grid-column: 1/-1">
+    <div class="board" id="leagueDash">
+      <section class="panel wide">
         <h3><span id="lgTitle">League</span> <small id="lgStamp"></small><span class="seg" id="lgPick"></span></h3>
         <div class="tw"><table id="lgTable"></table></div>
       </section>
@@ -469,8 +469,9 @@
         <button class="btn sm" data-rivals="open">Manage rivals</button>
       </div>
     </div>
-    <div class="dash" id="rivalsDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
-      <section class="panel" style="grid-column: 1/-1">
+    <div class="menu" id="rvMenu" hidden></div>
+    <div class="board" id="rivalsDash">
+      <section class="panel wide">
         <h3>
           My rivals <small id="rvStamp"></small>
           <button class="btn ghost sm" data-rivals="open">Manage rivals</button>
@@ -497,7 +498,7 @@
         </div>
         <div id="rvChart" style="position: relative"></div>
       </section>
-      <section class="panel" id="rvOwnBox" style="grid-column: 1/-1">
+      <section class="panel" id="rvOwnBox">
         <h3>
           Differentials
           <details class="info">
@@ -519,13 +520,13 @@
       <h3>Elite</h3>
       <p class="note">The global top-500 leaderboard wasn't available at the last refresh. It is published after each race.</p>
     </div>
-    <div class="dash" id="eliteDash" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)">
-      <section class="panel" style="grid-column: 1/-1">
+    <div class="board" id="eliteDash">
+      <section class="panel wide">
         <h3>Global cut-offs <small id="elStamp"></small> <span class="seg" id="elTeamPick" title="Your team to compare"></span></h3>
         <div class="stats" id="elCut"></div>
         <div class="tw"><table id="elMine"></table></div>
       </section>
-      <section class="panel" style="grid-column: 1/-1">
+      <section class="panel">
         <h3>
           Season vs the elite <span class="tipslot" id="elSeasonNote"></span
           ><span class="seg" id="elMode"><button data-em="gap">Gap to #100</button><button data-em="total">Total</button></span>
@@ -542,7 +543,7 @@
         <h3>Chip usage by round <span class="tipslot" id="elChipSub"></span><small id="elChipNote"></small></h3>
         <div class="tw"><table id="elChips"></table></div>
       </section>
-      <section class="panel" style="grid-column: 1/-1">
+      <section class="panel wide">
         <h3>
           Elite ownership
           <details class="info">

@@ -770,6 +770,30 @@ details.grp > summary:hover {
 }
 
 /* ---------- panels ---------- */
+/* a Board (Live Scoring's layout): panels in two columns that balance their heights, so a short panel never leaves a
+   hole beside a tall one; .wide panels run across both. Capped, so tables don't spread over a very wide screen. */
+.board {
+  columns: 2;
+  column-gap: 16px;
+  max-width: 1480px;
+}
+.board > * {
+  break-inside: avoid;
+  margin-bottom: 16px;
+}
+.board > .wide {
+  column-span: all;
+}
+.board .bestt td.tl {
+  width: 1%; /* a team's chips stay together; the space goes to the figures */
+}
+#view-rivals {
+  position: relative; /* the rival row menu */
+}
+.bestt tr.sec .secact {
+  float: right;
+  margin: -4px 0;
+}
 .dash {
   display: grid;
   gap: 16px;
@@ -1984,9 +2008,8 @@ td.chl {
     max-width: none;
     margin: 0;
   }
-  #leagueDash,
-  #eliteDash {
-    grid-template-columns: 1fr !important;
+  .board {
+    columns: 1;
   }
   .seg.bmode button {
     font-size: 14px;

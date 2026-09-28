@@ -287,7 +287,7 @@ export function h2h(myIds, rivals, opt = {}) {
         range = `<span class="muted" title="Your points minus theirs: 10% of simulated weekends end below the first number, 10% above the second">${sgn(q(0.1), 0)} to ${sgn(q(0.9), 0)}</span>`;
       }
       return (
-        `<tr class="sec"><td colspan="5"><b>${esc(m.name)}</b>${m.sub ? ` <span class="dim">${esc(m.sub)}</span>` : ""}${m.goal ? ` <button class="btn ghost sm" data-rvgoal="${esc(m.key)}">Aim to beat in the Calculator</button>` : ""}</td></tr>` +
+        `<tr class="sec"><td colspan="5"><b>${esc(m.name)}</b>${m.sub ? ` <span class="dim">${esc(m.sub)}</span>` : ""}${m.goal ? `<button class="tbtn sm secact" data-rvmenu="${esc(m.key)}" aria-label="More actions">⋯</button>` : ""}</td></tr>` +
         `<tr>${lineupCells(m.ids.slice(5), ds.includes(boost) ? [boost] : [], drs, tile)}` +
         `<td><b class="h2hp ${p >= 0.5 ? "good" : "bad"}" title="${simRange(p, N)}">${pct(p)}</b>${tie / N >= 0.005 ? `<span class="gap" title="Same points: neither wins">${pct(tie / N)} tie</span>` : ""}</td>` +
         `<td class="${gap >= 0 ? "good" : "bad"}">${sgn(gap / N)}${range ? `<span class="gap">${range}</span>` : ""}</td></tr>`
@@ -488,6 +488,11 @@ export function lineChart(box, gds, series, label, opt = {}) {
   });
   const labels = series.map((s) => ({ s, y: y(s.pts[lastI(s)].v) })).sort((a, b) => a.y - b.y);
   for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13; // keep end labels apart
+  // ...and above the x-axis labels: the lowest one at the plot's floor at most, the ones above moved up to make room
+  for (let i = labels.length - 1; i >= 0; i--) {
+    const cap = i === labels.length - 1 ? H - mb - 4 : labels[i + 1].y - 13;
+    if (labels[i].y > cap) labels[i].y = cap;
+  }
   for (const s of series.slice().sort((a, b) => a.me - b.me)) {
     // draw the active team last, on top
     let d = "",

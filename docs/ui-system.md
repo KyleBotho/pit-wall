@@ -70,6 +70,11 @@ https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic.
   has one (only old imports did).
 - The old card styles (`.rcard`, `.bt`, `.bts`) are gone: nothing uses them.
 
+- Board layout (after the user's review): `.board` = CSS columns (2, balanced by height; `.wide` spans both), capped
+  at 1480px so tables don't spread on very wide screens; team-row chip columns shrink to their chips. My rivals' row
+  actions moved into a ⋯ menu (Aim to beat in the Calculator, Remove from my rivals). Chart end labels stay above the
+  x-axis. The Top-100 and Top-500 templates showing the same line-up is real (same five most-owned drivers).
+
 ## Previewing the league pages locally
 Sign-in doesn't work on the local preview, so the league views would be empty. `python tools/dev_league.py`
 rebuilds the league payload and your linked account from the private clone's snapshots into `build/dev-league.json`

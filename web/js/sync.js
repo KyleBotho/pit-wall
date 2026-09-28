@@ -155,6 +155,7 @@ function fillTeams(force) {
       free: next.free ?? 2,
       chipsUsed: usedChips(tracked(key)),
       asOf: next.asOf + 1,
+      fed: next.asOf + 1,
       example: false,
     };
   });
@@ -177,8 +178,11 @@ function fillTeams(force) {
   if (msg.length) toast(msg.join(" "));
 }
 // Your teams follow F1's data: once a race is over and its line-ups are in, each team's current line-up, bank, free
-// transfers and chips played update by themselves. A team already set up for a later race (t.asOf: an import taken
-// before the lock, or an earlier update) is left alone; chips played are always added (and locked in the Calculator).
+// transfers and chips played update by themselves. t.asOf = the race a team is set up for, t.fed = the race the feed
+// last filled it for. The feed replaces a team when it's for a later race, or for the same race when the feed hasn't
+// filled it yet (a team set up by hand or saved before tracking: until 2026-09-28 those kept an old line-up, e.g.
+// PeetDPan going into R16 with R14's NOR). Once filled, changes you make stay until the next race's line-ups are in.
+// Chips played are always added (and locked in the Calculator).
 export function applyTracked() {
   const news = [];
   let changed = false;
@@ -191,19 +195,22 @@ export function applyTracked() {
       Object.assign(t.chipsUsed, used);
       changed = true;
     }
-    const next = tr.next;
-    if (!next || next.asOf + 1 <= (t.asOf || 0)) continue;
+    const next = tr.next,
+      due = next ? next.asOf + 1 : 0;
+    if (!next || due < (t.asOf || 0) || (due === t.asOf && t.fed === due)) continue;
     const got = next.ids.map(String).filter((id) => byId[id]);
     const ids = got.filter(isDriver).concat(got.filter((id) => !isDriver(id)));
     if (ids.length !== 7) continue;
-    const moved = ids.filter((id) => !t.team.includes(id)).length;
-    Object.assign(t, { team: ids, boost: "auto", asOf: next.asOf + 1 });
+    const moved = ids.filter((id) => !t.team.includes(id)).length,
+      same = !moved && (next.bank == null || next.bank === t.bank) && (next.free == null || next.free === t.free);
+    Object.assign(t, { team: ids, asOf: due, fed: due }, same ? {} : { boost: "auto" });
     if (next.bank != null) t.bank = next.bank;
     if (next.free != null) t.free = next.free;
     changed = true;
-    news.push(
-      `${t.name}${moved ? ` (${moved} change${moved === 1 ? "" : "s"})` : ""}: ${next.bank != null ? money(next.bank) + " bank, " : ""}${next.free ?? "?"} free`,
-    );
+    if (!same)
+      news.push(
+        `${t.name}${moved ? ` (${moved} change${moved === 1 ? "" : "s"})` : ""}: ${next.bank != null ? money(next.bank) + " bank, " : ""}${next.free ?? "?"} free`,
+      );
   }
   if (!changed) return;
   save();
