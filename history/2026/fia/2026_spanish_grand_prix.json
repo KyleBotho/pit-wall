@@ -795,7 +795,8 @@
     "ICE": 4,
     "TC": 4,
     "ES": 5,
-    "MGU-K": 6
+    "MGU-K": 4,
+    "PU-ANC": 6
    }
   },
   "parcFerme": {
