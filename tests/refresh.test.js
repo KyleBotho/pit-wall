@@ -142,6 +142,17 @@ test("Model health: season summary, rounds newest first, misses, and the fit pro
   assert.match(h, /McLaren 44\.1 → 1/);
   assert.match(h, /SIM\.qSd<\/td><td>0\.2<\/td><td>0\.25/);
   assert.match(h, /Within noise/);
+  // repeated held-out folds: each change says how many folds' fits agree
+  const folded = mh({
+    accuracy: acc,
+    fit: {
+      ...fit,
+      holdout: { rounds: [14, 15], shipped: 9, fitted: 8.9, dCrps: -0.1, se: 0.2, folds: [{}, {}] },
+      changes: [{ ...fit.changes[0], folds: 0 }],
+    },
+  });
+  assert.match(folded, /each by a fit on the rounds before it/);
+  assert.match(folded, /Folds agree.*<td class="bad">0 of 2<\/td>/s);
   assert.match(mh({ accuracy: acc, fit: { ...fit, changes: [] } }), /still the best fit/);
   assert.match(h, /frozen next to the shipped model from R16/);
   // challengers: a clear gain after enough rounds, noise otherwise

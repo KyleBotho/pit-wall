@@ -206,17 +206,55 @@
       fitLog = prev;
     }
   }
+  /** Eigenvalues of a symmetric matrix (cyclic Jacobi rotations; the fits' matrices are small, k <= ~12).
+   * @param {number[][]} A @returns {number[]} */
+  function symEig(A) {
+    const n = A.length;
+    const M = A.map((r) => r.slice());
+    for (let sweep = 0; sweep < 60; sweep++) {
+      let off = 0;
+      for (let p = 0; p < n; p++) for (let q = p + 1; q < n; q++) off += M[p][q] * M[p][q];
+      if (!(off > 1e-30 * (1 + M.reduce((s, r, i) => s + r[i] * r[i], 0)))) break;
+      for (let p = 0; p < n; p++)
+        for (let q = p + 1; q < n; q++) {
+          if (M[p][q] === 0) continue;
+          const th = (M[q][q] - M[p][p]) / (2 * M[p][q]);
+          const t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1));
+          const c = 1 / Math.sqrt(t * t + 1),
+            s = t * c;
+          for (let k = 0; k < n; k++) {
+            const kp = M[k][p],
+              kq = M[k][q];
+            M[k][p] = c * kp - s * kq;
+            M[k][q] = s * kp + c * kq;
+          }
+          for (let k = 0; k < n; k++) {
+            const pk = M[p][k],
+              qk = M[q][k];
+            M[p][k] = c * pk - s * qk;
+            M[q][k] = s * pk + c * qk;
+          }
+        }
+    }
+    return M.map((r, i) => r[i]);
+  }
+  /** 2-norm condition number of a symmetric matrix: largest / smallest |eigenvalue| (Infinity when singular).
+   * @param {number[][]} A */
+  function symCond(A) {
+    const ev = symEig(A).map(Math.abs);
+    const lo = Math.min(...ev),
+      hi = Math.max(...ev);
+    return lo > 0 ? hi / lo : Infinity;
+  }
   /** Solve A x = b (Gauss-Jordan with partial pivoting). A variable the system can't pin down (no pivot left, e.g.
    * two identical columns) is set to 0 rather than blown up, so a singular fit stays finite; info gets how many were
-   * (dropped) and max / min pivot (cond, rough). @param {number[][]} A @param {number[]} b
-   * @param {{ dropped?: number, cond?: number }} [info] */
+   * (dropped) and, A being symmetric (every caller solves normal equations), its condition number (cond, exact:
+   * eigenvalues). @param {number[][]} A @param {number[]} b @param {{ dropped?: number, cond?: number }} [info] */
   function solve(A, b, info) {
     const n = b.length;
     const M = A.map((row, i) => [...row, b[i]]);
     const tol = 1e-12 * Math.max(1e-300, ...A.flat().map(Math.abs));
-    let dropped = 0,
-      pMax = 0,
-      pMin = Infinity;
+    let dropped = 0;
     for (let i = 0; i < n; i++) {
       let pv = i;
       for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[pv][i])) pv = k;
@@ -224,9 +262,6 @@
       if (!(Math.abs(M[i][i]) > tol)) {
         M[i] = M[i].map((_, j) => (j === i ? 1 : 0));
         dropped++;
-      } else {
-        pMax = Math.max(pMax, Math.abs(M[i][i]));
-        pMin = Math.min(pMin, Math.abs(M[i][i]));
       }
       for (let k = 0; k < n; k++)
         if (k !== i) {
@@ -236,7 +271,7 @@
     }
     if (info) {
       info.dropped = dropped;
-      info.cond = pMin < Infinity ? pMax / pMin : Infinity;
+      info.cond = symCond(A);
     }
     return M.map((row, i) => row[n] / row[i]);
   }
@@ -281,7 +316,8 @@
       converged = false,
       iters = 0,
       halvings = 0,
-      dropped = 0;
+      dropped = 0,
+      cond = NaN; // of the last IRLS system (the Fisher information at the solution)
     for (let it = 0; it < 30; it++) {
       iters = it + 1;
       const A = Array.from({ length: k }, (_, i) => Array.from({ length: k }, (_, j) => (i === j && i > 0 ? lam : 0)));
@@ -295,10 +331,11 @@
         }
       }
       for (let i = 1; i < k; i++) g[i] -= lam * b[i];
-      /** @type {{ dropped?: number }} */
+      /** @type {{ dropped?: number, cond?: number }} */
       const info = {};
       const step = solve(A, g, info);
       dropped = Math.max(dropped, info.dropped || 0);
+      cond = info.cond ?? cond;
       let t = 1,
         nb = b.map((v, i) => v + step[i]),
         nv = obj(nb);
@@ -317,7 +354,7 @@
         break;
       }
     }
-    fitNote(name, { ok: converged && !dropped, converged, iters, halvings, dropped, n: y.length });
+    fitNote(name, { ok: converged && !dropped && cond < 1e12, converged, iters, halvings, dropped, cond, n: y.length });
     return b;
   }
   /** Standard normal CDF (Abramowitz-Stegun 7.1.26). @param {number} x */
@@ -3984,6 +4021,7 @@
     tauFor,
     ridge,
     poissonGlm,
+    symEig,
     normCdf,
     normInv,
     biNormCdf,

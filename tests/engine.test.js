@@ -114,6 +114,33 @@ test("fit log: a singular fit is flagged (not just finite); a Poisson fit says w
   const sep = E.withFitLog(() => E.poissonGlm(X, [0, 0, 0, 0, 0, 9], new Array(6).fill(0), 0, "separated")).fits[0];
   assert.equal(sep.ok, false);
   assert.equal(E.withFitLog(() => 0).fits.length, 0);
+  // the condition number is the real one (eigenvalues), not a pivot ratio
+  assert.equal(fits[0].cond, Infinity);
+  assert.ok(Number.isFinite(ok.cond) && ok.cond >= 1);
+  // [[2, 1], [1, 2]]: eigenvalues 3 and 1 (pivots 2 and 1.5 would say 1.33)
+  const cond = E.withFitLog(() =>
+    E.ridge(
+      [
+        [1, 0],
+        [0, 1],
+        [1, 1],
+      ],
+      [1, 1, 2],
+      0,
+      "known",
+    ),
+  ).fits[0].cond;
+  assert.ok(Math.abs(cond - 3) < 1e-9, `cond ${cond}`);
+  assert.deepEqual(
+    E.symEig([
+      [4, 1, 0],
+      [1, 3, 1],
+      [0, 1, 2],
+    ])
+      .sort((a, b) => a - b)
+      .map((v) => +v.toFixed(9)),
+    [3 - Math.sqrt(3), 3, 3 + Math.sqrt(3)].map((v) => +v.toFixed(9)),
+  );
 });
 
 test("gauss: both Box-Muller halves are standard normals, and a pair is uncorrelated", () => {

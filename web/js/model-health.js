@@ -17,20 +17,23 @@ function fitHtml(fit) {
     `R${fit.rounds[0]}–R${fit.rounds[fit.rounds.length - 1]}, ${fit.N.toLocaleString()} sims): CRPS ${f2(fit.shipped.crps)} as shipped → ${f2(fit.fitted.crps)} fitted` +
     ` (${gain > 0 ? "−" : "+"}${Math.abs(gain).toFixed(3)}), MAE ${f2(fit.shipped.mae)} → ${f2(fit.fitted.mae)}.` +
     (fit.holdout
-      ? ` <b>On rounds it wasn't fitted to</b> (R${fit.holdout.rounds.join(", R")}): ${f2(fit.holdout.shipped)} → ${f2(fit.holdout.fitted)}, ${fit.holdout.dCrps <= -2 * fit.holdout.se ? "a gain beyond noise" : "within noise (" + (fit.holdout.dCrps > 0 ? "+" : "−") + Math.abs(fit.holdout.dCrps).toFixed(3) + " ± " + fit.holdout.se.toFixed(3) + ")"}.`
+      ? ` <b>On rounds it wasn't fitted to</b> (R${fit.holdout.rounds.join(", R")}${fit.holdout.folds ? ", each by a fit on the rounds before it" : ""}): ${f2(fit.holdout.shipped)} → ${f2(fit.holdout.fitted)}, ${fit.holdout.se != null && fit.holdout.dCrps <= -2 * fit.holdout.se ? "a gain beyond noise" : "within noise (" + (fit.holdout.dCrps > 0 ? "+" : "−") + Math.abs(fit.holdout.dCrps).toFixed(3) + (fit.holdout.se != null ? " ± " + fit.holdout.se.toFixed(3) : "") + ")"}.`
       : "") +
     `</p>`;
+  const nf = fit.holdout && fit.holdout.folds ? fit.holdout.folds.length : 0;
   if (!fit.changes.length)
     return head + `<p class="note">The shipped settings are still the best fit: nothing to change.</p>`;
   const rows = fit.changes
     .map(
       (c) =>
-        `<tr><td style="text-align:left">${esc(c.setting)}</td><td>${esc(String(c.shipped))}</td><td>${esc(String(c.fitted))}</td></tr>`,
+        `<tr><td style="text-align:left">${esc(c.setting)}</td><td>${esc(String(c.shipped))}</td><td>${esc(String(c.fitted))}</td>` +
+        (nf ? `<td class="${c.folds === nf ? "good" : c.folds ? "" : "bad"}">${c.folds ?? "–"} of ${nf}</td>` : "") +
+        `</tr>`,
     )
     .join("");
   return (
     head +
-    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Setting</th><th>Shipped</th><th>Fitted</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Setting</th><th>Shipped</th><th>Fitted</th>${nf ? `<th title="How many of the held-out folds' fits (each on fewer rounds) made the same change: a change none of them made is fragile">Folds agree</th>` : ""}</tr></thead><tbody>${rows}</tbody></table></div>` +
     `<p class="note">${gain < 0.1 ? "<b>Within noise:</b> a gain under about 0.1 CRPS can't be told from chance with this many rounds, so keep the shipped settings. " : ""}` +
     `The first figures are on the rounds it was fitted on (flattering); the held-out ones are the test. To adopt a change, ask for it to be applied in engine.js and checked with the backtest; it's worth it only if it holds over the next weeks too.</p>`
   );
