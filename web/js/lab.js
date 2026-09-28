@@ -7,7 +7,8 @@ import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming 
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
 import { BINS, codeBox, compute, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
-import { dataChanged, inWorker, labJob, workerOk } from "./worker.js";
+import { inWorker, labJob, workerOk } from "./worker.js";
+import { labData, labDataState, needsLabData } from "./lab-data.js";
 import { rerender, showView } from "./main.js";
 import { modelHealthHtml } from "./model-health.js";
 export let labOwner = false;
@@ -112,7 +113,7 @@ export async function labCheck() {
 function labSetOwner(ok) {
   const was = labOwner;
   labOwner = ok && !SEASON_OVER;
-  if (labOwner) labData(); // the lab's own data, for owners and admins only
+  if (labOwner) loadLab(); // the lab's own data, for owners and admins only
   // owners and admins see the live sim, everyone else the one at lock (forecast.js atLock)
   if (labOwner !== was && forecast) {
     compute();
@@ -151,13 +152,30 @@ export function labRerun() {
   const k = Math.min(lab.race, races.length - 1),
     g = races[k];
   if (!g) return;
+  // challenger settings read the lab's data: wait for it, and don't run them without it
+  if (needsLabData(lab.set) && labDataState() !== "ready") {
+    $("#labStatus").textContent = "Loading the lab's data…";
+    loadLab().then((ok) =>
+      ok ? labRerun() : ($("#labStatus").textContent = "The lab's data didn't load: retry above before this run."),
+    );
+    return;
+  }
   $("#labStatus").textContent = "Running…";
   document.body.classList.add("busy");
   const changed = labChanged();
   const jobs = [labJobOf(lab.set, g, k, lab.N)];
   if (changed.length && lab.compare) jobs.push(labJobOf({}, g, k, lab.N));
   runJobs(jobs, ([run, base]) => {
-    labRun = { g, k, N: lab.N, ...run, base: base || null, changed };
+    // the lab file the run had (its inputs), so a run is known by what it ran on
+    labRun = {
+      g,
+      k,
+      N: lab.N,
+      ...run,
+      base: base || null,
+      changed,
+      labFile: labDataState() === "ready" ? DATA.labFile : null,
+    };
     document.body.classList.remove("busy");
     renderLab();
   });
@@ -850,40 +868,17 @@ function labControls() {
     )
     .join("");
 }
-// The lab's own data (refresh.py lab_split: Model health and the challengers' inputs, e.g. the pooled race pace and
-// safety car timings), kept out of the page everyone downloads and fetched here for owners and admins only, then
-// merged into DATA (the worker gets the data again: worker.js dataChanged). Resolves once in (null if it failed).
-let labLoad = null;
-export function labData() {
-  if (!labLoad)
-    labLoad = !DATA.labFile
-      ? Promise.resolve(null)
-      : fetch(DATA.labFile)
-          .then((r) => (r.ok ? r.json() : null))
-          .then((x) => {
-            if (x) mergeLab(x);
-            return x;
-          })
-          .catch(() => null);
-  return labLoad;
-}
-export function mergeLab(x) {
-  if (x.modelHealth) DATA.modelHealth = x.modelHealth;
-  for (const [gd, blocks] of Object.entries(x.raceInfo || {}))
-    for (const [s, f] of Object.entries(blocks)) {
-      const b = DATA.raceInfo && DATA.raceInfo[gd] && DATA.raceInfo[gd][s];
-      if (b) Object.assign(b, f);
-    }
-  const rows = (DATA.priors && DATA.priors.races) || [];
-  for (const [i, f] of Object.entries(x.priorRows || {})) if (rows[i]) Object.assign(rows[i], f);
-  dataChanged();
-}
+// the lab's data (lab-data.js), with a redraw once an attempt ends
+export const loadLab = () => labData(() => labOwner && state.view === "lab" && renderLab());
 export function renderLab() {
   if (!labOwner) return;
-  if (!labLoad) labData().then(() => labOwner && state.view === "lab" && renderLab());
-  $("#labHealth").innerHTML = DATA.modelHealth
-    ? modelHealthHtml(DATA.modelHealth, DATA.schedule)
-    : `<p class="note">Loading model health…</p>`;
+  if (labDataState() === "idle") loadLab();
+  $("#labHealth").innerHTML =
+    labDataState() === "ready"
+      ? modelHealthHtml(DATA.modelHealth, DATA.schedule)
+      : labDataState() === "error"
+        ? `<p class="note warn">The lab's data (model health, the challengers' inputs) didn't load. <button class="tbtn" id="labRetry">Retry</button></p>`
+        : `<p class="note">Loading model health…</p>`;
   const races = upcoming.slice(0, 3);
   $("#labRace").innerHTML = races
     .map(

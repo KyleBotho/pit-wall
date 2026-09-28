@@ -528,29 +528,65 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
         p = gather.fia_event_path(g["name"], SEASON, archived, CFG.get("fiaNames"))
         docs = read_json(p)["docs"] if os.path.exists(p) else []
         out["fiaRead"] = {"gd": g["gd"], "kinds": sorted({d["read"] for d in docs if d.get("read")})}
-    # grid penalties from the stewards' decisions (race control announces none in 2026): the PDFs of this
-    # weekend's car infringements, read once each; car numbers to TLAs from the last race's classification
-    if nxt_g and out.get("weekend") is not None and busy:
-        try:
-            fia_file = gather.fia_event_path(nxt_g["name"], SEASON, archived, CFG.get("fiaNames"))
-            pen, at, parts = gather.fia_penalties(
-                archived, read_json, write_json, os.path.basename(fia_file)[:-5], fia_bytes
-            )
-            last = max((int(k) for k in results["race"]), default=None)
-            num = {r["num"]: r["tla"] for r in (results["race"].get(last) or []) if r.get("num")} if last else {}
+    # grid penalties from the stewards' decisions (race control announces none in 2026): the PDFs of the coming
+    # event's car infringements and of the last finished event's (one handed out after a race is served at the next:
+    # fifth review), read once each; then the season's ledger (collect.grid_ledger: each penalty with the race it's
+    # for) -> history/<season>/penalties.json (backtest/walk.js reads it), and the coming race's into the weekend
+    if busy:
+        last_g = next((x for x in schedule if done and x["gd"] == done[-1]), None)
+        for g in (last_g, nxt_g):
+            if not g:
+                continue
+            try:
+                f = gather.fia_event_path(g["name"], SEASON, archived, CFG.get("fiaNames"))
+                gather.fia_penalties(archived, read_json, write_json, os.path.basename(f)[:-5], fia_bytes)
+            except Exception as e:  # noqa: BLE001
+                print(f"  ! FIA decisions for R{g['gd']}: {e}")
+    try:
+        ledger = penalty_ledger(schedule, done, results)
+        if nxt_g and out.get("weekend") is not None:
+            pen, at, parts = gather.ledger_penalties(ledger, nxt_g["gd"])
             w = out["weekend"]
-            for car, places in pen.items():
-                t = num.get(car)
-                if t and places:
-                    w["penalties"][t] = places
-                    w.setdefault("penAt", {})[t] = at[car]
-                    w.setdefault("penParts", {})[t] = parts[car]
+            for t, places in pen.items():
+                w["penalties"][t] = places
+                w.setdefault("penAt", {})[t] = at[t]
+                w.setdefault("penParts", {})[t] = parts[t]
             if pen:
-                print(f"  FIA grid penalties: {', '.join(f'#{c} {p}' for c, p in pen.items() if p) or 'none'}")
-        except Exception as e:  # noqa: BLE001
-            print(f"  ! FIA grid penalties: {e}")
+                print(f"  FIA grid penalties for R{nxt_g['gd']}: {', '.join(f'{t} {p}' for t, p in pen.items())}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! FIA grid penalties: {e}")
     print(f"  archived: {', '.join(kept) or 'nothing new'}")
     return out
+
+
+PENALTY_FILE = "penalties.json"
+
+
+def penalty_ledger(schedule, done, results):
+    """The season's grid penalties with the race each is for (collect.grid_ledger), from the archived FIA indexes and
+    the classifications, kept in history/<season>/penalties.json when it changed. Returns the ledger."""
+    race = {int(k): v for k, v in (results.get("race") or {}).items()}
+
+    def num_of(gd):
+        return {r["num"]: r["tla"] for r in race.get(gd) or [] if r.get("num")}
+
+    def raced(gd, tla):
+        # None: not known (a round still to run, or no classification)
+        rows = race.get(gd)
+        if gd not in done or not rows:
+            return None
+        return any(r.get("tla") == tla and not r.get("dns") for r in rows)
+
+    def docs_of(g):
+        p = gather.fia_event_path(g["name"], SEASON, archived, CFG.get("fiaNames"))
+        return read_json(p)["docs"] if os.path.exists(p) else None
+
+    ledger = gather.grid_ledger(schedule, docs_of, num_of, raced)
+    path = archived(PENALTY_FILE)
+    body = {"season": SEASON, "ledger": ledger}
+    if not os.path.exists(path) or read_json(path) != body:
+        write_json(path, body, indent=1)
+    return ledger
 
 
 def fia_bytes(url):
@@ -929,8 +965,8 @@ def presim(data, out_dir):
 # the lab fetches for owners and admins (web/js/lab.js labData). Top-level keys moved whole; per-row fields moved
 # out of raceInfo's race / sprint blocks and the priors' rows.
 LAB_KEYS = ("modelHealth",)
-LAB_RACE_FIELDS = ("pacePool", "scLaps", "lapsRun")
-LAB_PRIOR_FIELDS = ("scLaps", "lapsRun")
+LAB_RACE_FIELDS = ("pacePool", "paceSePool", "pacePoolV", "scLaps", "scLapsV", "lapsRun")
+LAB_PRIOR_FIELDS = ("scLaps", "scLapsV", "lapsRun", "lapsRc", "laps")
 
 
 def lab_split(data):

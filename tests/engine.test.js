@@ -1183,7 +1183,7 @@ test("planHorizon: each plan is checked against the sampled price paths (afford)
   assert.equal(waitS.valueFit, 320); // every move made, fitting or not: what holding costs = 320 - 292.5
 });
 
-test("racePace pool: the pooled pace (challenger racepool), weighted by the race-alone fit's errors", () => {
+test("racePace pool: the pooled pace (challenger racepool) with its own errors; a failed or error-less record falls back", () => {
   const { loadData, readJson, ROOT } = require("./helpers.js");
   const path = require("node:path"),
     fs = require("node:fs");
@@ -1193,7 +1193,8 @@ test("racePace pool: the pooled pace (challenger racepool), weighted by the race
   for (const [gd, ri] of Object.entries(d.raceInfo)) {
     const f = path.join(ROOT, "history", String(d.season), "races", `gd${String(gd).padStart(2, "0")}.json`);
     const rec = fs.existsSync(f) ? readJson(f) : null;
-    if (ri.race && rec && rec.race && rec.race.pacePool) ri.race.pacePool = rec.race.pacePool;
+    if (ri.race && rec && rec.race && rec.race.pacePool)
+      Object.assign(ri.race, { pacePool: rec.race.pacePool, paceSePool: rec.race.paceSePool });
   }
   if (!Object.values(d.raceInfo).some((x) => x.race && x.race.pacePool)) return;
   const pace = (set) =>
@@ -1208,6 +1209,19 @@ test("racePace pool: the pooled pace (challenger racepool), weighted by the race
   // pooling moves race pace by at most a few tenths of a percent (0.16% max on R1-R15)
   for (const t of Object.keys(pool))
     if (Number.isFinite(pool[t]) && Number.isFinite(ctx[t])) assert.ok(Math.abs(pool[t] - ctx[t]) < 0.5, t);
+  // fifth review: a round whose lap records failed the FastF1 check counts at its median clean lap, whatever
+  // contextual or pooled pace is still in the record; a pooled pace without its own errors isn't used either
+  const failed = structuredClone(d);
+  for (const ri of Object.values(failed.raceInfo)) if (ri.race) ri.race.lapCheck = { ok: false };
+  const noSe = structuredClone(d);
+  for (const ri of Object.values(noSe.raceInfo)) if (ri.race) delete ri.race.paceSePool;
+  const paceOf = (data, set) =>
+    E.withSettings(set, () =>
+      Object.fromEntries(E.buildModel(data, { halfLife: 4, adj: {} }).drivers.map((x) => [x.tla, x.rPace])),
+    );
+  assert.deepStrictEqual(paceOf(failed, { "MODEL.racePace": "pool" }), med);
+  assert.deepStrictEqual(paceOf(failed, { "MODEL.racePace": "ctx" }), med);
+  assert.deepStrictEqual(paceOf(noSe, { "MODEL.racePace": "pool" }), med);
 });
 
 test("timed safety car: off changes nothing; weights average 1, none for an early one, rising later", () => {
@@ -1224,6 +1238,12 @@ test("timed safety car: off changes nothing; weights average 1, none for an earl
   assert.ok(Math.abs(w.reduce((s, x) => s + x, 0) / at.length - 1) < 1e-12);
   assert.equal(w[0], 0);
   assert.ok(w.every((x, k) => k === 0 || x >= w[k - 1]));
+  // the race noise keeps its variance under a safety car (fifth review: a mean-one weight raised the mean squared
+  // multiplier 7.6%): E[(1 + c raw)^2] = scNoise^2 over the onsets
+  const tm = E.withSettings({ "SIM.scTimed": 1 }, () => E.scTiming({ ...circuit, scAt: at }));
+  const raw = at.map((u) => E.scWeight(u, at) * tm.scWBar);
+  const sq = raw.reduce((s, x) => s + (1 + tm.scNoiseC * x) ** 2, 0) / raw.length;
+  assert.ok(Math.abs(sq - E.SIM.scNoise ** 2) < 1e-9, `${sq}`);
   // on, a safety car every race: it runs, and the mean points stay close to the untimed ones (same average effect)
   const sc = { ...circuit, sc: 0.99, scAt: at };
   const on = run(sc, { "SIM.scTimed": 1 }),

@@ -1,0 +1,265 @@
+{
+ "season": 2026,
+ "ledger": [
+  {
+   "car": 23,
+   "tla": "ALB",
+   "places": 99,
+   "issued": 2,
+   "target": 2,
+   "published": "2026-03-15T04:41+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_chinese_grand_prix_-_infringement_-_car_23_-_changes_made_during_parc_ferme_0.pdf",
+   "title": "Doc 68 - Infringement - Car 23 - Changes made during Parc Ferme"
+  },
+  {
+   "car": 6,
+   "tla": "HAD",
+   "places": 99,
+   "issued": 4,
+   "target": 4,
+   "published": "2026-05-03T14:43+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_miami_grand_prix_-_infringement_-_car_6_-_pu_elements_changed_under_parc_ferme.pdf",
+   "title": "Doc 75 - Infringement - Car 6 - PU Elements changed under Parc Ferme"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 99,
+   "issued": 5,
+   "target": 5,
+   "published": "2026-05-24T17:08+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_canadian_grand_prix_-_infringement_-_car_18_-_pu_elements_changed_under_parc_ferme.pdf",
+   "title": "Doc 89 - Infringement - Car 18 - PU Elements changed under Parc Ferme"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 99,
+   "issued": 7,
+   "target": 7,
+   "published": "2026-06-14T10:56+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_barcelona-catalunya_grand_prix_-_infringement_-_car_14_-_pu_elements_and_changes_used_during_parc_ferme.pdf",
+   "title": "Doc 52 - Infringement - Car 14 - PU elements and changes used during Parc Ferme"
+  },
+  {
+   "car": 10,
+   "tla": "GAS",
+   "places": 3,
+   "issued": 9,
+   "target": 9,
+   "published": "2026-07-04T18:01+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_british_grand_prix_-_infringement_-_car_10_-_impeding_of_car_18.pdf",
+   "title": "Doc 60 - Infringement - Car 10 - Impeding of Car 18"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 10,
+   "issued": 9,
+   "target": 9,
+   "published": "2026-07-05T11:48+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_british_grand_prix_-_infringement_-_car_18_-_pu_elements_changed.pdf",
+   "title": "Doc 68 - Infringement - Car 18 - PU Elements changed"
+  },
+  {
+   "car": 55,
+   "tla": "SAI",
+   "places": 10,
+   "issued": 10,
+   "target": 10,
+   "published": "2026-07-19T10:22+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_55_-_change_to_pu_elements.pdf",
+   "title": "Doc 54 - Infringement - Car 55 - Change to PU elements"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 10,
+   "issued": 10,
+   "target": 10,
+   "published": "2026-07-17T14:53+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_18_-_change_to_pu_element.pdf",
+   "title": "Doc 22 - Infringement - Car 18 - Change to PU element"
+  },
+  {
+   "car": 1,
+   "tla": "NOR",
+   "places": 10,
+   "issued": 10,
+   "target": 10,
+   "published": "2026-07-17T14:53+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_infringement_-_car_1_-_change_to_pu_element.pdf",
+   "title": "Doc 23 - Infringement - Car 1 - Change to PU element"
+  },
+  {
+   "car": 6,
+   "tla": "HAD",
+   "places": 30,
+   "issued": 10,
+   "target": 10,
+   "published": "2026-07-18T13:51+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_6_-_changes_to_pu_elements.pdf",
+   "title": "Doc 44 - Corrected Infringement - Car 6 - Changes to PU elements"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 20,
+   "issued": 10,
+   "target": 10,
+   "published": "2026-07-18T13:52+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_belgian_grand_prix_-_corrected_infringement_-_car_14_-_change_to_pu_elements.pdf",
+   "title": "Doc 45 - Corrected Infringement - Car 14 - Change to PU elements"
+  },
+  {
+   "car": 11,
+   "tla": "PER",
+   "places": 99,
+   "issued": 11,
+   "target": 11,
+   "published": "2026-07-26T10:38+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_hungarian_grand_prix_-_infringement_-_car_11_-_changes_made_under_parc_ferme.pdf",
+   "title": "Doc 50 - Infringement - Car 11 - Changes made under Parc Ferme"
+  },
+  {
+   "car": 11,
+   "tla": "PER",
+   "places": 99,
+   "issued": 12,
+   "target": 12,
+   "published": "2026-08-23T10:34+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_dutch_grand_prix_-_infringement_-_car_11_-_changes_made_in_parc_ferme.pdf",
+   "title": "Doc 59 - Infringement - Car 11 - Changes made in Parc Ferme"
+  },
+  {
+   "car": 12,
+   "tla": "ANT",
+   "places": 30,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-04T15:10+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_12_-_changes_to_pu_elements.pdf",
+   "title": "Doc 19 - Infringement - Car 12 - Changes to PU elements"
+  },
+  {
+   "car": 23,
+   "tla": "ALB",
+   "places": 20,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-04T15:11+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_23_-_changes_to_pu_elements.pdf",
+   "title": "Doc 20 - Infringement - Car 23 - Changes to PU elements"
+  },
+  {
+   "car": 30,
+   "tla": "LAW",
+   "places": 35,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-05T15:02+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_30_-_change_to_pu_elements.pdf",
+   "title": "Doc 41 - Infringement - Car 30 - Change to PU elements"
+  },
+  {
+   "car": 30,
+   "tla": "LAW",
+   "places": 99,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-06T11:01+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_30_-_changes_made_under_parc_ferme.pdf",
+   "title": "Doc 57 - Infringement - Car 30 - Changes made under parc ferme"
+  },
+  {
+   "car": 81,
+   "tla": "PIA",
+   "places": 3,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-05T16:27+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_81_-_impeding_of_car_30.pdf",
+   "title": "Doc 47 - Infringement - Car 81 - Impeding of Car 30"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 99,
+   "issued": 13,
+   "target": 13,
+   "published": "2026-09-06T10:54+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_italian_grand_prix_-_infringement_-_car_14_-_pu_elements_changed_during_parc_ferme.pdf",
+   "title": "Doc 56 - Infringement - Car 14 - PU elements changed during Parc Ferme"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 40,
+   "issued": 14,
+   "target": 14,
+   "published": "2026-09-12T14:56+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_18_-_pu_elements_changed.pdf",
+   "title": "Doc 41 - Infringement - Car 18 - PU Elements changed"
+  },
+  {
+   "car": 55,
+   "tla": "SAI",
+   "places": 3,
+   "issued": 14,
+   "target": 14,
+   "published": "2026-09-12T16:29+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_55_-_impeding_of_car_77.pdf",
+   "title": "Doc 46 - Infringement - Car 55 - Impeding of Car 77"
+  },
+  {
+   "car": 87,
+   "tla": "BEA",
+   "places": 99,
+   "issued": 14,
+   "target": 14,
+   "published": "2026-09-13T11:20+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_spanish_grand_prix_-_infringement_-_car_87_-_pu_elements_changed_during_parc_ferme.pdf",
+   "title": "Doc 63 - Infringement - Car 87 - PU elements changed during Parc Ferme"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 25,
+   "issued": 15,
+   "target": 15,
+   "published": "2026-09-24T12:10+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_14_-_pu_elements.pdf",
+   "title": "Doc 20 - Infringement - Car 14 - PU elements"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 5,
+   "issued": 15,
+   "target": 15,
+   "published": "2026-09-25T09:21+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_14_-_pu_element.pdf",
+   "title": "Doc 34 - Infringement - Car 14 - PU element"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 20,
+   "issued": 15,
+   "target": 15,
+   "published": "2026-09-24T12:10+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_18_-_pu_elements.pdf",
+   "title": "Doc 21 - Infringement - Car 18 - PU elements"
+  },
+  {
+   "car": 43,
+   "tla": "COL",
+   "places": 5,
+   "issued": 15,
+   "target": 16,
+   "published": "2026-09-26T15:30+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_43_-_collision_with_car_10_in_turn_1.pdf",
+   "title": "Doc 66 - Infringement - Car 43 - Collision with Car 10 in Turn 1"
+  }
+ ]
+}

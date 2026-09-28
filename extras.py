@@ -171,6 +171,7 @@ def _race_block(get_soft, cached, s, num2, results=None, archive=None):
         "wx": wx_summary(wx),
         # when each safety car came, and the laps run (the timed safety car challenger)
         "scLaps": lapmod.sc_laps(rc),
+        "scLapsV": lapmod.SC_LAPS_VERSION,
         "lapsRun": max((x.get("lap_number") or 0 for x in laps), default=0),
     }
     # batch 3: every lap with its context, the pace model on it, retirement causes (fail-soft: extras)
@@ -213,8 +214,9 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
             late = datetime.now(timezone.utc) - _dt(g["raceStart"]) < timedelta(days=RETRY_DAYS)
             out[gd] = rec  # kept if the retry fails
             if not (late and ("paceCtx" not in race or "retirements" not in race)):
-                # archived before the safety car timings were kept (2026-09-28): added once from race control
-                if any(k in rec and "scLaps" not in rec[k] for k in ("race", "sprint")):
+                # archived before the safety car timings were kept (2026-09-28), or by an older parser: (re)read
+                # from race control (SC_LAPS_VERSION)
+                if any(k in rec and rec[k].get("scLapsV") != lapmod.SC_LAPS_VERSION for k in ("race", "sprint")):
                     try:
                         if sessions is None:
                             sessions = _sessions(get_soft, cached, season, fresh=True)
@@ -224,7 +226,10 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
                                 rc = _of(get_soft, cached, "race_control", s["session_key"])
                                 if rc:
                                     rec[key]["scLaps"] = lapmod.sc_laps(rc)
-                                    rec[key]["lapsRun"] = max((m.get("lap_number") or 0 for m in rc), default=0)
+                                    rec[key]["scLapsV"] = lapmod.SC_LAPS_VERSION
+                                    rec[key].setdefault(
+                                        "lapsRun", max((m.get("lap_number") or 0 for m in rc), default=0)
+                                    )
                         write_json(path, rec, indent=1, sort_keys=True)
                     except Exception as e:  # noqa: BLE001
                         _warn(f"safety car timings for gameday {gd}", e)

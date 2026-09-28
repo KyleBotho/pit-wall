@@ -20,7 +20,8 @@ process.stdin.on("end", () => {
     process.stdout.write("null");
     return;
   }
-  const out = { projection: proj, challengers: E.projectChallengers(data), joint: null };
+  // the challengers, each with its input coverage and whether it came out as the shipped model (not evaluable)
+  const out = { projection: proj, challengers: E.projectChallengers(data, undefined, proj), joint: null };
   if (proj.joint) {
     const { ids, n, tot } = proj.joint;
     const buf = Buffer.from(tot.buffer, tot.byteOffset, tot.byteLength);

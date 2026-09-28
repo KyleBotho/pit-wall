@@ -680,7 +680,7 @@ export function runOptimiser() {
     );
   if (mc)
     bits.push(
-      `Simulation error: a team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95%, ${forecast.sims[0].N.toLocaleString()} weekends). Teams marked ≈ are too close to #1 to call: the order between them could flip${mc.checked ? ` (judged on ${mc.checkN.toLocaleString()} independent weekends, as the set that picked #1 flatters it, with a margin of ${mc.z.toFixed(2)} standard errors since that set grows while a top team is within it and the margin is wider than ±${TIE_TOL} pts, up to ${CHECK_MAX.toLocaleString()} weekends)` : ""}.`,
+      `Simulation error: the top team's xPts is within about ±${mc.se95.toFixed(1)} of what infinitely many weekends would give (95% Monte Carlo error from ${forecast.sims[0].N.toLocaleString()} weekends; each row's own is in its tooltip). That's the sampling error of the average, not the range of outcomes, and not the model's own uncertainty. Teams marked ≈ are too close to #1 to call, each compared with #1 on its own (not a guarantee for the whole ranking): the order between them could flip${mc.checked ? ` (judged on ${mc.checkN.toLocaleString()} independent weekends, as the set that picked #1 flatters it, with a margin of ${mc.z.toFixed(2)} standard errors since that set grows while a top team is within it and the margin is wider than ±${TIE_TOL} pts, up to ${CHECK_MAX.toLocaleString()} weekends)` : ""}.`,
     );
   if (near)
     bits.push(
@@ -752,13 +752,11 @@ function simNoise(rows, chipK, H, sortK) {
     m /= xs.length;
     return Math.sqrt(Math.max(0, m2 / xs.length - m * m));
   };
-  const ses = [];
   // net of each team's transfer penalty, as the ranking is (third review: raw scores tested another objective)
   const p0 = top.st.pen || 0;
   for (const r of all) {
     const si = r === top ? s0 : teamSamples(r.ids, r.boost, chipK, r.boost2, sim);
     r.st.se = sd(si) / Math.sqrt(N0); // the displayed xPts' error: the main run's N
-    ses.push(r.st.se);
     if (r === top) continue;
     // #1's lead on the independent run (Engine.pairedCompare: within the noise both ways = a near tie ≈; convincingly
     // behind = the check reverses the order ↑). Until that run is in, the lead as selected, against the same noise
@@ -768,11 +766,12 @@ function simNoise(rows, chipK, H, sortK) {
     r.st.rev1 = !!chk && c.reversed;
     r.st.tieW = z * c.se; // the margin's half-width, for the growth rule
   }
-  ses.sort((a, b) => a - b);
   // adaptive: while one of the top six ranked teams is still within the check run's margin of #1 and that margin is
   // wider than TIE_TOL, another independent batch (checkSim grow, up to CHECK_MAX weekends)
   if (chk && rows.best.slice(0, 6).some((r) => r !== top && r.st.near1 && r.st.tieW > TIE_TOL)) checkSim(redraw, true);
-  return { se95: 1.96 * ses[Math.floor(ses.length / 2)], checked: !!chk, checkN: chk ? chk.N : 0, z };
+  // the headline: the top team's own Monte Carlo error (fifth review: a median over the shown, starting and pinned
+  // teams isn't any one team's)
+  return { se95: 1.96 * (top.st.se || 0), checked: !!chk, checkN: chk ? chk.N : 0, z };
 }
 function renderBestTable(ctx) {
   const { chipK, T: team, vp, tilePts } = ctx,

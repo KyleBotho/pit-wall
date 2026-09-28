@@ -5,6 +5,41 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-28, fifth review (`docs/reviews/2026-09-27/F1-fifth-round-review.md` + evidence, 7.9/10; the
+      evidence's two local paths had the Windows username, redacted to `<user>` in the committed copy). Shipped
+      walk-forward 3 seeds: CRPS 8.6048 (the gain over 8.686 is the completed penalty history, not the engine). Its
+      seven findings, all addressed:
+      (1) Grid penalties for the next race: collect.grid_ledger gives every stewards' grid penalty its target race
+      (published before its event's race -> that race; after -> the next, carried past a race the driver missed; a
+      "Corrected" decision replaces the one it corrects; a this-race penalty lapses if he doesn't start), kept in
+      history/<season>/penalties.json (refresh.py penalty_ledger, which also now reads the last finished event's
+      decisions); the live weekend and walk.js penAt both read it. Found live: COL's 5-place penalty from Baku
+      (collision, published after the race) applies to R16 and had been missed. Tests: before / after the race, a
+      missed race, a correction (and a withdrawn one), sprint-only.
+      (2) SC parser: a red flag now ends the running safety car (laps.sc_laps v2: [deployed, end, "in" | "red" |
+      "open"]); records carry scLapsV and older ones are re-read. 4 prior races changed (Australia 2023: laps 1, 7,
+      54 instead of 1, 7; São Paulo 2024 split in two) and 2026 R6 / R13 (red endings). priors.py checks race
+      control's lap count against the classification (all agree within a lap).
+      (3) Pooled pace revocation: laps.reconcile drops pacePool with the rest; pool_rounds writes pacePool +
+      paceSePool (the pooled fit's own cluster-robust errors) + pacePoolV and removes them from a round that no longer
+      qualifies; the engine ignores contextual / pooled pace of a record whose lapCheck failed and any driver without
+      a standard error. Tests: valid -> invalid (Python), failed / error-less records fall back (engine).
+      (4) sctimed: refitted on 2023-2025 only (24 dry SC races: -0.137 + 1.10 x onset, slope se 0.64; out of sample
+      for 2026, where late SCs saw +1.35 / +1.53 / +1.67 places), the race noise normalised on its mean square (the
+      conditional noise variance kept: a timing test, not a variance change), onsets from dry unflagged races, sprints
+      untimed.
+      (5) Lab data lifecycle: web/js/lab-data.js (idle / loading / ready / error, a failure retried, every attempt
+      redraws, concurrent loads share one fetch; test); a lab run with challenger settings (racePace pool, scTimed)
+      waits for the data and won't run without it; the run records the lab file it used; Retry button.
+      (6) Challenger provenance: each challenger declares its input (needs: coverage n / of), the freeze records
+      coverage, sameAsShipped and evaluable (engine.projectChallengers with the shipped projection, tools/freeze.js);
+      backtest/accuracy.js leaves non-evaluable rounds out and counts them ("+k not evaluable" in Model health). Test:
+      racepool without its input is not evaluable, qskew2 is.
+      (7) Calculator wording: the headline is the top team's own Monte Carlo error (was a median over shown, starting
+      and pinned teams), labelled as the sampling error of the average (not outcomes, not model uncertainty); ≈ is
+      each team against #1, not a guarantee for the whole ranking.
+      Three seeds, current archives over the cached data, R5-R15, vs shipped: racectx +0.0038 +/- 0.026, racepool
+      (own errors) +0.0080 +/- 0.022, sctimed (repaired) +0.0037 +/- 0.013: ties. Nothing promoted.
 - [x] 2026-09-28, the lab's data out of the everyday page (user: "since challengers currently have no bearing on the
       normal users, it should probably not run in their browser and only on github for now. The data can be streamed
       or triggered for user with owner/admin tag"). Checked first: no challenger ran in a browser (freeze and scoring

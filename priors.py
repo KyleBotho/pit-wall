@@ -63,6 +63,8 @@ def race_metrics(rows):
         "move": round(sum(moves) / len(moves), 3) if moves else None,
         "gain": round(sum(gains) / len(gains), 3) if gains else None,
         "gridCorr": spearman([int(r["grid"]) for r in gridded], [int(r["position"]) for r in gridded]),
+        # the race's length as classified (the winner's laps): checks race control's own lap count (lapsRun)
+        "laps": max((int(r.get("laps") or 0) for r in cls), default=0) or None,
     }
 
 
@@ -112,8 +114,10 @@ def openf1_race(session_key, reuse=True):
         "vsc": sum(1 for m in msgs if m.startswith(VSC_DEPLOYED)),
         "red": int(any(m.get("flag") == "RED" for m in rc)),
         "rain": int(sum(1 for w in wx if w.get("rainfall")) >= 3),  # a few wet readings, not one stray drop
-        # when each safety car came ([deployed lap, in lap]) and the laps run: the timed safety car's evidence
+        # when each safety car came ([deployed lap, end lap, how it ended]) and the laps run by race control: the
+        # timed safety car's evidence (main() checks lapsRun against the classified length)
         "scLaps": laps.sc_laps(rc),
+        "scLapsV": laps.SC_LAPS_VERSION,
         "lapsRun": max((m.get("lap_number") or 0 for m in rc), default=0),
     }
     try:
@@ -155,6 +159,10 @@ def main():
                 k = keys.get(r["date"]) or next((v for d, v in keys.items() if abs(_days(d, r["date"])) <= 1), None)
                 if k:
                     r.update(openf1_race(k))
+                    # race control's lap count vs the classification: a gap of more than a lap (messages that stop
+                    # early, a stray late one) and the classified length is used, the disagreement kept
+                    if r.get("laps") and r.get("lapsRun") and abs(r["lapsRun"] - r["laps"]) > 1:
+                        r["lapsRc"], r["lapsRun"] = r["lapsRun"], r["laps"]
                     if r.get("ovt") is not None and r["starters"]:
                         r["ovt"] = round(r["ovt"] / r["starters"], 3)
         rows.extend(season)

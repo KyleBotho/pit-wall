@@ -191,3 +191,22 @@ test("the evaluation's input manifest names every data file asOf reads (the accu
       want,
     );
 });
+
+// Fifth review: a challenger frozen without its own input runs as the shipped model; the freeze says so (coverage,
+// sameAsShipped) and marks it not evaluable, so Model health doesn't score it as a test of itself.
+test("frozen challengers carry their input coverage; one without its input isn't evaluable", opt, () => {
+  const d = structuredClone(D);
+  for (const ri of Object.values(d.raceInfo || {}))
+    if (ri.race) for (const k of ["pacePool", "paceSePool"]) delete ri.race[k];
+  const o = { sims: 400 };
+  const champ = E.project(d, { ...o, detail: true });
+  if (!champ) return; // season over
+  const ch = E.projectChallengers(d, o, champ);
+  assert.equal(ch.racepool.coverage.n, 0);
+  assert.equal(ch.racepool.sameAsShipped, true);
+  assert.equal(ch.racepool.evaluable, false);
+  // a challenger that changes a setting everyone has (qualifying skew) is active
+  assert.equal(ch.qskew2.coverage, null);
+  assert.equal(ch.qskew2.sameAsShipped, false);
+  assert.equal(ch.qskew2.evaluable, true);
+});

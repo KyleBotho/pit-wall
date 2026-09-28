@@ -87,15 +87,18 @@
     scPerDnf: 0.15, // hand-set: chance a retirement brings out the safety car (2026: ~3 retirements, 43% safety cars)
     scNoise: 1.35, // fitted: race noise under a safety car
     scTau: 0.75, // hand-set: grid slot cost under a safety car (the field bunches up)
-    // the timed safety car (challenger sctimed; 0 = off): each simulated safety car gets an onset (the share of the
-    // race run when the last one came, drawn from the circuit's scAt: past seasons' and this season's races) and
-    // its effect above (noise, grid slot cost, overtakes) scaled by max(0, scTimeA + scTimeB x onset), normalised
-    // so the average safety car keeps the average effect. Measured 2026-09-28 on 31 dry safety-car races 2023-2026
-    // (priors.py + this season): places moved per car above no-SC races = -0.146 + 1.258 x onset (slope se 0.50):
-    // an early safety car reshuffles nothing, a late one ~3x the average
+    // the timed safety car (challenger sctimed; 0 = off): each simulated race safety car gets an onset (the share of
+    // the race run when the last one came, drawn from the circuit's scAt: dry, unflagged races of past seasons and
+    // this season's finished rounds) and its effect scaled by the weight max(0, scTimeA + scTimeB x onset): the
+    // grid slot cost and overtake uplift by the weight over its mean (the average safety car keeps its level
+    // effect), the race noise so that its mean SQUARE matches the untimed one (the noise variance under a safety
+    // car is kept: a timing test, not a variance change; fifth review). Sprints untimed. Fitted 2026-09-28 on 24
+    // dry safety-car races 2023-2025 only (priors.py; out of sample for the 2026 walk-forward, fifth review): places
+    // moved per car above no-SC races = -0.137 + 1.10 x onset (slope se 0.64); 2023-2026 gives -0.146 + 1.26.
+    // Exploratory: last-SC onset vs places moved doesn't identify duration, pit windows or a causal effect
     scTimed: 0,
-    scTimeA: -0.146,
-    scTimeB: 1.258,
+    scTimeA: -0.137,
+    scTimeB: 1.1,
     rainNoise: 1.6, // measured (priors.py wet vs dry races): noise in a wet session
     rainDnf: 1.4, // measured: retirements in a wet race
     // hand-set (review batch 4): latent correlation of the weekend's wet sessions (one weather regime), used when
@@ -176,8 +179,8 @@
   /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string, sessions?: { type: string, start?: string, end?: string }[] }} Gameday */
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
-  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | null)[][], lapsRun?: number }} PriorRow */
-  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSe?: Record<string, number>, scLaps?: (number | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
+  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | string | null)[][], lapsRun?: number }} PriorRow */
+  /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSePool?: Record<string, number>, paceSe?: Record<string, number>, lapCheck?: { ok?: boolean }, scLaps?: (number | string | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
 
@@ -1038,16 +1041,20 @@
       },
     };
   }
-  /** When races' last safety car came, as the share of the race run (rounded to 0.01): every past race with one
-   * (priors, OpenF1 2023 on) and this season's finished rounds (raceInfo; a walk-forward's data holds only the
-   * rounds before). The timed safety car (SIM.scTimed) draws from them. Empty without timings.
+  /** When races' last safety car came, as the share of the race run (rounded to 0.01): every dry, unflagged past
+   * race with one (priors, OpenF1 2023 on) and this season's finished rounds (raceInfo; a walk-forward's data holds
+   * only the rounds before). The timed safety car (SIM.scTimed) draws from them. Empty without timings.
    * @param {PriorRow[] | null} P @param {Data} data @returns {number[]} */
   function scOnsets(P, data) {
     /** @type {number[]} */
     const out = [];
-    const add = (/** @type {{ scLaps?: (number | null)[][], lapsRun?: number } | undefined} */ x) => {
-      const last = x && x.scLaps && x.scLaps.length ? x.scLaps[x.scLaps.length - 1][0] : null;
-      if (last != null && x && x.lapsRun) out.push(Math.round(clamp(last / x.lapsRun, 0, 1) * 100) / 100);
+    // dry races without a red flag only: the population the timing effect was fitted on (SIM.scTimeA / B)
+    const add = (
+      /** @type {{ scLaps?: (number | string | null)[][], lapsRun?: number, rain?: number, red?: number } | undefined} */ x,
+    ) => {
+      if (!x || x.rain || x.red || !x.scLaps || !x.scLaps.length || !x.lapsRun) return;
+      const last = x.scLaps[x.scLaps.length - 1][0];
+      if (typeof last === "number") out.push(Math.round(clamp(last / x.lapsRun, 0, 1) * 100) / 100);
     };
     for (const x of P || []) add(x);
     for (const ri of Object.values(data.raceInfo || {})) add(ri && ri.race);
@@ -1194,26 +1201,41 @@
    * same with its tyre / fuel / traffic terms pooled across the rounds up to it (pacePool, laps.py pool_rounds);
    * "median" (none) = the median clean lap. @param {typeof MODEL} M */
   const ctxKey = (M) => (M.racePace === "ctx" ? "paceCtx" : M.racePace === "pool" ? "pacePool" : null);
+  /** A round's contextual race pace as MODEL.racePace picks it, with the standard errors that go with it: the
+   * race-alone fit's paceSe for "ctx"; the pooled fit's own cluster-robust paceSePool for "pool" (fifth review: not
+   * a borrowed one). None when the round's lap records failed the FastF1 check (lapCheck.ok false: whatever was
+   * derived from them no longer counts, stale or not). A driver without a standard error isn't used (the median
+   * clean lap stands). @param {RaceBlock | undefined} b @param {typeof MODEL} M */
+  function ctxPace(b, M) {
+    const k = ctxKey(M);
+    if (!b || !k || (b.lapCheck && b.lapCheck.ok === false)) return null;
+    const pace = b[k],
+      se = k === "paceCtx" ? b.paceSe : b.paceSePool;
+    return pace && se ? { pace, se, inflate: k === "paceCtx" ? M.ctxSeInflate : 1 } : null;
+  }
   /** A round's race pace per driver (% off the fastest) as MODEL.racePace picks it. @param {Data} data
    * @param {number} r @param {typeof MODEL} M @returns {Record<string, number>} */
   function racePaceOf(data, r, M) {
     const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
     if (!b) return {};
-    const k = ctxKey(M),
-      ctx = k ? /** @type {Record<string, number> | undefined} */ (b[k]) : undefined;
-    return ctx ? { ...b.pace, ...ctx } : b.pace || {};
+    const c = ctxPace(b, M);
+    if (!c) return b.pace || {};
+    /** @type {Record<string, number>} */
+    const out = { ...b.pace };
+    for (const [t, v] of Object.entries(c.pace)) if (c.se[t] != null) out[t] = v;
+    return out;
   }
   /** How much a round's race pace for a driver counts (1, or less for a contextual estimate with a wide standard
-   * error, MODEL.ctxTau; the pooled pace takes the race-alone fit's paceSe, as the fourth review screened it).
-   * @param {Data} data @param {number} r @param {string} tla @param {typeof MODEL} M */
+   * error, MODEL.ctxTau; the race-alone fit's errors are inflated by ctxSeInflate for laps correlated within a
+   * stint, the pooled fit's are cluster-robust already). @param {Data} data @param {number} r @param {string} tla
+   * @param {typeof MODEL} M */
   function racePaceWeight(data, r, tla, M) {
     const b = data.raceInfo && data.raceInfo[r] && data.raceInfo[r].race;
-    const k = ctxKey(M),
-      ctx = b && k ? /** @type {Record<string, number> | undefined} */ (b[k]) : undefined;
-    const se = ctx && ctx[tla] != null && b && b.paceSe && b.paceSe[tla] != null ? b.paceSe[tla] : null;
-    if (se == null) return 1;
+    const c = ctxPace(b, M);
+    const se = c && c.pace[tla] != null && c.se[tla] != null ? c.se[tla] : null;
+    if (se == null || !c) return 1;
     const t2 = M.ctxTau * M.ctxTau,
-      e = M.ctxSeInflate * se;
+      e = c.inflate * se;
     return t2 / (t2 + e * e);
   }
   /** Each driver's pace observations: % off the fastest in qualifying (lap times) and race (median clean lap; else
@@ -2413,8 +2435,15 @@
    * of their weights, so the weights average 1. Off, or without onsets: none. @param {Circuit} circuit */
   function scTiming(circuit) {
     const at = SIM.scTimed && circuit.scAt && circuit.scAt.length ? circuit.scAt : null;
-    const bar = at ? at.reduce((s, u) => s + scRawWeight(u), 0) / at.length : 0;
-    return { scAt: at && bar > 0 ? at : null, scWBar: bar };
+    if (!at) return { scAt: null, scWBar: 0, scNoiseC: 0 };
+    const raw = at.map(scRawWeight);
+    const m1 = raw.reduce((s, x) => s + x, 0) / raw.length,
+      m2 = raw.reduce((s, x) => s + x * x, 0) / raw.length;
+    if (!(m1 > 0)) return { scAt: null, scWBar: 0, scNoiseC: 0 };
+    // the race noise multiplier 1 + c x weight with E[(1 + c w)^2] = scNoise^2: c^2 m2 + 2 c m1 + 1 - scNoise^2 = 0
+    const f0 = SIM.scNoise;
+    const c = (-m1 + Math.sqrt(Math.max(0, m1 * m1 - m2 * (1 - f0 * f0)))) / m2;
+    return { scAt: at, scWBar: m1, scNoiseC: c };
   }
   /** A safety car's weight by its onset u (share of the race run), before normalising. @param {number} u */
   const scRawWeight = (u) => Math.max(0, SIM.scTimeA + SIM.scTimeB * u);
@@ -2490,10 +2519,11 @@
       scNoise = SIM.scNoise,
       scTau = SIM.scTau,
       ovScNow = ovSc;
-    if (sc && S.scAt) {
+    if (sc && S.scAt && !isSprint) {
       scAtU = S.scAt[Math.floor(r() * S.scAt.length)];
-      const w = scRawWeight(scAtU) / S.scWBar;
-      scNoise = 1 + (SIM.scNoise - 1) * w;
+      const raw = scRawWeight(scAtU),
+        w = raw / S.scWBar;
+      scNoise = 1 + S.scNoiseC * raw;
       scTau = Math.max(0, 1 + (SIM.scTau - 1) * w);
       ovScNow = ovNoSc * (1 + (S.scOv - 1) * w);
     }
@@ -4008,9 +4038,24 @@
     }
     return v;
   }
+  /** How much of a challenger's own input a data set has (fifth review: a challenger whose input is missing runs as
+   * the shipped model and must not be scored as a test of itself). n = items it can use, of = items there could be.
+   * @param {Data} data @param {(b: RaceBlock) => boolean} ok @param {string} what
+   * @returns {{ n: number, of: number, what: string }} */
+  const raceCoverage = (data, ok, what) => {
+    const bs = (data.done || []).map((gd) => data.raceInfo && data.raceInfo[gd] && data.raceInfo[gd].race);
+    return { n: bs.filter((b) => b && ok(b)).length, of: bs.length, what };
+  };
+  const passed = (/** @type {RaceBlock} */ b) => !(b.lapCheck && b.lapCheck.ok === false);
+  /** The next race's market lines (and with spreads: bid / ask) a market challenger works from. @param {Data} data */
+  const nextOdds = (data) => {
+    const g = data.schedule.find((x) => !data.done.includes(x.gd));
+    return g && data.odds && data.odds.gd === g.gd ? data.odds : null;
+  };
   /** Challengers: named variants frozen next to the shipped model at every lock (tools/freeze.js) and scored against
    * it once the round is certified (backtest/accuracy.js, Model health). Adopt one only on evidence from rounds it
-   * hadn't seen. Keep an id once used: the archive refers to it. */
+   * hadn't seen, and only on rounds where it was evaluable (had its own input, came out different from the
+   * shipped model: projectChallengers). Keep an id once used: the archive refers to it. */
   const CHALLENGERS = [
     {
       id: "qskew2",
@@ -4028,24 +4073,33 @@
       id: "racectx",
       label: "Race pace from the lap model (tyres, fuel, traffic)",
       set: { "MODEL.racePace": "ctx" },
+      needs: (/** @type {Data} */ d) =>
+        raceCoverage(d, (b) => !!b.paceCtx && !!b.paceSe && passed(b), "rounds with lap-model pace"),
       why: "review batch 3: steadier round to round (rank corr 0.85 vs 0.83); R5-R15 CRPS +0.020 +/- 0.034 (tie)",
     },
     {
       id: "racepool",
       label: "Race pace from the lap model, its tyre / fuel / traffic terms pooled across races",
       set: { "MODEL.racePace": "pool" },
+      needs: (/** @type {Data} */ d) =>
+        raceCoverage(d, (b) => !!b.pacePool && !!b.paceSePool && passed(b), "rounds with pooled pace"),
       why: "deferred for want of evidence (fourth review): pooled vs race-alone CRPS -0.006 +/- 0.010 (inconclusive); pooling moves a driver's pace by at most 0.16% (R6). Collects its evidence from R16",
     },
     {
       id: "sctimed",
       label: "Safety car timed: a late one reshuffles the order, an early one hardly",
       set: { "SIM.scTimed": 1 },
+      needs: (/** @type {Data} */ d) => {
+        const n = scOnsets(d.priors && d.priors.races && d.priors.races.length ? d.priors.races : null, d).length;
+        return { n, of: n, what: "safety car onsets" };
+      },
       why: "measured on 31 dry safety-car races 2023-2026: places moved per car above no-SC races -0.15 + 1.26 x onset share (slope 2.5 se); the average safety car keeps its fitted effect. Deferred by the fourth review for want of a target; collects its evidence from R16",
     },
     {
       id: "dnfcauses",
       label: "Retirements by cause (team mechanical + field incidents)",
       set: { "MODEL.dnfModel": "causes", "MODEL.incShrink": 1e6 },
+      needs: (/** @type {Data} */ d) => raceCoverage(d, (b) => !!b.retirements, "rounds with retirement causes"),
       why: "review batch 3: retirement log loss 0.4690 vs 0.4711 walk-forward R4-R15 (small)",
     },
     {
@@ -4058,12 +4112,18 @@
       id: "oddsq",
       label: "Market lines weighted by their bid-ask spread",
       set: { "SIM.oddsQuality": 1 },
+      needs: (/** @type {Data} */ d) => {
+        const o = nextOdds(d);
+        const n = o && o.spread ? Object.values(o.spread).filter((x) => x && Object.keys(x).length).length : 0;
+        return { n, of: 4, what: "market lines with bid-ask spreads" };
+      },
       why: "second review: a wide, thin quote says less than a tight one; spreads kept from R17 on (no past data)",
     },
     {
       id: "odds8",
       label: "Market fit run to (near) convergence: 8 steps on 5,000 sims",
       set: { "SIM.oddsIters": 8, "SIM.oddsN": 5000 },
+      needs: (/** @type {Data} */ d) => ({ n: nextOdds(d) ? 1 : 0, of: 1, what: "the next race's market" }),
       why: "4 steps stop 0.3-0.4 log-odds short of the targets (R13-R15); 8 get most of what's reachable (the residual levels off by ~6: one pace per driver can't meet every line); more sims so extra steps don't chase noise",
     },
   ];
@@ -4145,18 +4205,31 @@
     }
     return out;
   }
-  /** The challengers' projections for the coming race, each under its own settings: {id: {label, set, assets:
-   * {id: {x, q}}}}. @param {Data} data @param {Partial<typeof DEFAULTS>} [opt] */
-  function projectChallengers(data, opt) {
+  /** The challengers' projections for the coming race, each under its own settings: {id: {label, set, coverage,
+   * sameAsShipped, evaluable, assets: {id: {x, q}}}}. champ = the shipped model's projection of the same data (to
+   * tell a challenger that came out as the shipped model). @param {Data} data
+   * @param {Partial<typeof DEFAULTS>} [opt] @param {{ assets: Record<string, unknown> } | null} [champ] */
+  function projectChallengers(data, opt, champ) {
     /** @type {Record<string, unknown>} */
     const out = {};
+    const shipped = champ ? /** @type {Record<string, { x: number }>} */ (champ.assets) : null;
     for (const c of CHALLENGERS) {
       const p = withSettings(c.set, () => project(data, { ...opt, detail: true }));
       if (!p) return null;
       const assets = /** @type {Record<string, { x: number, q?: number[] }>} */ (p.assets);
+      // provenance (fifth review): how much of its own input it had, and whether it came out as the shipped model
+      // (a silent fallback); a round with neither is not evaluable and the scoring leaves it out
+      const coverage = c.needs ? c.needs(data) : null;
+      const same = shipped
+        ? Object.keys(assets).every((id) => shipped[id] && shipped[id].x === assets[id].x) &&
+          Object.keys(shipped).every((id) => assets[id])
+        : null;
       out[c.id] = {
         label: c.label,
         set: c.set,
+        coverage,
+        sameAsShipped: same,
+        evaluable: !(coverage && coverage.n === 0) && same !== true,
         assets: Object.fromEntries(Object.entries(assets).map(([id, a]) => [id, { x: a.x, q: a.q }])),
       };
     }
@@ -4346,6 +4419,7 @@
     lookZ,
     chipScore,
     scWeight,
+    scTiming,
     withFitLog,
     priceStep,
     priceSteps,

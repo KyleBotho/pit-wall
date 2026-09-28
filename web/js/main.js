@@ -67,7 +67,7 @@ import {
   renderPractice,
   renderPrices,
 } from "./views.js";
-import { lab, labCheck, labOwner, labRerun, labSave, labSet, renderLab } from "./lab.js";
+import { lab, labCheck, labOwner, labRerun, labSave, labSet, loadLab, renderLab } from "./lab.js";
 import { linkAccount, pullLink, searchInput, setupAction } from "./setup.js";
 import { pullRivals, rivalSearchInput, rivalsAction, toggleRivalPick } from "./rivals.js";
 import { renderRivals } from "./rivals-view.js";
@@ -740,6 +740,11 @@ const CLICK = [
 // buttons known by id
 const CLICK_ID = {
   labRerun: () => labRerun(),
+  // the lab's data after a failed load (lab-data.js): try again, showing it's loading
+  labRetry: () => {
+    loadLab();
+    renderLab();
+  },
   labReset: () => {
     lab.set = {};
     labSave();

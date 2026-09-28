@@ -268,6 +268,92 @@ def fia_penalties(archived, read_json, write_json, slug, read_bytes, most=8):
     return pen, at, parts
 
 
+CORRECTED = re.compile(r"\b(?:corrected|revised|amended)\b", re.I)
+
+
+def grid_ledger(schedule, docs_of, num_of, raced=None):
+    """Every grid penalty the stewards have handed out this season, each with the race it's for (fifth review: a
+    decision was reduced to a number for its own event, so one "for the next race" was lost):
+    [{car, tla, places, issued (gd), target (gd), published, doc, title}].
+    target: the issuing event's own race when the decision was published before that race started, else the next
+    race (a penalty handed out after a race can only be served later: the stewards' "next race in which the driver
+    participates"); a driver who didn't race there (raced(gd, tla) false, for rounds already run) carries it on.
+    A "Corrected" / "Revised" decision replaces the last one for that car at that event (with no grid penalty, it
+    removes it). docs_of(g) = the event's FIA document index (docs with `grid` as read by fia_penalties) or None;
+    num_of(gd) = {car number: TLA} from that round's classification (else an earlier round's). Sprint-only penalties
+    are 0 in parse_decision and aren't listed."""
+    from datetime import datetime
+
+    order = [g["gd"] for g in schedule]
+    start = {g["gd"]: datetime.fromisoformat(g["raceStart"]) for g in schedule}
+
+    def tla_for(gd, car):
+        for g in reversed(order[: order.index(gd) + 1]):
+            t = (num_of(g) or {}).get(car)
+            if t:
+                return t
+        return None
+
+    out = []
+    for g in schedule:
+        per_car = {}
+        for d in sorted(docs_of(g) or [], key=lambda d: (d.get("published") or "", d.get("doc") or 0)):
+            m = PEN_TITLE.search(d.get("title") or "")
+            if not m or "grid" not in d:
+                continue
+            rows = per_car.setdefault(int(m.group(1)), [])
+            if CORRECTED.search(d.get("title") or "") and rows:
+                rows.pop()
+            if d["grid"]:
+                rows.append(d)
+        for car, rows in per_car.items():
+            for d in rows:
+                try:
+                    pub = datetime.fromisoformat(d["published"])
+                except (KeyError, TypeError, ValueError):
+                    continue
+                later = not pub < start[g["gd"]]
+                i = order.index(g["gd"]) + (1 if later else 0)
+                tla = tla_for(g["gd"], car)
+                # "the next race in which the driver participates": past a round he didn't race. Only a penalty
+                # handed out after its race carries on; one for this race (a pit-lane start for parc-fermé changes)
+                # lapses if he doesn't start
+                while later and raced and tla and i < len(order) and raced(order[i], tla) is False:
+                    i += 1
+                out.append(
+                    {
+                        "car": car,
+                        "tla": tla,
+                        "places": d["grid"],
+                        "issued": g["gd"],
+                        "target": order[i] if i < len(order) else None,
+                        "published": d["published"],
+                        "doc": d.get("url"),
+                        "title": d.get("title"),
+                    }
+                )
+    return out
+
+
+def ledger_penalties(ledger, gd, before=None):
+    """The grid penalties for race gd from the ledger (published before `before`, ISO, if given): ({TLA: places},
+    {TLA: latest published}, {TLA: [[places, published], ...]}); 99 (back of the grid) wins, the rest add up."""
+    from datetime import datetime
+
+    cut = datetime.fromisoformat(before) if before else None
+    pen, at, parts = {}, {}, {}
+    for e in ledger:
+        if e["target"] != gd or not e.get("tla"):
+            continue
+        if cut and datetime.fromisoformat(e["published"]) >= cut:
+            continue
+        t = e["tla"]
+        pen[t] = 99 if e["places"] >= 99 or pen.get(t) == 99 else pen.get(t, 0) + e["places"]
+        at[t] = max(at.get(t, ""), e["published"])
+        parts.setdefault(t, []).append([e["places"], e["published"]])
+    return pen, at, parts
+
+
 def event_slug(name, season):
     """The FIA's event slug for a meeting name: "Azerbaijan Grand Prix" -> "2026_azerbaijan_grand_prix"."""
     return f"{season}_" + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")

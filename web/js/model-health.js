@@ -55,7 +55,11 @@ function challengersHtml(ch) {
             : c.dqs < 0
               ? "<b class=good>better</b>"
               : "<span class=bad>worse</span>";
-      return `<tr><td style="text-align:left">${esc(c.label)}</td><td>${c.n}</td><td>${c.dqs > 0 ? "+" : ""}${f2(c.dqs)}${c.dqsSe != null ? ` ± ${f2(c.dqsSe)}` : ""}</td><td>${sg(c.dmae)}</td><td>${verdict}</td></tr>`;
+      // rounds frozen without the challenger's own input, or identical to the shipped model: not counted
+      const skip = c.skipped
+        ? ` <span class="dim" title="Rounds frozen without its own input, or identical to the shipped model: not counted">+${c.skipped} not evaluable</span>`
+        : "";
+      return `<tr><td style="text-align:left">${esc(c.label)}</td><td>${c.n}${skip}</td><td>${c.dqs > 0 ? "+" : ""}${f2(c.dqs)}${c.dqsSe != null ? ` ± ${f2(c.dqsSe)}` : ""}</td><td>${sg(c.dmae)}</td><td>${verdict}</td></tr>`;
     })
     .join("");
   return (

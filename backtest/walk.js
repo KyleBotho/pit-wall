@@ -76,40 +76,21 @@ function wxAt(r) {
   }
   return Object.keys(out).length ? out : null;
 }
-// a round's FIA index, as collect.fia_event_path finds it: any of the meeting's names (config/season.json fiaNames:
-// the FIA's own where they differ), punctuation ignored (the FIA names its files: "2026_barcelona-catalunya_...")
-const FIA_NAMES = read(path.join("..", "config", "season.json")).fiaNames || {};
-const fiaKey = (s) =>
-  s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "");
-function fiaFile(name) {
-  const dir = path.join(__dirname, "..", "history", String(D.season), "fia");
-  if (!fs.existsSync(dir)) return null;
-  const want = new Set(
-    [name, ...(Array.isArray(FIA_NAMES[name]) ? FIA_NAMES[name] : [])].map((n) => fiaKey(`${D.season} ${n}`)),
-  );
-  const f = fs
-    .readdirSync(dir)
-    .sort()
-    .find((x) => x.endsWith(".json") && want.has(fiaKey(x.slice(0, -5))));
-  return f ? path.join(dir, f) : null;
-}
-/** Grid penalties the stewards had published by round r's lock (history/<season>/fia, parsed decisions), as TLAs. */
+// Grid penalties from the season's ledger (history/<season>/penalties.json, refresh.py penalty_ledger with
+// collect.grid_ledger: each stewards' decision with the race it's for, a correction replacing what it corrects;
+// fifth review: a decision "for the next race" sits in the previous event's documents). Round r gets the entries for
+// r that were published before its lock, as TLAs.
+const LEDGER_FILE = D ? path.join(__dirname, "..", "history", String(D.season), "penalties.json") : "";
+const LEDGER = LEDGER_FILE && fs.existsSync(LEDGER_FILE) ? JSON.parse(fs.readFileSync(LEDGER_FILE, "utf8")).ledger : [];
+/** Grid penalties the stewards had published by round r's lock, for round r, as TLAs. */
 function penAt(r) {
   const g = D.schedule.find((x) => x.gd === r);
   if (!g) return {};
-  const f = fiaFile(g.name);
-  if (!f) return {};
-  const num = Object.fromEntries((D.results.race[r] || []).filter((x) => x.num).map((x) => [x.num, x.tla]));
   /** @type {Record<string, number>} */
   const pen = {};
-  for (const d of JSON.parse(fs.readFileSync(f, "utf8")).docs) {
-    const m = /(?:Infringement|Decision|Offence) - Car (\d+)\b/i.exec(d.title || "");
-    const t = m && num[+m[1]];
-    if (!t || !d.grid || !(Date.parse(d.published) < Date.parse(g.lock))) continue;
-    pen[t] = d.grid >= 99 || pen[t] === 99 ? 99 : (pen[t] || 0) + d.grid;
+  for (const e of LEDGER) {
+    if (e.target !== r || !e.tla || !(Date.parse(e.published) < Date.parse(g.lock))) continue;
+    pen[e.tla] = e.places >= 99 || pen[e.tla] === 99 ? 99 : (pen[e.tla] || 0) + e.places;
   }
   return pen;
 }
@@ -524,6 +505,7 @@ const INPUTS = [
   path.join(__dirname, "odds_by_round.json"),
   path.join(__dirname, "weather_by_round.json"),
   path.join(__dirname, "..", "config", "season.json"), // fiaNames: which FIA index is a round's
+  path.join(SEASON_DIR, "penalties.json"), // the grid penalty ledger (penAt)
   ...["practice", "odds", "projections", "fia", path.join("telemetry", "minisectors")].map((d) =>
     path.join(SEASON_DIR, d),
   ),

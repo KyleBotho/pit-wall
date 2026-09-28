@@ -152,6 +152,11 @@ function challengers() {
     if (!champ) continue;
     const row = { gd, shipped: { qs: r2(champ.qs), mae: r2(champ.mae) } };
     for (const [id, ch] of Object.entries(c.challengers)) {
+      // frozen without its own input, or identical to the shipped model: not a test of it (fifth review); counted
+      if (ch.evaluable === false) {
+        row[id] = { skip: true, why: ch.sameAsShipped ? "same as shipped" : "no input" };
+        continue;
+      }
       const sc = scoreRows(ch.assets, levels, gd);
       if (sc) row[id] = { qs: r2(sc.qs), mae: r2(sc.mae), dqs: sc.qs - champ.qs, dmae: sc.mae - champ.mae };
     }
@@ -162,9 +167,19 @@ function challengers() {
     xs.length > 1 ? Math.sqrt(xs.reduce((a, x) => a + (x - mean(xs)) ** 2, 0) / (xs.length - 1) / xs.length) : null;
   const summary = ids.map((id) => {
     const ch = E.CHALLENGERS.find((x) => x.id === id);
-    const dq = rounds.filter((r) => r[id]).map((r) => r[id].dqs),
-      dm = rounds.filter((r) => r[id]).map((r) => r[id].dmae);
-    return { id, label: ch ? ch.label : id, n: dq.length, dqs: r2(mean(dq)), dqsSe: r2(se(dq)), dmae: r2(mean(dm)) };
+    const ok = rounds.filter((r) => r[id] && !r[id].skip);
+    const dq = ok.map((r) => r[id].dqs),
+      dm = ok.map((r) => r[id].dmae);
+    const skipped = rounds.filter((r) => r[id] && r[id].skip).length;
+    return {
+      id,
+      label: ch ? ch.label : id,
+      n: dq.length,
+      skipped,
+      dqs: r2(mean(dq)),
+      dqsSe: r2(se(dq)),
+      dmae: r2(mean(dm)),
+    };
   });
   rounds.forEach((r) => ids.forEach((id) => r[id] && (delete r[id].dqs, delete r[id].dmae)));
   return { rounds, summary };

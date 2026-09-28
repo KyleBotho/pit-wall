@@ -91,18 +91,27 @@ def neutral_windows(rc, lap_s):
     return out
 
 
+SC_LAPS_VERSION = 2  # 2: a red flag ends the running safety car (fifth review); 1 kept it open
+
+
 def sc_laps(rc):
-    """Each safety car of a session as [deployed lap, in lap] by race control's lap numbers (the leader's); the in
-    lap None when no "in this lap" message closes it (a red flag, or the race ending under it). Safety cars only,
-    not VSCs or red flags. For the timed safety car challenger (SIM.scTimed): when a race's safety car comes."""
-    out = []
+    """Each safety car of a session as [deployed lap, end lap, how it ended] by race control's lap numbers (the
+    leader's): "in" (safety car in this lap), "red" (a red flag stopped the race under it: the restart after it is a
+    new start, and a later deployment a new safety car), "open" (no message closes it: the race ended under it, or
+    the messages stop), end lap None. Safety cars only, not VSCs. For the timed safety car challenger (SIM.scTimed).
+    A repeated "deployed" while one is out is the same safety car. Fifth review: v1 kept a red-flagged one open and
+    merged or dropped the deployments after it (Australia 2023: laps 1, 7, 54 read as [1, 3], [7, open])."""
+    out, cur = [], None
     for m in sorted(rc or [], key=lambda m: m.get("date") or ""):
         msg, lap = (m.get("message") or "").upper(), m.get("lap_number")
         if msg.startswith("SAFETY CAR DEPLOYED"):
-            if not out or out[-1][1] is not None:
-                out.append([lap, None])
-        elif msg.startswith("SAFETY CAR IN THIS LAP") and out and out[-1][1] is None:
-            out[-1][1] = lap
+            if cur is None:
+                cur = [lap, None, "open"]
+                out.append(cur)
+        elif cur is not None and msg.startswith("SAFETY CAR IN THIS LAP"):
+            cur[1], cur[2], cur = lap, "in", None
+        elif cur is not None and (m.get("flag") == "RED" or msg.startswith("RED FLAG")):
+            cur[1], cur[2], cur = lap, "red", None
     return out
 
 
@@ -281,7 +290,9 @@ def reconcile(archived, read_json, write_json, gd):
         canon = with_ff(canon, ff[code])
         lap_rec[key] = canon
         block = rec.setdefault(key, {})
-        for k in ("paceCtx", "paceSe", "paceN", "paceCoef"):
+        # everything derived from the lap records goes (fifth review: a stale pacePool survived a failed check);
+        # the pooling pass (pool_rounds) redoes it from the records that pass
+        for k in ("paceCtx", "paceSe", "paceN", "paceCoef", *POOL_FIELDS):
             block.pop(k, None)
         fit = fit_pace(canon)
         if fit:
@@ -509,29 +520,43 @@ def _race_canons(archived, read_json, done):
     return out
 
 
+POOL_VERSION = 2  # 2: own cluster-robust errors (paceSePool) and revocation (fifth review); 1: pace only
+POOL_FIELDS = ("pacePool", "paceSePool", "pacePoolV")
+
+
 def pool_rounds(archived, read_json, write_json, done):
     """The challenger `racepool`'s input (MODEL.racePace "pool", user 2026-09-28: deferred for want of evidence, so
-    let it collect evidence): each finished round's pooled race pace (`pacePool`, % off the fastest), round k pooled
-    with rounds <= k only, written into its race record (history/<season>/races) where it changed. The engine weights
-    it with the race-alone fit's standard errors (paceSe), as the fourth review screened it. Returns {gd: record}
-    for the rounds rewritten."""
+    let it collect evidence): each finished round's pooled race pace (`pacePool`, % off the fastest) with the pooled
+    fit's own cluster-robust standard errors (`paceSePool`) and the version (`pacePoolV`), round k pooled with rounds
+    <= k only, written into its race record (history/<season>/races) where it changed. A round whose lap records no
+    longer qualify (failed FastF1 check, too few drivers) loses them: nothing derived outlives its source (fifth
+    review). Returns {gd: record} for the rounds rewritten."""
     designs, raw = {}, {}
     for gd, canon in _race_canons(archived, read_json, done).items():
         d = hier_design(canon)
         if d:
             designs[gd], raw[gd] = d, hier_fit(d)
     out = {}
-    for gd in sorted(designs):
-        mu, tau2 = pool_terms([raw[g] for g in raw if g <= gd])
-        pace = hier_fit(designs[gd], mu, tau2)["pace"]
+    for gd in sorted(done):
         path = archived("races", f"gd{gd:02d}.json")
         if not os.path.exists(path):
             continue
         rec = read_json(path)
         race = rec.get("race")
-        if race is None or race.get("pacePool") == pace:
+        if race is None:
             continue
-        race["pacePool"] = pace
+        if gd in designs:
+            mu, tau2 = pool_terms([raw[g] for g in raw if g <= gd])
+            fit = hier_fit(designs[gd], mu, tau2)
+            want = {"pacePool": fit["pace"], "paceSePool": fit["se"], "pacePoolV": POOL_VERSION}
+        else:
+            want = {}
+        have = {k: race[k] for k in POOL_FIELDS if k in race}
+        if have == want:
+            continue
+        for k in POOL_FIELDS:
+            race.pop(k, None)
+        race.update(want)
         write_json(path, rec, indent=1, sort_keys=True)
         out[gd] = rec
     return out

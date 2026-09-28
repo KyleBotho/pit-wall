@@ -78,12 +78,15 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   stays out of the page everyone downloads (user, 2026-09-28): refresh.py `lab_split` moves Model health and the
   challengers' inputs (raceInfo pacePool / scLaps / lapsRun, the priors' scLaps / lapsRun; LAB_KEYS,
   LAB_RACE_FIELDS, LAB_PRIOR_FIELDS) into `lab-<hash>.json` next to index.html (`DATA.labFile`); lab.js `labData`
-  fetches and merges it for owners / admins (the worker gets the data again). A new challenger-only input goes into
+  fetches and merges it for owners / admins (the worker gets the data again).
+  The loader is `lab-data.js` (idle / loading / ready / error with retry; challenger runs wait for it). A new challenger-only input goes into
   those lists. `worker.js` = the engine worker shared by the lab
   and the Calculator (2026-09-28): `compute()` runs non-default sims there (returns false; `setSimDone` redraws),
   and caches runs by their inputs (`simKey`) so blend / xPts / preset changes don't re-simulate. Every derived
   model comes from the variant's own data (the track model per variant, `ctx.tm[v]`: as at lock = the practice
-  frozen at lock). Team scores with a chip: `Engine.chipScore` everywhere (Calculator and planner). Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
+  frozen at lock). Team scores with a chip: `Engine.chipScore` everywhere (Calculator and planner). Each frozen
+  challenger records its input coverage, sameAsShipped and evaluable (engine.projectChallengers); Model health scores
+  evaluable rounds only. Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
   never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
@@ -236,7 +239,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   decision documents index, fetched around race weekends (collect.py). The car-infringement PDFs are read once each
   (pypdf) for GRID PENALTIES: race control (OpenF1) announced none in 2026, so this is the only source.
 - FastF1 (pip) reads `livetiming.formula1.com/static` — the fallback for practice when OpenF1 is locked.
-- Grid penalties: stewards' decisions (collect.fia_penalties) + race control + the manual picker in Settings >
+- Grid penalties: stewards' decisions (collect.fia_penalties reads them; collect.grid_ledger gives each its target
+  race: this event's if published before its race, else the next, carried past a race the driver missed; kept in
+  history/<season>/penalties.json, read by the live weekend and walk.js penAt) + race control + the manual picker in Settings >
   Circuits. Not automated: PU mileage / tyre sets from the FIA documents.
 - OpenF1 `api.openf1.org/v1/{sessions,laps,stints,drivers}` (practice; free data lands shortly after sessions).
   While ANY F1 session is live, OpenF1 returns 401 for everything (paid key only). `refresh.py` uses `get_soft`
@@ -329,8 +334,16 @@ there before re-deciding something.
       2024), and check coverage for our exact variable / model / location. Normal equations are fine while fits are
       well conditioned (QR / SVD only if not).
       Past stewards' decisions: all 244 read 2026-09-28 (26 grid penalties); walk-forward CRPS 8.674 -> 8.586.
-      OPEN: a decision "for the next race" is in the previous event's index; penAt (walk.js) and refresh.py's
-      fia_penalties look only at the coming event's own documents, so carried-over penalties are missed.
+      Fixed by the fifth review round: the penalty ledger (below).
+- [ ] Fifth review (`docs/reviews/2026-09-27/F1-fifth-round-review.md`, 7.9/10, 2026-09-28): all seven findings
+      fixed the same day (history). Its route to 8: accumulate untouched frozen weekends (8-12 more as a first
+      checkpoint, extend if inconclusive) and judge them by a declared protocol: paired weekend-level differences
+      against simple AND market-informed baselines; no promotion on retrospective differences; no wet / sprint
+      claims until those cases are represented. Decision quality needs its own evidence (removing the market
+      worsened CRPS 8.586 -> 8.691 but raised the fresh-team points 2,042 -> 2,126: marginal forecasts don't imply
+      better transfer / chip policies). Also open from it: the two R8 price-rule misses and the pit-stop data
+      (42/62 team-race bands, 4/6 fastest-stop bonuses) to reconcile; end-to-end profiling of three-race planning
+      before micro-optimising; the ≈ check isn't a simultaneous guarantee over all teams.
 - [ ] Deferred from the reviews (checked 2026-09-27: none built unless noted). Build one only when the frozen
       rounds show the error it addresses, and judge it as a challenger:
   - Market fit: now the challenger `odds8` (SIM.oddsIters 8, SIM.oddsN 5000; 2026-09-27), scored from R16. Found
@@ -342,12 +355,13 @@ there before re-deciding something.
     fits, else the team held; replaces the 90% afford gate; chips scored per future by Engine.chipScore, fourth
     review). CHALLENGER since 2026-09-28 (user: deferred for want of evidence = let it collect evidence): the pooled
     race pace, `racepool` (MODEL.racePace "pool": laps.py pool_rounds writes `pacePool` into each finished round's
-    race record from extras.race_info, round k pooled with rounds <= k; weights from the race-alone paceSe, as the
-    review screened it). Walk-forward R5-R15 at N 3000: vs shipped +0.025 +/- 0.022, vs racectx +0.003 +/- 0.017
+    race record from extras.race_info, round k pooled with rounds <= k, with its own cluster-robust errors
+    paceSePool and revoked with its source, fifth review). Walk-forward R5-R15, 3 seeds: vs shipped +0.008 +/- 0.022
     (tie). Later refinements if it earns it: residuals by stint / compound, actual compounds across races.
     CHALLENGER since 2026-09-28: the timed safety car, `sctimed` (SIM.scTimed: onset drawn from past races' last-SC
     onsets, effect scaled by a line measured on 31 dry SC races 2023-2026, early = none, late ~3x; scLaps /
-    lapsRun in race records and priors). Walk-forward R5-R15: +0.038 +/- 0.018 vs shipped (leaning worse).
+    lapsRun in race records and priors; parser v2 ends an SC at a red flag; fit on 2023-2025 only, noise variance kept
+    (fifth review)). Walk-forward R5-R15, 3 seeds: +0.004 +/- 0.013 vs shipped (tie).
     DEFERRED 2026-09-28 for want of evidence (not shown useless; fourth review corrected the records): retirements by distance / confirmed cause (sprints: 7 unclassified of 110 entries incl. 2 DNS,
     5 of 108 starters, too few to tell 0.36 / 0.40 / 0.45 apart; separate DNS / DSQ / incident / mechanical; causes:
     no AUTOMATED source, a small hand-checked labelled subset would be the start). DONE 2026-09-28: settings are values, not shared state (engine.js

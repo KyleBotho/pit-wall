@@ -261,8 +261,34 @@ class ScLaps(unittest.TestCase):
             m(15, 27, "SAFETY CAR IN THIS LAP"),
             m(30, 51, "SAFETY CAR DEPLOYED"),
         ]
-        self.assertEqual(laps.sc_laps(rc), [[22, 27], [51, None]])
+        self.assertEqual(laps.sc_laps(rc), [[22, 27, "in"], [51, None, "open"]])
         self.assertEqual(laps.sc_laps([]), [])
+
+    def test_a_red_flag_ends_the_safety_car(self):
+        """Fifth review: Australia 2023's race control (safety cars on laps 1, 7 and 54, the last two stopped by red
+        flags) was read as [1, 3], [7, open]: the lap-54 one, the last, was lost."""
+        import laps
+
+        def m(t, lap, msg, flag=None):
+            return {"date": f"2023-04-02T05:{t:02d}:00Z", "lap_number": lap, "message": msg, "flag": flag}
+
+        rc = [
+            m(1, 1, "SAFETY CAR DEPLOYED"),
+            m(5, 3, "SAFETY CAR IN THIS LAP"),
+            m(6, 3, "TRACK CLEAR", "CLEAR"),
+            m(10, 7, "SAFETY CAR DEPLOYED"),
+            m(12, 8, "RED FLAG", "RED"),
+            m(20, 9, "RACE WILL RESUME AT 15:33 - STANDING START PROCEDURE"),
+            m(40, 54, "SAFETY CAR DEPLOYED"),
+            m(42, 55, "RED FLAG", "RED"),
+            m(50, 58, "SAFETY CAR WILL ENTER PITS: ROLLING START PROCEDURE"),
+            m(55, 58, "CHEQUERED FLAG", "CHEQUERED"),
+        ]
+        self.assertEqual(laps.sc_laps(rc), [[1, 3, "in"], [7, 8, "red"], [54, 55, "red"]])
+        # the real cached file, where there is one
+        p = os.path.join(ROOT, "cache", "of_rc_7787.json")
+        if os.path.exists(p):
+            self.assertEqual([s[0] for s in laps.sc_laps(refresh.read_json(p))], [1, 7, 54])
 
 
 class HierPace(unittest.TestCase):
@@ -295,6 +321,41 @@ class HierPace(unittest.TestCase):
             self.assertNotIn(k, wrote)  # unchanged: nothing to rewrite
             self.assertEqual(refresh.read_json(archived("races", f"gd{k:02d}.json"))["race"]["pacePool"], early)
 
+    def test_pooled_pace_is_revoked_with_its_source(self):
+        """Fifth review: a round whose lap records fail the FastF1 check afterwards kept its old pacePool (the pooling
+        pass skipped it and the engine used it at full weight). Now it's removed, with its errors and version."""
+        import shutil
+
+        import laps
+
+        src = os.path.join(ROOT, "history", "2026", "laps")
+        if not os.path.isdir(src) or len(os.listdir(src)) < 5:
+            self.skipTest("no lap archive")
+        gds = sorted(int(f[2:4]) for f in os.listdir(src) if re.match(r"gd\d\d\.json$", f))[:4]
+        with tempfile.TemporaryDirectory() as d:
+
+            def archived(*p):
+                return os.path.join(d, *p)
+
+            os.makedirs(archived("laps"))
+            os.makedirs(archived("races"))
+            for gd in gds:
+                shutil.copy(os.path.join(src, f"gd{gd:02d}.json"), archived("laps", f"gd{gd:02d}.json"))
+                refresh.write_json(archived("races", f"gd{gd:02d}.json"), {"race": {}})
+            laps.pool_rounds(archived, refresh.read_json, refresh.write_json, gds)
+            k = gds[-1]
+            race = refresh.read_json(archived("races", f"gd{k:02d}.json"))["race"]
+            self.assertTrue(race.get("pacePool") and race.get("paceSePool") and race.get("pacePoolV"))
+            # the round's lap records now fail the cross-check
+            lp = archived("laps", f"gd{k:02d}.json")
+            rec = refresh.read_json(lp)
+            rec["race"].setdefault("quality", {})["ff"] = {"ok": False}
+            refresh.write_json(lp, rec)
+            wrote = laps.pool_rounds(archived, refresh.read_json, refresh.write_json, gds)
+            self.assertIn(k, wrote)
+            race = refresh.read_json(archived("races", f"gd{k:02d}.json"))["race"]
+            self.assertFalse(any(f in race for f in laps.POOL_FIELDS))
+
     def test_pooling_follows_the_spread_between_races(self):
         import laps
 
@@ -314,6 +375,69 @@ class HierPace(unittest.TestCase):
         # too few races, or too few laps on the term: not pooled
         self.assertEqual(laps.pool_terms([fit(1, 0.1), fit(2, 0.1)]), ([None] * n, [None] * n))
         self.assertIsNone(laps.pool_terms([fit(1, 0.1, 5)] * 4)[0][0])
+
+
+class GridLedger(unittest.TestCase):
+    """collect.grid_ledger (fifth review): each stewards' grid penalty with the race it's for."""
+
+    SCHED = [
+        {"gd": 1, "raceStart": "2026-03-08T15:00:00+11:00"},  # 04:00 UTC
+        {"gd": 2, "raceStart": "2026-03-15T15:00:00+08:00"},  # 07:00 UTC
+        {"gd": 3, "raceStart": "2026-03-29T14:00:00+09:00"},
+    ]
+
+    def ledger(self, docs, raced=None):
+        import collect
+
+        return collect.grid_ledger(self.SCHED, lambda g: docs.get(g["gd"]), lambda gd: {4: "NOR", 1: "VER"}, raced)
+
+    def doc(self, title, grid, pub):
+        return {"title": title, "grid": grid, "published": pub, "url": title}
+
+    def test_before_the_race_it_is_this_race_after_it_the_next(self):
+        docs = {
+            1: [
+                self.doc("Doc 20 - Infringement - Car 4 - PU elements", 10, "2026-03-07T10:00+00:00"),
+                self.doc("Doc 60 - Infringement - Car 1 - Collision with Car 4", 5, "2026-03-08T06:00+00:00"),
+                self.doc("Doc 61 - Infringement - Car 4 - Speeding", 0, "2026-03-08T06:10+00:00"),  # no grid drop
+            ]
+        }
+        got = {(e["tla"], e["target"], e["places"]) for e in self.ledger(docs)}
+        self.assertEqual(got, {("NOR", 1, 10), ("VER", 2, 5)})
+
+    def test_a_driver_who_misses_the_next_race_serves_it_at_the_one_after(self):
+        docs = {1: [self.doc("Doc 60 - Infringement - Car 1 - Collision", 5, "2026-03-08T06:00+00:00")]}
+        (e,) = self.ledger(docs, raced=lambda gd, t: False if gd == 2 else None)
+        self.assertEqual(e["target"], 3)
+        # a penalty for this race lapses if he doesn't start: not carried
+        docs = {2: [self.doc("Doc 68 - Infringement - Car 1 - Parc Ferme", 99, "2026-03-15T04:41+00:00")]}
+        (e,) = self.ledger(docs, raced=lambda gd, t: False)
+        self.assertEqual(e["target"], 2)
+
+    def test_a_correction_replaces_the_decision_it_corrects(self):
+        import collect
+
+        docs = {
+            1: [
+                self.doc("Doc 22 - Infringement - Car 4 - Change to PU element", 10, "2026-03-07T10:00+00:00"),
+                self.doc(
+                    "Doc 44 - Corrected Infringement - Car 4 - Change to PU element", 30, "2026-03-07T12:00+00:00"
+                ),
+                self.doc("Doc 30 - Infringement - Car 1 - PU", 10, "2026-03-07T11:00+00:00"),
+                self.doc("Doc 45 - Corrected Infringement - Car 1 - PU", 0, "2026-03-07T12:30+00:00"),  # withdrawn
+            ]
+        }
+        led = self.ledger(docs)
+        self.assertEqual([(e["tla"], e["places"]) for e in led], [("NOR", 30)])
+        self.assertEqual(collect.ledger_penalties(led, 1)[0], {"NOR": 30})
+        # only what was published before a given time (the backtest's "known at lock")
+        self.assertEqual(collect.ledger_penalties(led, 1, before="2026-03-07T11:00+00:00")[0], {})
+
+    def test_sprint_only_penalties_are_not_grid_penalties_for_the_race(self):
+        import collect
+
+        head = "The Stewards ... Decision "
+        self.assertEqual(collect.parse_decision(head + "3 place grid penalty for the next Sprint."), 0)
 
 
 class FiaTech(unittest.TestCase):
