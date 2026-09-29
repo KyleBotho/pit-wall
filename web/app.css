@@ -793,8 +793,7 @@ details.grp > summary:hover {
    hole beside a tall one; .wide panels run across both. Capped, so tables don't spread over a very wide screen. */
 .board {
   columns: 2;
-  column-gap: 16px;
-  max-width: 1480px;
+  column-gap: 16px; /* full width, like the other pages (the 1480px cap went on 2026-09-29, user) */
 }
 .board > * {
   break-inside: avoid;

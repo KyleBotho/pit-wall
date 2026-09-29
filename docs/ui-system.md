@@ -105,8 +105,8 @@ a few controls change; layouts, panel names, control sizes and fonts stay.
   has one (only old imports did).
 - The old card styles (`.rcard`, `.bt`, `.bts`) are gone: nothing uses them.
 
-- Board layout (after the user's review): `.board` = CSS columns (2, balanced by height; `.wide` spans both), capped
-  at 1480px so tables don't spread on very wide screens; team-row chip columns shrink to their chips. My rivals' row
+- Board layout (after the user's review): `.board` = CSS columns (2, balanced by height; `.wide` spans both), full
+  width like the other pages (a 1480px cap was removed 2026-09-29: the user wants every page to fill); team-row chip columns shrink to their chips. My rivals' row
   actions moved into a ⋯ menu (Aim to beat in the Calculator, Remove from my rivals). Chart end labels stay above the
   x-axis. The Top-100 and Top-500 templates showing the same line-up is real (same five most-owned drivers).
 
