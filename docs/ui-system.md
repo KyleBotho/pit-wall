@@ -75,6 +75,12 @@ https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic.
   actions moved into a ⋯ menu (Aim to beat in the Calculator, Remove from my rivals). Chart end labels stay above the
   x-axis. The Top-100 and Top-500 templates showing the same line-up is real (same five most-owned drivers).
 
+## Settings (2026-09-28)
+- A Board: Account & data, Admin (owners), Model settings and How it works in balanced columns; Circuits a wide panel
+  (title row with ⓘ and "remaining races", the season-trend line, then one tile per remaining race: `.ccard` inside
+  `.cgrid`, no panel inside a panel). How it works folds (`details.fold`, closed by default). `.sethead` and
+  `.grid-cards` are gone.
+
 ## Previewing the league pages locally
 Sign-in doesn't work on the local preview, so the league views would be empty. `python tools/dev_league.py`
 rebuilds the league payload and your linked account from the private clone's snapshots into `build/dev-league.json`

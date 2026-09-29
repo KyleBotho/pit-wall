@@ -1200,7 +1200,7 @@ if (SEASON_OVER) {
       (b.hidden =
         FORECAST_VIEWS.includes(b.dataset.view) || (GROUPS[b.dataset.view] && !groupViews(b.dataset.view).length)),
   );
-  $("#calHead").hidden = $("#cal").hidden = true; // no races left to tune
+  $("#calHead").hidden = true; // no races left to tune
 }
 // phone menu: the same tools as the rail, as a full-screen list
 $("#menuList").innerHTML = $$("#nav button")

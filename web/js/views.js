@@ -472,7 +472,7 @@ export function renderCal() {
             .join("") +
           `</div></details></div>`;
       }
-      return `<section class="panel"><h3>${esc(g.name.replace(" Grand Prix", " GP"))} <small>R${g.gd}</small></h3>
+      return `<article class="ccard"><h4>${esc(g.name.replace(" Grand Prix", " GP"))} <small>R${g.gd}</small></h4>
       <div class="muted" style="font-size:13px">${esc(g.loc)} · race ${esc(when)} ${g.sprint ? '<span class="tag sprint">Sprint</span>' : ""}</div>
       <p class="note">${esc(c.note || "")}</p>
       <div class="chipbar">${(c.feat || []).map((v, i) => `<span class="chiptok" title="0 = none, 1 = maximum">${Engine.FEAT_NAMES[i]} ${v.toFixed(2)}</span>`).join("")}</div>
@@ -480,7 +480,7 @@ export function renderCal() {
       <div class="note" style="font-size:12px">${fit ? `Fitted from this season's ${trackFit.rounds} rounds and this circuit's history (see above). Rain from the ${rainSrc}.` : "Custom values set here."}</div>
       ${sl("ov", "Overtaking", 0.2, 2.5, 0.05, c.ov, f2)}${ovScenarioUI(g, c.ov ?? 1)}${sl("grid", "Grid decides", 0.25, 0.95, 0.01, c.grid, f2)}${sl("chaos", "Retirements", 0.5, 1.8, 0.05, c.chaos, f2)}
       ${sl("sc", "Safety car", 0.05, 0.95, 0.05, c.sc ?? 0.5, pct0)}${sl("rainR", "Rain (race)", 0, 1, 0.05, (c.rain || {}).r ?? 0, pct0)}
-      ${extra}</section>`;
+      ${extra}</article>`;
     })
     .join("");
 }

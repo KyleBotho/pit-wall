@@ -467,9 +467,6 @@ details.info {
 .tipslot:empty {
   display: none;
 }
-.sethead h2 details.info {
-  margin-right: 0;
-}
 details.info summary {
   list-style: none;
   width: 18px;
@@ -1396,32 +1393,69 @@ td.al-r input[type="number"] {
 }
 
 /* ---------- misc ---------- */
-.grid-cards {
+/* Settings -> Circuits: one tile per remaining race, inside the Circuits panel */
+.cgrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 16px;
+  gap: 12px;
   align-items: start;
 }
-/* a heading between groups of cards on one view (Settings -> Circuits) */
-.sethead {
-  margin: 32px 0 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
+.ccard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--raise);
+  min-width: 0;
 }
-.sethead h2 {
-  margin: 0 0 6px;
-  font-family: var(--display);
-  font-size: 24px;
-  font-weight: 700;
+.ccard h4 {
+  margin: 0;
+  font: 600 16px var(--display);
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
 }
-.sethead h2 small {
-  font-family: var(--ui);
-  font-size: 12px;
-  font-weight: 400;
+.ccard h4 small {
+  margin-left: auto;
+  font: 400 12px var(--ui);
   color: var(--muted);
+}
+.ccard .note {
+  margin: 0;
+}
+/* a panel that folds (Settings -> How it works): its title row is the switch */
+details.fold > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+details.fold > summary::-webkit-details-marker {
+  display: none;
+}
+details.fold > summary::before {
+  content: "";
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin: 0 4px 3px 2px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 0.12s;
+}
+details.fold[open] > summary::before {
+  transform: rotate(45deg);
+}
+details.fold > summary h3 {
+  margin: 0;
+  font: 600 20px/1 var(--display);
+}
+details.fold[open] > .prose {
+  margin-top: 12px;
 }
 .slider {
   display: grid;
