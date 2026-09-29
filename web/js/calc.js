@@ -22,6 +22,7 @@ import {
   shortDate,
   upcoming,
   infoTip,
+  TOKENS,
 } from "./core.js";
 import { state } from "./state.js";
 import { needSync, syncState } from "./sync.js";
@@ -58,10 +59,20 @@ import { step } from "./setup.js";
 import { EVLABEL, SESSN, evLabel, filterUI, filters, teamText } from "./filters.js";
 import { modalKind, openModal, rerender, toast, keepUndo } from "./main.js";
 
-// Incl / Excl toggles for an asset (attr "mark" = the Calculator's, "hmark" = Hindsight's)
+// an asset's Policy, one of three (attr "mark" = the Calculator's, "hmark" = Hindsight's): Auto (no mark), In (every
+// best team: mark "lock"), Out (never picked: "ban")
+const POLICY = [
+  ["", "Auto", "Auto: the optimiser decides"],
+  ["lock", "In", "In: in every best team"],
+  ["ban", "Out", "Out: never picked"],
+];
 export const inclExcl = (id, m, attr = "mark") =>
-  `<span class="mini"><button class="tbtn lock sm" data-${attr}="${id}" data-to="lock" aria-pressed="${m === "lock"}" aria-label="Include">✓</button>` +
-  `<button class="tbtn ban sm" data-${attr}="${id}" data-to="ban" aria-pressed="${m === "ban"}" aria-label="Exclude">✕</button></span>`;
+  `<span class="pol" role="group" aria-label="Policy">` +
+  POLICY.map(
+    ([to, label, title]) =>
+      `<button class="${to || "auto"}" data-${attr}="${id}" data-to="${to}" aria-pressed="${m === to}" title="${title}">${label}</button>`,
+  ).join("") +
+  `</span>`;
 const PIN_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 5 3 3v2H7v-2l3-3-1-5z"/></svg>`;
 const PERSON_ICON = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`;
 const pill = (v, on, cls = "", title = "") =>
@@ -861,7 +872,7 @@ function renderBestTable(ctx) {
     (shown.length
       ? shown.map((r, i) => row("best", i, r)).join("")
       : wide(
-          "No team fits these limits. Allow a bigger transfer penalty, check the budget, or remove some Incl/Excl marks or filters.",
+          "No team fits these limits. Allow a bigger transfer penalty, check the budget, or set some In / Out policies back to Auto or remove filters.",
         )) +
     (bestRows.best.length > shown.length
       ? wide('<button class="btn ghost sm" data-more="1">Load more teams</button>', true)
@@ -1011,7 +1022,7 @@ export function renderAssetPanels() {
       (state.xdp
         ? '<th title="Expected price change points">xΔ$Pts</th><th title="xPts + xΔ$Pts">xSPts ↓</th>'
         : '<th title="Expected price change after the next race">xΔ$</th>') +
-      `<th title="Include / exclude in Best Teams">Incl / Excl</th></tr></thead>`;
+      `<th title="Auto, In (in every best team) or Out (never picked)">Policy</th></tr></thead>`;
     const line = (a) => {
       const dv = priceEv(a.id),
         p = forecast.proj[0][a.id],
@@ -1242,7 +1253,7 @@ function finalFixHtml(team, boost) {
 // −10 for each extra) and once with a free rebuild (what the money buys once every seat can change). The payoff
 // comes in steps: +$0.3m can be worth nothing and +$0.4m a whole upgrade. Compared with the flat rate the xΔ$Pts
 // setting uses.
-const BV_COL = { own: "#a855f7", wild: "#0891b2" }; // accent + cyan: checked for colour-blind separation on --card
+const BV_COL = { own: TOKENS.accent, wild: "#0891b2" }; // accent + cyan: checked for colour-blind separation on --card
 const bvMoney = (d) => (d ? sgn(d, 1).replace(/^([+−])/, "$1$") + "m" : "Your budget");
 export function openBudgetValue() {
   const { H, T: team, pk, rem } = calcCtx();
@@ -1319,7 +1330,7 @@ export function openBudgetValue() {
       })
       .join("") +
     "</tbody></table></div>" +
-    `<p class="note dim">Points per race over ${races}. "From your team" counts −10 for each transfer beyond your free ones, spread over those races. Incl / Excl marks apply. Races after ${races} aren't simulated, so take the long-run value as a guide.</p>`;
+    `<p class="note dim">Points per race over ${races}. "From your team" counts −10 for each transfer beyond your free ones, spread over those races. In / Out policies apply. Races after ${races} aren't simulated, so take the long-run value as a guide.</p>`;
   $("#modalBody").innerHTML = html;
   openModal("budget");
   bvChart($("#bvChart"), ds, series, flat);
@@ -1340,11 +1351,11 @@ function bvChart(box, ds, series, flat) {
   const y = (v) => mt + (1 - (v - bot) / Math.max(1e-9, top - bot)) * (Hh - mt - mb);
   let g = "";
   for (let v = bot; v <= top + 1e-9; v += step)
-    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? "#52525B" : "#27272A"}"/><text x="${ml - 8}" y="${y(v) + 4}" fill="#A1A1AA" font-size="12" text-anchor="end">${v === 0 ? "0" : sgn(v, 0)}</text>`;
+    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="${v === 0 ? TOKENS.ctl : TOKENS.line}"/><text x="${ml - 8}" y="${y(v) + 4}" fill="${TOKENS.muted}" font-size="12" text-anchor="end">${v === 0 ? "0" : sgn(v, 0)}</text>`;
   for (let d = -2; d <= 5; d++)
-    g += `<text x="${x(d)}" y="${Hh - 10}" fill="#A1A1AA" font-size="12" text-anchor="middle">${d === 0 ? "yours" : sgn(d, 0)}</text>`;
-  g += `<line x1="${x(0)}" x2="${x(0)}" y1="${mt}" y2="${Hh - mb}" stroke="#52525B" stroke-dasharray="2 3"/>`;
-  g += `<path d="M${x(ds[0])},${y(flat(ds[0]))}L${x(ds[ds.length - 1])},${y(flat(ds[ds.length - 1]))}" stroke="#8b8b94" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>`;
+    g += `<text x="${x(d)}" y="${Hh - 10}" fill="${TOKENS.muted}" font-size="12" text-anchor="middle">${d === 0 ? "yours" : sgn(d, 0)}</text>`;
+  g += `<line x1="${x(0)}" x2="${x(0)}" y1="${mt}" y2="${Hh - mb}" stroke="${TOKENS.ctl}" stroke-dasharray="2 3"/>`;
+  g += `<path d="M${x(ds[0])},${y(flat(ds[0]))}L${x(ds[ds.length - 1])},${y(flat(ds[ds.length - 1]))}" stroke="${TOKENS.dim}" stroke-width="1.5" stroke-dasharray="5 4" fill="none"/>`;
   for (const s of series) {
     // a step line: flat until the budget reaches the next team
     let d = "",
@@ -1362,8 +1373,8 @@ function bvChart(box, ds, series, flat) {
   const key = (s) =>
     `<span><svg width="14" height="4" aria-hidden="true"><rect width="14" height="3" rx="1.5" fill="${s.col}"/></svg> ${esc(s.name)}</span>`;
   box.innerHTML =
-    `<div class="chipbar" style="font-size:12px;margin:6px 0">${series.map(key).join("")}<span class="muted"><svg width="14" height="4" aria-hidden="true"><line x1="0" x2="14" y1="2" y2="2" stroke="#8b8b94" stroke-width="1.5" stroke-dasharray="4 3"/></svg> Your xΔ$Pts setting</span><span class="dim">x: $m more or less than yours · y: pts per race</span></div>` +
-    `<svg class="chart" viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="Points per race gained or lost at each budget">${g}<line class="cx" y1="${mt}" y2="${Hh - mb}" stroke="#A1A1AA" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${Hh - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
+    `<div class="chipbar" style="font-size:12px;margin:6px 0">${series.map(key).join("")}<span class="muted"><svg width="14" height="4" aria-hidden="true"><line x1="0" x2="14" y1="2" y2="2" stroke="${TOKENS.dim}" stroke-width="1.5" stroke-dasharray="4 3"/></svg> Your xΔ$Pts setting</span><span class="dim">x: $m more or less than yours · y: pts per race</span></div>` +
+    `<svg class="chart" viewBox="0 0 ${W} ${Hh}" width="100%" role="img" aria-label="Points per race gained or lost at each budget">${g}<line class="cx" y1="${mt}" y2="${Hh - mb}" stroke="${TOKENS.muted}" stroke-dasharray="3 3" visibility="hidden"/><rect x="${ml}" y="${mt}" width="${W - ml - mr}" height="${Hh - mt - mb}" fill="transparent"/></svg><div class="lgtip" hidden></div>`;
   const svg = box.querySelector("svg"),
     tip = box.querySelector(".lgtip"),
     cross = box.querySelector(".cx");
@@ -1476,7 +1487,7 @@ export function openTransferValue() {
         })
         .join("") +
       "</tbody></table></div>" +
-      `<p class="note dim">Beam search, like the race-by-race plan, and like it valued over the simulated futures (points and prices together: a later move that doesn't fit a future's budget isn't made there). A transfer still banked after ${forecast.races[n - 1] ? "R" + forecast.races[n - 1].gd : "the last race"} counts for nothing here, so banking looks slightly worse than it is. Incl / Excl marks apply; the maximum penalty setting doesn't (every hit is shown).</p>`;
+      `<p class="note dim">Beam search, like the race-by-race plan, and like it valued over the simulated futures (points and prices together: a later move that doesn't fit a future's budget isn't made there). A transfer still banked after ${forecast.races[n - 1] ? "R" + forecast.races[n - 1].gd : "the last race"} counts for nothing here, so banking looks slightly worse than it is. In / Out policies apply; the maximum penalty setting doesn't (every hit is shown).</p>`;
     $("#modalBody").innerHTML = html;
   }, 30);
 }

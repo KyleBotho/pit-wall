@@ -3,7 +3,7 @@
    League head-to-head (league.js h2h, ownTable) with the rivals' current line-ups (forecast.js rivalTeams); the
    season reuses the points race (pointsRace) with your teams, the picked teams and, for a picked template, the
    global cut-off it stands for (the templates have no season of their own). */
-import { $, DATA, NEXT, SEASON_OVER, esc, f1, infoTip } from "./core.js";
+import { $, DATA, NEXT, SEASON_OVER, esc, f1, infoTip, TOKENS } from "./core.js";
 import { activeTeam, state } from "./state.js";
 import { rivalTeams, withLive } from "./forecast.js";
 import { h2h, ownTable, pointsRace, teamHist, teamKey, teamLabel } from "./league.js";
@@ -22,7 +22,7 @@ function cutLine(tpl) {
   const [k, name] = CUT[tpl];
   const total = {};
   for (const h of (DATA.elite && DATA.elite.history) || []) if (h.cut && h.cut[k] != null) total[h.gd] = h.cut[k];
-  return Object.keys(total).length ? { key: "tpl:" + tpl, name, total, color: "#71717A" } : null;
+  return Object.keys(total).length ? { key: "tpl:" + tpl, name, total, color: TOKENS.ctl } : null;
 }
 
 // the live sim for everyone, qualifying and all, also once the page's own sim is the one at lock (forecast.js)

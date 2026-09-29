@@ -5,6 +5,14 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-29, retexture with the user's Pit Lane 0.2 design system (mood board + their design-system site; the
+      source files are in `docs/design/`). Twelve mockup drafts with the user, then built. Full list of decisions in
+      docs/ui-system.md "Retexture"; in short: 0.2 token values under the app's names, one green / red / purple
+      (the old heat colours, the new accent), purple = selection (outlined toggles and pins), Incl / Excl -> Policy
+      (Auto / In / Out, same state values), the race bar with a label over a 32px name and an amber data age after
+      24 h, rounded Budget step tiles. Kept on purpose: name, control sizes, Inter Tight, dark only, layouts. Tried
+      and rejected: 0.2's softer green / red (#8BD5AF / #FF9DAB, then #4EBC76 / #E06C6C), the driver projection
+      panel (fixed or as a hover popup), the purple Best Teams row edge, a per-driver baseline.
 - [x] 2026-09-28, fifth review (`docs/reviews/2026-09-27/F1-fifth-round-review.md` + evidence, 7.9/10; the
       evidence's two local paths had the Windows username, redacted to `<user>` in the committed copy). Shipped
       walk-forward 3 seeds: CRPS 8.6048 (the gain over 8.686 is the completed penalty history, not the engine). Its

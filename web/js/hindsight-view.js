@@ -257,7 +257,7 @@ export function renderHind() {
   const showN = state.hdShowN || 10,
     list = hdBestList(gd, showN);
   $("#hdBestNote").textContent =
-    `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipLabel ? " · " + chipLabel : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} Incl / Excl` : ""}`;
+    `R${gd} ${name(gd)} · ${cap == null ? "no budget cap" : "budget " + money(cap)}${chipLabel ? " · " + chipLabel : ""}${nf ? ` · ${nf} filter${nf > 1 ? "s" : ""}` : ""}${nm ? ` · ${nm} In / Out` : ""}`;
   $("#hdBestTip").innerHTML = infoTip(
     "The best line-ups for that round on the points each asset actually scored, at that round's prices and within the budget in Settings. Pts is the round score; the grey figure under it is the gap to #1. Δ$ is the price change the seven got after the round.",
   );
@@ -297,7 +297,7 @@ export function renderHind() {
           ? wide('<button class="btn ghost sm" data-hdmore="1">Load more teams</button>', true)
           : "")
       : wide(
-          "No team fits this budget and these filters. Try another budget, or remove some filters or Incl / Excl marks.",
+          "No team fits this budget and these filters. Try another budget, or remove some filters or In / Out policies.",
         )) +
     "</tbody>";
 
@@ -493,7 +493,7 @@ export function renderHind() {
   hdCtx = { gd, proj: (DATA.projHist || {})[gd], best: list[0] ? list[0].drivers.concat(list[0].cons) : [] };
   $("#hdAssetsNote").textContent = `R${gd}`;
   $("#hdAssetsTip").innerHTML = infoTip(
-    `Each asset's points that round, its price then and its price change after it. ● = in the #1 best team; T1–T3 = in your teams. Incl / Excl apply to the best teams.` +
+    `Each asset's points that round, its price then and its price change after it. ● = in the #1 best team; T1–T3 = in your teams. In / Out policies apply to the best teams.` +
       (hdCtx.proj ? ` Proj = this site's projection frozen at lock (${modelAccuracy(gd)}).` : ""),
   );
   renderHindAssets();
@@ -512,7 +512,7 @@ export function renderHindAssets() {
     const head =
       `<thead><tr><th>${kind === "D" ? "DR" : "CR"}</th><th title="Price that round">$</th><th title="Points that round" aria-sort="descending">Pts ↓</th>` +
       (proj ? '<th title="Projection frozen at lock">Proj</th>' : "") +
-      `<th title="Price change after the round">Δ$</th><th title="Include / exclude in the best teams">Incl / Excl</th></tr></thead>`;
+      `<th title="Price change after the round">Δ$</th><th title="Auto, In (in every best team) or Out (never picked)">Policy</th></tr></thead>`;
     const line = ({ a, h }) => {
       const dv = Hind.delta(a.id, gd),
         tok = state.teams

@@ -10,6 +10,21 @@ export const esc = (s) =>
     /[&<>"']/g,
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
   );
+// app.css tokens as plain values, for charts drawn as SVG strings (presentation attributes don't take var() in every
+// browser). Inline styles use var() directly. tests/tokens.test.js checks these against app.css :root.
+export const TOKENS = {
+  card: "#181c21",
+  line: "#343b43",
+  faint: "#50575f",
+  ctl: "#707982",
+  dim: "#a4aab3",
+  muted: "#a8afb5",
+  fgSoft: "#d8dbde",
+  fg: "#f2f2ef",
+  accent: "#a34dff",
+  good: "#22c55e",
+  bad: "#ef4444",
+};
 export const f1 = (x) => (x == null || isNaN(x) ? "—" : (Math.round(x * 10) / 10).toFixed(1));
 export const f0 = (x) => (x == null || isNaN(x) ? "—" : Math.round(x).toString());
 export const sgn = (x, d = 1) => (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(x).toFixed(d);

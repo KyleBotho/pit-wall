@@ -3,7 +3,7 @@
    localhost with ?lab=1. It's a UI gate: everything here comes from the public build. Runs are in this browser, on
    demand, in the engine worker (worker.js): the switches are in force for the run only (Engine.withSettings), so
    the Calculator and every other view keep the shipped model. Settings live in this browser only (LAB_KEY). */
-import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming } from "./core.js";
+import { $, $$, DATA, SEASON_OVER, byId, code, col, esc, f1, pct, sgn, upcoming, TOKENS } from "./core.js";
 import { state } from "./state.js";
 import { syncState } from "./sync.js";
 import { BINS, codeBox, compute, forecast, heat, setupOpts, sprintNext, startTeam, who } from "./forecast.js";
@@ -256,7 +256,7 @@ function labMatrix(rows, sim) {
           v
             .slice(0, cols)
             .map((p, i) => {
-              const c = i === F ? "239,68,68" : "168,85,247";
+              const c = i === F ? "var(--bad-rgb)" : "var(--accent-rgb)";
               return `<td style="background-color:rgba(${c},${Math.min(0.85, p * 2.6).toFixed(3)})">${Math.round(p * 100) || ""}</td>`;
             })
             .join("") +
@@ -698,9 +698,9 @@ function labDrawCombos() {
     H = cv.height,
     P = 56;
   const css = getComputedStyle(document.body);
-  const dim = css.getPropertyValue("--dim").trim() || "#8b8b94",
-    line = css.getPropertyValue("--line").trim() || "#27272a",
-    fg = css.getPropertyValue("--fg").trim() || "#fafafa";
+  const dim = css.getPropertyValue("--dim").trim() || TOKENS.dim,
+    line = css.getPropertyValue("--line").trim() || TOKENS.line,
+    fg = css.getPropertyValue("--fg").trim() || TOKENS.fg;
   let x0 = Infinity,
     x1 = -Infinity,
     y0 = Infinity,
@@ -768,7 +768,7 @@ function labPriceMatrix(run, rows) {
         ({ r, dist, ev }) =>
           `<tr><td>${codeBox(r.a)}</td>${dist
             .map((p, k) => {
-              const c = BINS[k] > 0 ? "34,197,94" : BINS[k] < 0 ? "239,68,68" : "139,139,148";
+              const c = BINS[k] > 0 ? "var(--good-rgb)" : BINS[k] < 0 ? "var(--bad-rgb)" : "var(--ctl-rgb)";
               return `<td style="background-color:rgba(${c},${Math.min(0.7, p * 1.2).toFixed(3)})">${Math.round(p * 100) || ""}</td>`;
             })
             .join("")}<td${heat(ev, -0.6, 0.6)}><b>${ev >= 0 ? "+" : "−"}${Math.abs(ev).toFixed(3)}</b></td></tr>`,

@@ -84,8 +84,10 @@
   </nav>
   <header class="bar">
     <div class="race">
-      <span class="eyebrow">Next race</span>
+      <span class="eyebrow" id="raceEyebrow">Next race</span>
       <h1 id="raceName">—</h1>
+    </div>
+    <div class="racemeta">
       <span class="lock" id="lock"></span>
       <span class="busytag" id="busyTag" hidden>Updating…</span>
     </div>
@@ -643,7 +645,12 @@
         <section class="panel" data-pane="settings">
           <h3>
             Settings
-            <button class="tbtn" data-hdreset="1" title="Back to the latest round, your team's budget, no chip, no filters, no Incl / Excl" aria-label="Reset">
+            <button
+              class="tbtn"
+              data-hdreset="1"
+              title="Back to the latest round, your team's budget, no chip, no filters, every Policy back to Auto"
+              aria-label="Reset"
+            >
               ↺
             </button>
           </h3>
@@ -740,7 +747,8 @@
           <summary aria-label="About this">i</summary>
           <div class="infobox">
             xPts is the average of the simulated weekends (optionally blended with recent form in Model settings); 25–75 is the middle half of outcomes.
-            <b>Pace</b> nudges a driver faster or slower (grid places). <b>Incl / Excl</b> forces an asset into or out of Best Teams.
+            <b>Pace</b> nudges a driver faster or slower (grid places). <b>Policy</b> puts an asset in every best team (In), keeps it out (Out), or leaves it to
+            the optimiser (Auto).
           </div>
         </details>
         <small class="stamp" id="assetStamp"></small>
@@ -945,7 +953,7 @@
           Heatmap colours
           <div class="seg" id="heatOpt"><button data-heat="1">On</button><button data-heat="0">Off</button></div>
         </div>
-        <button class="btn ghost" id="resetAll" style="align-self: flex-start">Reset pace nudges, Incl/Excl, circuits and grid penalties</button>
+        <button class="btn ghost" id="resetAll" style="align-self: flex-start">Reset pace nudges, In / Out policies, circuits and grid penalties</button>
       </section>
       <section class="panel">
         <details class="fold">

@@ -1,0 +1,23 @@
+/* Fantasy Pit Lane / design system 0.1 / dark default */
+@font-face{font-family:Inter;src:url('assets/InterVariable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{
+  color-scheme:dark;
+  --fpl-bg:#111316;--fpl-surface:#181C21;--fpl-raised:#22272E;--fpl-hover:#2A2F36;
+  --fpl-text:#F2F2EF;--fpl-muted:#A8AFB5;--fpl-line:#343B43;--fpl-control-line:#707982;
+  --fpl-purple:#A34DFF;--fpl-accent-text:#C18AFF;--fpl-focus:#D2ACFF;
+  --fpl-positive:#8BD5AF;--fpl-warning:#E6C07B;--fpl-negative:#FF9DAB;
+  --fpl-action:#F2F2EF;--fpl-on-action:#111316;
+  --fpl-font:Inter,Arial,sans-serif;
+  --fpl-space-1:4px;--fpl-space-2:8px;--fpl-space-3:12px;--fpl-space-4:16px;
+  --fpl-space-6:24px;--fpl-space-8:32px;--fpl-space-12:48px;--fpl-space-16:64px;
+  --fpl-radius-control:6px;--fpl-radius-panel:10px;
+  --fpl-control-height:44px;--fpl-row-height:56px;
+  --fpl-duration-fast:120ms;--fpl-duration-normal:180ms;
+}
+[data-theme="light"]{color-scheme:light;--fpl-bg:#F0F0EB;--fpl-surface:#FAFAF7;--fpl-raised:#E6E8E4;--fpl-hover:#DDE0DC;--fpl-text:#172027;--fpl-muted:#535E66;--fpl-line:#C7CDCF;--fpl-control-line:#737D83;--fpl-accent-text:#7326C9;--fpl-focus:#7326C9;--fpl-positive:#17653E;--fpl-warning:#80550B;--fpl-negative:#A32340;--fpl-action:#172027;--fpl-on-action:#FAFAF7}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--fpl-bg);color:var(--fpl-text);font:15px/1.6 var(--fpl-font);font-feature-settings:'calt' 1}button,input,select{font:inherit}a{color:var(--fpl-accent-text);text-underline-offset:4px}button,a,input,select{touch-action:manipulation}button,input,select{min-height:var(--fpl-control-height)}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.5}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--fpl-focus);outline-offset:3px}button,input,select{border:1px solid var(--fpl-control-line);border-radius:var(--fpl-radius-control);background:var(--fpl-surface);color:var(--fpl-text);padding:9px 14px}button:hover:not(:disabled){background:var(--fpl-hover)}.primary{background:var(--fpl-action);color:var(--fpl-on-action);border-color:var(--fpl-action);font-weight:650}.primary:hover:not(:disabled){background:var(--fpl-muted);color:var(--fpl-on-action)}.quiet{border-color:transparent;background:transparent}.active,[aria-pressed="true"]{border-color:var(--fpl-accent-text);color:var(--fpl-accent-text)}input[aria-invalid="true"]{border-color:var(--fpl-negative)}.num{font-variant-numeric:tabular-nums lining-nums}.accent{color:var(--fpl-accent-text)}.muted,small{color:var(--fpl-muted)}.positive{color:var(--fpl-positive)}.negative{color:var(--fpl-negative)}.warning{color:var(--fpl-warning)}.eyebrow{text-transform:uppercase;font-size:12px;letter-spacing:.16em;font-weight:600}.panel{background:var(--fpl-surface);border:1px solid var(--fpl-line);border-radius:var(--fpl-radius-panel);padding:24px}.divider{border:0;border-top:1px solid var(--fpl-line)}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* v0.2 analytical hierarchy; component recipe: lineup-components.css */
+:root{--fpl-lineup-row:#0C0E10;--fpl-lineup-section:#1B1E23;--fpl-lineup-code:#292D33;--fpl-lineup-points:#20242A;--fpl-lineup-change:#101215;--fpl-lineup-muted:#A4AAB3;--fpl-lineup-selected:#121519;--fpl-lineup-outline:#30353C;}
+[data-theme="light"]{--fpl-lineup-row:#FAFAF7;--fpl-lineup-section:#DDE1DE;--fpl-lineup-code:#D5DAD7;--fpl-lineup-points:#E3E7E3;--fpl-lineup-change:#F3F4F0;--fpl-lineup-muted:#59636B;--fpl-lineup-selected:#EFF0EC;--fpl-lineup-outline:#BFC6C3;}

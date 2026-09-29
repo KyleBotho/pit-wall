@@ -11,3 +11,4 @@ backtest/practice_by_round.json
 backtest/weather_by_round.json
 package-lock.json
 *.md
+docs/design/

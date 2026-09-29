@@ -1,22 +1,41 @@
-/* Deliberately dark-only: the zinc "timing screen" look Peter is used to. */
+/* Deliberately dark-only. Colours: the Pit Lane 0.2 tokens (docs/design/tokens.css) under the app's own names, with
+   the user's changes (docs/ui-system.md, "Retexture"): one green, one red (the heat colours), one purple. Charts
+   drawn in JS read the same values from core.js TOKENS (tests/tokens.test.js keeps them in step). */
 :root {
   color-scheme: dark;
-  --bg: #050505;
-  --card: #0a0a0a;
-  --line: #27272a;
-  --raise: #18181b;
-  --tile: #27272a;
-  --fg: #fafafa;
-  --muted: #a1a1aa;
-  --dim: #8b8b94; /* 5.8:1 on the cards (was #71717a, 4.2:1) */
-  --accent: #a855f7;
-  --accent-soft: rgba(168, 85, 247, 0.16);
-  --accent-ink: #fafafa;
-  --good: #22c55e;
-  --good-soft: rgba(34, 197, 94, 0.14);
-  --bad: #ef4444;
-  --bad-soft: rgba(239, 68, 68, 0.14);
-  --warn: #f59e0b;
+  --bg: #111316; /* Carbon: the page */
+  --bg-rgb: 17, 19, 22;
+  --card: #181c21; /* panels */
+  --raise: #22272e; /* section rows, popovers, selected */
+  --hover: #2a2f36;
+  --line: #343b43; /* separators */
+  --ctl: #707982; /* input and button borders */
+  --ctl-rgb: 112, 121, 130;
+  --faint: #50575f; /* chart lines one step below --ctl */
+  --tile: #292d33; /* asset code tile, cost pill */
+  --tile-pts: #20242a; /* asset tile: points band */
+  --tile-chg: #101215; /* asset tile: price-change band */
+  --tile-out: #30353c; /* asset tile: outline */
+  --fg: #f2f2ef; /* Soft white */
+  --fg-soft: #d8dbde; /* long text: prose, popovers */
+  --ink: #111316; /* text on the soft-white pill, buttons and toast */
+  --muted: #a8afb5; /* Steel */
+  --dim: #a4aab3;
+  --accent: #a34dff; /* the one purple: fills, marks, heat */
+  --accent-rgb: 163, 77, 255;
+  --accent-soft: rgba(var(--accent-rgb), 0.16);
+  --accent-line: rgba(var(--accent-rgb), 0.35);
+  --accent-text: #c18aff; /* purple as small text on dark (the accent itself is 4.2:1) */
+  --accent-deep: #7326c9; /* purple text on the soft-white toast */
+  --accent-ink: #f2f2ef;
+  --focus: #d2acff;
+  --good: #22c55e; /* the one green: text and heat */
+  --good-rgb: 34, 197, 94;
+  --good-soft: rgba(var(--good-rgb), 0.14);
+  --bad: #ef4444; /* the one red: text and heat */
+  --bad-rgb: 239, 68, 68;
+  --bad-soft: rgba(var(--bad-rgb), 0.14);
+  --warn: #e6c07b;
   --ui: "Inter", "Segoe UI", system-ui, sans-serif;
   --display: "Inter Tight", "Inter", "Segoe UI", system-ui, sans-serif;
   --rail: 80px;
@@ -46,7 +65,7 @@ input {
   color: inherit;
 }
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 .muted {
@@ -74,7 +93,7 @@ input {
   font: 700 34px/1 var(--display);
 }
 .tag.live {
-  background: rgba(239, 68, 68, 0.16);
+  background: rgba(var(--bad-rgb), 0.16);
   color: var(--bad);
 }
 .tag.done {
@@ -170,7 +189,7 @@ input {
   padding: 10px 12px;
   border-radius: 8px;
   background: var(--accent-soft);
-  outline: 1px solid rgba(168, 85, 247, 0.35);
+  outline: 1px solid var(--accent-line);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -208,7 +227,7 @@ input {
 }
 .acctpick:hover,
 .acctpick[aria-pressed="true"] {
-  border-color: rgba(168, 85, 247, 0.6);
+  border-color: rgba(var(--accent-rgb), 0.6);
   background: var(--accent-soft);
 }
 p {
@@ -270,7 +289,7 @@ p {
 }
 .nav button[aria-current="page"] {
   background: var(--fg);
-  color: #18181b;
+  color: var(--ink);
 }
 .nav svg {
   width: 20px;
@@ -426,31 +445,39 @@ p {
 .bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
-  align-items: center;
+  gap: 8px 24px;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 16px;
 }
+/* the race bar: a spaced-out label ("Next race · R16") over the race name; lock and data age on the right */
 .race {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
 }
 .race h1 {
   margin: 0;
-  font-family: var(--display);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font: 700 32px/1.1 var(--display);
+  letter-spacing: -0.02em;
 }
-.race .lock {
-  font-size: 13px;
+.racemeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+.racemeta .lock {
+  font-size: 14px;
   color: var(--muted);
 }
-.race .lock b {
+.racemeta .lock b {
   color: var(--fg);
   font-weight: 600;
+}
+.racemeta .stale {
+  color: var(--warn);
 }
 /* ⓘ popovers: a title's how-it-works text, opened on click (closes on an outside click or Escape) */
 details.info {
@@ -502,7 +529,7 @@ details.info .infobox {
   outline: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  color: #d4d4d8;
+  color: var(--fg-soft);
   white-space: normal;
 }
 /* a workspace's panes clip overflow: there the popover is fixed at its place, so it isn't cut off */
@@ -513,13 +540,8 @@ details.info .infobox {
   margin-top: 8px;
 }
 .race .eyebrow {
-  align-self: center;
-  padding: 2px 6px;
-  border: 1px solid var(--line);
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font: 600 12px/18px var(--ui);
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -799,7 +821,7 @@ details.grp > summary:hover {
 .panel {
   background: var(--card);
   outline: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 16px;
   min-width: 0;
   display: flex;
@@ -864,7 +886,7 @@ details.grp > summary:hover {
 }
 .banner {
   background: var(--accent-soft);
-  outline: 1px solid rgba(168, 85, 247, 0.35);
+  outline: 1px solid var(--accent-line);
   border-radius: 8px;
   padding: 10px 12px;
   font-size: 13px;
@@ -894,13 +916,14 @@ details.grp > summary:hover {
   background: var(--tile);
   border: 2px solid var(--tc);
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 14px;
   position: relative;
   z-index: 2;
 }
 .ac .a {
-  background: var(--tile);
+  background: var(--tile-pts); /* the 0.2 tile: code, then a points band, then a darker price band */
+  font-weight: 600;
   margin-top: -6px;
   padding: 8px 0 2px;
   border-radius: 0 0 6px 6px;
@@ -910,10 +933,11 @@ details.grp > summary:hover {
 .ac .b {
   margin-top: -6px;
   padding: 7px 0 2px;
-  border: 1px solid var(--tile);
+  background: var(--tile-chg);
+  border: 1px solid var(--tile-out);
   border-top: 0;
   border-radius: 0 0 6px 6px;
-  color: var(--muted);
+  color: var(--dim);
 }
 .ac .x {
   position: absolute;
@@ -1000,7 +1024,7 @@ details.grp > summary:hover {
   color: var(--dim);
 }
 .stat.hero .v {
-  color: var(--accent);
+  color: var(--fg);
   font-size: 22px;
 }
 @media (max-width: 520px) {
@@ -1078,14 +1102,9 @@ details.edit[open] summary::before {
   background: var(--raise);
 }
 .tbtn[aria-pressed="true"] {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
-}
-.tbtn.lock[aria-pressed="true"] {
-  background: var(--good-soft);
-  border-color: transparent;
-  color: var(--good);
+  background: var(--card);
+  border-color: var(--accent-text);
+  color: var(--accent-text);
 }
 .tbtn.ban[aria-pressed="true"] {
   background: var(--bad-soft);
@@ -1135,14 +1154,61 @@ details.edit[open] summary::before {
 .tbtn.sm {
   height: 24px;
   min-width: 26px;
-} /* Incl / Excl toggles in tables */
+}
+/* an asset's Policy (calc.js inclExcl): Auto / In / Out, one of three; In lit green, Out red */
+.pol {
+  display: inline-flex;
+  border: 1px solid var(--ctl);
+  border-radius: 6px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.pol button {
+  height: 22px;
+  padding: 0 5px;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: var(--card);
+  color: var(--muted);
+  font: 500 11px var(--ui);
+  cursor: pointer;
+}
+.pol button:first-child {
+  border-left: 0;
+}
+/* the Calculator's and Hindsight's Drivers / Constructors panes: room for the Policy column without a sideways
+   scroll (Hindsight has one more column) */
+#drvTable :is(td, th),
+#conTable :is(td, th) {
+  padding-inline: 6px;
+}
+#hdDrv :is(td, th),
+#hdCon :is(td, th) {
+  padding-inline: 5px;
+}
+.pol button:hover {
+  color: var(--fg);
+  background: var(--raise);
+}
+.pol button[aria-pressed="true"] {
+  color: var(--fg);
+  background: var(--hover);
+}
+.pol button.lock[aria-pressed="true"] {
+  color: var(--good);
+  background: rgba(var(--good-rgb), 0.16);
+}
+.pol button.ban[aria-pressed="true"] {
+  color: var(--bad);
+  background: rgba(var(--bad-rgb), 0.16);
+}
 .btn {
   height: 34px;
   padding: 0 14px;
   border: 0;
   border-radius: 6px;
   background: var(--fg);
-  color: #18181b;
+  color: var(--ink);
   font-weight: 600;
   cursor: pointer;
   font-size: 13px;
@@ -1196,7 +1262,7 @@ th {
   border-bottom: 1px solid var(--line);
 }
 td {
-  border-bottom: 1px solid #18181b;
+  border-bottom: 1px solid var(--line);
 }
 tr:last-child td {
   border-bottom: 0;
@@ -1385,7 +1451,7 @@ td.al-r input[type="number"] {
 }
 .tag.sprint {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .tag.ex {
   background: var(--tile);
@@ -1481,7 +1547,7 @@ details.fold[open] > .prose {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  color: #d4d4d8;
+  color: var(--fg-soft);
 }
 .prose ul {
   margin: 0;
@@ -1496,7 +1562,7 @@ details.fold[open] > .prose {
   transform: translateX(-50%);
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   background: var(--fg);
-  color: #18181b;
+  color: var(--ink);
   padding: 10px 14px;
   border-radius: 8px;
   display: flex;
@@ -1509,7 +1575,7 @@ details.fold[open] > .prose {
 .toast button {
   background: none;
   border: 0;
-  color: #7e22ce;
+  color: var(--accent-deep);
   font-weight: 700;
   cursor: pointer;
 }
@@ -1611,7 +1677,7 @@ details.fold[open] > .prose {
   gap: 12px;
   font-size: 13px;
   padding: 3px 0;
-  border-bottom: 1px solid #18181b;
+  border-bottom: 1px solid var(--line);
 }
 .bestt th.bsort {
   cursor: pointer;
@@ -1672,7 +1738,7 @@ details.fold[open] > .prose {
 }
 .pinb.on {
   display: inline-grid !important;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .bestt td.rk .pinb.on + .n,
 .bestt td.rk .n.hide {
@@ -1690,7 +1756,7 @@ details.fold[open] > .prose {
 }
 .pill.on {
   background: var(--fg);
-  color: #18181b;
+  color: var(--ink);
 } /* the column Best Teams is ranked by */
 .pen {
   display: block;
@@ -1751,7 +1817,7 @@ details.fold[open] > .prose {
   border-radius: 8px;
   border: 0;
   background: var(--fg);
-  color: #18181b;
+  color: var(--ink);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -1769,7 +1835,7 @@ details.fold[open] > .prose {
   min-width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 1px solid #71717a;
+  border: 1px solid var(--ctl);
   font-size: 11px;
   font-weight: 600;
 }
@@ -1908,8 +1974,8 @@ details.fold[open] > .prose {
   font-weight: 600;
 }
 .xin.ov {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--accent-text);
+  color: var(--accent-text);
 }
 .appbar,
 .appmenu {
@@ -2154,7 +2220,7 @@ td.chl {
     position: sticky;
     top: 0;
     z-index: 45;
-    background: rgba(5, 5, 5, 0.94);
+    background: rgba(var(--bg-rgb), 0.94);
     backdrop-filter: blur(8px);
     margin: 0 -16px 12px;
     padding: calc(8px + env(safe-area-inset-top, 0px)) 16px 8px;
@@ -2359,9 +2425,9 @@ td.chl {
     width: 54px;
   }
   .race h1 {
-    font-size: 18px;
+    font-size: 24px;
   }
-  .race .lock {
+  .racemeta .lock {
     font-size: 12px;
   }
   .toast {
@@ -2551,7 +2617,7 @@ td.chl {
   justify-content: space-between;
 }
 .labgrp .changed > span {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 .labgrid {
@@ -2684,18 +2750,29 @@ td.chl {
   text-align: left;
   white-space: nowrap;
 }
+/* the step headers and the likely step: rounded tiles, drawn like the asset code tiles */
 .pricet th.step:is(.up, .dn, .z) {
   color: #fff;
   font-weight: 700;
 }
-.pricet th.step.dn {
-  background: rgba(239, 68, 68, 0.45);
+.pricet :is(th, td).step {
+  padding-inline: 2px; /* the tiles bring their own padding: the tables stay as wide as before */
 }
-.pricet th.step.up {
-  background: rgba(34, 197, 94, 0.45);
+.pricet :is(th, td).step > span {
+  display: inline-block;
+  min-width: 40px;
+  padding: 1px 3px;
+  border: 2px solid transparent;
+  border-radius: 5px;
 }
-.pricet th.step.z {
-  background: rgba(139, 139, 148, 0.3);
+.pricet th.step.dn > span {
+  background: rgba(var(--bad-rgb), 0.45);
+}
+.pricet th.step.up > span {
+  background: rgba(var(--good-rgb), 0.45);
+}
+.pricet th.step.z > span {
+  background: rgba(var(--ctl-rgb), 0.3);
 }
 /* "≤ 13" and "14" in one column: centred, whatever the auto-alignment makes of the "≤" */
 .pricet :is(td, th).step {
@@ -2705,8 +2782,8 @@ td.chl {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.pricet td.step.likely {
-  outline: 2px solid var(--fg);
-  outline-offset: -2px;
+.pricet td.step.likely > span {
+  border-color: var(--fg);
+  background: var(--tile);
   font-weight: 700;
 }

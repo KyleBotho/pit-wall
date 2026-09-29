@@ -1,5 +1,5 @@
 /* ---------- header ---------- */
-import { $, $$, DATA, NEXT, byId, esc, infoTip, f0, f1, money, pct, sgn, shortDate, upcoming } from "./core.js";
+import { $, $$, DATA, NEXT, byId, esc, infoTip, f0, f1, money, pct, sgn, shortDate, upcoming, TOKENS } from "./core.js";
 import { state } from "./state.js";
 import {
   boostFor,
@@ -25,11 +25,14 @@ const simLabel = () => {
 };
 const shortName = (g) => (g ? `R${g.gd} ${g.name.replace(" Grand Prix", "")}` : "");
 export function renderHeader() {
-  $("#raceName").textContent = NEXT ? `R${NEXT.gd} · ${NEXT.name}` : `${DATA.season} season complete`;
+  $("#raceEyebrow").textContent = NEXT ? `Next race · R${NEXT.gd}` : `${DATA.season} season`;
+  $("#raceName").textContent = NEXT ? NEXT.name : "Season complete";
   const age = Math.round((Date.now() - new Date(DATA.generated)) / 6e4);
-  const fresh = `data ${age < 60 ? age + " min" : age < 2880 ? Math.round(age / 60) + " h" : Math.round(age / 1440) + " days"} old`;
+  // amber after a day while races remain: refreshes run after every session and at least every 6 h, so older means
+  // one is stuck
+  const fresh = `<span${NEXT && age >= 1440 ? ' class="stale"' : ""}>data ${age < 60 ? age + " min" : age < 2880 ? Math.round(age / 60) + " h" : Math.round(age / 1440) + " days"} old</span>`;
   if (!NEXT) {
-    $("#lock").textContent = `All ${DATA.done.length} rounds scored · ${fresh}`;
+    $("#lock").innerHTML = `All ${DATA.done.length} rounds scored · ${fresh}`;
     return;
   }
   const lock = new Date(NEXT.lock),
@@ -117,10 +120,10 @@ function spark(a) {
   const bars = vals
     .map((v, i) => {
       const hh = Math.max(1, (Math.abs(v) / max) * mid);
-      return `<rect x="${i * (W + G)}" y="${v >= 0 ? mid - hh : mid}" width="${W}" height="${hh}" rx="1" fill="${v >= 0 ? "#22C55E" : "#EF4444"}" opacity="${h[i] && !h[i].active ? 0.3 : 0.9}"/>`;
+      return `<rect x="${i * (W + G)}" y="${v >= 0 ? mid - hh : mid}" width="${W}" height="${hh}" rx="1" fill="${v >= 0 ? TOKENS.good : TOKENS.bad}" opacity="${h[i] && !h[i].active ? 0.3 : 0.9}"/>`;
     })
     .join("");
-  return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="#27272A"/>${bars}</svg>`;
+  return `<svg width="${vals.length * (W + G)}" height="${H}" viewBox="0 0 ${vals.length * (W + G)} ${H}" aria-label="Last ${vals.length} races: ${vals.join(", ")}"><line x1="0" x2="${vals.length * (W + G)}" y1="${mid}" y2="${mid}" stroke="${TOKENS.line}"/>${bars}</svg>`;
 }
 export function renderAssets() {
   $("#assetKey").innerHTML = heatKey("fewer xPts", "more xPts");
@@ -167,7 +170,7 @@ export function renderAssets() {
   const th = (key, label, title) =>
     `<th class="sort" data-sort="${key}" ${sk === key ? `aria-sort="${sd < 0 ? "descending" : "ascending"}"` : ""} title="${title || ""}">${label}${sk === key ? (sd < 0 ? " ↓" : " ↑") : ""}</th>`;
   $("#assetTable").innerHTML =
-    `<thead><tr><th>${isD ? "DR" : "CR"}</th>${th("price", "$")}${th("own", "Own", "Picked by % of teams")}${th("x", "xPts")}<th>25–75</th>${th("ppm", "xPPM", "xPts per $1m")}${th("form", "Form", "Weighted average of the last 6 races")}<th>Last 6</th>${isD ? th("dnf", "DNF") + th("fl", "FL", "Fastest lap") + th("ov", "xOV", "Expected overtakes") + th("dotd", "DotD", "Driver of the Day") + "<th>Pace</th>" : th("pit", "Pit", "Expected pit-stop points")}${th("neg", "xNeg", "Expected points lost to negative events: what No Negative would save")}<th>Incl / Excl</th></tr></thead><tbody>` +
+    `<thead><tr><th>${isD ? "DR" : "CR"}</th>${th("price", "$")}${th("own", "Own", "Picked by % of teams")}${th("x", "xPts")}<th>25–75</th>${th("ppm", "xPPM", "xPts per $1m")}${th("form", "Form", "Weighted average of the last 6 races")}<th>Last 6</th>${isD ? th("dnf", "DNF") + th("fl", "FL", "Fastest lap") + th("ov", "xOV", "Expected overtakes") + th("dotd", "DotD", "Driver of the Day") + "<th>Pace</th>" : th("pit", "Pit", "Expected pit-stop points")}${th("neg", "xNeg", "Expected points lost to negative events: what No Negative would save")}<th title="Auto, In (in every best team) or Out (never picked)">Policy</th></tr></thead><tbody>` +
     rows
       .map((r) => {
         const a = r.a,
@@ -247,7 +250,7 @@ export function renderGrid() {
   $$("#gridKind button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.gridmode === state.grid)));
   const q = state.grid === "q";
   $("#gridKey").innerHTML = state.heat
-    ? `<span class="muted">less likely</span><span class="ramp" style="background:linear-gradient(90deg,rgba(168,85,247,.04),rgba(168,85,247,.85))"></span><span class="muted">more likely</span>${q ? "" : '<span class="sw" style="background:rgba(239,68,68,.6)"></span><span class="muted">not classified</span>'}`
+    ? `<span class="muted">less likely</span><span class="ramp" style="background:linear-gradient(90deg,rgba(var(--accent-rgb),.04),rgba(var(--accent-rgb),.85))"></span><span class="muted">more likely</span>${q ? "" : '<span class="sw" style="background:rgba(var(--bad-rgb),.6)"></span><span class="muted">not classified</span>'}`
     : "";
   $("#gridStamp").textContent = `${shortName(NEXT)} · ${simLabel()}`;
   $("#gridNote").innerHTML = infoTip(
@@ -278,7 +281,7 @@ export function renderGrid() {
             .slice(0, cols)
             .map((p, i) => {
               const pc = Math.round(p * 100),
-                c = i === F ? "239,68,68" : "168,85,247";
+                c = i === F ? "var(--bad-rgb)" : "var(--accent-rgb)";
               return `<td style="background-color:rgba(${c},${Math.min(0.85, p * 2.6).toFixed(3)});${p > 0.25 ? "font-weight:600" : "color:" + (pc ? "var(--fg)" : "var(--dim)")}">${pc || ""}</td>`;
             })
             .join("") +
@@ -315,7 +318,9 @@ export function renderPrices() {
     const cols = [...new Set(list.flatMap((a) => forecast.price[a.id].steps.map((x) => x.d)))].sort((x, y) => x - y);
     const head =
       `<thead><tr><th class="tiercap">${title}</th><th>$</th><th>${r1 ? "R" + r1 : ""}</th><th>${r2 ? "R" + r2 : ""}</th><th>R${nx}</th>` +
-      cols.map((d) => `<th class="step ${d > 0 ? "up" : d < 0 ? "dn" : "z"}">${stepLbl(d)}</th>`).join("") +
+      cols
+        .map((d) => `<th class="step ${d > 0 ? "up" : d < 0 ? "dn" : "z"}"><span>${stepLbl(d)}</span></th>`)
+        .join("") +
       `<th>R${nx}</th><th>${nR} races</th></tr>` +
       `<tr><th class="tiercap"><small>${sub}</small></th><th></th><th>Pts</th><th>Pts</th><th title="Projected points">xPts</th>` +
       cols
@@ -344,9 +349,9 @@ export function renderPrices() {
                   ? `${st.lo} points or more`
                   : `${st.lo} to ${st.hi} points`;
             const txt = mode === "odds" ? (pr == null ? "–" : pct(pr)) : st.lo == null ? `≤ ${st.hi}` : `${st.lo}`;
-            const rgb = d > 0 ? "34,197,94" : d < 0 ? "239,68,68" : "139,139,148";
+            const rgb = d > 0 ? "var(--good-rgb)" : d < 0 ? "var(--bad-rgb)" : "var(--ctl-rgb)";
             const bg = pr ? ` style="background-color:rgba(${rgb},${(0.06 + 0.6 * pr).toFixed(3)})"` : "";
-            return `<td class="step${pr != null && pr === top && pr > 0 ? " likely" : ""}"${bg} title="${stepLbl(d)}: ${range}${pr != null ? ` · ${pct(pr)} chance` : ""}">${txt}</td>`;
+            return `<td class="step${pr != null && pr === top && pr > 0 ? " likely" : ""}"${bg} title="${stepLbl(d)}: ${range}${pr != null ? ` · ${pct(pr)} chance` : ""}"><span>${txt}</span></td>`;
           })
           .join("");
         return (

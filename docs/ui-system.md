@@ -2,11 +2,46 @@
 
 Started 2026-09-28. The user's complaint was that the tool feels disjointed **between pages** (each page built its
 own way), not within one page. The look to keep is the **Calculator and Live Scoring**; every other page is
-brought in line with those two. No new palette or fonts (five fresh visual directions were shown and rejected).
+brought in line with those two. Five fresh visual directions were shown and rejected; on 2026-09-29 the user's own
+design system (Pit Lane 0.2) was adopted as a **retexture** (below).
 
 Previews shown to the user (private artifacts): the audit and system
-https://claude.ai/artifact/UqCjFNVAkHJReX3Bp9Sozx, and the three decisions
-https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic.
+https://claude.ai/artifact/UqCjFNVAkHJReX3Bp9Sozx, the three decisions
+https://claude.ai/artifact/GJPxdTpsGv35nFG9youEic, and the retexture mockup (drafts 1-12)
+https://claude.ai/artifact/8MG8xgqFdjEJh9AAnCBdRh.
+
+## Retexture: Pit Lane 0.2 (user, 2026-09-29)
+The user's mood board and design system "Fantasy Pit Lane" 0.2 (source kept in `docs/design/`: DESIGN-SYSTEM.md,
+tokens.css, tokens.json; not formatted by Prettier) applied as a **retexture, not a relayout**: colours, surfaces and
+a few controls change; layouts, panel names, control sizes and fonts stay.
+- **Name** stays Fantasy Pit Wall (0.2 says Pit Lane). Logo, favicon, link preview unchanged.
+- **Tokens** (`app.css :root`, the app's names with 0.2 values): page Carbon #111316, panels #181C21, raised
+  #22272E, hover #2A2F36, lines #343B43, control borders #707982 (`--ctl`), soft white #F2F2EF (`--fg`), text on it
+  `--ink`, Steel #A8AFB5, amber #E6C07B. Asset tiles: code #292D33, points band `--tile-pts`, price band `--tile-chg`,
+  outline `--tile-out`. Every colour in the CSS and JS reads a token; charts drawn as SVG strings use core.js
+  `TOKENS` (SVG presentation attributes don't take `var()` everywhere), kept in step by tests/tokens.test.js, which
+  also fails on an old purple / green / red literal. Left as literals: two chart series (cyan, teal) and the avatar's
+  brand gradient.
+- **One green, one red, one purple.** Green #22C55E and red #EF4444 (exactly the old heat colours; softer 0.2 pairs
+  were tried and rejected) for signed text AND heat, step headers, toggles, tags (`--good-rgb` / `--bad-rgb` for
+  shading). Purple is the accent #A34DFF everywhere, Positions heat included (was #A855F7); `--accent-text`
+  #C18AFF for small purple text, `--focus` #D2ACFF for the focus ring. Heat strengths unchanged.
+- **Purple means selection**: pressed toggles and pins = purple outline and purple text (no solid fill); hero stats
+  white; purple stays on 2x / x3 badges and range marks. Best Teams has no purple row edge: the # column carries the
+  state (rank, pin, current team).
+- **Kept**: control sizes (not 0.2's 44px), Inter + Inter Tight (0.2 is Inter only), dark only (0.2 has a light
+  companion), heat colours, panel names, the rail and Best Teams layout (rows on the panel charcoal, raised section
+  bands, lines inside the panel padding). Panels 10px corners (was 12).
+- **Changed controls**: Incl / Excl became 0.2's **Policy** (calc.js `inclExcl`): Auto / In / Out, one of three,
+  In lit green, Out red; the same `state.marks` / `state.hdMarks` values ("" / lock / ban), so no migration. The
+  Drivers / Constructors panes got tighter cell padding so it fits at 1440px (at 1281-1400px they scroll sideways,
+  as they did before).
+- **Race bar**: "Next race · R16" as a spaced label above a 32px race name; lock time and data age on the right;
+  the data age turns amber after 24 h while races remain (refreshes run after every session and at least every 6 h).
+- **Budget tab**: the step headers are filled rounded tiles and the likely step a white rounded tile, drawn like
+  the asset code tiles (option "C headers + A likely step" in the mockup).
+- **Left out**: 0.2's driver projection panel (not even as a hover popup: it repeated the table row; the 25-75
+  range is on the Points tab) and any per-driver baseline. Photography only ever on brand surfaces, not built.
 
 ## Decisions (user, 2026-09-28)
 1. **Hindsight is a workspace** like the Calculator: done 2026-09-28 (below).
@@ -93,5 +128,6 @@ no-op anywhere but localhost).
   Live Scoring's finished round no longer go empty after the last export (seen: R15 empty for all three teams).
 
 ## Still to do (proposed in the audit; not yet agreed page by page)
-Shared team / round pickers, one signed-out state, title-row order, tokens for the chart colours hard-coded in
-calc.js / league.js / elite.js / views.js, and the type (13 sizes) and radius (11 values) scales.
+Shared team / round pickers, one signed-out state, title-row order, and the type (13 sizes) and radius (11 values)
+scales (0.2 proposes radius 6 controls / 10 panels and a 4-8-12-16-24-32-48-64 spacing scale). The chart colours
+became tokens on 2026-09-29 (Retexture).

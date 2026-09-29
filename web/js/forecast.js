@@ -558,12 +558,12 @@ export const who = (a, label) =>
 // heatmap colours are off (Settings)
 export function heatKey(lo = "lower", hi = "higher") {
   if (!state.heat) return "";
-  return `<span class="muted">${esc(lo)}</span><span class="ramp" style="background:linear-gradient(90deg,rgba(239,68,68,.34),rgba(239,68,68,0) 45%,rgba(34,197,94,0) 55%,rgba(34,197,94,.34))"></span><span class="muted">${esc(hi)}</span>`;
+  return `<span class="muted">${esc(lo)}</span><span class="ramp" style="background:linear-gradient(90deg,rgba(var(--bad-rgb),.34),rgba(var(--bad-rgb),0) 45%,rgba(var(--good-rgb),0) 55%,rgba(var(--good-rgb),.34))"></span><span class="muted">${esc(hi)}</span>`;
 }
 export function heat(v, lo, hi) {
   if (!state.heat || v == null || isNaN(v)) return "";
   const t = Math.max(-1, Math.min(1, v >= 0 ? (hi > 0 ? v / hi : 0) : lo < 0 ? -(v / lo) : 0));
-  const c = t >= 0 ? "34,197,94" : "239,68,68";
+  const c = t >= 0 ? "var(--good-rgb)" : "var(--bad-rgb)";
   return ` style="background-color:rgba(${c},${(Math.abs(t) * 0.28).toFixed(3)})"`;
 }
 export function optionList(kind, sel) {

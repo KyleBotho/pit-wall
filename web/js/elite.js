@@ -1,5 +1,5 @@
 /* ---------- elite (global top 500, aggregates only) ---------- */
-import { $, $$, CHIPS, DATA, byId, code, esc, infoTip, f0, pct, sgn } from "./core.js";
+import { $, $$, CHIPS, DATA, byId, code, esc, infoTip, f0, pct, sgn, TOKENS } from "./core.js";
 import { state } from "./state.js";
 import { LEAGUE_DATA, needSync } from "./sync.js";
 import { chip, heat, who, xpts } from "./forecast.js";
@@ -190,7 +190,7 @@ export function renderEliteSeason(El) {
     .map((k) => ({
       name: "#" + k,
       dash: true,
-      color: { 1: "#D4D4D8", 10: "#A1A1AA", 100: "#71717A", 500: "#52525B" }[k],
+      color: { 1: TOKENS.fgSoft, 10: TOKENS.muted, 100: TOKENS.ctl, 500: TOKENS.faint }[k],
       pts: rel(gds.map((gd) => ({ v: byGd[gd]?.cut?.[k] ?? null, r: null }))),
     }));
   lineChart(
@@ -200,7 +200,7 @@ export function renderEliteSeason(El) {
       mine.map(({ t, h }) => ({
         name: t.name,
         me: t === elTeam(),
-        color: "#E4E4E7",
+        color: TOKENS.fg,
         pts: rel(cumPts(h, gds)),
         marks: chipMarks(t.name, gds),
       })),

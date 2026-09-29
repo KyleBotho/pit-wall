@@ -287,9 +287,10 @@ function pickStart(start) {
   state.showN = 20;
   rerender();
 }
-function toggleMark(marks, id, to) {
-  if (marks[id] === to) delete marks[id];
-  else marks[id] = to;
+// an asset's Policy: "" = Auto (no mark), "lock" = In, "ban" = Out
+function setMark(marks, id, to) {
+  if (to) marks[id] = to;
+  else delete marks[id];
 }
 function draftToTeam(i, j) {
   const tgt = state.teams[j],
@@ -534,7 +535,7 @@ const CLICK = [
   [
     "mark",
     (d) => {
-      toggleMark(state.marks, d.mark, d.to);
+      setMark(state.marks, d.mark, d.to);
       rerender();
     },
   ],
@@ -662,7 +663,7 @@ const CLICK = [
     "hmark",
     (d) => {
       state.hdMarks = state.hdMarks || {};
-      toggleMark(state.hdMarks, d.hmark, d.to);
+      setMark(state.hdMarks, d.hmark, d.to);
       saveAnd(renderHind);
     },
   ],

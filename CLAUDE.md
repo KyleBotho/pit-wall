@@ -86,8 +86,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   model comes from the variant's own data (the track model per variant, `ctx.tm[v]`: as at lock = the practice
   frozen at lock). Team scores with a chip: `Engine.chipScore` everywhere (Calculator and planner). Each frozen
   challenger records its input coverage, sameAsShipped and evaluable (engine.projectChallengers); Model health scores
-  evaluable rounds only. Dark zinc UI modelled on f1fantasytools (the user's explicit ask); inspiration only,
-  never their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
+  evaluable rounds only. Dark UI, since 2026-09-29 retextured with the user's own Pit Lane 0.2 design system
+  (`docs/design/`, docs/ui-system.md "Retexture"); originally modelled on f1fantasytools, inspiration only, never
+  their name/logo. Key shared values: `state` (settings), `forecast` (sims and projections from `compute()`),
   `syncState`, `LEAGUE_DATA` (league_data merged with the linked F1 account's tracked_accounts body,
   `tracking.js mergeLeague`), `Hind`. Team Tracking (phase A, 2026-09-26): `setup.js` = the setup dialog (join code
   from `app_config`, username search, link), Settings' Change/Delete, `pullLink()` after sign-in; `tracking.js` = its
@@ -206,7 +207,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `<details class="info">` in the title row, dynamic ones via a `<span class="tipslot">` filled with core.js
   `infoTip(html)`. What the user must see stays visible: status (data as of…), warnings, instructions to act.
 - UI system (2026-09-28): `docs/ui-system.md`. The Calculator and Live Scoring are the reference look; other pages
-  are brought in line with them (no new palette). Page templates: Workspace (`main.ws`: Calculator, Hindsight;
+  are brought in line with them. Colours only from the `app.css :root` tokens (Pit Lane 0.2 values: one green,
+  one red, one purple; charts in JS read core.js `TOKENS`, tests/tokens.test.js); a retexture keeps layouts,
+  control sizes and fonts. Page templates: Workspace (`main.ws`: Calculator, Hindsight;
   main.js `PANE_KEY`), Board, Table. Panel names and heat colours stay as they are (user); rename alternatives noted.
 - Prettier drops the parentheses of a JSDoc cast before a member access (`/** @type {X} */ (a)[k]`); use a typed
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
