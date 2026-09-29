@@ -1,0 +1,166 @@
+{
+ "generated": "2026-09-29T10:12Z",
+ "N": 4000,
+ "passes": 1,
+ "rounds": [
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15
+ ],
+ "holdout": {
+  "rounds": [
+   13,
+   14,
+   15
+  ],
+  "shipped": 9.363,
+  "fitted": 9.319,
+  "dCrps": -0.044,
+  "se": 0.023,
+  "folds": [
+   {
+    "gd": 13,
+    "train": [
+     5,
+     12
+    ],
+    "shipped": 10.403,
+    "fitted": 10.334,
+    "dCrps": -0.069,
+    "changes": [
+     {
+      "setting": "MODEL.paceShrink",
+      "fitted": 0.9
+     },
+     {
+      "setting": "SIM.qSd",
+      "fitted": 0.12
+     },
+     {
+      "setting": "SIM.teamSd",
+      "fitted": 0.05
+     },
+     {
+      "setting": "SIM.pitStops",
+      "fitted": 0
+     }
+    ]
+   },
+   {
+    "gd": 14,
+    "train": [
+     5,
+     13
+    ],
+    "shipped": 7.39,
+    "fitted": 7.392,
+    "dCrps": 0.002,
+    "changes": [
+     {
+      "setting": "MODEL.paceShrink",
+      "fitted": 0.7
+     },
+     {
+      "setting": "SIM.teamSd",
+      "fitted": 0.05
+     },
+     {
+      "setting": "SIM.tau",
+      "fitted": 0.02
+     },
+     {
+      "setting": "SIM.scNoise",
+      "fitted": 1.6
+     }
+    ]
+   },
+   {
+    "gd": 15,
+    "train": [
+     5,
+     14
+    ],
+    "shipped": 10.296,
+    "fitted": 10.232,
+    "dCrps": -0.064,
+    "changes": [
+     {
+      "setting": "SIM.qSd",
+      "fitted": 0.25
+     },
+     {
+      "setting": "SIM.rSd",
+      "fitted": 0.2
+     },
+     {
+      "setting": "SIM.tau",
+      "fitted": 0.02
+     },
+     {
+      "setting": "SIM.unc",
+      "fitted": 0
+     },
+     {
+      "setting": "SIM.scNoise",
+      "fitted": 1.6
+     }
+    ]
+   }
+  ]
+ },
+ "shipped": {
+  "crps": 8.62,
+  "mae": 11.849,
+  "rho": 0.73,
+  "cover80": 0.81,
+  "cover50": 0.534
+ },
+ "fitted": {
+  "crps": 8.561,
+  "mae": 11.853,
+  "rho": 0.733,
+  "cover80": 0.832,
+  "cover50": 0.548
+ },
+ "changes": [
+  {
+   "setting": "MODEL.paceShrink",
+   "shipped": 0.8,
+   "fitted": 0.7,
+   "folds": 1
+  },
+  {
+   "setting": "SIM.rSd",
+   "shipped": 0.15,
+   "fitted": 0.2,
+   "folds": 1
+  },
+  {
+   "setting": "SIM.tau",
+   "shipped": 0.07,
+   "fitted": 0.02,
+   "folds": 2
+  },
+  {
+   "setting": "SIM.unc",
+   "shipped": 1,
+   "fitted": 0.5,
+   "folds": 0
+  },
+  {
+   "setting": "SIM.scNoise",
+   "shipped": 1.35,
+   "fitted": 1.6,
+   "folds": 2
+  }
+ ],
+ "minutes": 13.2
+}
