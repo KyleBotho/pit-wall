@@ -141,6 +141,26 @@ def wx_summary(wx):
     }
 
 
+def wet_share(stints):
+    """The share of a session's drivers who ran a set of intermediates or wets (OpenF1 stints), None without stints.
+    skills.py calls a qualifying wet from skills.WET_SHARE up (the wet-qualifying skill's sessions)."""
+    by = {}
+    for s in stints or []:
+        if s.get("driver_number") is not None and s.get("compound"):
+            by.setdefault(s["driver_number"], set()).add(str(s["compound"]).upper())
+    if not by:
+        return None
+    return round(sum(1 for c in by.values() if c & {"INTERMEDIATE", "WET"}) / len(by), 2)
+
+
+def _quali_block(get_soft, cached, q):
+    """The qualifying session's observed weather and wet-tyre share."""
+    return {
+        "wx": wx_summary(_of(get_soft, cached, "weather", q["session_key"])),
+        "wetTyres": wet_share(_of(get_soft, cached, "stints", q["session_key"])),
+    }
+
+
 def _race_block(get_soft, cached, s, num2, results=None, archive=None):
     """One race session: SC/VSC/red/rain, pit stops by team, pace by driver TLA (median clean lap, and the
     contextual model: laps.py), and for the race each retirement's cause. archive(canon) keeps the canonical laps."""
@@ -214,6 +234,21 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
             late = datetime.now(timezone.utc) - _dt(g["raceStart"]) < timedelta(days=RETRY_DAYS)
             out[gd] = rec  # kept if the retry fails
             if not (late and ("paceCtx" not in race or "retirements" not in race)):
+                # archived before qualifying's wet-tyre share was kept (2026-09-30), or before its stints were in
+                if (rec.get("quali") or {}).get("wetTyres") is None:
+                    try:
+                        if sessions is None:
+                            sessions = _sessions(get_soft, cached, season, fresh=True)
+                        q = _session_for(sessions, "Qualifying", g["raceStart"])
+                        blk = _quali_block(get_soft, cached, q) if q else None
+                        if blk and blk["wetTyres"] is not None:
+                            rec["quali"] = {
+                                **(rec.get("quali") or {}),
+                                **{k: v for k, v in blk.items() if v is not None},
+                            }
+                            write_json(path, rec, indent=1, sort_keys=True)
+                    except Exception as e:  # noqa: BLE001
+                        _warn(f"qualifying tyres for gameday {gd}", e)
                 # archived before the safety car timings were kept (2026-09-28), or by an older parser: (re)read
                 # from race control (SC_LAPS_VERSION)
                 if any(k in rec and rec[k].get("scLapsV") != lapmod.SC_LAPS_VERSION for k in ("race", "sprint")):
@@ -246,7 +281,7 @@ def race_info(get_soft, cached, archived, read_json, write_json, season, schedul
                     rec[key] = _race_block(get_soft, cached, s, num2, rows, lap_rec.setdefault(key, {}).update)
             q = _session_for(sessions, "Qualifying", g["raceStart"])
             if q:
-                rec["quali"] = {"wx": wx_summary(_of(get_soft, cached, "weather", q["session_key"]))}
+                rec["quali"] = _quali_block(get_soft, cached, q)
             if "race" in rec:
                 write_json(path, rec, indent=1, sort_keys=True)
                 if len(lap_rec) > 1:

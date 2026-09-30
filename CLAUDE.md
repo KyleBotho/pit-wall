@@ -170,6 +170,16 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `supabase/setup.sql` — the sign-in/sync database (item 12), the Sim lab's `owners` gate, and the private leagues:
   `league_data` (one row, the league payload) readable only by accounts in `league_readers` (RLS). Re-runnable in
   Supabase's SQL Editor. Add a reader there (see the comment in the file).
+- `backtest/driver_skills.py` (+ `wet_skill.py` = the wet-session hand lists and first check, `skill_fetch.py` =
+  lap 1 of every race / 2006-2013 results / sprints from Jolpica, `retire_causes.py` = why each car retired 2023 on,
+  from Wikipedia's race tables -> `data/retire_causes.json`): which per-driver skills are stable (2014-2025; history
+  2026-09-30). `--save` writes `data/skill_points.json` (past seasons' observations). `wet_detect.py` checks the
+  automatic wet-qualifying rule against the hand lists.
+- `skills.py` — pure, no fetching: DATA.skills (lab-only, LAB_KEYS) at every build = per-driver edges in places,
+  shrunk (`wetQ` wet qualifying, `sprR` sprint finish beyond the grid), from `data/skill_points.json` plus this
+  season's finished rounds (refresh.py `load_skills`; a wet qualifying = `quali.wetTyres` >= 0.5 in the round's
+  race archive, extras.wet_share). `drivers` = with this season, `base` = past seasons only (walk.js asOf). For
+  the `wetskill` / `sprintskill` challengers (SIM.wetSkill / SIM.sprintSkill, engine `skillSteps`).
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
 - League payload (Supabase `league_data`, written ONLY by the private repo's workflow): `{v: 2, leagues, names,
   rounds, lineups, rivals, seen}`, keyed by team key. `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per
@@ -215,7 +225,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 
 ## Commands
-- New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`.
+- New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`;
+  `python backtest/skill_fetch.py` and `python backtest/driver_skills.py --save` (the finished season into the
+  skill challengers' past observations; its wet qualifying sessions come from the race archive, no hand list).
 - Local preview: `.claude/launch.json` "pit-wall-build" serves `build/` on :8765. With league data (sign-in doesn't
   work locally): `python tools/dev_league.py` (reads ../pit-wall-private; writes the gitignored
   build/dev-league.json), then open `http://localhost:8765/?league`.
@@ -412,12 +424,21 @@ there before re-deciding something.
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
      2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
-      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv)
+      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8, wetskill, sprintskill)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
       records, FastF1 archive, weather vintages + ensemble, Kalshi quotes, FIA index arriving on their own (health
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session
       weather (weather/ + races/ wx), market-quote quality weights (quotes/), grid penalties from FIA documents.
 
+- [ ] Per-driver skills (history 2026-09-30): `wetskill` and `sprintskill` are challengers from R16; each is only
+      evaluable on a weekend with rain forecast for a qualifying / a sprint, so expect few scored rounds this season.
+      Automatic in season (skills.py adds each finished round; wet qualifying from tyre data). The evidence is
+      thin: one wrongly listed session moved the wet check's across-teams figure from +0.40 to +0.25, and the
+      sprint edge flips for some drivers with how retirements are counted. Crash rate
+      per driver failed once 2023-2025 was added (not built; `data/retire_causes.json` is there if it's retried);
+      lap-1 gains are a team trait (a possible team-level start weight); the rookie / second-year learning curve
+      is suggestive (0.07-0.12% a half season), not built. Also seen: practice.py has no handling for a wet
+      practice session (its short-run gaps would go 50% into qualifying pace): guard before a wet FP.
 - [x] Autonomy steps 1-3 done 2026-09-26 (docs/history.md): session-aware refresh + Refresh now, data health +
       the Data health issue, model health (accuracy per round + weekly fit proposals in the Sim lab). Still to see
       live: the first Data health issue, the first weekly fit (Tue 2026-09-29), R16 scored automatically.

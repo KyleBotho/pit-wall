@@ -41,6 +41,7 @@ import collect as gather  # collect.py (refresh.py has its own collect())
 import extras
 import health
 import practice
+import skills
 from f1feeds import (
     EV_SESSION,
     PAUSE,
@@ -447,10 +448,35 @@ def load_priors():
     return read_json(path) if os.path.exists(path) else None
 
 
+def load_skills(results, race_info):
+    """DATA.skills (skills.py): per-driver skill edges for the skill challengers, from past seasons' observations
+    (data/skill_points.json) plus this season's finished rounds: the results, and which qualifying sessions were wet
+    (the wet-tyre share extras.race_info keeps per round). None without the past seasons' file."""
+    path = os.path.join(HERE, "data", "skill_points.json")
+    if not os.path.exists(path):
+        return None
+    base = read_json(path)
+    try:
+        wet = {}
+        for gd, rec in (race_info or {}).items():
+            share = ((rec or {}).get("quali") or {}).get("wetTyres")
+            wet[int(gd)] = None if share is None else share >= skills.WET_SHARE
+        return skills.build(base, skills.season_points(SEASON, results, wet))
+    except Exception as e:  # noqa: BLE001 - an extra: past seasons alone then
+        print(f"  ! this season's skill observations: {e}")
+        return skills.build(base)
+
+
 def load_extras(now, schedule, done, nxt_g, results, assets):
     """Circuit ids/coordinates on the schedule, and DATA's priors, raceInfo, weather, odds and weekend. Each piece
     fails soft: the model falls back to what it had before."""
-    out = {"priors": load_priors(), "raceInfo": {}, "weather": {}, "odds": None, "weekend": None}
+    out = {
+        "priors": load_priors(),
+        "raceInfo": {},
+        "weather": {},
+        "odds": None,
+        "weekend": None,
+    }
     try:
         cal = extras.calendar(get, cached, SEASON)
         for g in schedule:
@@ -467,6 +493,9 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
         ).items()
     }
     print(f"  OpenF1 race data: {len(out['raceInfo'])}/{len(done)} rounds")
+    out["skills"] = load_skills(results, out["raceInfo"])
+    if out["skills"]:
+        print(f"  driver skills: {len(out['skills']['drivers'])} drivers, {out['skills']['added']} results this season")
     coming = [g for g in schedule if g["gd"] not in done][:3]
     kept = []
 
@@ -729,6 +758,7 @@ RECORD_INPUTS = (
     "weekend",
     "live",
     "priors",
+    "skills",
     "bands",
     "cfg",
     "schedule",
@@ -964,7 +994,7 @@ def presim(data, out_dir):
 # downloads (user, 2026-09-28: challengers have no bearing on normal users): a separate file next to index.html that
 # the lab fetches for owners and admins (web/js/lab.js labData). Top-level keys moved whole; per-row fields moved
 # out of raceInfo's race / sprint blocks and the priors' rows.
-LAB_KEYS = ("modelHealth",)
+LAB_KEYS = ("modelHealth", "skills")
 LAB_RACE_FIELDS = ("pacePool", "paceSePool", "pacePoolV", "scLaps", "scLapsV", "lapsRun")
 LAB_PRIOR_FIELDS = ("scLaps", "scLapsV", "lapsRun", "lapsRc", "laps")
 
@@ -1192,6 +1222,7 @@ def main():
         data["cfg"] = CFG  # the page and engine always use the current config
         data["trackStats"] = add_lap_refs({str(k): v for k, v in data.get("trackStats", {}).items()})
         data["bands"] = load_bands()
+        data["skills"] = load_skills(data.get("results") or {}, data.get("raceInfo"))
         data["projRebuilt"] = load_projections("rebuilt")
     else:
         prev = read_json(cached("data.json")) if os.path.exists(cached("data.json")) else None

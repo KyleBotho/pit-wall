@@ -139,6 +139,8 @@ function asOf(r, drop = []) {
     weather: wxAt(r) ? { [r]: wxAt(r) } : {},
     weekend: { gd: r, penalties: penAt(r), grid: {} },
     live: null, // the live weekend's scored sessions: not known at lock
+    // per-driver skills (the skill challengers): past seasons only, the running season's edges hold later rounds
+    skills: D.skills && D.skills.base ? { ...D.skills, drivers: D.skills.base } : D.skills,
     odds: ODDS[r] ? { ...ODDS[r], gd: r } : null,
   };
 }

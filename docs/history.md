@@ -5,6 +5,58 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-30, per-driver skills (user: rhter's early Sepang sim had VER at 29.7 vs our 22.1; "add a small weight
+      per driver for rain from previous years", then "any other such skills?"). Why the sims differed: Open-Meteo
+      gave Sepang 86% / 94% wet (qualifying / race), so nearly every simulated weekend was wet (retirements x1.4,
+      noise x1.6: 462 vs 516 points for the field with rain off, 6.4 vs 4.6 expected retirements), a top eight
+      within 0.24% in qualifying, and Red Bull read lower than his; his sims ran ~4 points per asset high at Baku.
+      The checks (`backtest/driver_skills.py`, Jolpica 2014-2025; a skill counts as the driver's when his edge
+      predicts itself across random halves of his sessions, early vs late career, and his main team vs his other
+      teams; placebo = ordinary sessions labelled at random; chance = drivers shuffled within a race):
+      wet qualifying vs his own dry level PASS (halves +0.33, early/late +0.27, across teams +0.25, placebo +0.06;
+      with 2023 Spain, damp but run on slicks, wrongly on the list it read +0.36 / +0.31 / +0.40: one session
+      moves it that much);
+      wet race fail (+0.17 / -0.04 / +0.02, placebo +0.13); vs the team-mate instead of his own level the same
+      picture, weaker (race + qualifying +0.33). Street circuits fail (halves +0.49 but across teams -0.01: the
+      car). Lap-1 places fail as a driver skill (+0.69, gone once the car's season average is removed, +0.09: a
+      team trait, a possible team-level start weight). Sprint weekends' normal sessions fail. The sprint itself:
+      sprint qualifying no edge (shrink k 583), sprint finish beyond the grid slot a modest pass (halves +0.40,
+      early/late +0.15, across teams +0.24, 12 drivers); FRAGILE: counting retirements as last instead of
+      classified-only flips some drivers (VER +0.85 -> -0.17). Crash retirements: 2014-2022 (Jolpica statuses) a
+      weak pass (halves +0.23, across teams +0.38, p 0.03-0.07), but with 2023-2025 added from Wikipedia's race
+      tables (`backtest/retire_causes.py` -> `data/retire_causes.json`: all 200 non-classified cars 2023 - 2026 R15
+      have a reason, 91 crash / 109 other / 18 DNS) it FAILS (halves +0.18, early/late +0.13, across teams +0.10,
+      p 0.12; the control, other retirements, follows the team as it should: across teams -0.07). Not built.
+      For every driver alike: rookies gain 0.07% +/- 0.08 on the team-mate in the second half of the season,
+      second-year drivers 0.12% +/- 0.06 (experienced -0.03 +/- 0.04): suggestive, not built; a track new to the
+      driver: nothing (qualifying 0.00% +/- 0.12).
+      Built: two challengers, `wetskill` (SIM.wetSkill: a wet qualifying, main or sprint, moves each driver by his
+      wet-qualifying edge) and `sprintskill` (SIM.sprintSkill: the sprint race by his sprint-finish edge beyond
+      the grid), from `data/driver_skills.json` (`backtest/driver_skills.py --save`: per driver code, places,
+      shrunk by k pseudo-sessions from a one-way analysis of variance: wetQ k 30.9, sprR k 17.0; 56 drivers;
+      superseded the same day by the automatic build below).
+      An edge in places becomes a pace step by the field's spacing and the session's noise (engine skillSteps: one
+      place = 1 / the sum of the normal densities of the pace gaps to the others; a flat %/place was 0.3 places at
+      the front and 1.4 in the midfield); what that leaves out is a measured scale (wet 1.15; sprint 2.1, the grid
+      holds places; after it 0.9-1.1 places per place of edge at every pace rank). The shipped sim is bit-identical
+      (the steps are only made when a switch is on; a dry weekend / a non-sprint weekend under a challenger is
+      identical too, so it isn't evaluable then). `DATA.skills` is lab-only (LAB_KEYS). Sepang (86% wet
+      qualifying), wetskill vs shipped at 40,000 sims: NOR +0.5 (edge +0.78 places, qualifies 0.4 places better),
+      LEC -0.8 (edge -0.82), VER +0.2 (edge +0.41): the wet edge explains almost none of the gap to rhter.
+      Backmarkers move the other way (a worse grid = more places to gain). (A first run with a flat %/place
+      conversion gave NOR +1.6 / LEC -2.0: overstated, the front is packed far tighter than the average.)
+      AUTOMATIC the same day (user): `skills.py` (pure, no fetching) builds DATA.skills at every refresh from
+      `data/skill_points.json` (past seasons' observations [year, round, driver, his own level, result], written
+      by `backtest/driver_skills.py --save` once a season; 571 wet-qualifying, 473 sprint-grid, 447 sprint-finish)
+      plus the running season's finished rounds from the results refresh.py already has (R1-R15: 208 results, all
+      sprints: no wet qualifying yet in 2026). Which qualifying was wet: `extras.wet_share`, the share of drivers
+      who ran intermediates or wets (OpenF1 stints), kept per round as `quali.wetTyres` in
+      `history/<season>/races/gdNN.json` (backfilled for archived rounds); wet from 0.5. Checked against the hand
+      list on 2023-2025 (`backtest/wet_detect.py`): 69 of 70 qualifying sessions agree, and the one that didn't
+      was the hand list's mistake (2023 Spain), now removed. `skills.base` = past seasons only: walk.js asOf uses
+      it (a round must not see later rounds). A finished season's wet sessions come from that archive
+      (driver_skills.py archived_wet), so the hand lists end at 2025. Still by hand, once a season like priors.py:
+      `python backtest/skill_fetch.py` and `python backtest/driver_skills.py --save`.
 - [x] 2026-09-29, retexture with the user's Pit Lane 0.2 design system (mood board + their design-system site; the
       source files are in `docs/design/`). Twelve mockup drafts with the user, then built. Full list of decisions in
       docs/ui-system.md "Retexture"; in short: 0.2 token values under the app's names, one green / red / purple

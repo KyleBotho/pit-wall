@@ -129,6 +129,15 @@
     // ovSd (trackModel), so a race can run high or low for everyone (and the tails of overtake points widen).
     // 0 = the fixed forecast level. See docs/history.md for the backtest.
     ovEnv: 0,
+    // Per-driver skills (data.skills, skills.py: edges in places against the driver's own level, shrunk; past
+    // seasons plus this season's finished rounds; 2026-09-30). 0 = off. wetSkill: a wet qualifying (main or sprint) moves each driver
+    // by his wet-qualifying edge; sprintSkill: the sprint moves him by his sprint-finish edge beyond the grid.
+    // An edge in places becomes a pace step by the field's spacing and the session's noise (skillSteps); the scales
+    // correct what that leaves out, measured on the sim (the sprint: the grid holds places).
+    wetSkill: 0,
+    sprintSkill: 0,
+    wetSkillScale: 1.15, // measured 2026-09-30: at 1 a wet qualifying moved 0.78-0.93 places per place of edge
+    sprintSkillScale: 2.1, // measured 2026-09-30 (the race with sprint noise): at 1, 0.37-0.66 places per place
     qSkew: 0, // backtested (section 9, 2026-09-25): skew-normal shape of the qualifying noise; 2-5 tie with 0
     rSkew: 0, // backtested: the same for the race; 5 slightly worse. (Noise in 1/t² space skews by only ~0.02: a no-op)
     flOddsW: 0, // backtested: share of races whose fastest lap is drawn from Kalshi's market; worse at every weight
@@ -182,7 +191,7 @@
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | string | null)[][], lapsRun?: number }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSePool?: Record<string, number>, paceSe?: Record<string, number>, lapCheck?: { ok?: boolean }, scLaps?: (number | string | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null, skills?: { drivers: Record<string, { wetQ?: number, sprR?: number, nWetQ?: number, nSprR?: number }> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -1149,7 +1158,7 @@
   }
 
   /* ---------- model: pace, reliability, overtaking, pit stops from this season's results ---------- */
-  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfInc?: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number }} DriverModel */
+  /** @typedef {{ id: string, tla: string, team: string, qPace: number, rPace: number, qSe: number, rSe: number, qMu: number, rMu: number, dnf: number, dnfInc?: number, dnfN: number, ov: number, ovU: number, practiceQ: number | null, practiceR: number | null, formQ: number, formR: number, oddsQ?: number, oddsR?: number, dotdPop?: number, flMk?: number, wetQ?: number, sprR?: number }} DriverModel */
   /** Reliability: retirements per car-race (recency-weighted by dnfHalfLife), per team and grid-wide.
    * @param {Data} data @param {number[]} rounds @param {number} last @param {typeof MODEL} M */
   function reliability(data, rounds, last, M) {
@@ -1478,6 +1487,7 @@
       F,
     );
     const P = M.prior;
+    const skills = (SIM.wetSkill || SIM.sprintSkill) && data.skills ? data.skills.drivers : null;
 
     /** @type {DriverModel[]} */
     const dModels = raw.map((d, i) => {
@@ -1510,6 +1520,8 @@
         practiceR: null,
         formQ: 0,
         formR: 0,
+        // his skill edges in places (the skill challengers only: the shipped model carries none)
+        ...(skills ? { wetQ: (skills[d.a.tla] || {}).wetQ || 0, sprR: (skills[d.a.tla] || {}).sprR || 0 } : {}),
       };
     });
     const posQ = expectedPositions(
@@ -2290,9 +2302,53 @@
       lapPass: new Float64Array(nd),
       lapBase: new Float64Array(nd),
       ovUs: D.map((d) => d.ovU || 0),
+      // the skill challengers: each driver's pace step (% of the lap, + = faster) in a wet qualifying / in the sprint
+      wetAdj: SIM.wetSkill
+        ? skillSteps(
+            D.map((d) => d.qPace),
+            D.map((d) => d.qSe),
+            D.map((d) => d.wetQ || 0),
+            SIM.qSd * SIM.rainNoise,
+            opt.unc ?? SIM.unc,
+            SIM.wetSkill * SIM.wetSkillScale,
+          )
+        : null,
+      sprAdj: SIM.sprintSkill
+        ? skillSteps(
+            D.map((d) => d.rPace),
+            D.map((d) => d.rSe),
+            D.map((d) => d.sprR || 0),
+            SIM.rSd * SIM.sprintSd,
+            opt.unc ?? SIM.unc,
+            SIM.sprintSkill * SIM.sprintSkillScale,
+          )
+        : null,
       calR: { th: 0, ka: 1 },
       calS: { th: 0, ka: 1 },
     };
+  }
+  /** A skill edge in places as a pace step (% of the lap, + = faster). A driver's expected position is 1 + the sum
+   * over the others of P(the other is ahead) = Phi((his pace - theirs) / sd of the two scores' difference), so one
+   * place is 1 / sum of those normal densities: a big step where the field is spread out or the session is noisy
+   * (a wet one), a small one in a packed midfield. sd = the session's noise; every driver also has his weekend form,
+   * his team's, and his pace uncertainty (se x unc). @param {number[]} pace @param {number[]} se
+   * @param {number[]} edge @param {number} sd @param {number} unc @param {number} scale */
+  function skillSteps(pace, se, edge, sd, unc, scale) {
+    const n = pace.length,
+      out = new Float64Array(n),
+      own = sd * sd + SIM.drvSd * SIM.drvSd + SIM.teamSd * SIM.teamSd;
+    for (let i = 0; i < n; i++) {
+      if (!edge[i]) continue;
+      let dens = 0;
+      for (let j = 0; j < n; j++) {
+        if (j === i) continue;
+        const s = Math.sqrt(2 * own + unc * unc * (se[i] * se[i] + se[j] * se[j])),
+          z = (pace[i] - pace[j]) / s;
+        dens += Math.exp(-0.5 * z * z) / (s * Math.sqrt(2 * Math.PI));
+      }
+      out[i] = dens > 0 ? (scale * edge[i]) / dens : 0;
+    }
+    return out;
   }
   /** A finished session's points per asset as arrays in model order (drivers, then constructors), or null.
    * @param {Record<string, number[]> | undefined} m @param {DriverModel[]} D @param {ConsModel[]} C */
@@ -2340,11 +2396,12 @@
       for (let i = 0; i < nd; i++) arr.push({ i, s: outArr[i], noTime: !!st[S.D[i].tla] });
     } else {
       const sd = SIM.qSd * (wet ? SIM.rainNoise : 1);
+      const adj = wet ? S.wetAdj : null;
       for (let i = 0; i < nd; i++) {
         const noTime = r() < SIM.qualiNoTime * (wet ? 1.5 : 1);
         arr.push({
           i,
-          s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.qSkew) * sd,
+          s: noTime ? 99 + r() : qp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.qSkew) * sd - (adj ? adj[i] : 0),
           noTime,
         });
       }
@@ -2532,6 +2589,7 @@
     const laps = lapMode && !fixed;
     const lvl = (sc ? ovScNow : ovNoSc) * (isSprint ? model.ovSprint || MODEL.sprintOvertakeShare : 1) * S.ovMult;
     const ret = model.ovRet;
+    const sk = isSprint ? S.sprAdj : null; // the sprint-skill challenger's pace steps
     for (let i = 0; i < nd; i++) {
       if (out[i]) {
         const pen = isSprint ? 10 : 20;
@@ -2559,13 +2617,14 @@
       if (laps) continue;
       const s = fixed
         ? fixed.indexOf(D[i].tla)
-        : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd;
+        : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd - (sk ? sk[i] : 0);
       fin.push({ i, s });
     }
     if (laps) {
       // the race lap by lap: race-long form and noise as a lap-time offset; the grid costs time on track
       for (let i = 0; i < nd; i++)
-        lapBase[i] = (lapT * (rp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.rSkew) * sd)) / 100;
+        lapBase[i] =
+          (lapT * (rp[i] + tShock[tOf[i]] + shock[i] + skewNoise(r, SIM.rSkew) * sd - (sk ? sk[i] : 0))) / 100;
       const ord = runRace(
         {
           grid,
@@ -4052,6 +4111,13 @@
     const g = data.schedule.find((x) => !data.done.includes(x.gd));
     return g && data.odds && data.odds.gd === g.gd ? data.odds : null;
   };
+  /** How many of the active drivers have a past-seasons skill edge of this kind (data.skills).
+   * @param {Data} data @param {"nWetQ" | "nSprR"} n @param {string} what */
+  const skillCoverage = (data, n, what) => {
+    const ds = data.assets.filter((a) => a.kind === "D" && a.active),
+      sk = (data.skills && data.skills.drivers) || {};
+    return { n: ds.filter((a) => sk[a.tla] && (sk[a.tla][n] || 0) > 0).length, of: ds.length, what };
+  };
   /** Challengers: named variants frozen next to the shipped model at every lock (tools/freeze.js) and scored against
    * it once the round is certified (backtest/accuracy.js, Model health). Adopt one only on evidence from rounds it
    * hadn't seen, and only on rounds where it was evaluable (had its own input, came out different from the
@@ -4125,6 +4191,20 @@
       set: { "SIM.oddsIters": 8, "SIM.oddsN": 5000 },
       needs: (/** @type {Data} */ d) => ({ n: nextOdds(d) ? 1 : 0, of: 1, what: "the next race's market" }),
       why: "4 steps stop 0.3-0.4 log-odds short of the targets (R13-R15); 8 get most of what's reachable (the residual levels off by ~6: one pace per driver can't meet every line); more sims so extra steps don't chase noise",
+    },
+    {
+      id: "wetskill",
+      label: "Wet qualifying skill per driver (past seasons + this one, shrunk)",
+      set: { "SIM.wetSkill": 1 },
+      needs: (/** @type {Data} */ d) => skillCoverage(d, "nWetQ", "drivers with past wet qualifying sessions"),
+      why: "2014-2025: a driver's wet-qualifying edge over his own dry level predicts itself (random halves r +0.33, placebo +0.06; early vs late career +0.27; his main team vs his other teams +0.25); wet RACE results don't (+0.17 vs +0.13). Differs from the shipped model only when rain is forecast for a qualifying",
+    },
+    {
+      id: "sprintskill",
+      label: "Sprint race skill per driver (past seasons + this one, shrunk)",
+      set: { "SIM.sprintSkill": 1 },
+      needs: (/** @type {Data} */ d) => skillCoverage(d, "nSprR", "drivers with past sprints"),
+      why: "2021-2025 (24 sprints): a driver's sprint finish beyond his sprint grid slot, against his Grand Prix finishes, predicts itself (random halves r +0.40; main team vs other teams +0.24, 12 drivers). Fragile: sprint qualifying shows no edge, and the sign of some drivers' edges depends on how retirements are counted. Differs from the shipped model on sprint weekends only",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */
@@ -4442,6 +4522,7 @@
     atLock,
     withSettings,
     CHALLENGERS,
+    skillSteps,
     RNG_VERSION,
     projectChallengers,
     scoredSessions,

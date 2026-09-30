@@ -1,0 +1,1821 @@
+{
+ "_comment": "Built by backtest/retire_causes.py from Wikipedia's race classification tables (the reason a car wasn't classified; Jolpica only says Retired from 2023).",
+ "built": "2026-09-30T08:48+00:00",
+ "races": {
+  "2023": {
+   "1": {
+    "name": "Bahrain Grand Prix",
+    "page": "2023_Bahrain_Grand_Prix",
+    "out": {
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Withdrew",
+      "kind": "other"
+     },
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "piastri": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Electrical",
+      "kind": "other"
+     }
+    }
+   },
+   "2": {
+    "name": "Saudi Arabian Grand Prix",
+    "page": "2023_Saudi_Arabian_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "3": {
+    "name": "Australian Grand Prix",
+    "page": "2023_Australian_Grand_Prix",
+    "out": {
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "4": {
+    "name": "Azerbaijan Grand Prix",
+    "page": "2023_Azerbaijan_Grand_Prix",
+    "out": {
+     "zhou": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     },
+     "de_vries": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "5": {
+    "name": "Miami Grand Prix",
+    "page": "2023_Miami_Grand_Prix",
+    "out": {}
+   },
+   "6": {
+    "name": "Monaco Grand Prix",
+    "page": "2023_Monaco_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Incident damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "7": {
+    "name": "Spanish Grand Prix",
+    "page": "2023_Spanish_Grand_Prix",
+    "out": {}
+   },
+   "8": {
+    "name": "Canadian Grand Prix",
+    "page": "2023_Canadian_Grand_Prix",
+    "out": {
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "sargeant": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Oil leak",
+      "kind": "other"
+     }
+    }
+   },
+   "9": {
+    "name": "Austrian Grand Prix",
+    "page": "2023_Austrian_Grand_Prix",
+    "out": {
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "10": {
+    "name": "British Grand Prix",
+    "page": "2023_British_Grand_Prix",
+    "out": {
+     "kevin_magnussen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Oil leak",
+      "kind": "other"
+     }
+    }
+   },
+   "11": {
+    "name": "Hungarian Grand Prix",
+    "page": "2023_Hungarian_Grand_Prix",
+    "out": {
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "12": {
+    "name": "Belgian Grand Prix",
+    "page": "2023_Belgian_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "piastri": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "13": {
+    "name": "Dutch Grand Prix",
+    "page": "2023_Dutch_Grand_Prix",
+    "out": {
+     "zhou": {
+      "status": "Accident",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "leclerc": {
+      "status": "Undertray",
+      "mark": "Ret",
+      "why": "Floor",
+      "kind": "other"
+     },
+     "sargeant": {
+      "status": "Accident",
+      "mark": "Ret",
+      "why": "Hydraulics/Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "14": {
+    "name": "Italian Grand Prix",
+    "page": "2023_Italian_Grand_Prix",
+    "out": {
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Steering",
+      "kind": "other"
+     },
+     "tsunoda": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Engine",
+      "kind": "dns"
+     }
+    }
+   },
+   "15": {
+    "name": "Singapore Grand Prix",
+    "page": "2023_Singapore_Grand_Prix",
+    "out": {
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "stroll": {
+      "status": "Withdrew",
+      "mark": "WD",
+      "why": "Qualifying accident",
+      "kind": "dns"
+     }
+    }
+   },
+   "16": {
+    "name": "Japanese Grand Prix",
+    "page": "2023_Japanese_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Undertray",
+      "kind": "other"
+     },
+     "sargeant": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Undertray",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Rear wing",
+      "kind": "other"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Withdrew",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Undertray",
+      "kind": "other"
+     }
+    }
+   },
+   "17": {
+    "name": "Qatar Grand Prix",
+    "page": "2023_Qatar_Grand_Prix",
+    "out": {
+     "sargeant": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Heatstroke",
+      "kind": "other"
+     },
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "sainz": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Fuel leak",
+      "kind": "dns"
+     }
+    }
+   },
+   "18": {
+    "name": "United States Grand Prix",
+    "page": "2023_United_States_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Undertray",
+      "kind": "other"
+     },
+     "piastri": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "19": {
+    "name": "Mexico City Grand Prix",
+    "page": "2023_Mexico_City_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Withdrew",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "dns"
+     },
+     "kevin_magnussen": {
+      "status": "Accident",
+      "mark": "Ret",
+      "why": "Suspension/Accident",
+      "kind": "crash"
+     },
+     "perez": {
+      "status": "Collision damage",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "20": {
+    "name": "São Paulo Grand Prix",
+    "page": "2023_São_Paulo_Grand_Prix",
+    "out": {
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Oil temperature",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     },
+     "zhou": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "kevin_magnussen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "leclerc": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Hydraulics",
+      "kind": "dns"
+     }
+    }
+   },
+   "21": {
+    "name": "Las Vegas Grand Prix",
+    "page": "2023_Las_Vegas_Grand_Prix",
+    "out": {
+     "norris": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "22": {
+    "name": "Abu Dhabi Grand Prix",
+    "page": "2023_Abu_Dhabi_Grand_Prix",
+    "out": {}
+   }
+  },
+  "2024": {
+   "1": {
+    "name": "Bahrain Grand Prix",
+    "page": "2024_Bahrain_Grand_Prix",
+    "out": {}
+   },
+   "2": {
+    "name": "Saudi Arabian Grand Prix",
+    "page": "2024_Saudi_Arabian_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     }
+    }
+   },
+   "3": {
+    "name": "Australian Grand Prix",
+    "page": "2024_Australian_Grand_Prix",
+    "out": {
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Power unit",
+      "kind": "other"
+     },
+     "max_verstappen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     }
+    }
+   },
+   "4": {
+    "name": "Japanese Grand Prix",
+    "page": "2024_Japanese_Grand_Prix",
+    "out": {
+     "zhou": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "ricciardo": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "5": {
+    "name": "Chinese Grand Prix",
+    "page": "2024_Chinese_Grand_Prix",
+    "out": {
+     "ricciardo": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "6": {
+    "name": "Miami Grand Prix",
+    "page": "2024_Miami_Grand_Prix",
+    "out": {
+     "sargeant": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "7": {
+    "name": "Emilia Romagna Grand Prix",
+    "page": "2024_Emilia_Romagna_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Withdrew",
+      "kind": "other"
+     }
+    }
+   },
+   "8": {
+    "name": "Monaco Grand Prix",
+    "page": "2024_Monaco_Grand_Prix",
+    "out": {
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "kevin_magnussen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "9": {
+    "name": "Canadian Grand Prix",
+    "page": "2024_Canadian_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident damage",
+      "kind": "crash"
+     },
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "sargeant": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "10": {
+    "name": "Spanish Grand Prix",
+    "page": "2024_Spanish_Grand_Prix",
+    "out": {}
+   },
+   "11": {
+    "name": "Austrian Grand Prix",
+    "page": "2024_Austrian_Grand_Prix",
+    "out": {}
+   },
+   "12": {
+    "name": "British Grand Prix",
+    "page": "2024_British_Grand_Prix",
+    "out": {
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Water leak",
+      "kind": "other"
+     },
+     "gasly": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Gearbox",
+      "kind": "dns"
+     }
+    }
+   },
+   "13": {
+    "name": "Hungarian Grand Prix",
+    "page": "2024_Hungarian_Grand_Prix",
+    "out": {
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     }
+    }
+   },
+   "14": {
+    "name": "Belgian Grand Prix",
+    "page": "2024_Belgian_Grand_Prix",
+    "out": {
+     "zhou": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     }
+    }
+   },
+   "15": {
+    "name": "Dutch Grand Prix",
+    "page": "2024_Dutch_Grand_Prix",
+    "out": {}
+   },
+   "16": {
+    "name": "Italian Grand Prix",
+    "page": "2024_Italian_Grand_Prix",
+    "out": {
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     }
+    }
+   },
+   "17": {
+    "name": "Azerbaijan Grand Prix",
+    "page": "2024_Azerbaijan_Grand_Prix",
+    "out": {
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "18": {
+    "name": "Singapore Grand Prix",
+    "page": "2024_Singapore_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     }
+    }
+   },
+   "19": {
+    "name": "United States Grand Prix",
+    "page": "2024_United_States_Grand_Prix",
+    "out": {
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Spun off",
+      "kind": "crash"
+     }
+    }
+   },
+   "20": {
+    "name": "Mexico City Grand Prix",
+    "page": "2024_Mexico_City_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "21": {
+    "name": "São Paulo Grand Prix",
+    "page": "2024_São_Paulo_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "colapinto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "albon": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Car damaged",
+      "kind": "dns"
+     },
+     "stroll": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Accident",
+      "kind": "dns"
+     },
+     "hulkenberg": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Outside assistance",
+      "kind": "other"
+     }
+    }
+   },
+   "22": {
+    "name": "Las Vegas Grand Prix",
+    "page": "2024_Las_Vegas_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Turbo",
+      "kind": "other"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "23": {
+    "name": "Qatar Grand Prix",
+    "page": "2024_Qatar_Grand_Prix",
+    "out": {
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Spun off",
+      "kind": "crash"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Clutch",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "colapinto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "24": {
+    "name": "Abu Dhabi Grand Prix",
+    "page": "2024_Abu_Dhabi_Grand_Prix",
+    "out": {
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "colapinto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   }
+  },
+  "2025": {
+   "1": {
+    "name": "Australian Grand Prix",
+    "page": "2025_Australian_Grand_Prix",
+    "out": {
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "bortoleto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "doohan": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "hadjar": {
+      "status": "Retired",
+      "mark": "DNS",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "2": {
+    "name": "Chinese Grand Prix",
+    "page": "2025_Chinese_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "leclerc": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Underweight",
+      "kind": "other"
+     },
+     "hamilton": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Plank wear",
+      "kind": "other"
+     },
+     "gasly": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Underweight",
+      "kind": "other"
+     }
+    }
+   },
+   "3": {
+    "name": "Japanese Grand Prix",
+    "page": "2025_Japanese_Grand_Prix",
+    "out": {}
+   },
+   "4": {
+    "name": "Bahrain Grand Prix",
+    "page": "2025_Bahrain_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "hulkenberg": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Plank wear",
+      "kind": "other"
+     }
+    }
+   },
+   "5": {
+    "name": "Saudi Arabian Grand Prix",
+    "page": "2025_Saudi_Arabian_Grand_Prix",
+    "out": {
+     "tsunoda": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "6": {
+    "name": "Miami Grand Prix",
+    "page": "2025_Miami_Grand_Prix",
+    "out": {
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "bortoleto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Fuel system",
+      "kind": "other"
+     },
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "doohan": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "7": {
+    "name": "Emilia Romagna Grand Prix",
+    "page": "2025_Emilia_Romagna_Grand_Prix",
+    "out": {
+     "antonelli": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Throttle",
+      "kind": "other"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "8": {
+    "name": "Monaco Grand Prix",
+    "page": "2025_Monaco_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "9": {
+    "name": "Spanish Grand Prix",
+    "page": "2025_Spanish_Grand_Prix",
+    "out": {
+     "antonelli": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Oil pressure",
+      "kind": "other"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "10": {
+    "name": "Canadian Grand Prix",
+    "page": "2025_Canadian_Grand_Prix",
+    "out": {
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "11": {
+    "name": "Austrian Grand Prix",
+    "page": "2025_Austrian_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "max_verstappen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "antonelli": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "sainz": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Brakes",
+      "kind": "dns"
+     }
+    }
+   },
+   "12": {
+    "name": "British Grand Prix",
+    "page": "2025_British_Grand_Prix",
+    "out": {
+     "antonelli": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "hadjar": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "bortoleto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "colapinto": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Transmission",
+      "kind": "dns"
+     }
+    }
+   },
+   "13": {
+    "name": "Belgian Grand Prix",
+    "page": "2025_Belgian_Grand_Prix",
+    "out": {}
+   },
+   "14": {
+    "name": "Hungarian Grand Prix",
+    "page": "2025_Hungarian_Grand_Prix",
+    "out": {
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Undertray",
+      "kind": "other"
+     }
+    }
+   },
+   "15": {
+    "name": "Dutch Grand Prix",
+    "page": "2025_Dutch_Grand_Prix",
+    "out": {
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "16": {
+    "name": "Italian Grand Prix",
+    "page": "2025_Italian_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Suspension",
+      "kind": "other"
+     },
+     "hulkenberg": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Hydraulics",
+      "kind": "dns"
+     }
+    }
+   },
+   "17": {
+    "name": "Azerbaijan Grand Prix",
+    "page": "2025_Azerbaijan_Grand_Prix",
+    "out": {
+     "piastri": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "18": {
+    "name": "Singapore Grand Prix",
+    "page": "2025_Singapore_Grand_Prix",
+    "out": {}
+   },
+   "19": {
+    "name": "United States Grand Prix",
+    "page": "2025_United_States_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "20": {
+    "name": "Mexico City Grand Prix",
+    "page": "2025_Mexico_City_Grand_Prix",
+    "out": {
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Handling",
+      "kind": "other"
+     },
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     }
+    }
+   },
+   "21": {
+    "name": "São Paulo Grand Prix",
+    "page": "2025_São_Paulo_Grand_Prix",
+    "out": {
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "bortoleto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "22": {
+    "name": "Las Vegas Grand Prix",
+    "page": "2025_Las_Vegas_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "bortoleto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "norris": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Plank wear",
+      "kind": "other"
+     },
+     "piastri": {
+      "status": "Disqualified",
+      "mark": "DSQ",
+      "why": "Plank wear",
+      "kind": "other"
+     }
+    }
+   },
+   "23": {
+    "name": "Qatar Grand Prix",
+    "page": "2025_Qatar_Grand_Prix",
+    "out": {
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Pit stop issue",
+      "kind": "other"
+     },
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "24": {
+    "name": "Abu Dhabi Grand Prix",
+    "page": "2025_Abu_Dhabi_Grand_Prix",
+    "out": {}
+   }
+  },
+  "2026": {
+   "1": {
+    "name": "Australian Grand Prix",
+    "page": "2026_Australian_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Lapped",
+      "mark": "NC",
+      "why": "+15 laps",
+      "kind": "other"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Vibrations",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Fuel system",
+      "kind": "other"
+     },
+     "hadjar": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "piastri": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Accident",
+      "kind": "dns"
+     },
+     "hulkenberg": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Hydraulics",
+      "kind": "dns"
+     }
+    }
+   },
+   "2": {
+    "name": "Chinese Grand Prix",
+    "page": "2026_Chinese_Grand_Prix",
+    "out": {
+     "max_verstappen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Coolant leak",
+      "kind": "other"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Vibrations",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Battery",
+      "kind": "other"
+     },
+     "piastri": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Electrical",
+      "kind": "dns"
+     },
+     "norris": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Electrical",
+      "kind": "dns"
+     },
+     "bortoleto": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Hydraulics",
+      "kind": "dns"
+     },
+     "albon": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Hydraulics",
+      "kind": "dns"
+     }
+    }
+   },
+   "3": {
+    "name": "Japanese Grand Prix",
+    "page": "2026_Japanese_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Water pressure",
+      "kind": "other"
+     },
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "4": {
+    "name": "Miami Grand Prix",
+    "page": "2026_Miami_Grand_Prix",
+    "out": {
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     },
+     "lawson": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "hadjar": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "5": {
+    "name": "Canadian Grand Prix",
+    "page": "2026_Canadian_Grand_Prix",
+    "out": {
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Suspension",
+      "kind": "other"
+     },
+     "norris": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Broken seat",
+      "kind": "other"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "arvid_lindblad": {
+      "status": "Did not start",
+      "mark": "DNS",
+      "why": "Gearbox",
+      "kind": "dns"
+     }
+    }
+   },
+   "6": {
+    "name": "Monaco Grand Prix",
+    "page": "2026_Monaco_Grand_Prix",
+    "out": {
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "norris": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Battery",
+      "kind": "other"
+     },
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "max_verstappen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     }
+    }
+   },
+   "7": {
+    "name": "Barcelona Grand Prix",
+    "page": "2026_Barcelona_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Lapped",
+      "mark": "NC",
+      "why": "+11 laps",
+      "kind": "other"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Battery",
+      "kind": "other"
+     },
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Safety switch",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Overheating",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     }
+    }
+   },
+   "8": {
+    "name": "Austrian Grand Prix",
+    "page": "2026_Austrian_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "ERS",
+      "kind": "other"
+     },
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Electrical",
+      "kind": "other"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     }
+    }
+   },
+   "9": {
+    "name": "British Grand Prix",
+    "page": "2026_British_Grand_Prix",
+    "out": {
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision Damage",
+      "kind": "crash"
+     },
+     "hulkenberg": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     }
+    }
+   },
+   "10": {
+    "name": "Belgian Grand Prix",
+    "page": "2026_Belgian_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Suspension",
+      "kind": "other"
+     },
+     "russell": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     }
+    }
+   },
+   "11": {
+    "name": "Hungarian Grand Prix",
+    "page": "2026_Hungarian_Grand_Prix",
+    "out": {
+     "piastri": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Gearbox",
+      "kind": "other"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Suspension",
+      "kind": "other"
+     },
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     }
+    }
+   },
+   "12": {
+    "name": "Dutch Grand Prix",
+    "page": "2026_Dutch_Grand_Prix",
+    "out": {
+     "bottas": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     },
+     "ocon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Handling",
+      "kind": "other"
+     },
+     "bearman": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Engine",
+      "kind": "other"
+     },
+     "max_verstappen": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "13": {
+    "name": "Italian Grand Prix",
+    "page": "2026_Italian_Grand_Prix",
+    "out": {
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Hydraulics",
+      "kind": "other"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Mechanical",
+      "kind": "other"
+     },
+     "leclerc": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     }
+    }
+   },
+   "14": {
+    "name": "Spanish Grand Prix",
+    "page": "2026_Spanish_Grand_Prix",
+    "out": {
+     "sainz": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "perez": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Water pressure",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     },
+     "hamilton": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Brakes",
+      "kind": "other"
+     }
+    }
+   },
+   "15": {
+    "name": "Azerbaijan Grand Prix",
+    "page": "2026_Azerbaijan_Grand_Prix",
+    "out": {
+     "colapinto": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision damage",
+      "kind": "crash"
+     },
+     "gasly": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "norris": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Collision",
+      "kind": "crash"
+     },
+     "albon": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Accident",
+      "kind": "crash"
+     },
+     "alonso": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Water pressure",
+      "kind": "other"
+     },
+     "stroll": {
+      "status": "Retired",
+      "mark": "Ret",
+      "why": "Water pressure",
+      "kind": "other"
+     }
+    }
+   }
+  }
+ }
+}

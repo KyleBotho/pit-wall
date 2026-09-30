@@ -39,9 +39,10 @@ export function labData(onDone) {
     });
   return load.p;
 }
-/** The payload into DATA: whole keys (modelHealth), and fields into raceInfo's blocks and the priors' rows. */
+/** The payload into DATA: whole keys (modelHealth, skills), and fields into raceInfo's blocks and the priors' rows. */
 export function mergeLab(x) {
   if (x.modelHealth) DATA.modelHealth = x.modelHealth;
+  if (x.skills) DATA.skills = x.skills;
   for (const [gd, blocks] of Object.entries(x.raceInfo || {}))
     for (const [s, f] of Object.entries(blocks)) {
       const b = DATA.raceInfo && DATA.raceInfo[gd] && DATA.raceInfo[gd][s];
@@ -53,5 +54,10 @@ export function mergeLab(x) {
 }
 // settings that read the lab's data (the challengers' inputs): a lab run with them waits for it, and won't run
 // without it (the engine would quietly fall back to the shipped inputs)
-const NEEDS_LAB = { "MODEL.racePace": (v) => v === "pool", "SIM.scTimed": (v) => !!v };
+const NEEDS_LAB = {
+  "MODEL.racePace": (v) => v === "pool",
+  "SIM.scTimed": (v) => !!v,
+  "SIM.wetSkill": (v) => !!v,
+  "SIM.sprintSkill": (v) => !!v,
+};
 export const needsLabData = (set) => Object.entries(set).some(([k, v]) => NEEDS_LAB[k] && NEEDS_LAB[k](v));

@@ -210,3 +210,38 @@ test("frozen challengers carry their input coverage; one without its input isn't
   assert.equal(ch.qskew2.sameAsShipped, false);
   assert.equal(ch.qskew2.evaluable, true);
 });
+
+test("skill challengers: only a wet qualifying / a sprint changes anything, and then by about the edge", opt, () => {
+  const next = D.schedule.find((g) => !D.done.includes(g.gd));
+  if (!next) return;
+  const Df = E.DEFAULTS;
+  // one mid-field driver with an edge of +1.5 places in both skills
+  const ds = D.assets.filter((a) => a.kind === "D" && a.active).sort((a, b) => b.price - a.price);
+  const who = ds[Math.floor(ds.length / 2)];
+  const data = { ...D, skills: { drivers: { [who.tla]: { wetQ: 1.5, nWetQ: 20, sprR: 1.5, nSprR: 20 } } } };
+  const run = (set, rainQ, sprint) =>
+    E.withSettings(set, () => {
+      const s = E.raceSetup(data, next, {
+        next: true,
+        halfLife: Df.halfLife,
+        pw: Df.pw,
+        oddsW: 0,
+        circuit: { rain: { q: rainQ, r: 0, s: 0 } },
+      });
+      return E.simulate(s.model, s.circuit, sprint, 4000, 7, s.simOpt);
+    });
+  const same = (a, b) => a.tot.every((v, i) => v === b.tot[i]);
+  const st = (sim) => sim.stats.find((x) => x.id === who.id);
+  const eq = (sim) => st(sim).q.reduce((t, p, i) => t + p * (i + 1), 0);
+  assert.ok(same(run({}, 0, false), run({ "SIM.wetSkill": 1, "SIM.sprintSkill": 1 }, 0, false)));
+  assert.ok(same(run({}, 1, false), run({ "SIM.sprintSkill": 1 }, 1, false)));
+  const moved = eq(run({}, 1, false)) - eq(run({ "SIM.wetSkill": 1 }, 1, false));
+  assert.ok(moved > 0.8 && moved < 2.4, `wet qualifying moved ${moved.toFixed(2)} places for an edge of 1.5`);
+  const s0 = st(run({}, 0, true)).cat.sprint,
+    s1 = st(run({ "SIM.sprintSkill": 1 }, 0, true)).cat.sprint;
+  assert.ok(s1 > s0, `sprint points ${s0.toFixed(2)} -> ${s1.toFixed(2)}`);
+  // coverage counts the drivers with past sessions
+  const c = E.CHALLENGERS.find((x) => x.id === "wetskill").needs(data);
+  assert.equal(c.n, 1);
+  assert.equal(E.CHALLENGERS.find((x) => x.id === "wetskill").needs(D.skills ? { ...D, skills: null } : D).n, 0);
+});

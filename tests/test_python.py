@@ -998,15 +998,18 @@ class PageBuild(unittest.TestCase):
         everyone downloads; merged back (as web/js/lab.js mergeLab does) it's the original data."""
         d = self.data()
         d["modelHealth"] = {"accuracy": {"rounds": [1]}}
+        d["skills"] = {"drivers": {"AAA": {"wetQ": 0.5, "nWetQ": 12}}}
         gd = next(iter(d["raceInfo"]))
         d["raceInfo"][gd]["race"] = {**d["raceInfo"][gd]["race"], "pacePool": {"AAA": 1.0}, "scLaps": [[3, 5]]}
         d["priors"]["races"][0] = {**d["priors"]["races"][0], "scLaps": [[1, 4]], "lapsRun": 50}
         page, lab = refresh.lab_split(d)
         self.assertNotIn("modelHealth", page)
+        self.assertNotIn("skills", page)
         self.assertNotIn("pacePool", page["raceInfo"][gd]["race"])
         self.assertNotIn("scLaps", page["priors"]["races"][0])
         merged = json.loads(json.dumps(page))
         merged["modelHealth"] = lab["modelHealth"]
+        merged["skills"] = lab["skills"]
         for g, blocks in lab["raceInfo"].items():
             for s, f in blocks.items():
                 merged["raceInfo"][g][s].update(f)
@@ -1242,3 +1245,76 @@ class Collect(unittest.TestCase):
         self.assertEqual(r["event"], "2026_azerbaijan_grand_prix")
         self.assertEqual(r["doc"], 58)
         self.assertEqual(r["published"], "2026-09-26T10:00+00:00")  # Paris summer time
+
+
+class Skills(unittest.TestCase):
+    """The skill challengers' input (skills.py): past seasons' observations plus the running season's rounds."""
+
+    def test_wet_share_counts_drivers_on_intermediates_or_wets(self):
+        import extras
+
+        st = [
+            {"driver_number": 1, "compound": "SOFT"},
+            {"driver_number": 1, "compound": "INTERMEDIATE"},
+            {"driver_number": 4, "compound": "SOFT"},
+            {"driver_number": 16, "compound": "WET"},
+            {"driver_number": 63, "compound": None},
+        ]
+        self.assertEqual(extras.wet_share(st), 0.67)
+        self.assertIsNone(extras.wet_share([]))
+
+    def season(self):
+        """Six rounds, three drivers: AAA qualifies 5th in the dry and 2nd in the wet round 6, BBB the other way;
+        round 5's weather isn't known. Sprints in rounds 2 and 4: CCC finishes ahead of his Grand Prix level."""
+        rows = lambda a, b, c: [  # noqa: E731
+            {"tla": "AAA", "team": "T1", "pos": a},
+            {"tla": "BBB", "team": "T2", "pos": b},
+            {"tla": "CCC", "team": "T3", "pos": c},
+        ]
+        quali = {g: rows(5, 2, 9) for g in (1, 2, 3, 4, 5)}
+        quali[6] = rows(2, 5, 9)
+        race = {g: [{**r, "grid": r["pos"], "cls": True} for r in rows(5, 2, 9)] for g in (1, 2, 3, 4, 5, 6)}
+        sprint = {g: [{**r, "grid": r["pos"], "cls": True} for r in rows(5, 2, 6)] for g in (2, 4)}
+        for g in sprint:
+            sprint[g][2]["grid"] = 9
+        wet = {1: False, 2: False, 3: False, 4: False, 5: None, 6: True}
+        return {"quali": quali, "race": race, "sprint": sprint}, wet
+
+    def test_season_points_take_the_drivers_own_level(self):
+        import skills
+
+        results, wet = self.season()
+        pts = skills.season_points(2026, results, wet)
+        self.assertEqual(sorted(pts["wetQ"]), [[2026, 6, "AAA", 5, 2], [2026, 6, "BBB", 2, 5], [2026, 6, "CCC", 9, 9]])
+        self.assertEqual(len(pts["sprGrid"]), 6)
+        self.assertIn([2026, 502, "CCC", 9, 6], pts["sprFin"])
+        # a round whose weather isn't known is neither wet nor part of the dry level
+        wet[5] = True
+        self.assertEqual(len(skills.season_points(2026, results, wet)["wetQ"]), 6)
+        # no dry level without MIN_BASE dry sessions
+        self.assertEqual(skills.season_points(2026, results, dict.fromkeys(range(1, 7)))["wetQ"], [])
+
+    def test_build_adds_the_season_and_keeps_past_seasons_apart(self):
+        import skills
+
+        # past seasons: "a" is two places better than his level in every wet qualifying, "b" two worse, "c" as his level
+        past = [[y, r, d, 8, 8 - e] for y in (2023, 2024, 2025) for r in (1, 2, 3, 4) for d, e in (("a", 2), ("b", -2))]
+        past += [[y, r, "c", 8, 8 + (1 if r % 2 else -1)] for y in (2023, 2024, 2025) for r in (1, 2, 3, 4)]
+        base = {"seasons": [2023, 2025], "codes": {"a": "AAA", "b": "BBB", "c": "CCC"}, "wetQ": past}
+        alone = skills.build(base)
+        self.assertEqual(alone["drivers"], alone["base"])
+        self.assertGreater(alone["drivers"]["AAA"]["wetQ"], 1)
+        self.assertLess(alone["drivers"]["BBB"]["wetQ"], -1)
+        self.assertEqual(alone["drivers"]["AAA"]["nWetQ"], 12)
+        results, wet = self.season()
+        both = skills.build(base, skills.season_points(2026, results, wet))
+        self.assertEqual(both["base"], alone["base"])
+        self.assertEqual(both["drivers"]["AAA"]["nWetQ"], 13)  # his TLA is his past seasons' id
+        self.assertEqual(both["seasons"], [2023, 2026])
+        self.assertGreater(both["added"], 0)
+        self.assertIn("sprR", both["drivers"]["CCC"])  # the sprints are this season's only
+        # a driver new this season gets his own entry
+        results["quali"] = {
+            g: rows + [{"tla": "NEW", "team": "T4", "pos": 12 if g < 6 else 3}] for g, rows in results["quali"].items()
+        }
+        self.assertEqual(skills.build(base, skills.season_points(2026, results, wet))["drivers"]["NEW"]["nWetQ"], 1)
