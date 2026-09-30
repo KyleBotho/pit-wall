@@ -5,6 +5,29 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-09-30, season fold-over button and season report (user: "a button in the admin / sim lab tab that
+      triggers the fold over, include the other challengers, and a report comparing the challengers and the live
+      model in the past season"). Settings > Admin > "Season fold-over and report" (the Admin panel, not the Sim
+      lab: the lab is hidden once the season is over, which is when the button matters; the report also shows in
+      the Sim lab's Model health). The button posts `{action: "fold"}` to the Supabase function `refresh` (admins
+      only, refused while a fold-over runs), which starts `.github/workflows/fold.yml`: `fold.py` (priors.py and
+      backtest/driver_skills.py --save, both `--through` the last finished season = this season once `next` is
+      null, else the one before, so before the last race the files come out as they were; writes
+      `history/<season>/fold.json`), then `backtest/season_report.js` -> `history/<season>/season-report.json`;
+      the `save` job commits them and starts refresh.yml (a GITHUB_TOKEN push doesn't). Both reach the page as
+      `DATA.modelHealth.report` / `.fold` (lab-only data; admin.js loads it for admins).
+      The report, per challenger: looking back = the walk-forward run as shipped and under the challenger's
+      settings, same seeds, 10,000 sims: rounds it differed at all, per-round CRPS difference with its standard
+      error over rounds, MAE difference, the points of the team picked on its projections; at lock = the frozen
+      rounds from accuracy.json; a verdict (at lock decides with 5+ rounds and beyond 2 SE; else looking back, said
+      to be an indication; "never differed" when it came out as the live model). First run, R5-R15 (50 s): live
+      CRPS 8.598; every challenger within noise (dnfcauses -0.028 +/- 0.024 the best, sctimed +0.020 +/- 0.015,
+      wetskill +0.010 +/- 0.010 on 10 rounds, sprintskill +0.009 +/- 0.007 on 3); oddsq never differed (no
+      spreads kept before R17). Guards against counting a folded season twice: skills.build leaves the running
+      season's rounds out once the file holds them, and its `base` (and walk.js asOf's priors) stay the seasons
+      before the running one. fold.py refetches the running season's Jolpica pages when it folds it (pages cached
+      mid-season are incomplete). NEEDED FROM THE USER: deploy supabase/functions/refresh/index.ts again (pasted by
+      hand); until then the button answers "the refresh function is an older version".
 - [x] 2026-09-30, per-driver skills (user: rhter's early Sepang sim had VER at 29.7 vs our 22.1; "add a small weight
       per driver for rain from previous years", then "any other such skills?"). Why the sims differed: Open-Meteo
       gave Sepang 86% / 94% wet (qualifying / race), so nearly every simulated weekend was wet (retirements x1.4,

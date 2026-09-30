@@ -3,6 +3,7 @@ any of them as a challenger.)
 
     python backtest/skill_fetch.py      # once: lap 1 of every race, 2006-2013 results, sprint weekends (Jolpica)
     python backtest/driver_skills.py    # Jolpica 2014 .. season-1 from cache/
+    python backtest/driver_skills.py --save [--through YEAR]   # data/skill_points.json (fold.py runs this)
 
 Two kinds of test, all on results only:
 - a CONDITION edge (wet, street circuits, sprint weekends): a driver's result in those sessions against what his own
@@ -79,8 +80,9 @@ def secs(t):
         return None
 
 
-def build(last):
-    """Flat observations. race / quali: (year, rnd, drv, team, value) with lower = better; info per (year, rnd)."""
+def build(last, first_year=2006):
+    """Flat observations. race / quali: (year, rnd, drv, team, value) with lower = better; info per (year, rnd).
+    first_year: 2006 for the checks (which circuits a driver had raced on before); --save starts at W.FIRST."""
     race, quali, lap1, crash, qtime, info = [], [], [], [], {}, {}
     sprint_r, sprint_q = [], []  # the sprint itself: finish, and its grid (= the sprint qualifying result)
     visits = {d: {"red_bull_ring"} for d in RACED_BEFORE_2006}
@@ -90,7 +92,7 @@ def build(last):
     if os.path.exists(CAUSES):
         with open(CAUSES, encoding="utf-8") as fh:
             causes = json.load(fh)["races"]
-    for year in range(2006, last + 1):
+    for year in range(first_year, last + 1):
         res = load(year, "results", "Results")
         spr = load(year, "sprint", "SprintResults") if year >= 2021 else {}
         sprints = set(spr)
@@ -447,9 +449,12 @@ def skill_report(D, rng):
 
 def main():
     last = W.CFG["season"] - 1
-    D = build(last)
+    if "--through" in sys.argv:  # the last season in (fold.py: the season that just ended)
+        last = int(sys.argv[sys.argv.index("--through") + 1])
+    save = "--save" in sys.argv
+    D = build(last, W.FIRST if save else 2006)
     info = D["info"]
-    if "--save" in sys.argv:
+    if save:
         pts, drivers = skill_report(D, random.Random(20260930))
         # driver id -> TLA; two drivers with one TLA (VER: Vergne, Verstappen): the one who raced last keeps it
         holder = {}

@@ -5,7 +5,10 @@
 // supabase/setup.sql) calls "tick" every 5 minutes and this starts the workflow once per plan entry that fell due.
 //   POST ?tick           the scheduler: start the workflow if a plan entry fell due since the last start
 //   POST {action:"run"}  an admin's "Refresh now" (Settings > Admin): Authorization: Bearer <their session token>
-//   GET                  status for the admin panel: last start, the next planned refreshes, the latest runs
+//   POST {action:"fold"} an admin's "Fold over and make the report": starts fold.yml (the season fold-over and the
+//                        season report), unless one is running
+//   GET                  status for the admin panel: last start, the next planned refreshes, the latest runs, and
+//                        the latest fold-over run
 // Needs: supabase/setup.sql (table refresh_state) and the secret GITHUB_DISPATCH_TOKEN (a fine-grained GitHub token
 // for KyleBotho/pit-wall only, permission "Actions: Read and write"). Ticks can't start more runs than the plan
 // has entries, so they need no key; "run" is admins only and at most once per MIN_GAP_MS.
@@ -13,6 +16,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const REPO = "KyleBotho/pit-wall";
 const WORKFLOW = "refresh.yml";
+const FOLD = "fold.yml";
 const PLAN_URL = "https://kylebotho.github.io/pit-wall/refresh-plan.json";
 const MIN_GAP_MS = 10 * 60_000; // between an admin's refresh and any other start
 const CATCH_UP_MS = 3 * 3600_000; // a due entry older than this (the scheduler was down) is skipped, not chased
@@ -48,8 +52,8 @@ async function state(): Promise<State> {
 // when the token expires: GitHub says so on every answer to a fine-grained token ("2026-12-25 12:00:00 UTC")
 let tokenExpires: string | null = null;
 // the latest runs of the workflow (any trigger): public data for a public repo
-async function runs(n = 3) {
-  const r = await gh(`/actions/workflows/${WORKFLOW}/runs?per_page=${n}`);
+async function runs(n = 3, workflow = WORKFLOW) {
+  const r = await gh(`/actions/workflows/${workflow}/runs?per_page=${n}`);
   const exp = r.headers.get("github-authentication-token-expiration");
   if (exp) tokenExpires = new Date(exp.replace(" UTC", "Z").replace(" ", "T")).toISOString();
   if (!r.ok) return [];
@@ -58,9 +62,9 @@ async function runs(n = 3) {
   }));
 }
 
-async function start(): Promise<string | null> {
+async function start(workflow = WORKFLOW): Promise<string | null> {
   if (!TOKEN) return "GITHUB_DISPATCH_TOKEN isn't set";
-  const r = await gh(`/actions/workflows/${WORKFLOW}/dispatches`, { method: "POST", body: JSON.stringify({ ref: "main" }) });
+  const r = await gh(`/actions/workflows/${workflow}/dispatches`, { method: "POST", body: JSON.stringify({ ref: "main" }) });
   return r.status === 204 ? null : `GitHub answered ${r.status}: ${(await r.text()).slice(0, 200)}`;
 }
 
@@ -116,6 +120,16 @@ async function run(req: Request) {
   return json({ started: true });
 }
 
+// the season fold-over and report (fold.yml): admins only, one at a time
+async function fold(req: Request) {
+  if (!(await isAdmin(req))) return json({ error: "Only admins can start the fold-over." }, 403);
+  const busy = (await runs(1, FOLD)).find((r: { status: string }) => r.status !== "completed");
+  if (busy) return json({ error: "A fold-over is already running.", run: busy }, 409);
+  const err = await start(FOLD);
+  if (err) return json({ error: "GitHub didn't start the fold-over: " + err }, 502);
+  return json({ started: true });
+}
+
 async function status() {
   const now = Date.now();
   let next: Entry[] = [], planError: string | null = null;
@@ -125,7 +139,7 @@ async function status() {
     planError = String(e);
   }
   const latest = await runs();
-  return json({ state: await state(), next, planError, runs: latest, token: !!TOKEN, tokenExpires });
+  return json({ state: await state(), next, planError, runs: latest, fold: await runs(1, FOLD), token: !!TOKEN, tokenExpires });
 }
 
 Deno.serve(async (req) => {
@@ -135,6 +149,7 @@ Deno.serve(async (req) => {
     if (new URL(req.url).searchParams.has("tick")) return json(await tick());
     const body = await req.json().catch(() => ({}));
     if (body?.action === "run") return await run(req);
+    if (body?.action === "fold") return await fold(req);
     return json({ error: "unknown request" }, 400);
   } catch (e) {
     return json({ error: String(e) }, 500);

@@ -461,10 +461,10 @@ def load_skills(results, race_info):
         for gd, rec in (race_info or {}).items():
             share = ((rec or {}).get("quali") or {}).get("wetTyres")
             wet[int(gd)] = None if share is None else share >= skills.WET_SHARE
-        return skills.build(base, skills.season_points(SEASON, results, wet))
+        return skills.build(base, skills.season_points(SEASON, results, wet), SEASON)
     except Exception as e:  # noqa: BLE001 - an extra: past seasons alone then
         print(f"  ! this season's skill observations: {e}")
-        return skills.build(base)
+        return skills.build(base, None, SEASON)
 
 
 def load_extras(now, schedule, done, nxt_g, results, assets):
@@ -1073,9 +1073,16 @@ def model_health():
 
 
 def load_model_health():
-    """accuracy.json and the weekly settings-fit proposal (fit.json, .github/workflows/fit.yml), for the Sim lab."""
+    """accuracy.json, the weekly settings-fit proposal (fit.json, .github/workflows/fit.yml) and the season
+    fold-over's report (season-report.json, fold.json; .github/workflows/fold.yml), for the Sim lab and Admin."""
     out = {}
-    for k, name in (("accuracy", "accuracy.json"), ("fit", "fit.json")):
+    # report / fold: the season fold-over's comparison of the challengers and what it folded (fold.yml)
+    for k, name in (
+        ("accuracy", "accuracy.json"),
+        ("fit", "fit.json"),
+        ("report", "season-report.json"),
+        ("fold", "fold.json"),
+    ):
         path = os.path.join(ARCHIVE, name)
         if os.path.exists(path):
             out[k] = read_json(path)

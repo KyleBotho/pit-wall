@@ -1318,3 +1318,32 @@ class Skills(unittest.TestCase):
             g: rows + [{"tla": "NEW", "team": "T4", "pos": 12 if g < 6 else 3}] for g, rows in results["quali"].items()
         }
         self.assertEqual(skills.build(base, skills.season_points(2026, results, wet))["drivers"]["NEW"]["nWetQ"], 1)
+
+    def test_a_folded_season_is_not_added_twice(self):
+        import skills
+
+        past = [[y, r, d, 8, 8 - e] for y in (2024, 2025, 2026) for r in (1, 2, 3, 4) for d, e in (("a", 2), ("b", -2))]
+        base = {"seasons": [2024, 2026], "codes": {"a": "AAA", "b": "BBB"}, "wetQ": past}
+        results, wet = self.season()
+        got = skills.build(base, skills.season_points(2026, results, wet), 2026)
+        self.assertEqual(got["added"], 0)
+        self.assertEqual(got["drivers"]["AAA"]["nWetQ"], 12)  # the file's own 2026 rows, once
+        self.assertEqual(got["base"]["AAA"]["nWetQ"], 8)  # the walk-forward's: the seasons before 2026
+        # the next season: everything in the file is past
+        nxt = skills.build(base, None, 2027)
+        self.assertEqual(nxt["base"], nxt["drivers"])
+        self.assertEqual(nxt["base"]["AAA"]["nWetQ"], 12)
+
+
+class Fold(unittest.TestCase):
+    """fold.py: which season is folded over."""
+
+    def test_the_running_season_only_once_it_is_over(self):
+        import fold
+
+        s = fold.SEASON
+        self.assertEqual(fold.through(None), s - 1)  # no build data: the season before
+        self.assertEqual(fold.through({"season": s, "next": 16, "done": [1, 2]}), s - 1)
+        self.assertEqual(fold.through({"season": s, "next": None, "done": [1, 2]}), s)
+        self.assertEqual(fold.through({"season": s, "next": None, "done": []}), s - 1)  # not started
+        self.assertEqual(fold.through({"season": s - 1, "next": None, "done": [1]}), s - 1)  # another season's data

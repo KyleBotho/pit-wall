@@ -220,3 +220,97 @@ test("mergeRuns: two runs of a race become one, each asset's weekends one after 
   assert.deepEqual(got.tot, [1, 2, 3, 4, 5, 10, 20, 30, 40, 50]);
   assert.deepEqual(got.nn, got.tot);
 });
+
+// Settings > Admin > Season fold-over and report, and the report itself (also in the Sim lab's Model health)
+const REPORT = {
+  generated: "2026-12-07T10:00Z",
+  season: 2026,
+  final: true,
+  from: 5,
+  to: 23,
+  rounds: 19,
+  N: 10000,
+  live: { crps: 8.6, mae: 11.8, cover80: 0.81, cover50: 0.53, team: 3400, best: 5200, seasonAvg: 13.4, form: 13.8 },
+  challengers: [
+    {
+      id: "wetskill",
+      label: "Wet qualifying skill <b>",
+      coverage: { n: 21, of: 22, what: "drivers with past wet qualifying sessions" },
+      back: { n: 19, differs: 6, d: -0.031, se: 0.012, dMae: -0.02, dTeam: 14, cover80: 0.81 },
+      lock: { n: 5, skipped: 3, dqs: -0.21, dqsSe: 0.08, dmae: -0.1 },
+      verdict: "better-lock",
+    },
+    {
+      id: "sprintskill",
+      label: "Sprint race skill",
+      coverage: null,
+      back: { n: 19, differs: 0, d: 0, se: 0, dMae: 0, dTeam: 0, cover80: 0.81 },
+      lock: null,
+      verdict: "same",
+    },
+  ],
+};
+const FOLD = {
+  at: "2026-12-07T09:40+00:00",
+  season: 2026,
+  through: 2026,
+  priors: { seasons: [2014, 2026], races: 275 },
+  skills: { seasons: [2014, 2026], wetQ: 590, sprGrid: 600, sprFin: 580 },
+};
+
+test("the season report: the live model, each challenger looking back and at lock, its verdict, what was folded", () => {
+  const run = pageModules(["model-health.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } });
+  const h = run(`seasonReportHtml(${JSON.stringify(REPORT)}, ${JSON.stringify(FOLD)})`);
+  assert.match(h, /Season report 2026<\/b>, R5–R23 \(the full season/);
+  assert.match(h, /CRPS 8\.60, MAE 11\.80/);
+  assert.match(h, /Wet qualifying skill &lt;b&gt;/); // labels are escaped
+  assert.match(h, /\(21 of 22\)/);
+  assert.match(h, /<td>6 of 19<\/td><td>-0\.031 ± 0\.012<\/td><td>-0\.020<\/td><td>\+14<\/td>/);
+  assert.match(h, /-0\.21 ± 0\.08 <span class="dim">\(5\)/);
+  assert.match(h, /class="good">Better at lock/);
+  assert.match(h, /class="dim">Never differed from the live model/);
+  assert.match(h, /past seasons through 2026 \(275 races/);
+  assert.match(run(`seasonReportHtml(null, null)`), /No season report yet/);
+  // Model health shows it too
+  const mh = run(`modelHealthHtml(${JSON.stringify({ report: REPORT, fold: FOLD })}, [])`);
+  assert.match(mh, /No model health yet/);
+  assert.match(mh, /Season report 2026/);
+});
+
+test("Admin > Season fold-over: the button, a run in progress, a failed run, the report once the lab's data is in", () => {
+  const fold = (st, f, mh, lab) =>
+    run(`foldHtml(${JSON.stringify(st)}, ${JSON.stringify(f)}, ${JSON.stringify(mh)}, ${JSON.stringify(lab)})`);
+  const st = (r) => ({ token: true, state: {}, next: [], runs: [], fold: r ? [r] : [] });
+  const idle = fold(st(null), { busy: false }, { report: REPORT, fold: FOLD }, "ready");
+  assert.match(idle, /Not run yet\./);
+  assert.match(idle, /data-foldnow="1">Fold over and make the report</);
+  assert.match(idle, /Season report 2026/);
+  const going = fold(st({ status: "in_progress", created: iso(-3), url: "u" }), { busy: false }, null, "loading");
+  assert.match(going, /Running since/);
+  assert.match(going, /disabled>Folding over…</);
+  assert.match(going, /Loading the report/);
+  const failed = fold(
+    st({ status: "completed", conclusion: "failure", created: iso(-60), url: "u" }),
+    { busy: false },
+    {},
+    "ready",
+  );
+  assert.match(failed, /✗ failure<\/span> \(nothing was changed\)/);
+  assert.match(failed, /No season report yet/);
+  // no answer from the refresh service: no button to press
+  assert.match(fold(null, { busy: false }, null, "error"), /data-foldnow="1" disabled>/);
+});
+
+test("season report verdicts: at lock decides (5+ rounds, beyond 2 SE), else looking back; never differed says so", () => {
+  const { verdict, paired } = require("../backtest/season_report.js");
+  const back = (differs, d, se) => ({ differs, d, se });
+  assert.equal(verdict(back(8, -0.05, 0.01), { n: 6, dqs: -0.3, dqsSe: 0.1 }), "better-lock");
+  assert.equal(verdict(back(8, -0.05, 0.01), { n: 6, dqs: 0.3, dqsSe: 0.1 }), "worse-lock");
+  assert.equal(verdict(back(8, -0.05, 0.01), { n: 4, dqs: -0.3, dqsSe: 0.1 }), "better-back"); // too few at lock
+  assert.equal(verdict(back(8, 0.05, 0.01), { n: 6, dqs: -0.1, dqsSe: 0.1 }), "worse-back"); // lock within noise
+  assert.equal(verdict(back(8, -0.01, 0.01), null), "noise");
+  assert.equal(verdict(back(0, 0, 0), null), "same");
+  const p = paired([1, 2, 3]);
+  assert.equal(p.d, 2);
+  assert.ok(Math.abs(p.se - Math.sqrt(1 / 3)) < 1e-12);
+});

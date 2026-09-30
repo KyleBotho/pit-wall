@@ -1,0 +1,93 @@
+name: Season fold-over and report
+
+# Started by an admin (Settings > Admin > Season fold-over, through the Supabase function "refresh"), or by hand from
+# the Actions tab. Two things:
+# - the fold-over (fold.py): what the model carries from past seasons rebuilt through the last finished season
+#   (data/circuit_priors.json, data/skill_points.json). Before the season's last race that's the season before and
+#   the files come out as they were; after it, the season itself.
+# - the season report (backtest/season_report.js): every challenger against the live model over this season's
+#   rounds, in history/<season>/season-report.json, shown in the admin panel and the Sim lab.
+# Nothing in the model changes by itself: adopting a challenger is the owner's call and a change in engine.js.
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: fold
+  cancel-in-progress: false
+
+jobs:
+  # runs our code against outside data (Jolpica, OpenF1): can only read the repo
+  fold:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90 # ~20 minutes from an empty cache (paced requests); a few with last time's
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # last fold-over's pages of past seasons first, then the latest build's data over it (cache/data.json, saved by
+      # the refresh workflow: is the season over, and the report's rounds)
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: cache
+          key: f1-fold-none
+          restore-keys: f1-fold-
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: cache
+          key: f1-cache-none
+          restore-keys: f1-cache-
+      - run: python fold.py
+      - run: node backtest/season_report.js
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: cache
+          key: f1-fold-${{ github.run_id }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fold
+          path: |
+            data/circuit_priors.json
+            data/skill_points.json
+            history/*/fold.json
+            history/*/season-report.json
+          retention-days: 1
+
+  # the only job that can write: commits the rebuilt files and the report, then starts a refresh so the site shows them
+  save:
+    needs: fold
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write # to start refresh.yml: a push made with GITHUB_TOKEN doesn't
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: fold
+          path: .
+      - name: Commit the fold-over and the report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/circuit_priors.json data/skill_points.json history
+          if ! git diff --cached --quiet; then
+            git commit -m "Season fold-over and report"
+            git pull --rebase -X theirs
+            git push
+          fi
+      - name: Rebuild the site
+        run: gh workflow run refresh.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

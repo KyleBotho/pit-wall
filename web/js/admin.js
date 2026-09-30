@@ -7,7 +7,8 @@ import { SB_URL, syncState } from "./sync.js";
 import { link } from "./setup.js";
 import { contactLink } from "./tracking.js";
 import { toast } from "./main.js";
-import { healthHtml, refreshHtml } from "./refresh-view.js";
+import { foldHtml, healthHtml, refreshHtml } from "./refresh-view.js";
+import { labData, labDataState } from "./lab-data.js";
 
 // The settings the page reads: key, label, what it's for, and {long: a text box, check: which values are allowed}.
 export const CONFIG_KEYS = [
@@ -44,6 +45,8 @@ export async function pullAdmin() {
   if (U !== syncState.user) return;
   admin.on = !!data;
   if (admin.on) await Promise.all([loadConfig(), loadRefresh()]);
+  // the season report is part of the lab's data (kept out of the page everyone downloads)
+  if (admin.on) labData().then(() => renderAdmin());
   renderAdmin();
 }
 export function resetAdmin() {
@@ -79,6 +82,7 @@ export function renderAdmin() {
   $("#adminBody").innerHTML =
     refreshHtml(refresh.st, refresh) +
     healthHtml(DATA.health) +
+    foldHtml(refresh.st, fold, DATA.modelHealth, labDataState()) +
     `<p class="note">Settings that change from season to season. Only admins see this panel and can change them; the page reads them for signed-in users.</p>` +
     (admin.err ? `<p class="note bad">${esc(admin.err)}</p>` : "") +
     CONFIG_KEYS.map(([key, label, help, o]) =>
@@ -162,6 +166,38 @@ export async function refreshNow() {
   }
   refresh.busy = false;
   // GitHub lists the new run after a few seconds
+  setTimeout(refreshStatus, 5000);
+  renderAdmin();
+}
+
+/* ---------- Season fold-over and report (.github/workflows/fold.yml, through the refresh function) ---------- */
+export const fold = { busy: false };
+export async function foldNow() {
+  if (fold.busy || !syncState.sb) return;
+  fold.busy = true;
+  renderAdmin();
+  try {
+    const { data } = await syncState.sb.auth.getSession();
+    const r = await fetch(refreshFn(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + ((data.session && data.session.access_token) || ""),
+      },
+      body: JSON.stringify({ action: "fold" }),
+    });
+    const b = await r.json().catch(() => ({}));
+    toast(
+      r.ok
+        ? "Fold-over started: about 20 minutes, then the site rebuilds and the report is here."
+        : b.error === "unknown request"
+          ? "The refresh function is an older version: deploy supabase/functions/refresh/index.ts again."
+          : b.error || "The fold-over didn't start (HTTP " + r.status + ").",
+    );
+  } catch (e) {
+    toast("The refresh service isn't answering (" + ((e && e.message) || e) + "). Reload the page and try again.");
+  }
+  fold.busy = false;
   setTimeout(refreshStatus, 5000);
   renderAdmin();
 }

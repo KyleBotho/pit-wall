@@ -1,0 +1,229 @@
+{
+ "generated": "2026-09-30T09:19Z",
+ "season": 2026,
+ "final": false,
+ "from": 5,
+ "to": 15,
+ "rounds": 11,
+ "N": 10000,
+ "live": {
+  "crps": 8.598,
+  "mae": 11.822,
+  "cover80": 0.81,
+  "cover50": 0.532,
+  "team": 2042,
+  "best": 3170,
+  "seasonAvg": 13.437,
+  "form": 13.838
+ },
+ "challengers": [
+  {
+   "id": "qskew2",
+   "label": "Qualifying noise skewed (shape 2)",
+   "coverage": null,
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": -0.008,
+    "se": 0.011,
+    "dMae": 0.003,
+    "dTeam": 23,
+    "cover80": 0.802
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "ovhl6",
+   "label": "Overtake level weighted to recent rounds (half-life 6)",
+   "coverage": null,
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.005,
+    "se": 0.032,
+    "dMae": 0.061,
+    "dTeam": -10,
+    "cover80": 0.807
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "racectx",
+   "label": "Race pace from the lap model (tyres, fuel, traffic)",
+   "coverage": {
+    "n": 15,
+    "of": 15,
+    "what": "rounds with lap-model pace"
+   },
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.014,
+    "se": 0.027,
+    "dMae": -0.003,
+    "dTeam": -10,
+    "cover80": 0.802
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "racepool",
+   "label": "Race pace from the lap model, its tyre / fuel / traffic terms pooled across races",
+   "coverage": {
+    "n": 15,
+    "of": 15,
+    "what": "rounds with pooled pace"
+   },
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.012,
+    "se": 0.022,
+    "dMae": 0.01,
+    "dTeam": 9,
+    "cover80": 0.804
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "sctimed",
+   "label": "Safety car timed: a late one reshuffles the order, an early one hardly",
+   "coverage": {
+    "n": 31,
+    "of": 31,
+    "what": "safety car onsets"
+   },
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.02,
+    "se": 0.015,
+    "dMae": 0.038,
+    "dTeam": 0,
+    "cover80": 0.81
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "dnfcauses",
+   "label": "Retirements by cause (team mechanical + field incidents)",
+   "coverage": {
+    "n": 15,
+    "of": 15,
+    "what": "rounds with retirement causes"
+   },
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": -0.028,
+    "se": 0.024,
+    "dMae": -0.024,
+    "dTeam": 0,
+    "cover80": 0.815
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "ovenv",
+   "label": "Race-wide overtaking factor (a race runs high or low for everyone)",
+   "coverage": null,
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.018,
+    "se": 0.015,
+    "dMae": 0.037,
+    "dTeam": 0,
+    "cover80": 0.832
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "oddsq",
+   "label": "Market lines weighted by their bid-ask spread",
+   "coverage": {
+    "n": 4,
+    "of": 4,
+    "what": "market lines with bid-ask spreads"
+   },
+   "back": {
+    "n": 11,
+    "differs": 0,
+    "d": 0,
+    "se": 0,
+    "dMae": 0,
+    "dTeam": 0,
+    "cover80": 0.81
+   },
+   "lock": null,
+   "verdict": "same"
+  },
+  {
+   "id": "odds8",
+   "label": "Market fit run to (near) convergence: 8 steps on 5,000 sims",
+   "coverage": {
+    "n": 1,
+    "of": 1,
+    "what": "the next race's market"
+   },
+   "back": {
+    "n": 11,
+    "differs": 11,
+    "d": 0.01,
+    "se": 0.033,
+    "dMae": 0.048,
+    "dTeam": 0,
+    "cover80": 0.821
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "wetskill",
+   "label": "Wet qualifying skill per driver (past seasons + this one, shrunk)",
+   "coverage": {
+    "n": 21,
+    "of": 22,
+    "what": "drivers with past wet qualifying sessions"
+   },
+   "back": {
+    "n": 11,
+    "differs": 10,
+    "d": 0.01,
+    "se": 0.01,
+    "dMae": 0.019,
+    "dTeam": 0,
+    "cover80": 0.802
+   },
+   "lock": null,
+   "verdict": "noise"
+  },
+  {
+   "id": "sprintskill",
+   "label": "Sprint race skill per driver (past seasons + this one, shrunk)",
+   "coverage": {
+    "n": 22,
+    "of": 22,
+    "what": "drivers with past sprints"
+   },
+   "back": {
+    "n": 11,
+    "differs": 3,
+    "d": 0.009,
+    "se": 0.007,
+    "dMae": 0.014,
+    "dTeam": 0,
+    "cover80": 0.813
+   },
+   "lock": null,
+   "verdict": "noise"
+  }
+ ]
+}

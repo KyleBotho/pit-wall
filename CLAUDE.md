@@ -162,7 +162,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   input hashes, exact simulate() inputs), the challengers (`Engine.CHALLENGERS`) and, in the last 6 h, 2,000 joint
   samples -> `history/<season>/{projections,challengers,samples}/gdNN.json`. Scored by backtest/accuracy.js.
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
-  deployed by pasting one file); `tests/shared.test.js` fails if they drift.
+  deployed by pasting one file); `tests/shared.test.js` fails if they drift. The `refresh` function is pasted the
+  same way: after a change to `supabase/functions/refresh/index.ts` the user must deploy it again.
 - `research/f1fantasytools-notes.md` — catalogue of f1fantasytools features.
 - `docs/reviews/2026-09-27/` — an independent review of the simulator (7/10), its numerical/runtime follow-up and the
   upgrade plan (phases 0-6), then three more rounds (post-upgrade 7.5, second-round 7.8, third-round 7.9; each
@@ -180,6 +181,14 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   season's finished rounds (refresh.py `load_skills`; a wet qualifying = `quali.wetTyres` >= 0.5 in the round's
   race archive, extras.wet_share). `drivers` = with this season, `base` = past seasons only (walk.js asOf). For
   the `wetskill` / `sprintskill` challengers (SIM.wetSkill / SIM.sprintSkill, engine `skillSteps`).
+- `fold.py` + `.github/workflows/fold.yml` + `backtest/season_report.js` — the season fold-over and report
+  (Settings > Admin > "Season fold-over and report", `foldNow` in admin.js -> the `refresh` function's
+  `{action: "fold"}` -> fold.yml). fold.py rebuilds `data/circuit_priors.json` and `data/skill_points.json`
+  through the last finished season (this one only once it's over) and notes it in `history/<season>/fold.json`;
+  season_report.js (`npm run report`) compares every challenger with the live model over the season's rounds
+  (looking back: walk-forward under its settings, paired per round; at lock: accuracy.json's frozen rounds) into
+  `history/<season>/season-report.json`. Shown by `model-health.js seasonReportHtml` in Admin and the Sim lab
+  (`DATA.modelHealth.report` / `.fold`, lab-only data).
 - `elite_import.py` — top-100 line-ups CSV -> `data/elite_top100.json` (anonymous Boost/chip aggregates).
 - League payload (Supabase `league_data`, written ONLY by the private repo's workflow): `{v: 2, leagues, names,
   rounds, lineups, rivals, seen}`, keyed by team key. `rounds` = per-round points per team (League chart, Elite season); `lineups` = the user's own teams per
@@ -225,9 +234,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   local instead. `web/app.html` keeps the `__PITWALL_DATA__` placeholder (refresh.py matches it with a regex).
 
 ## Commands
-- New season: `python priors.py` (adds the finished season to the circuit priors), update `config/season.json`;
-  `python backtest/skill_fetch.py` and `python backtest/driver_skills.py --save` (the finished season into the
-  skill challengers' past observations; its wet qualifying sessions come from the race archive, no hand list).
+- New season: after the last race press Settings > Admin > "Fold over and make the report" (or `python fold.py`:
+  the finished season into the circuit priors and the skill challengers' past observations, plus the season
+  report), then update `config/season.json` for the new season.
 - Local preview: `.claude/launch.json` "pit-wall-build" serves `build/` on :8765. With league data (sign-in doesn't
   work locally): `python tools/dev_league.py` (reads ../pit-wall-private; writes the gitignored
   build/dev-league.json), then open `http://localhost:8765/?league`.

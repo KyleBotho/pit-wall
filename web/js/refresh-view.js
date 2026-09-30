@@ -2,6 +2,7 @@
    st = the refresh function's status (supabase/functions/refresh: state, next planned, latest runs, token set);
    refresh = { err, busy } from admin.js. */
 import { esc } from "./core.js";
+import { seasonReportHtml } from "./model-health.js";
 
 export const at = (t) =>
   t
@@ -65,6 +66,37 @@ export function refreshHtml(st, refresh) {
       : "") +
     `<div class="adminrow"><button class="btn sm" data-refreshnow="1"${refresh.busy || running ? " disabled" : ""}>${running ? "Refreshing…" : "Refresh now"}</button>` +
     `<button class="btn sm ghost" data-refreshstatus="1">Check status</button></div></div>`
+  );
+}
+
+// Settings > Admin > Season fold-over and report (.github/workflows/fold.yml, started through the refresh function).
+// st = the refresh function's status (st.fold = the latest fold-over run), fold = { busy } from admin.js, mh =
+// DATA.modelHealth once the lab's data is in (lab = its loading state: "ready" / "loading" / "error" / "idle").
+export function foldHtml(st, fold, mh, lab) {
+  const run = st && st.fold && st.fold[0],
+    running = run && run.status !== "completed";
+  const last = !run
+    ? "Not run yet."
+    : `${running ? "Running since" : "Last run"} ${esc(at(run.created))}` +
+      (running
+        ? ""
+        : run.conclusion === "success"
+          ? ' <span class="good">✓ finished</span>'
+          : ` <span class="bad">✗ ${esc(run.conclusion || "failed")}</span> (nothing was changed)`) +
+      ` · <a href="${esc(run.url)}" target="_blank" rel="noopener">details</a>`;
+  const report =
+    lab === "ready"
+      ? seasonReportHtml(mh && mh.report, mh && mh.fold)
+      : lab === "error"
+        ? `<p class="note bad">The report didn't load. Reload the page to try again.</p>`
+        : `<p class="note">Loading the report…</p>`;
+  return (
+    `<div class="adminfield"><label>Season fold-over and report</label>` +
+    `<p class="note">Press this once after the season's last race: the finished season is folded into what the model carries from past seasons (each circuit's history, the drivers' wet-qualifying and sprint records), and a report compares every challenger with the live model over the season. Before the last race it only makes the report for the season so far; pressing it again changes nothing. It takes about 20 minutes, not while an F1 session is running; the site then rebuilds itself and the report below is replaced.</p>` +
+    (st ? `<p class="note">${last}</p>` : "") +
+    `<div class="adminrow"><button class="btn sm" data-foldnow="1"${fold.busy || running || !st ? " disabled" : ""}>${running ? "Folding over…" : "Fold over and make the report"}</button></div>` +
+    report +
+    `</div>`
   );
 }
 

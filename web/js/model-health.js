@@ -68,6 +68,58 @@ function challengersHtml(ch) {
   );
 }
 
+// The season report (backtest/season_report.js, made by the season fold-over: .github/workflows/fold.yml): every
+// challenger against the live model over the season's rounds. rep = mh.report, fold = mh.fold (what was folded).
+const VERDICT = {
+  "better-lock": ["good", "Better at lock"],
+  "worse-lock": ["bad", "Worse at lock"],
+  "better-back": ["", "Better looking back: not a test yet"],
+  "worse-back": ["bad", "Worse looking back"],
+  noise: ["dim", "No difference beyond noise"],
+  same: ["dim", "Never differed from the live model"],
+};
+const f3 = (x) => (x == null ? "–" : (x > 0 ? "+" : "") + (+x).toFixed(3));
+const when = (t) => esc(String(t).slice(0, 16).replace("T", " ").replace("Z", "")) + " UTC";
+export function seasonReportHtml(rep, fold) {
+  const folded = fold
+    ? `<p class="note">Last fold-over ${when(fold.at)}: past seasons through ${esc(String(fold.through))} ` +
+      `(${fold.priors.races} races of circuit history; ${fold.skills.wetQ} wet-qualifying and ${fold.skills.sprFin} sprint results for the drivers' skills).</p>`
+    : "";
+  if (!rep) return folded + `<p class="note">No season report yet: it's made by the fold-over.</p>`;
+  const L = rep.live;
+  const rows = rep.challengers
+    .map((c) => {
+      const b = c.back,
+        k = c.lock;
+      const [cls, text] = VERDICT[c.verdict] || ["dim", c.verdict];
+      const cov =
+        c.coverage && c.coverage.n < c.coverage.of
+          ? ` <span class="dim" title="Its own input: ${esc(c.coverage.what)}">(${c.coverage.n} of ${c.coverage.of})</span>`
+          : "";
+      return (
+        `<tr><td style="text-align:left">${esc(c.label)}${cov}</td><td>${b.differs} of ${b.n}</td>` +
+        `<td>${f3(b.d)}${b.se != null ? ` ± ${(+b.se).toFixed(3)}` : ""}</td><td>${f3(b.dMae)}</td><td>${b.dTeam > 0 ? "+" : ""}${b.dTeam}</td>` +
+        `<td>${k && k.n ? `${k.dqs > 0 ? "+" : ""}${f2(k.dqs)}${k.dqsSe != null ? ` ± ${f2(k.dqsSe)}` : ""} <span class="dim">(${k.n})</span>` : `<span class="dim">–</span>`}</td>` +
+        `<td style="text-align:left" class="${cls}">${esc(text)}</td></tr>`
+      );
+    })
+    .join("");
+  return (
+    `<p class="note"><b>Season report ${esc(String(rep.season))}</b>, R${rep.from}–R${rep.to} (${rep.final ? "the full season" : "the season so far"}; made ${when(rep.generated)}). ` +
+    `The live model: CRPS ${f2(L.crps)}, MAE ${f2(L.mae)} (simple guesses: season average ${f2(L.seasonAvg)}, recent form ${f2(L.form)}), ` +
+    `inside the 10–90% range ${pc(L.cover80)}; a team picked on its projections each round ${L.team} pts of the best possible ${L.best}.</p>` +
+    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Challenger</th>` +
+    `<th title="Rounds where it came out different from the live model at all">Differed</th>` +
+    `<th title="Looking back: its CRPS minus the live model's per round (the data as it stood before each round, same seeds); lower is better; ± the standard error over rounds">Δ CRPS</th>` +
+    `<th title="Looking back: MAE minus the live model's">Δ MAE</th>` +
+    `<th title="Looking back: the points of the team picked on its projections each round, minus the live model's">Δ team pts</th>` +
+    `<th title="Frozen at lock before each round (rounds it could be scored on): score minus the live model's; the only figures from rounds it hadn't seen">At lock</th>` +
+    `<th style="text-align:left">Verdict</th></tr></thead><tbody>${rows}</tbody></table></div>` +
+    `<p class="note">Looking back is an indication, not a test: the challengers were built with these rounds in view. A challenger earns a change only at lock: 5 or more scored rounds and a gain beyond twice its ± (then ask for it to be adopted in engine.js). A difference under about 0.1 CRPS can't be told from chance with this many rounds.</p>` +
+    folded
+  );
+}
+
 // calibration by group (drivers / constructors, sprint / normal, wet / dry, safety car or not): walk-forward and,
 // pooled over the certified rounds, the frozen projections
 function groupsHtml(acc) {
@@ -98,7 +150,8 @@ export function modelHealthHtml(mh, schedule = []) {
   if (!acc || !acc.rounds || !acc.rounds.length)
     return (
       `<p class="note">No model health yet: it's worked out once a round's points are certified.</p>` +
-      fitHtml(mh && mh.fit)
+      fitHtml(mh && mh.fit) +
+      (mh && mh.report ? seasonReportHtml(mh.report, mh.fold) : "")
     );
   const s = acc.season;
   const name = (gd) => (schedule.find((g) => g.gd === gd)?.name || "").replace(" Grand Prix", "");
@@ -140,6 +193,7 @@ export function modelHealthHtml(mh, schedule = []) {
     groupsHtml(acc) +
     `<p class="note">Recomputed when a round's points are certified or any input or the engine changes (last ${esc(acc.generated.replace("T", " ").replace("Z", " UTC"))}). One round is mostly noise: judge trends over several.</p>` +
     challengersHtml(acc.challengers) +
+    (mh.report ? seasonReportHtml(mh.report, mh.fold) : "") +
     fitHtml(mh.fit)
   );
 }

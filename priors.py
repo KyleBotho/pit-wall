@@ -3,6 +3,7 @@
 Run once before each new season (and whenever you want the latest finished season added):
     python priors.py                 # seasons 2014 .. season-1 from Jolpica, 2023 .. season-1 from OpenF1
     python priors.py --from 2018     # a shorter history
+    python priors.py --through 2026  # with the season that just ended (fold.py does this)
 
 One row per past race: how much the order changed (mean |grid - finish| and places gained per classified car, grid vs
 finish rank correlation), how many cars retired, and from OpenF1 (2023 on) safety cars, virtual safety cars, red flags,
@@ -144,9 +145,10 @@ def openf1_season(year):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--from", dest="first", type=int, default=2014)
+    ap.add_argument("--through", type=int, default=CFG["season"] - 1, help="the last season in (fold.py)")
     args = ap.parse_args()
     os.makedirs(CACHE, exist_ok=True)
-    last = CFG["season"] - 1
+    last = args.through
     rows = []
     for year in range(args.first, last + 1):
         print(f"{year}: Jolpica…")

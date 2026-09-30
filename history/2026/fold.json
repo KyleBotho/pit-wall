@@ -1,0 +1,21 @@
+{
+ "at": "2026-09-30T09:21+00:00",
+ "season": 2026,
+ "through": 2025,
+ "priors": {
+  "seasons": [
+   2014,
+   2025
+  ],
+  "races": 252
+ },
+ "skills": {
+  "seasons": [
+   2014,
+   2025
+  ],
+  "wetQ": 571,
+  "sprGrid": 473,
+  "sprFin": 447
+ }
+}

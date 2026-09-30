@@ -117,9 +117,11 @@ def season_points(season, results, wet_q):
     return out
 
 
-def build(base, season=None):
+def build(base, season=None, year=None):
     """DATA.skills from the past seasons' file (data/skill_points.json) and, if given, season_points() of the running
-    season: {"drivers": {TLA: {...}}, "base": the same from past seasons only, "k", "gridToFinish", "seasons", "n"}."""
+    season `year`: {"drivers": {TLA: {...}}, "base": the same from the seasons before `year` only, "k",
+    "gridToFinish", "seasons", "n"}. Once the file holds `year` itself (folded over after its last race, fold.py),
+    its rounds aren't added a second time, and "base" still leaves them out."""
     codes = base.get("codes") or {}  # past seasons' driver id -> TLA (one holder per TLA: the latest to race)
     ids = {c: i for i, c in codes.items()}
 
@@ -132,11 +134,15 @@ def build(base, season=None):
                 by_tla[tla] = rec
         return dict(sorted(by_tla.items())), ks, b
 
-    past = {k: base.get(k) or [] for k in KINDS}
+    every = {k: base.get(k) or [] for k in KINDS}
+    past = {k: [r for r in every[k] if year is None or r[0] < year] for k in KINDS}
+    folded = any(len(past[k]) != len(every[k]) for k in KINDS)
     base_drivers, ks, b = named(past)
     out = {"base": base_drivers, "seasons": list(base.get("seasons") or [])}
     n_new = 0
-    if season:
+    if folded:
+        out["drivers"], ks, b = named(every)
+    elif season:
         both = {}
         for k in KINDS:
             rows = [[y, r, ids.get(t, "tla:" + t), x, v] for y, r, t, x, v in season.get(k) or []]
