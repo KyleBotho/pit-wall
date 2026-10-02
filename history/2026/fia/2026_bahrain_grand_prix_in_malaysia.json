@@ -57,6 +57,65 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_race_directors_competition_notes.pdf",
    "published": "2026-10-01T11:29+00:00",
    "firstSeen": "2026-10-01T13:57+00:00"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - PU Elements used per Driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-10-02T00:49+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_self_scrutineering.pdf",
+   "published": "2026-10-02T00:50+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00"
+  },
+  {
+   "doc": 11,
+   "title": "Doc 11 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_entry_list.pdf",
+   "published": "2026-10-02T01:01+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_car_presentation_submissions.pdf",
+   "published": "2026-10-02T02:06+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - Competition Visa V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_competition_visa_v2.pdf",
+   "published": "2026-10-02T04:02+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-10-02T04:53+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 15,
+   "title": "Doc 15 - Infringement - Free Practice 1 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_infringement_-_free_practice_1_deleted_lap_times.pdf",
+   "published": "2026-10-02T05:49+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_free_practice_1_classification.pdf",
+   "published": "2026-10-02T05:49+00:00",
+   "firstSeen": "2026-10-02T05:55+00:00"
   }
  ],
  "tech": {
@@ -71,6 +130,285 @@
     "C2",
     "C3"
    ]
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "1": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "63": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "12": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "3": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "6": {
+    "ICE": 6,
+    "TC": 6,
+    "EXH": 6,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 7
+   },
+   "16": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "44": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "23": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "55": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "41": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 5
+   },
+   "30": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 5
+   },
+   "18": {
+    "ICE": 5,
+    "TC": 6,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 8
+   },
+   "14": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 9
+   },
+   "31": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "87": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "27": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 5
+   },
+   "5": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "10": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "43": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "11": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "77": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 3
+   }
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 1,
+    "reasons": {
+     "Circuit specific": 1
+    }
+   },
+   "MER": {
+    "n": 7,
+    "reasons": {
+     "Performance": 7
+    }
+   },
+   "RED": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "FER": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "WIL": {
+    "n": 0,
+    "reasons": {}
+   },
+   "VRB": {
+    "n": 2,
+    "reasons": {
+     "Circuit specific": 1,
+     "Performance": 1
+    }
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "AUD": {
+    "n": 0,
+    "reasons": {}
+   },
+   "ALP": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "CAD": {
+    "n": 0,
+    "reasons": {}
+   }
+  },
+  "puNew": {
+   "6": {
+    "ICE": 6
+   },
+   "41": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "PU-ANC": 5
+   },
+   "43": {
+    "ICE": 4
+   },
+   "77": {
+    "ICE": 3,
+    "TC": 3
+   }
   }
  }
 }
