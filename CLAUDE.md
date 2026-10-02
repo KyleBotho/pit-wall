@@ -464,6 +464,11 @@ there before re-deciding something.
 - Workflow (item 9 of that review): actions are pinned to release commit SHAs (tag in a comment; bump them by hand
   when a runtime is retired). `refresh` runs our code with a read-only token and hands `history/` to the `history`
   job, the only one that can push; `deploy` needs `refresh` (the tests).
+- [ ] Calculator goal ranking (user, 2026-10-02; explore later): with a goal (rival / template) Best Teams rank by
+      P(beat) unless a column is clicked (a header click is obeyed since 2026-10-02). P(beat) is the next race's
+      head-to-head only: it favours copying the target (seen: 213.3 xPts / 60% / xGap +4.1 ranked above 216.9 / 58% /
+      +7.8). Consider xGap as the goal's default (the season-long view), P(beat) kept for the endgame (ahead of a
+      rival with a race or two left); check the P(beat) differences against their simulation error first.
 - [ ] Pit Wall F1 account (history: Round tracking): around 2026-10-09, or as soon as a check run fails, read
       `history/session-check.csv` in `../pit-wall-private` (`git pull` first). The first failing day = the session's
       lifetime; then decide with the user whether account-based tracking can run unattended.

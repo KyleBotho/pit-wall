@@ -585,6 +585,7 @@ const CLICK = [
     (d) => {
       state.goal = "rival";
       state.goalRival = d.rvgoal;
+      state.bsort = null; // a new goal ranks by it (P(beat)) until you click a column
       refreshViews(["calc"]); // stale: rendered with the new goal when shown
       showView("calc");
     },
@@ -918,6 +919,7 @@ const CHANGE_ID = {
   },
   goal: (t) => {
     state.goal = t.value;
+    state.bsort = null; // a new goal ranks by it (P(beat)) until you click a column
     saveAnd(() => (renderSettings(), runOptimiser()));
   },
   goalRival: (t) => {

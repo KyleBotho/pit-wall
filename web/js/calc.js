@@ -452,9 +452,10 @@ const BSORT = [
 // goal columns: need a team to beat, and like xPts they rank highest first
 export const GOAL_COLS = ["pb", "pk", "dx", "dr"];
 const GOAL_K = 25;
+// the ranking: the column you clicked, else P(beat) with a goal to beat, else xPts (xSPts with xΔ$Pts on)
 export function bestSort() {
   const b = state.bsort,
-    def = { k: state.xdp ? "xsp" : "x", d: -1 };
+    def = { k: goalTarget() ? "pb" : state.xdp ? "xsp" : "x", d: -1 };
   if (!b || ((b.k === "xsp" || b.k === "xdp") && !state.xdp)) return def;
   if (GOAL_COLS.includes(b.k) && !goalTarget()) return def;
   if ((b.k === "x" || b.k === "xsp" || GOAL_COLS.includes(b.k)) && b.d > 0) return { k: b.k, d: -1 }; // highest first
@@ -669,11 +670,7 @@ export function runOptimiser() {
     return mk(ids, b1, b2);
   });
   bestRows.best.sort((a, b) => (a.st[sort.k] - b.st[sort.k]) * sort.d);
-  if (ctx.tg && pts) {
-    const k = GOAL_COLS.includes(sort.k) && sort.k !== "dr" ? sort.k : "pb";
-    bestRows.best.sort((a, b) => b.st[k] - a.st[k]);
-    bestRows.best.length = Math.min(bestRows.best.length, 60);
-  }
+  if (ctx.tg && pts) bestRows.best.length = Math.min(bestRows.best.length, 60);
   const mc = simNoise(bestRows, chipK, H, sort.k);
 
   const bits = [
@@ -699,7 +696,7 @@ export function runOptimiser() {
     );
   if (ctx.tg && pts)
     bits.push(
-      `Goal: beat ${ctx.tg.name}. Ranked by ${GOAL_COLS.includes(sort.k) && sort.k !== "dr" ? (BSORT.find(([k]) => k === sort.k) || [])[1] : "P(beat)"}: both teams scored on the same simulated weekends, so shared assets cancel. P(+${GOAL_K}) is the chance of a gain that moves your rank; xGap the average gain; Gap 10–90% the bad-to-good weekend range.`,
+      `Goal: beat ${ctx.tg.name}. Ranked by ${(BSORT.find(([k]) => k === sort.k) || [])[1]} (click a column header to change): both teams scored on the same simulated weekends, so shared assets cancel. P(+${GOAL_K}) is the chance of a gain that moves your rank; xGap the average gain; Gap 10–90% the bad-to-good weekend range.`,
     );
   // a goal with nothing to beat stays in sight (the rest of the note is in the ⓘ)
   const warn =
