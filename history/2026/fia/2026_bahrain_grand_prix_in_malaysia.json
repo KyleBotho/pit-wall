@@ -306,6 +306,42 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_provisional_starting_grid.pdf",
    "published": "2026-10-03T12:06+00:00",
    "firstSeen": "2026-10-03T12:04+00:00"
+  },
+  {
+   "doc": 44,
+   "title": "Doc 44 - Pre-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_pre-race_procedure.pdf",
+   "published": "2026-10-04T01:24+00:00",
+   "firstSeen": "2026-10-04T09:20+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Post-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_post-race_procedure.pdf",
+   "published": "2026-10-04T01:25+00:00",
+   "firstSeen": "2026-10-04T09:20+00:00"
+  },
+  {
+   "doc": 46,
+   "title": "Doc 46 - Parts and Parameters been replaced and or changed during Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_parts_and_parameters_been_replaced_and_or_changed_during_parc_ferme.pdf",
+   "published": "2026-10-04T06:03+00:00",
+   "firstSeen": "2026-10-04T09:20+00:00",
+   "read": "parcFerme"
+  },
+  {
+   "doc": 47,
+   "title": "Doc 47 - Final Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_final_starting_grid.pdf",
+   "published": "2026-10-04T06:04+00:00",
+   "firstSeen": "2026-10-04T09:20+00:00"
+  },
+  {
+   "doc": 48,
+   "title": "Doc 48 - Infringement - Car 55 - Pit Lane Speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_bahrain_grand_prix_in_malaysia_-_infringement_-_car_55_-_pit_lane_speeding.pdf",
+   "published": "2026-10-04T07:05+00:00",
+   "firstSeen": "2026-10-04T09:20+00:00"
   }
  ],
  "tech": {
@@ -604,6 +640,44 @@
     "TC": 3,
     "PU-ANC": 5
    }
+  },
+  "parcFerme": {
+   "81": [
+    "Driver\u2019s cockpit windshield"
+   ],
+   "1": [
+    "Driver\u2019s cockpit windshield"
+   ],
+   "44": [
+    "Low pressure fuel pump"
+   ],
+   "23": [
+    "LHS front wing flap adjuster mechanism",
+    "LHS rear view mirror lens"
+   ],
+   "55": [
+    "Forward floor stay shroud",
+    "Forward floor stay beam cover",
+    "RHS brake drum duct and associated cover"
+   ],
+   "18": [
+    "Forward chassis puck",
+    "RHS mirror glass"
+   ],
+   "5": [
+    "LHS rear view mirror lens",
+    "Gearbox assembly including control hydraulics",
+    "LHS and RHS rear suspension assemblies",
+    "Parameter changes associated with the gearbox assembly replacement"
+   ],
+   "11": [
+    "LHS rear tyre temperature sensor lens cover",
+    "Slip angle sensor lens cover"
+   ],
+   "77": [
+    "LHS rear tyre temperature sensor lens cover",
+    "Track temperature sensor lens cover"
+   ]
   }
  }
 }
