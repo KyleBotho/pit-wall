@@ -768,7 +768,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 15
+            "Value": 27
           },
           {
             "Frequency": "-",
@@ -782,13 +782,18 @@
           },
           {
             "Frequency": "-",
-            "Event": "Race Position",
-            "Value": 4
+            "Event": "Fastest Pitstop",
+            "Value": 2
           },
           {
-            "Frequency": "8",
+            "Frequency": "-",
+            "Event": "Race Position",
+            "Value": 10
+          },
+          {
+            "Frequency": "4",
             "Event": "Race Position lost",
-            "Value": -8
+            "Value": -4
           }
         ]
       }
@@ -804,7 +809,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 758
+            "Value": 770
           },
           {
             "Frequency": "-",
@@ -829,7 +834,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 257
+            "Value": 263
           },
           {
             "Frequency": "-",
@@ -857,9 +862,9 @@
             "Value": 28
           },
           {
-            "Frequency": "31",
+            "Frequency": "27",
             "Event": "Race Position lost",
-            "Value": -31
+            "Value": -27
           },
           {
             "Frequency": "-",
@@ -869,7 +874,7 @@
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
-            "Value": 52
+            "Value": 54
           },
           {
             "Frequency": "-",
@@ -3361,18 +3366,23 @@
             "StatsWise": [
               {
                 "Frequency": "-",
-                "Event": "Race Position",
-                "Value": 4
+                "Event": "Fastest Pitstop",
+                "Value": 2
               },
               {
-                "Frequency": "8",
+                "Frequency": "-",
+                "Event": "Race Position",
+                "Value": 10
+              },
+              {
+                "Frequency": "4",
                 "Event": "Race Position lost",
-                "Value": -8
+                "Value": -4
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -4
+                "Value": 8
               }
             ]
           }
@@ -3381,8 +3391,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 9:21:09 AM",
-    "ISTTime": "10/4/2026 2:51:09 PM",
-    "CESTTime": "10/4/2026 11:21:09 AM"
+    "UTCTime": "10/4/2026 10:20:38 AM",
+    "ISTTime": "10/4/2026 3:50:38 PM",
+    "CESTTime": "10/4/2026 12:20:38 PM"
   }
 }

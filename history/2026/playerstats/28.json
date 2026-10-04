@@ -813,7 +813,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 58
+            "Value": 26
           },
           {
             "Frequency": "-",
@@ -828,12 +828,12 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 33
+            "Value": 18
           },
           {
-            "Frequency": "5",
-            "Event": "Race position gained",
-            "Value": 5
+            "Frequency": "12",
+            "Event": "Race Position lost",
+            "Value": -12
           }
         ]
       }
@@ -849,7 +849,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 1327
+            "Value": 1295
           },
           {
             "Frequency": "-",
@@ -874,7 +874,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 511
+            "Value": 496
           },
           {
             "Frequency": "-",
@@ -902,14 +902,14 @@
             "Value": 5
           },
           {
-            "Frequency": "42",
+            "Frequency": "37",
             "Event": "Race position gained",
-            "Value": 42
+            "Value": 37
           },
           {
-            "Frequency": "34",
+            "Frequency": "46",
             "Event": "Race Position lost",
-            "Value": -34
+            "Value": -46
           },
           {
             "Frequency": "-",
@@ -3462,17 +3462,17 @@
               {
                 "Frequency": "-",
                 "Event": "Race Position",
-                "Value": 33
+                "Value": 18
               },
               {
-                "Frequency": "5",
-                "Event": "Race position gained",
-                "Value": 5
+                "Frequency": "12",
+                "Event": "Race Position lost",
+                "Value": -12
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 38
+                "Value": 6
               }
             ]
           }
@@ -3481,8 +3481,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 9:21:09 AM",
-    "ISTTime": "10/4/2026 2:51:09 PM",
-    "CESTTime": "10/4/2026 11:21:09 AM"
+    "UTCTime": "10/4/2026 10:20:38 AM",
+    "ISTTime": "10/4/2026 3:50:38 PM",
+    "CESTTime": "10/4/2026 12:20:38 PM"
   }
 }

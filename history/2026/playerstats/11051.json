@@ -543,7 +543,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -9
+            "Value": -7
           },
           {
             "Frequency": "10th",
@@ -551,14 +551,14 @@
             "Value": 1
           },
           {
-            "Frequency": "20th",
+            "Frequency": "18th",
             "Event": "Race Position",
             "Value": 0
           },
           {
-            "Frequency": "10",
+            "Frequency": "8",
             "Event": "Race Position lost",
-            "Value": -10
+            "Value": -8
           }
         ]
       }
@@ -574,7 +574,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 83
+            "Value": 85
           },
           {
             "Frequency": "1",
@@ -622,9 +622,9 @@
             "Value": 25
           },
           {
-            "Frequency": "20",
+            "Frequency": "18",
             "Event": "Race Position lost",
-            "Value": -20
+            "Value": -18
           },
           {
             "Frequency": "79",
@@ -2825,19 +2825,19 @@
             "IsPlayed": 0,
             "StatsWise": [
               {
-                "Frequency": "20th",
+                "Frequency": "18th",
                 "Event": "Race Position",
                 "Value": 0
               },
               {
-                "Frequency": "10",
+                "Frequency": "8",
                 "Event": "Race Position lost",
-                "Value": -10
+                "Value": -8
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -10
+                "Value": -8
               }
             ]
           }
@@ -2846,8 +2846,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 9:21:07 AM",
-    "ISTTime": "10/4/2026 2:51:07 PM",
-    "CESTTime": "10/4/2026 11:21:07 AM"
+    "UTCTime": "10/4/2026 10:20:35 AM",
+    "ISTTime": "10/4/2026 3:50:35 PM",
+    "CESTTime": "10/4/2026 12:20:35 PM"
   }
 }

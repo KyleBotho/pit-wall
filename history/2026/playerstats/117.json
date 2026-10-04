@@ -553,7 +553,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -1
+            "Value": 3
           },
           {
             "Frequency": "6th",
@@ -561,14 +561,14 @@
             "Value": 5
           },
           {
-            "Frequency": "11th",
+            "Frequency": "9th",
             "Event": "Race Position",
-            "Value": 0
+            "Value": 2
           },
           {
-            "Frequency": "6",
+            "Frequency": "4",
             "Event": "Race Position lost",
-            "Value": -6
+            "Value": -4
           }
         ]
       }
@@ -584,7 +584,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 327
+            "Value": 331
           },
           {
             "Frequency": "-",
@@ -614,7 +614,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 154
+            "Value": 156
           },
           {
             "Frequency": "-",
@@ -637,9 +637,9 @@
             "Value": 16
           },
           {
-            "Frequency": "9",
+            "Frequency": "7",
             "Event": "Race Position lost",
-            "Value": -9
+            "Value": -7
           },
           {
             "Frequency": "-",
@@ -2915,19 +2915,19 @@
             "IsPlayed": 0,
             "StatsWise": [
               {
-                "Frequency": "11th",
+                "Frequency": "9th",
                 "Event": "Race Position",
-                "Value": 0
+                "Value": 2
               },
               {
-                "Frequency": "6",
+                "Frequency": "4",
                 "Event": "Race Position lost",
-                "Value": -6
+                "Value": -4
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -6
+                "Value": -2
               }
             ]
           }
@@ -2936,8 +2936,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 9:21:08 AM",
-    "ISTTime": "10/4/2026 2:51:08 PM",
-    "CESTTime": "10/4/2026 11:21:08 AM"
+    "UTCTime": "10/4/2026 10:20:36 AM",
+    "ISTTime": "10/4/2026 3:50:36 PM",
+    "CESTTime": "10/4/2026 12:20:36 PM"
   }
 }

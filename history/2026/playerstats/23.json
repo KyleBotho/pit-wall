@@ -723,7 +723,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 8
+            "Value": 23
           },
           {
             "Frequency": "-",
@@ -738,6 +738,11 @@
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
+            "Event": "2nd Fastest Pitstop",
             "Value": 5
           },
           {
@@ -746,9 +751,9 @@
             "Value": 0
           },
           {
-            "Frequency": "4",
-            "Event": "Race Position lost",
-            "Value": -4
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
           }
         ]
       }
@@ -764,7 +769,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 384
+            "Value": 399
           },
           {
             "Frequency": "-",
@@ -822,24 +827,29 @@
             "Value": 1
           },
           {
-            "Frequency": "52",
+            "Frequency": "53",
             "Event": "Race position gained",
-            "Value": 52
+            "Value": 53
           },
           {
-            "Frequency": "16",
+            "Frequency": "12",
             "Event": "Race Position lost",
-            "Value": -16
+            "Value": -12
           },
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
-            "Value": 36
+            "Value": 41
           },
           {
             "Frequency": "151",
             "Event": "race overtake bonus",
             "Value": 151
+          },
+          {
+            "Frequency": "-",
+            "Event": "2nd Fastest Pitstop",
+            "Value": 5
           }
         ]
       }
@@ -3282,6 +3292,11 @@
               {
                 "Frequency": "-",
                 "Event": "Fastest Pitstop",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
+                "Event": "2nd Fastest Pitstop",
                 "Value": 5
               },
               {
@@ -3290,14 +3305,14 @@
                 "Value": 0
               },
               {
-                "Frequency": "4",
-                "Event": "Race Position lost",
-                "Value": -4
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 1
+                "Value": 16
               }
             ]
           }
@@ -3306,8 +3321,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 9:21:10 AM",
-    "ISTTime": "10/4/2026 2:51:10 PM",
-    "CESTTime": "10/4/2026 11:21:10 AM"
+    "UTCTime": "10/4/2026 10:20:38 AM",
+    "ISTTime": "10/4/2026 3:50:38 PM",
+    "CESTTime": "10/4/2026 12:20:38 PM"
   }
 }
