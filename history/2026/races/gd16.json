@@ -1,0 +1,41 @@
+{
+ "quali": {
+  "wetTyres": 0.0,
+  "wx": {
+   "air": 32.8,
+   "humidity": 49.6,
+   "n": 77,
+   "rainMin": 0,
+   "track": 55.1
+  }
+ },
+ "race": {
+  "lapsRun": 55,
+  "pace": {},
+  "pits": {},
+  "rain": 1,
+  "red": 0,
+  "sc": 2,
+  "scLaps": [
+   [
+    9,
+    12,
+    "in"
+   ],
+   [
+    45,
+    51,
+    "in"
+   ]
+  ],
+  "scLapsV": 2,
+  "vsc": 1,
+  "wx": {
+   "air": 26.8,
+   "humidity": 82.7,
+   "n": 254,
+   "rainMin": 80,
+   "track": 34.4
+  }
+ }
+}
