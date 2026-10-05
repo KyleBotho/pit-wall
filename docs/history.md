@@ -5,6 +5,23 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-05, the Red Bull "pace lag" (user: why did we miss Mercedes and Red Bull at Sepang; look into the Red
+      Bull pace lag, gated test first). Frozen projections under-projected the Red Bull constructor R13-R16 (+29 /
+      +22 / +23 / +29 points actual - projected; Ferrari the other way). Red Bull's race pace stepped from ~1.0% off
+      the fastest (R1-R7) to ~0.3% (R8 on) with 6 performance upgrades declared at Austria (FIA documents). Gated
+      test (branch claude/friendly-lovelace-23fjv9, `EXP=pacelag npm run backtest 9` on the refresh workflow's
+      cached data via `.github/workflows/experiment.yml`, 3 seeds x 5,000, R5-R16, commit 2fea636, data
+      2026-10-05T06:21): pace half-life 2 CRPS -0.020 +/- 0.018, 3 -0.006 +/- 0.013, 6 +0.012 +/- 0.009, every
+      round the same +0.037 +/- 0.021; paceShrink 0.9 -0.002 +/- 0.014, none -0.001 +/- 0.022: all ties, keep 4 and
+      0.8. `backtest/team_bias.js` (walk-forward projected - actual per team, drivers + constructor): Red Bull
+      -15.8 per round R5-R16, -55 over R13-R16, unmoved by any half-life or shrink (-54 to -55), the market or
+      practice (-54 / -53). Told each round's REAL qualifying + race pace (oracle, an upper bound) it is -3.4 over
+      the season but still -38 over R13-R16: the pace estimate explains most of the season-long Red Bull bias but
+      only ~17 of the 55 points a round lately; the rest is outcomes the sim treats as luck (Ferrari's retirements
+      R13-R14, Russell R16). Not built: an upgrade-aware pace challenger (down-weight a team's rounds before a
+      declared package): it would act like a short half-life for that team, and half-life 2 didn't move Red Bull.
+      Outputs: research/experiments/2026-10-05-pacelag*.txt. Also found: the provisional Sepang points had no
+      overtake or pit-stop lines (added at certification).
 - [x] 2026-09-30, season fold-over button and season report (user: "a button in the admin / sim lab tab that
       triggers the fold over, include the other challengers, and a report comparing the challengers and the live
       model in the past season"). Settings > Admin > "Season fold-over and report" (the Admin panel, not the Sim
