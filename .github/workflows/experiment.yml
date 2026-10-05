@@ -18,7 +18,8 @@ env:
   EXP: pacelag
   EXP_N: "5000"
   EXP_SEEDS: "3"
-  OUT: research/experiments/2026-10-05-pacelag.txt
+  TEAM_BIAS: inputs
+  OUT: research/experiments/2026-10-05-pacelag-inputs.txt
 
 jobs:
   # runs our code on the season's data: can only read the repo
@@ -47,7 +48,6 @@ jobs:
           {
             echo "commit ${GITHUB_SHA::7}, data $(node -e 'console.log(require("./cache/data.json").generated || "")')"
             echo "EXP=$EXP EXP_N=$EXP_N EXP_SEEDS=$EXP_SEEDS"
-            node backtest/run.js 6 9
             node backtest/team_bias.js
           } 2>&1 | tee experiment.txt
           cp experiment.txt "$OUT"

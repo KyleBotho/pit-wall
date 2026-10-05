@@ -13,13 +13,25 @@ const from = +(process.argv[2] || 5),
   to = +(process.argv[3] || D.done[D.done.length - 1]);
 const N = +(process.env.EXP_N || 3000),
   seeds = [1, 2, 3].slice(0, +(process.env.EXP_SEEDS || 3));
-const VARIANTS = [
-  ["shipped", {}, {}],
-  ["half-life 2", {}, { halfLife: 2 }],
-  ["half-life 6", {}, { halfLife: 6 }],
-  ["shrink 0.9", { "MODEL.paceShrink": 0.9 }, {}],
-  ["no shrink", { "MODEL.paceShrink": 1 }, {}],
-];
+// [label, settings, evaluate options]; TEAM_BIAS=inputs: where a team's miss lives (the sim told the round's real
+// qualifying / race pace = walk.js oracle runs, an upper bound; without the market or practice)
+const VARIANTS =
+  process.env.TEAM_BIAS === "inputs"
+    ? [
+        ["shipped", {}, {}],
+        ["no market", {}, { odds: false }],
+        ["no practice", {}, { practice: false }],
+        ["real Q pace", {}, { oracle: { q: 1 } }],
+        ["real R pace", {}, { oracle: { r: 1 } }],
+        ["real Q+R pace", {}, { oracle: { q: 1, r: 1 } }],
+      ]
+    : [
+        ["shipped", {}, {}],
+        ["half-life 2", {}, { halfLife: 2 }],
+        ["half-life 6", {}, { halfLife: 6 }],
+        ["shrink 0.9", { "MODEL.paceShrink": 0.9 }, {}],
+        ["no shrink", { "MODEL.paceShrink": 1 }, {}],
+      ];
 // a team per asset: a driver's team, a constructor's own name (the feed's names differ only in "F1 Team")
 const teamOf = (r) => (r.team || "").replace(/ F1 Team$/, "");
 const rows = [];
