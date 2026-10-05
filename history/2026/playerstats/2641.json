@@ -743,7 +743,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -20
+            "Value": -12
           },
           {
             "Frequency": "-",
@@ -769,22 +769,35 @@
             "Frequency": "1",
             "Event": "Race position gained",
             "Value": 1
+          },
+          {
+            "Frequency": "8",
+            "Event": "race overtake bonus",
+            "Value": 8
           }
         ]
+      },
+      {
+        "GamedayId": 17,
+        "PlayerValue": 3.0,
+        "OldPlayerValue": 3.6,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
       {
         "TourId": 4,
-        "PlayerValue": 3.6,
-        "OldPlayerValue": 3.0,
+        "PlayerValue": 3.0,
+        "OldPlayerValue": 3.6,
         "IsPlayed": 1,
         "IsActive": 1,
         "StatsWise": [
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -71
+            "Value": -63
           },
           {
             "Frequency": "5",
@@ -842,9 +855,9 @@
             "Value": 12
           },
           {
-            "Frequency": "101",
+            "Frequency": "109",
             "Event": "race overtake bonus",
-            "Value": 101
+            "Value": 109
           },
           {
             "Frequency": "-",
@@ -1711,7 +1724,7 @@
             "RaceDayId": 7578,
             "TeamId": 2641,
             "DateTime": "10/02/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Kuala Lumpur",
             "MeetingNumber": 16,
             "MeetingName": "Bahrain Grand Prix",
@@ -1722,6 +1735,75 @@
             "SessionType": "Race",
             "SessionNumber": "0",
             "SessionStartDate": "2026-10-04T15:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "8",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 17,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.6,
+            "RaceDayId": 7364,
+            "TeamId": 2641,
+            "DateTime": "10/09/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Marina Bay",
+            "MeetingNumber": 17,
+            "MeetingName": "Singapore Grand Prix",
+            "CountryId": 158,
+            "CountryName": "Singapore",
+            "CircuitOfficialName": "Marina Bay Street Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-10T17:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "8",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.6,
+            "RaceDayId": 7392,
+            "TeamId": 2641,
+            "DateTime": "10/09/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Marina Bay",
+            "MeetingNumber": 17,
+            "MeetingName": "Singapore Grand Prix",
+            "CountryId": 158,
+            "CountryName": "Singapore",
+            "CircuitOfficialName": "Marina Bay Street Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-10T21:00:00+08:00",
+            "Season": "2026",
+            "SelectedPercentage": "8",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.6,
+            "RaceDayId": 7393,
+            "TeamId": 2641,
+            "DateTime": "10/09/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Marina Bay",
+            "MeetingNumber": 17,
+            "MeetingName": "Singapore Grand Prix",
+            "CountryId": 158,
+            "CountryName": "Singapore",
+            "CircuitOfficialName": "Marina Bay Street Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-11T20:00:00+08:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "0"
@@ -3290,7 +3372,7 @@
             "OldPlayerValue": 3.0,
             "RaceDayId": 7578,
             "DateTime": "10/02/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Kuala Lumpur",
             "MeetingNumber": 16,
             "MeetingName": "Bahrain Grand Prix",
@@ -3307,7 +3389,7 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -19
+                "Value": -11
               },
               {
                 "Frequency": "-",
@@ -3323,16 +3405,47 @@
                 "Frequency": "1",
                 "Event": "Race position gained",
                 "Value": 1
+              },
+              {
+                "Frequency": "8",
+                "Event": "race overtake bonus",
+                "Value": 8
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 17,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.6,
+            "RaceDayId": 7364,
+            "DateTime": "10/09/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Marina Bay",
+            "MeetingNumber": 17,
+            "MeetingName": "Singapore Grand Prix",
+            "CountryId": 158,
+            "CountryName": "Singapore",
+            "CircuitOfficialName": "Marina Bay Street Circuit",
+            "SessionName": "Sprint Qualifying",
+            "SessionType": "Sprint Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-10T17:00:00+08:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/4/2026 11:03:36 AM",
-    "ISTTime": "10/4/2026 4:33:36 PM",
-    "CESTTime": "10/4/2026 1:03:36 PM"
+    "UTCTime": "10/5/2026 3:15:46 PM",
+    "ISTTime": "10/5/2026 8:45:46 PM",
+    "CESTTime": "10/5/2026 5:15:46 PM"
   }
 }
