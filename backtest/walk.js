@@ -386,6 +386,7 @@ function evaluate(o = {}) {
     msPerRound: out.ms / rounds.length,
     byRound: out.byRound,
     groups: groups(out.recs),
+    recs: out.recs, // per asset-round scores (team_bias.js)
     events: eventCalib(out.events),
   };
 }
