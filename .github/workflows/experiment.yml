@@ -1,0 +1,81 @@
+name: Backtest experiment (work branches)
+
+# Runs a backtest experiment on the latest build's data (cache/data.json, saved by the refresh workflow) for a work
+# branch, where the data feeds can't be reached (cloud sessions), and commits the output to that branch under
+# research/experiments/. Never runs on main and never deploys. What it runs: the EXP_* settings and the commands below.
+on:
+  push:
+    branches: ["claude/**"]
+    paths: ["backtest/**", "engine.js", ".github/workflows/experiment.yml"]
+
+permissions: {}
+
+concurrency:
+  group: experiment-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  EXP: pacelag
+  EXP_N: "5000"
+  EXP_SEEDS: "3"
+  OUT: research/experiments/2026-10-05-pacelag.txt
+
+jobs:
+  # runs our code on the season's data: can only read the repo
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: cache
+          key: f1-cache-none
+          restore-keys: f1-cache-
+      - name: Run the experiment
+        run: |
+          mkdir -p "$(dirname "$OUT")"
+          {
+            echo "commit ${GITHUB_SHA::7}, data $(node -e 'console.log(require("./cache/data.json").generated || "")')"
+            echo "EXP=$EXP EXP_N=$EXP_N EXP_SEEDS=$EXP_SEEDS"
+            node backtest/run.js 6 9
+            node backtest/team_bias.js
+          } 2>&1 | tee experiment.txt
+          cp experiment.txt "$OUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: experiment
+          path: research/experiments
+          retention-days: 1
+
+  # the only job that can write: commits the output to the same branch
+  save:
+    needs: run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: experiment
+          path: research/experiments
+      - name: Commit the output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/experiments
+          if ! git diff --cached --quiet; then
+            git commit -m "Backtest experiment output ($EXP)"
+            git pull --rebase -X theirs
+            git push
+          fi

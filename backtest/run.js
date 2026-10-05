@@ -604,6 +604,16 @@ const EXPERIMENTS = {
       ],
     ],
   ],
+  // 2026-10-05: Red Bull under-projected R13-R16 (+29/+22/+23/+29 constructor points) after its Austria step; how
+  // fast the pace estimate follows a car that changed (half-life, default 4, hand-set) and the shrink to the median
+  pacelag: [
+    ["pace half-life 2 races", [], { halfLife: 2 }],
+    ["pace half-life 3 races", [], { halfLife: 3 }],
+    ["pace half-life 6 races", [], { halfLife: 6 }],
+    ["pace: every round the same", [], { halfLife: Infinity }],
+    ["pace shrink 0.9 (was 0.8)", [["MODEL.paceShrink", 0.9]]],
+    ["no pace shrink", [["MODEL.paceShrink", 1]]],
+  ],
   fl: [
     ["fastest lap from the market, 25%", [["SIM.flOddsW", 0.25]]],
     ["fastest lap from the market, 50%", [["SIM.flOddsW", 0.5]]],

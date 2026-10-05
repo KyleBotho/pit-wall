@@ -289,6 +289,8 @@ function evaluate(o = {}) {
       out.recs.push({
         gd: r,
         kind: A.kind,
+        team: A.team,
+        tla: A.tla,
         ...tags,
         crps: out.crps[out.crps.length - 1],
         err: Math.abs(p - y),
