@@ -1,4 +1,4 @@
-commit 2fea636, data 2026-10-05T06:21+00:00
+commit 5087378, data 2026-10-05T06:21+00:00
 EXP=pacelag EXP_N=5000 EXP_SEEDS=3
 
 6. Walk-forward, projected points vs actual (rounds 5+; lower CRPS / MAE is better)
@@ -33,31 +33,29 @@ EXP=pacelag EXP_N=5000 EXP_SEEDS=3
 ┌─────────┬──────────────────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────┬──────────┬──────────┬─────────┐
 │ (index) │ variant                      │ CRPS             │ MAE              │ err OV           │ err places       │ err OV level     │ log Q    │ log R    │ log FL   │ ms/race │
 ├─────────┼──────────────────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────┼──────────┼──────────┼─────────┤
-│ 0       │ 'model as shipped'           │ 8.62             │ 11.815           │ 3.129            │ 2.375            │ 1.882            │ -2.239   │ -2.485   │ -2.057   │ 16      │
-│ 1       │ 'pace half-life 2 races'     │ '-0.020 ± 0.018' │ '+0.002 ± 0.032' │ '+0.007 ± 0.002' │ '+0.010 ± 0.009' │ '+0.001 ± 0.004' │ '+0.004' │ '+0.002' │ '+0.005' │ 16      │
-│ 2       │ 'pace half-life 3 races'     │ '-0.006 ± 0.013' │ '-0.001 ± 0.017' │ '+0.000 ± 0.002' │ '+0.002 ± 0.005' │ '-0.001 ± 0.002' │ '+0.007' │ '-0.000' │ '-0.009' │ 17      │
-│ 3       │ 'pace half-life 6 races'     │ '+0.012 ± 0.009' │ '+0.003 ± 0.013' │ '+0.003 ± 0.002' │ '-0.003 ± 0.003' │ '-0.001 ± 0.002' │ '-0.000' │ '-0.004' │ '-0.001' │ 16      │
-│ 4       │ 'pace: every round the same' │ '+0.037 ± 0.021' │ '+0.023 ± 0.036' │ '+0.001 ± 0.003' │ '+0.007 ± 0.010' │ '+0.000 ± 0.002' │ '-0.007' │ '-0.006' │ '+0.005' │ 16      │
-│ 5       │ 'pace shrink 0.9 (was 0.8)'  │ '-0.002 ± 0.014' │ '+0.018 ± 0.026' │ '-0.002 ± 0.004' │ '-0.009 ± 0.005' │ '-0.003 ± 0.004' │ '+0.022' │ '-0.008' │ '+0.035' │ 16      │
-│ 6       │ 'no pace shrink'             │ '-0.001 ± 0.022' │ '+0.033 ± 0.045' │ '-0.008 ± 0.005' │ '-0.006 ± 0.011' │ '-0.007 ± 0.007' │ '+0.032' │ '-0.019' │ '+0.044' │ 17      │
+│ 0       │ 'model as shipped'           │ 8.62             │ 11.815           │ 3.129            │ 2.375            │ 1.882            │ -2.239   │ -2.485   │ -2.057   │ 24      │
+│ 1       │ 'pace half-life 2 races'     │ '-0.020 ± 0.018' │ '+0.002 ± 0.032' │ '+0.007 ± 0.002' │ '+0.010 ± 0.009' │ '+0.001 ± 0.004' │ '+0.004' │ '+0.002' │ '+0.005' │ 24      │
+│ 2       │ 'pace half-life 3 races'     │ '-0.006 ± 0.013' │ '-0.001 ± 0.017' │ '+0.000 ± 0.002' │ '+0.002 ± 0.005' │ '-0.001 ± 0.002' │ '+0.007' │ '-0.000' │ '-0.009' │ 24      │
+│ 3       │ 'pace half-life 6 races'     │ '+0.012 ± 0.009' │ '+0.003 ± 0.013' │ '+0.003 ± 0.002' │ '-0.003 ± 0.003' │ '-0.001 ± 0.002' │ '-0.000' │ '-0.004' │ '-0.001' │ 25      │
+│ 4       │ 'pace: every round the same' │ '+0.037 ± 0.021' │ '+0.023 ± 0.036' │ '+0.001 ± 0.003' │ '+0.007 ± 0.010' │ '+0.000 ± 0.002' │ '-0.007' │ '-0.006' │ '+0.005' │ 24      │
+│ 5       │ 'pace shrink 0.9 (was 0.8)'  │ '-0.002 ± 0.014' │ '+0.018 ± 0.026' │ '-0.002 ± 0.004' │ '-0.009 ± 0.005' │ '-0.003 ± 0.004' │ '+0.022' │ '-0.008' │ '+0.035' │ 24      │
+│ 6       │ 'no pace shrink'             │ '-0.001 ± 0.022' │ '+0.033 ± 0.045' │ '-0.008 ± 0.005' │ '-0.006 ± 0.011' │ '-0.007 ± 0.007' │ '+0.032' │ '-0.019' │ '+0.044' │ 24      │
 └─────────┴──────────────────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────┴──────────┴──────────┴─────────┘
    err OV / err places: mean |simulated - actual| per driver-race of overtake points and of race places gained +
    lost points; err OV level: |simulated - actual| race overtakes per driver, per round; ms/race: per 1,000 sims.
    fastest-lap odds at lock for 12 of the rounds (history/<season>/odds, backtest/odds_by_round.json)
-/home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28
-    seeds.flatMap((seed) => evaluate({ N, seed, ...opt }).recs.filter((r) => r.gd >= from && r.gd <= to)),
-                                                              ^
+Projected - actual points per team-round (drivers + constructor), R5-R16, 3 x 5000
+team                   shipped   half-life 2   half-life 6    shrink 0.9     no shrink   (R5-R16 / last 4)
+Alpine              -1.7/+19.8    -1.6/+20.7    -1.6/+20.1    -2.2/+19.2    -2.4/+18.5
+Aston Martin        +7.8/+17.1    +8.2/+17.3    +7.6/+17.4    +7.9/+17.3    +8.1/+17.8
+Audi                 -0.5/-5.7     +0.0/-4.9     -0.5/-6.0     -1.8/-7.1     -2.9/-8.0
+Cadillac            +18.5/-8.3    +18.5/-8.2    +18.5/-8.8    +18.4/-8.6    +18.5/-8.4
+Ferrari            +21.7/+48.0   +21.4/+46.3   +21.3/+48.1   +22.9/+49.1   +23.6/+50.1
+Haas                 +4.0/-6.4     +3.4/-6.1     +4.1/-6.6     +3.0/-7.4     +2.5/-8.0
+McLaren             +2.3/+11.6    +2.5/+12.5    +2.2/+10.7    +2.6/+12.4    +2.1/+11.9
+Mercedes            +4.1/-27.3    +2.0/-28.8    +4.5/-26.4    +5.5/-25.7    +7.0/-24.3
+Racing Bulls        -11.5/-7.3    -11.5/-7.6    -11.7/-7.6    -12.2/-8.0    -12.7/-8.4
+Red Bull Racing    -15.8/-55.1   -13.8/-54.0   -16.1/-54.9   -15.4/-54.5   -15.2/-54.5
+Williams           +11.7/+12.6   +12.0/+12.5   +11.9/+12.9   +11.1/+12.2   +10.6/+11.7
 
-TypeError: Cannot read properties of undefined (reading 'filter')
-    at /home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28:63
-    at Array.flatMap (<anonymous>)
-    at /home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28:11
-    at Object.withSettings (/home/runner/work/pit-wall/pit-wall/engine.js:4075:14)
-    at Object.<anonymous> (/home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:27:18)
-    at Module._compile (node:internal/modules/cjs/loader:1929:14)
-    at Object..js (node:internal/modules/cjs/loader:2060:10)
-    at Module.load (node:internal/modules/cjs/loader:1651:32)
-    at Module._load (node:internal/modules/cjs/loader:1443:12)
-    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
-
-Node.js v24.21.0
+Red Bull per round, shipped: R5 +5, R6 +36, R7 -30, R8 -46, R9 +55, R10 -40, R11 -36, R12 +87, R13 -43, R14 -50, R15 -59, R16 -68
