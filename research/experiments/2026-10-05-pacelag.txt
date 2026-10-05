@@ -1,0 +1,63 @@
+commit 2fea636, data 2026-10-05T06:21+00:00
+EXP=pacelag EXP_N=5000 EXP_SEEDS=3
+
+6. Walk-forward, projected points vs actual (rounds 5+; lower CRPS / MAE is better)
+┌─────────┬───────────────────────────────────┬───────┬────────┬─────────┬─────────┬──────┬───────┬───────────┬───────────┬──────────┐
+│ (index) │ variant                           │ CRPS  │ MAE    │ MAE drv │ MAE con │ bias │ rho   │ in 10-90% │ in 25-75% │ team pts │
+├─────────┼───────────────────────────────────┼───────┼────────┼─────────┼─────────┼──────┼───────┼───────────┼───────────┼──────────┤
+│ 0       │ 'model (as shipped)'              │ 8.609 │ 11.784 │ 10.21   │ 14.93   │ 1.22 │ 0.726 │ '81%'     │ '54%'     │ 2146     │
+│ 1       │ 'without the market'              │ 8.694 │ 11.946 │ 10.35   │ 15.13   │ 1.19 │ 0.727 │ '82%'     │ '52%'     │ 2262     │
+│ 2       │ 'without practice'                │ 8.884 │ 12.281 │ 10.58   │ 15.68   │ 1.41 │ 0.718 │ '80%'     │ '53%'     │ 2135     │
+│ 3       │ '+30% recent form (old default)'  │ 8.791 │ 12.081 │ 10.42   │ 15.4    │ 1.38 │ 0.717 │ '80%'     │ '50%'     │ 2242     │
+│ 4       │ 'no pace/reliability uncertainty' │ 8.629 │ 11.829 │ 10.28   │ 14.93   │ 1.13 │ 0.723 │ '81%'     │ '54%'     │ 2146     │
+└─────────┴───────────────────────────────────┴───────┴────────┴─────────┴─────────┴──────┴───────┴───────────┴───────────┴──────────┘
+   by group (model as shipped; wet / sprint rounds are few, read their rows as indications):
+┌─────────┬─────────────────┬────────┬─────┬───────┬───────┬───────┬───────────┬───────────┬────────────────┬────────┬────────┐
+│ (index) │ group           │ rounds │ n   │ CRPS  │ MAE   │ bias  │ in 10-90% │ in 25-75% │ matching: bias │ 10-90% │ 25-75% │
+├─────────┼─────────────────┼────────┼─────┼───────┼───────┼───────┼───────────┼───────────┼────────────────┼────────┼────────┤
+│ 0       │ 'drivers'       │ 12     │ 264 │ 7.533 │ 10.21 │ 0.85  │ '81%'     │ '57%'     │ ''             │ ''     │ ''     │
+│ 1       │ 'constructors'  │ 12     │ 132 │ 10.76 │ 14.93 │ 1.97  │ '82%'     │ '48%'     │ ''             │ ''     │ ''     │
+│ 2       │ 'sprint'        │ 3      │ 99  │ 8.49  │ 11.53 │ 1.49  │ '87%'     │ '63%'     │ ''             │ ''     │ ''     │
+│ 3       │ 'normal'        │ 9      │ 297 │ 8.648 │ 11.87 │ 1.14  │ '79%'     │ '51%'     │ ''             │ ''     │ ''     │
+│ 4       │ 'wet'           │ 2      │ 66  │ 8.395 │ 10.65 │ 2.9   │ '85%'     │ '67%'     │ 2.41           │ '88%'  │ '65%'  │
+│ 5       │ 'dry'           │ 10     │ 330 │ 8.652 │ 12.01 │ 0.89  │ '80%'     │ '52%'     │ 1.31           │ '80%'  │ '50%'  │
+│ 6       │ 'safety car'    │ 6      │ 198 │ 9.204 │ 13.07 │ -0.11 │ '76%'     │ '47%'     │ -0.27          │ '80%'  │ '49%'  │
+│ 7       │ 'no safety car' │ 6      │ 198 │ 8.013 │ 10.5  │ 2.56  │ '86%'     │ '61%'     │ 2.71           │ '84%'  │ '56%'  │
+└─────────┴─────────────────┴────────┴─────┴───────┴───────┴───────┴───────────┴───────────┴────────────────┴────────┴────────┘
+   race safety car: forecast 56% on average, happened in 50% of 12 rounds; Brier 0.266 (this season's rate so far: 0.301; lower is better)
+   wet race: forecast 31% on average, happened in 17% of 12 rounds; Brier 0.147 (this season's rate so far: 0.153; lower is better)
+   baselines, MAE: season average 13.52, recent form 13.81, last three 14.48; best possible fresh team 3413 pts
+
+9. Experiments vs the model as shipped [pacelag] (3 seeds x 5000 sims; Δ < 0 is better for CRPS, MAE and the category errors,
+   > 0 better for the log scores of qualifying / race positions and of the fastest lap)
+┌─────────┬──────────────────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────────────┬──────────┬──────────┬──────────┬─────────┐
+│ (index) │ variant                      │ CRPS             │ MAE              │ err OV           │ err places       │ err OV level     │ log Q    │ log R    │ log FL   │ ms/race │
+├─────────┼──────────────────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────────────┼──────────┼──────────┼──────────┼─────────┤
+│ 0       │ 'model as shipped'           │ 8.62             │ 11.815           │ 3.129            │ 2.375            │ 1.882            │ -2.239   │ -2.485   │ -2.057   │ 16      │
+│ 1       │ 'pace half-life 2 races'     │ '-0.020 ± 0.018' │ '+0.002 ± 0.032' │ '+0.007 ± 0.002' │ '+0.010 ± 0.009' │ '+0.001 ± 0.004' │ '+0.004' │ '+0.002' │ '+0.005' │ 16      │
+│ 2       │ 'pace half-life 3 races'     │ '-0.006 ± 0.013' │ '-0.001 ± 0.017' │ '+0.000 ± 0.002' │ '+0.002 ± 0.005' │ '-0.001 ± 0.002' │ '+0.007' │ '-0.000' │ '-0.009' │ 17      │
+│ 3       │ 'pace half-life 6 races'     │ '+0.012 ± 0.009' │ '+0.003 ± 0.013' │ '+0.003 ± 0.002' │ '-0.003 ± 0.003' │ '-0.001 ± 0.002' │ '-0.000' │ '-0.004' │ '-0.001' │ 16      │
+│ 4       │ 'pace: every round the same' │ '+0.037 ± 0.021' │ '+0.023 ± 0.036' │ '+0.001 ± 0.003' │ '+0.007 ± 0.010' │ '+0.000 ± 0.002' │ '-0.007' │ '-0.006' │ '+0.005' │ 16      │
+│ 5       │ 'pace shrink 0.9 (was 0.8)'  │ '-0.002 ± 0.014' │ '+0.018 ± 0.026' │ '-0.002 ± 0.004' │ '-0.009 ± 0.005' │ '-0.003 ± 0.004' │ '+0.022' │ '-0.008' │ '+0.035' │ 16      │
+│ 6       │ 'no pace shrink'             │ '-0.001 ± 0.022' │ '+0.033 ± 0.045' │ '-0.008 ± 0.005' │ '-0.006 ± 0.011' │ '-0.007 ± 0.007' │ '+0.032' │ '-0.019' │ '+0.044' │ 17      │
+└─────────┴──────────────────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────────────┴──────────┴──────────┴──────────┴─────────┘
+   err OV / err places: mean |simulated - actual| per driver-race of overtake points and of race places gained +
+   lost points; err OV level: |simulated - actual| race overtakes per driver, per round; ms/race: per 1,000 sims.
+   fastest-lap odds at lock for 12 of the rounds (history/<season>/odds, backtest/odds_by_round.json)
+/home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28
+    seeds.flatMap((seed) => evaluate({ N, seed, ...opt }).recs.filter((r) => r.gd >= from && r.gd <= to)),
+                                                              ^
+
+TypeError: Cannot read properties of undefined (reading 'filter')
+    at /home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28:63
+    at Array.flatMap (<anonymous>)
+    at /home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:28:11
+    at Object.withSettings (/home/runner/work/pit-wall/pit-wall/engine.js:4075:14)
+    at Object.<anonymous> (/home/runner/work/pit-wall/pit-wall/backtest/team_bias.js:27:18)
+    at Module._compile (node:internal/modules/cjs/loader:1929:14)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+
+Node.js v24.21.0
