@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-29T10:12Z",
+ "generated": "2026-10-06T10:44Z",
  "N": 4000,
  "passes": 1,
  "rounds": [
@@ -13,64 +13,37 @@
   12,
   13,
   14,
-  15
+  15,
+  16
  ],
  "holdout": {
   "rounds": [
-   13,
    14,
-   15
+   15,
+   16
   ],
-  "shipped": 9.363,
-  "fitted": 9.319,
-  "dCrps": -0.044,
-  "se": 0.023,
+  "shipped": 9.612,
+  "fitted": 9.698,
+  "dCrps": 0.086,
+  "se": 0.067,
   "folds": [
-   {
-    "gd": 13,
-    "train": [
-     5,
-     12
-    ],
-    "shipped": 10.403,
-    "fitted": 10.334,
-    "dCrps": -0.069,
-    "changes": [
-     {
-      "setting": "MODEL.paceShrink",
-      "fitted": 0.9
-     },
-     {
-      "setting": "SIM.qSd",
-      "fitted": 0.12
-     },
-     {
-      "setting": "SIM.teamSd",
-      "fitted": 0.05
-     },
-     {
-      "setting": "SIM.pitStops",
-      "fitted": 0
-     }
-    ]
-   },
    {
     "gd": 14,
     "train": [
      5,
      13
     ],
-    "shipped": 7.39,
-    "fitted": 7.392,
-    "dCrps": 0.002,
+    "shipped": 7.396,
+    "fitted": 7.357,
+    "dCrps": -0.039,
     "changes": [
      {
       "setting": "MODEL.paceShrink",
-      "fitted": 0.7
+      "fitted": 1
      },
      {
       "setting": "SIM.teamSd",
-      "fitted": 0.05
+      "fitted": 0.15
      },
      {
       "setting": "SIM.tau",
@@ -78,7 +51,11 @@
      },
      {
       "setting": "SIM.scNoise",
-      "fitted": 1.6
+      "fitted": 1.2
+     },
+     {
+      "setting": "SIM.pitStops",
+      "fitted": 0
      }
     ]
    },
@@ -88,13 +65,45 @@
      5,
      14
     ],
-    "shipped": 10.296,
-    "fitted": 10.232,
-    "dCrps": -0.064,
+    "shipped": 10.199,
+    "fitted": 10.306,
+    "dCrps": 0.107,
     "changes": [
      {
-      "setting": "SIM.qSd",
-      "fitted": 0.25
+      "setting": "MODEL.paceShrink",
+      "fitted": 1
+     },
+     {
+      "setting": "SIM.teamSd",
+      "fitted": 0.15
+     },
+     {
+      "setting": "SIM.tau",
+      "fitted": 0.02
+     },
+     {
+      "setting": "SIM.scNoise",
+      "fitted": 1.2
+     },
+     {
+      "setting": "SIM.pitStops",
+      "fitted": 0
+     }
+    ]
+   },
+   {
+    "gd": 16,
+    "train": [
+     5,
+     15
+    ],
+    "shipped": 11.24,
+    "fitted": 11.431,
+    "dCrps": 0.191,
+    "changes": [
+     {
+      "setting": "MODEL.paceShrink",
+      "fitted": 1
      },
      {
       "setting": "SIM.rSd",
@@ -105,37 +114,41 @@
       "fitted": 0.02
      },
      {
-      "setting": "SIM.unc",
-      "fitted": 0
+      "setting": "SIM.oddsW",
+      "fitted": 0.75
      },
      {
-      "setting": "SIM.scNoise",
-      "fitted": 1.6
+      "setting": "MODEL.ovShrink",
+      "fitted": 25
+     },
+     {
+      "setting": "SIM.pitStops",
+      "fitted": 0
      }
     ]
    }
   ]
  },
  "shipped": {
-  "crps": 8.62,
-  "mae": 11.849,
-  "rho": 0.73,
-  "cover80": 0.81,
-  "cover50": 0.534
+  "crps": 8.824,
+  "mae": 12.229,
+  "rho": 0.725,
+  "cover80": 0.795,
+  "cover50": 0.523
  },
  "fitted": {
-  "crps": 8.561,
-  "mae": 11.853,
-  "rho": 0.733,
-  "cover80": 0.832,
-  "cover50": 0.548
+  "crps": 8.783,
+  "mae": 12.251,
+  "rho": 0.728,
+  "cover80": 0.808,
+  "cover50": 0.515
  },
  "changes": [
   {
    "setting": "MODEL.paceShrink",
    "shipped": 0.8,
-   "fitted": 0.7,
-   "folds": 1
+   "fitted": 1,
+   "folds": 3
   },
   {
    "setting": "SIM.rSd",
@@ -147,20 +160,8 @@
    "setting": "SIM.tau",
    "shipped": 0.07,
    "fitted": 0.02,
-   "folds": 2
-  },
-  {
-   "setting": "SIM.unc",
-   "shipped": 1,
-   "fitted": 0.5,
-   "folds": 0
-  },
-  {
-   "setting": "SIM.scNoise",
-   "shipped": 1.35,
-   "fitted": 1.6,
-   "folds": 2
+   "folds": 3
   }
  ],
- "minutes": 13.2
+ "minutes": 10.2
 }
