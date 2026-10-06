@@ -21,7 +21,12 @@ commit hashes and backtest numbers are as of then).
       R13-R14, Russell R16). Not built: an upgrade-aware pace challenger (down-weight a team's rounds before a
       declared package): it would act like a short half-life for that team, and half-life 2 didn't move Red Bull.
       Outputs: research/experiments/2026-10-05-pacelag*.txt. Also found: the provisional Sepang points had no
-      overtake or pit-stop lines (added at certification).
+      overtake or pit-stop lines (added at certification). Rerun 2026-10-06 on certified Sepang (commit 55ebabc,
+      data 2026-10-06T00:23, research/experiments/2026-10-06-pacelag-certified.txt): shipped CRPS 8.815; half-life 2
+      -0.024 +/- 0.015, 3 -0.007 +/- 0.013, 6 +0.010 +/- 0.009, every round +0.035 +/- 0.024; shrink 0.9 +0.011 +/-
+      0.013, none +0.007 +/- 0.022: still ties (half-life 2 the closest, 1.6 SE, retrospective). Red Bull -17.3 per
+      round R5-R16, -61 over R13-R16 (Sepang -96), -61 under every setting; with the real qualifying + race pace
+      -5.5 / -45: same conclusion.
 - [x] 2026-09-30, season fold-over button and season report (user: "a button in the admin / sim lab tab that
       triggers the fold over, include the other challengers, and a report comparing the challengers and the live
       model in the past season"). Settings > Admin > "Season fold-over and report" (the Admin panel, not the Sim
