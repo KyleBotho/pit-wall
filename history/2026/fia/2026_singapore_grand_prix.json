@@ -1,0 +1,34 @@
+{
+ "event": "2026_singapore_grand_prix",
+ "docs": [
+  {
+   "doc": 1,
+   "title": "Doc 1 - Competition Visa",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_competition_visa.pdf",
+   "published": "2026-10-07T01:51+00:00",
+   "firstSeen": "2026-10-07T14:00+00:00"
+  },
+  {
+   "doc": 2,
+   "title": "Doc 2 - Competition Notes - Pirelli Preview",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_competition_notes_-_pirelli_preview.pdf",
+   "published": "2026-10-07T02:20+00:00",
+   "firstSeen": "2026-10-07T14:00+00:00",
+   "read": "tyres"
+  }
+ ],
+ "tech": {
+  "tyres": {
+   "compounds": [
+    "C3",
+    "C4",
+    "C5"
+   ],
+   "q3": "C5",
+   "race": [
+    "C3",
+    "C4"
+   ]
+  }
+ }
+}
