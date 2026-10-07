@@ -5,6 +5,33 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-07, lessons from an outside sim (user: F1 Fantasy Tools' new Simulation Builder tab, rhter's sim; "see
+      what can be implemented and why our sims are so off"). The comparison itself, with rhter's numbers, is in the
+      private repo (`research/competitors/competitors.md`); here only our own and the actual numbers. The gap was
+      LEVEL, not order. Our own checks against 2026:
+      Overtakes before practice: our R17 Singapore run had the flat season level (4.9 per starter, 108 race overtake
+      points for the field); the speed rule takes Singapore to ~2.8 once FP1 runs. Rain does not raise overtaking on
+      its own: 12 races with rain 2023-2025 vs the same circuits dry, ratio 1.00 (+/- 0.13 log).
+      Pit stops: ours ~43 points per race for the field, actual R5+ 42.7 (fine). Retirements: actual 4.25 per race;
+      our R17 run 4.99 (it carries the 66% race-rain forecast).
+      Qualifying too mixed: walk-forward R5-R15 (as at lock) puts 6.51 top-four-team cars in the qualifying top 8 vs
+      7.55 actual, too few in 9 of 11 rounds; 59% of actual qualifying positions inside our middle 50%; the race top 8
+      calibrated (6.22 vs 6.18). Our model's qualifying gaps (midfield ~0.6%, backmarkers ~1.8% off the fastest) are
+      well inside the actual per-session gaps (midfield ~1.0-1.6%, backmarkers ~2.2-3%). Our implied constructor Q
+      bonus runs ~1 point low for the top teams (actual R5+: 9.6-10). Variants, 3 seeds: qSd 0.1 CRPS -0.010 +/-
+      0.018 (6/11 rounds), qualifying log score -2.206 -> -2.168, top 8 6.86; paceShrink 1.0 +0.011 +/- 0.024, log
+      score -2.157 but the race log score worse; qSd 0.14 a tie.
+      Built: (1) TRACK.speedPrior: a race without practice takes its average speed from the circuit's past
+      qualifying reference lap (priors.py `qref`: median of the ten fastest best Q1-Q3 laps, the faster of the
+      circuit's last two seasons since a wet session runs slow, e.g. Singapore 2022) times the median ratio of this
+      season's practice reference laps to those past laps (k 1.044, log sd 0.0115 over 15 rounds; lap estimates
+      within ~1.5%); that sd goes into the level's uncertainty (ovSd). Walk-forward with practice withheld: CRPS
+      8.844 -> 8.643 (-0.202 +/- 0.129, 5 of 11 rounds better, R5 and Madrid unchanged: too few rounds / no
+      history), MAE 12.27 -> 11.86; at lock identical. Shipped (it only changes races without practice: the
+      planner's view, not the frozen projection). The Circuits view says where the speed came from (`kmhFrom`).
+      (2) Challenger `qtight` (SIM.qSd 0.1), scored from R17. (3) The frozen projection keeps `parts` per asset
+      (engine projectionParts), so a round can be scored by category; the private repo uses it against the
+      builder (`research/competitors/score.py builder <gd>`).
 - [x] 2026-09-30, season fold-over button and season report (user: "a button in the admin / sim lab tab that
       triggers the fold over, include the other challengers, and a report comparing the challengers and the live
       model in the past season"). Settings > Admin > "Season fold-over and report" (the Admin panel, not the Sim

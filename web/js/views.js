@@ -445,10 +445,12 @@ export function renderCal() {
       const wx = (DATA.weather || {})[g.gd];
       const rainSrc = wx && wx.r != null && !(state.circuits[g.gd] || {}).rain ? "forecast" : "past seasons here";
       const pr = c.prior;
-      // the overtake level from practice average speed (Engine.TRACK.speed), once this weekend's practice has run
+      // the overtake level from the track's average speed (Engine.TRACK.speed): this weekend's practice once it has
+      // run, else the circuit's past qualifying lap scaled to this season (TRACK.speedPrior)
       const sp = Engine.TRACK.speed && trackFit.speed && c.kmh != null ? trackFit.speed : null;
+      const speedSrc = c.kmhFrom === "past" ? "expected from past seasons' laps here" : "in practice";
       const speedTxt = sp
-        ? `<div class="note" style="font-size:12px">Average speed in practice ${c.kmh.toFixed(0)} km/h (season ${sp.mx.toFixed(0)}): overtaking ${ovBase(g).toFixed(2)}× this season's average. Faster tracks see more passing (fitted on ${sp.n} rounds).</div>`
+        ? `<div class="note" style="font-size:12px">Average speed ${speedSrc} ${c.kmh.toFixed(0)} km/h (season ${sp.mx.toFixed(0)}): overtaking ${ovBase(g).toFixed(2)}× this season's average. Faster tracks see more passing (fitted on ${sp.n} rounds).</div>`
         : "";
       const hist = pr
         ? `<div class="note" style="font-size:12px">Past seasons here${pr.n ? ` (${pr.n} races)` : " (new circuit: similar tracks)"}: ${pr.ov != null && !sp ? `overtaking ${ovBase(g).toFixed(2)}× this season's average · ` : ""}safety car ${pct0(c.sc)} · rain ${pct0(pr.rain)}</div>`

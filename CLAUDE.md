@@ -68,7 +68,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   for the next race, de-vigged; archived at lock in `history/2026/odds/`), `weekend` (race-control grid penalties
   and, once run, the actual qualifying/sprint order from OpenF1).
 - `priors.py` — run once per season (before round 1): `data/circuit_priors.json`, one row per past race (Jolpica
-  2014+: position changes, grid-finish correlation, retirements; OpenF1 2023+: SC, VSC, red, rain, overtakes).
+  2014+: position changes, grid-finish correlation, retirements, `qref` = the qualifying reference lap (median of the
+  ten fastest best laps; TRACK.speedPrior); OpenF1 2023+: SC, VSC, red, rain, overtakes).
 - `web/app.html` + `web/app.css` + `web/js/*.js` — the page. ES modules with explicit imports (since 2026-09-26),
   entry `main.js`; `tools/bundle.js` (esbuild) bundles them and supabase-js from npm into one script that refresh.py
   inlines (so `python refresh.py` needs `npm ci`). Engine and Hindsight stay classic scripts (also used by Node);
@@ -161,6 +162,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
 - `tools/freeze.js` — what refresh.py freezes before lock: the projection with its record (commit, settings, seeds,
   input hashes, exact simulate() inputs), the challengers (`Engine.CHALLENGERS`) and, in the last 6 h, 2,000 joint
   samples -> `history/<season>/{projections,challengers,samples}/gdNN.json`. Scored by backtest/accuracy.js.
+  From R17 each projected asset also carries `parts` (engine `projectionParts`: points per category, retirement /
+  fastest lap / DotD chances, overtakes, average positions, negatives, constructors' Q bonus and pit points, price
+  change chances), for scoring by category against outside sims (private repo `research/competitors/score.py builder`).
 - `tools/sync-shared.js` — writes the event tables from `config/feeds.json` into the Supabase function (it's
   deployed by pasting one file); `tests/shared.test.js` fails if they drift. The `refresh` function is pasted the
   same way: after a change to `supabase/functions/refresh/index.ts` the user must deploy it again.
@@ -327,7 +331,11 @@ the additional data sources", plus his own idea: circuit priors carry a SEASON T
   circuits: position changes x0.95, retirements x1.52, SC x1.14, grid-finish corr +0.04. Re-run section 2 each
   season: the new-regs effect may fade.
 - Overtake level of the next race (2026-09-25, item 9 stage 2): from its practice average speed (TRACK.speed, see
-  the to-do list); a flat season level for races without practice yet.
+  the to-do list). A race without practice yet (the next one before FP1, the planner's later races): since
+  2026-10-07 the same rule on the circuit's past qualifying lap scaled to this season (TRACK.speedPrior; a circuit
+  with no history keeps the flat season level). Walk-forward R5-R15 with practice withheld: CRPS 8.844 -> 8.643
+  (-0.20 +/- 0.13; Monza, Silverstone, Zandvoort, Monaco gain, Austria loses a little), MAE 12.27 -> 11.86; at lock
+  unchanged (practice wins). Found comparing an outside sim (docs/history.md 2026-10-07).
 - Price rule: average over the races in the last three rounds, a round sat out isn't a zero (`Engine.priceBase`):
   493/495 (the two misses: R8, likely points corrected after prices). Unchanged: DNF team rate shrink k=16 no recency
   (log loss 0.4608), official scoring.
@@ -433,12 +441,17 @@ there before re-deciding something.
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
      2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
-      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8, wetskill, sprintskill)
+      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8, wetskill, sprintskill, qtight from R17)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
       records, FastF1 archive, weather vintages + ensemble, Kalshi quotes, FIA index arriving on their own (health
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session
       weather (weather/ + races/ wx), market-quote quality weights (quotes/), grid penalties from FIA documents.
 
+- [ ] Qualifying too mixed (history 2026-10-07, found comparing an outside sim): walk-forward R5-R15 puts 6.51 top-four-team
+      cars in the qualifying top 8 vs 7.55 actual (too few in 9 of 11 rounds; race top 8 calibrated, 6.22 vs 6.18),
+      and our model's qualifying gaps sit well inside the actual per-session gaps. Challenger `qtight` (SIM.qSd 0.1) from R17: points a tie,
+      qualifying log score better. If it earns adoption, look next at the gap metric (per-session gaps averaged over
+      Q1-Q3 squeeze the field: top cars don't push in Q1) before more noise tuning.
 - [ ] Per-driver skills (history 2026-09-30): `wetskill` and `sprintskill` are challengers from R16; each is only
       evaluable on a weekend with rain forecast for a qualifying / a sprint, so expect few scored rounds this season.
       Automatic in season (skills.py adds each finished round; wet qualifying from tyre data). The evidence is

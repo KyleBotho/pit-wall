@@ -1054,6 +1054,81 @@ test("trackModel: the next race's overtake level follows its practice average sp
   );
 });
 
+test("trackModel: a race without practice takes its speed from the circuit's past lap (TRACK.speedPrior)", () => {
+  const km = { slow: 3.3, mid: 5, fast: 5.8 };
+  const laps = { slow: 74, mid: 90, fast: 82 };
+  const ovt = { slow: 1.5, mid: 4, fast: 10 };
+  const order = ["slow", "mid", "fast", "slow", "mid", "fast"];
+  const schedule = order.map((c, i) => ({ gd: i + 1, name: c + " GP", sprint: false, lock: "", circuit: c }));
+  schedule.push({ gd: 7, name: "next GP", sprint: false, lock: "", circuit: "slow" });
+  schedule.push({ gd: 8, name: "later GP", sprint: false, lock: "", circuit: "fast" });
+  schedule.push({ gd: 9, name: "unknown GP", sprint: false, lock: "", circuit: "nohistory" });
+  const results = { race: {}, quali: {}, sprint: {} };
+  const trackStats = {};
+  order.forEach((c, i) => {
+    results.race[i + 1] = Array.from({ length: 20 }, (_, k) => ({
+      tla: "T" + k,
+      team: "X",
+      pos: k + 1,
+      grid: k + 1,
+      cls: true,
+    }));
+    trackStats[i + 1] = { ovt: ovt[c], lap: laps[c] };
+  });
+  // past qualifying laps 5% faster than this season's practice; the fast track's latest one was wet (slow)
+  const row = (season, circuit, qref) => ({
+    season,
+    round: 1,
+    circuit,
+    name: circuit,
+    starters: 20,
+    dnf: 2,
+    move: 3,
+    gain: 1.5,
+    gridCorr: 0.6,
+    qref,
+  });
+  const priors = {
+    races: [
+      row(2024, "slow", 74 / 1.05),
+      row(2025, "slow", 74 / 1.05),
+      row(2025, "mid", 90 / 1.05),
+      row(2024, "fast", 82 / 1.05),
+      row(2025, "fast", 95),
+    ],
+  };
+  const data = {
+    schedule,
+    done: [1, 2, 3, 4, 5, 6],
+    assets: [],
+    results,
+    trackStats,
+    cfg: { circuits: { list: [], km } },
+    priors,
+    practice: [],
+  };
+  const tm = E.trackModel(data, { speed: true, speedLambda: 0 });
+  assert.ok(Math.abs(tm.pastLap.k - 1.05) < 1e-9, `k ${tm.pastLap.k}`);
+  assert.equal(tm.pastLap.lap.fast, 82 / 1.05); // the faster of its last two
+  // the next race before practice and a later race: the speed from the past lap, at the season's fitted level
+  const next = tm.forCircuit(schedule[6]),
+    later = tm.forCircuit(schedule[7]);
+  assert.equal(next.kmhFrom, "past");
+  assert.ok(Math.abs(next.kmh - 160.5) < 0.1, `speed ${next.kmh}`);
+  assert.ok(Math.abs(later.kmh - 254.6) < 0.1, `speed ${later.kmh}`);
+  assert.ok(next.ov < 1 && later.ov > 1, `levels ${next.ov} ${later.ov}`);
+  // practice wins once it has run; a circuit with no past lap, or the switch off: as before
+  const prac = E.trackModel(
+    { ...data, practice: [{ name: "Practice 1", done: true, ref: 90, drivers: {} }] },
+    { speed: true },
+  );
+  assert.equal(prac.forCircuit(schedule[6]).kmhFrom, "practice");
+  assert.equal(tm.forCircuit(schedule[8]).kmh, undefined);
+  const off = E.trackModel(data, { speed: true, speedPrior: false });
+  assert.equal(off.pastLap, null);
+  assert.equal(off.forCircuit(schedule[7]).kmh, undefined);
+});
+
 test("planHorizon: waiting to transfer can beat transferring now, and matches a brute force", () => {
   // race 1: keep the team; race 2: driver f (not owned) is great. Free transfers: 0 now, 2 next race.
   const mk = (vals) =>

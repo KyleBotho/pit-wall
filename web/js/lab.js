@@ -903,7 +903,7 @@ export function renderLab() {
   $("#labOut").hidden = false;
   $("#labStatus").textContent =
     `R${r.g.gd} ${r.g.name}: ${r.N.toLocaleString()} weekends in ${(r.ms / 1000).toFixed(1)} s (setup and market fit ${((r.msSetup || 0) / 1000).toFixed(1)} s)` +
-    ` · overtakes ${(c.ov * (c.ovMean ?? 4)).toFixed(1)} per starter${c.kmh ? ` (practice ${c.kmh.toFixed(0)} km/h)` : ""}` +
+    ` · overtakes ${(c.ov * (c.ovMean ?? 4)).toFixed(1)} per starter${c.kmh ? ` (${c.kmhFrom === "past" ? "past laps" : "practice"} ${c.kmh.toFixed(0)} km/h)` : ""}` +
     ` · safety car ${pct(r.sim.sc)} · rain ${pct(r.sim.wet)}` +
     (r.changed.length ? ` · run with: ${r.changed.map((s) => `${s.l} = ${labVal(s)}`).join(", ")}` : "");
   // only the open tab renders (the combinations and violins take a moment)

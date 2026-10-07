@@ -69,22 +69,56 @@ def race_metrics(rows):
     }
 
 
-def jolpica_season(year):
-    """Every race of a season: schedule (circuit, date) + results."""
-    sched = get(f"https://api.jolpi.ca/ergast/f1/{year}.json?limit=100", cached(f"pj_sched_{year}.json"), reuse=True)
-    races = {int(r["round"]): r for r in sched["MRData"]["RaceTable"]["Races"]}
-    res = {}
-    off, total = 0, 1
+def lap_seconds(t):
+    """A Jolpica lap time ("1:15.096" or "75.096") in seconds, else None."""
+    try:
+        m, _, sec = (t or "").rpartition(":")
+        return (int(m) * 60 if m else 0) + float(sec)
+    except ValueError:
+        return None
+
+
+QREF_DRIVERS = 10  # the same count as practice.py ref_lap
+
+
+def qualifying_ref(rows):
+    """The qualifying reference lap (s): median of the QREF_DRIVERS fastest drivers' best Q1-Q3 laps. Like practice.py's
+    ref_lap, it gives the track's average speed; engine.js trackModel scales it to this season's practice laps for a
+    race without practice yet (TRACK.speedPrior)."""
+    best = []
+    for r in rows:
+        ts = [x for x in (lap_seconds(r.get(k)) for k in ("Q1", "Q2", "Q3")) if x]
+        if ts:
+            best.append(min(ts))
+    top = sorted(best)[:QREF_DRIVERS]
+    if len(top) < 5:
+        return None
+    mid = len(top) // 2
+    return round(top[mid] if len(top) % 2 else (top[mid - 1] + top[mid]) / 2, 3)
+
+
+def jolpica_pages(year, kind, key):
+    """{round: rows} for one Jolpica season listing (results / qualifying), paged and cached."""
+    out, off, total = {}, 0, 1
     while off < total:
         d = get(
-            f"https://api.jolpi.ca/ergast/f1/{year}/results.json?limit=100&offset={off}",
-            cached(f"pj_results_{year}_{off}.json"),
+            f"https://api.jolpi.ca/ergast/f1/{year}/{kind}.json?limit=100&offset={off}",
+            cached(f"pj_{kind}_{year}_{off}.json"),
             reuse=True,
         )["MRData"]
         total = int(d["total"])
         for r in d["RaceTable"]["Races"]:
-            res.setdefault(int(r["round"]), []).extend(r["Results"])
+            out.setdefault(int(r["round"]), []).extend(r[key])
         off += 100
+    return out
+
+
+def jolpica_season(year):
+    """Every race of a season: schedule (circuit, date) + results + the qualifying reference lap."""
+    sched = get(f"https://api.jolpi.ca/ergast/f1/{year}.json?limit=100", cached(f"pj_sched_{year}.json"), reuse=True)
+    races = {int(r["round"]): r for r in sched["MRData"]["RaceTable"]["Races"]}
+    res = jolpica_pages(year, "results", "Results")
+    quali = jolpica_pages(year, "qualifying", "QualifyingResults")
     out = []
     for rnd, r in sorted(races.items()):
         if rnd not in res:
@@ -97,6 +131,7 @@ def jolpica_season(year):
                 "name": r["raceName"],
                 "date": r["date"],
                 **race_metrics(res[rnd]),
+                "qref": qualifying_ref(quali.get(rnd, [])),
             }
         )
     return out

@@ -180,7 +180,7 @@
   ];
   const PIT_FASTEST = 5;
 
-  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, scAt?: number[], rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
+  /** @typedef {{ ov: number, ovMean?: number, kmh?: number, kmhFrom?: "practice" | "past", laps?: number, lapT?: number, grid: number, chaos: number, sc?: number, scOv?: number, scAt?: number[], rain?: { q?: number, s?: number, r?: number, rho?: number }, ovSd?: number, note: string, feat: number[], teamShift?: Record<string, number>, id?: string, prior?: Record<string, number | null> }} Circuit */
   /** @typedef {{ tla: string, team: string, pos: number, grid?: number, cls?: boolean, fl?: boolean, gap?: number | null, num?: number, laps?: number, dns?: boolean, dsq?: boolean }} ResultRow */
   /** @typedef {{ gd: number, price: number, pts: number, active: boolean, team: string, r?: number | null, nn?: number, ev?: any[][], own?: number }} HistRow */
   /** @typedef {{ id: string, kind: "D" | "C", name?: string, tla: string, team: string, price: number, active: boolean, overtakePts: number, own?: number, hist: (HistRow | null)[] }} Asset */
@@ -188,7 +188,7 @@
   /** @typedef {{ gd: number, name: string, sprint: boolean, lock: string, circuit?: string, raceStart?: string, sessions?: { type: string, start?: string, end?: string }[] }} Gameday */
   /** @typedef {{ Q?: { share: number[], teams: Record<string, { gap: number, band: number[] }> }, FP?: { share: number[], lap?: number } }} BandRound */
   /** @typedef {{ circuits?: { list: [string, number[], string][], km?: Record<string, number> }, field?: number }} SeasonCfg */
-  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | string | null)[][], lapsRun?: number }} PriorRow */
+  /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | string | null)[][], lapsRun?: number, qref?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSePool?: Record<string, number>, paceSe?: Record<string, number>, lapCheck?: { ok?: boolean }, scLaps?: (number | string | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
   /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null, skills?: { drivers: Record<string, { wetQ?: number, sprR?: number, nWetQ?: number, nSprR?: number }> } | null }} Data */
@@ -608,6 +608,12 @@
     speed: true,
     speedLambda: 2, // backtested: 2 best CRPS; 5 ties (-0.19); 0 worse in leave-one-out
     speedMin: 5,
+    // a race without practice yet (the next one before FP1, the planner's later races): its speed from the circuit's
+    // past qualifying reference lap (priors qref, the faster of its last two: a wet session runs slow) scaled to this
+    // season's practice laps (the median ratio over this season's rounds at circuits with one), the lap estimate's
+    // spread added to the level's uncertainty. Before 2026-10-07 such races kept the flat season level (Singapore
+    // 4.9 overtakes per starter before practice vs ~2.8 after). Backtested: see docs/history.md (2026-10-07)
+    speedPrior: true,
     speedVar: 0, // 0: the fitted median level; 1: the mean (adds half the residual variance on the log scale)
     // the season's overtake level weighted towards recent rounds (half-life in rounds; Infinity = every round the same).
     // Challenger from review batch 2 (2026-09-27): R1-R4 had far more overtaking than later rounds.
@@ -988,6 +994,7 @@
       id && km[id] && lap ? (km[id] * 3600) / lap : null;
     const nextGd = (data.schedule.find((x) => !(data.done || []).includes(x.gd)) || {}).gd;
     const sp = speedFit(season, rounds, data, cid, kmh, o);
+    const past = pastLaps(P, rounds, data, cid, o);
     const scAt = scOnsets(P, data);
 
     return {
@@ -1000,6 +1007,7 @@
       trend,
       trendN,
       speed: sp,
+      pastLap: past,
       /** @param {Gameday | string} g the gameday (with its circuit id) or just a meeting name @returns {Circuit} */
       forCircuit(g) {
         const name = typeof g === "string" ? g : g.name,
@@ -1024,10 +1032,15 @@
           if (fitted) c.chaos = clamp(Math.exp(dot(bDnf, x)), 0.6, 1.6);
           c.grid = Number.isFinite(corrMean) ? clamp(corrMean, 0.25, 0.95) : gridFromOv(c.ov);
         }
-        // the next race, once practice has run: overtake level from the track's average speed
+        // the next race, once practice has run: overtake level from the track's average speed; before practice (and
+        // the races after the next) from the circuit's past lap scaled to this season (TRACK.speedPrior)
         const lap = typeof g !== "string" && g.gd === nextGd ? practiceRef(data.practice) : null;
-        const v = kmh(id, lap);
-        if (v != null) c.kmh = Math.round(v * 10) / 10;
+        const estLap = !lap && past && id && past.lap[id] ? past.lap[id] * past.k : null;
+        const v = kmh(id, lap || estLap);
+        if (v != null) {
+          c.kmh = Math.round(v * 10) / 10;
+          c.kmhFrom = lap ? "practice" : "past";
+        }
         // for the lap-by-lap race: laps (305 km) and a lap time (practice, else the season's average speed)
         const kmC = id ? km[id] : undefined;
         if (kmC) c.laps = Math.max(10, Math.round(305 / kmC));
@@ -1036,8 +1049,14 @@
           c.ov = clamp(Math.exp(sp.my + (sp.b * (v - sp.mx)) / sp.sx + (o.speedVar * sp.res) / 2) / ovMean, 0.25, 2.5);
         // how far a race's overtaking strays from its forecast level (log sd): the speed fit's residual where it
         // applies, else the season's spread between rounds (SIM.ovEnv draws it once a weekend)
+        // (an estimated lap adds its own spread: the log-ratio sd as a speed error, through the fit's slope)
+        const lapVar = !lap && past && v != null ? ((sp ? sp.b / sp.sx : 0) * v * past.sd) ** 2 : 0;
         c.ovSd =
-          o.speed && sp && v != null ? Math.sqrt(Math.max(0, sp.res)) : Number.isFinite(ovLogSd) ? ovLogSd : 0.35;
+          o.speed && sp && v != null
+            ? Math.sqrt(Math.max(0, sp.res) + lapVar)
+            : Number.isFinite(ovLogSd)
+              ? ovLogSd
+              : 0.35;
         c.rain = { r: pr && pr.rain != null ? clamp(pr.rain, 0.02, 0.8) : 0.1 };
         c.rain.q = c.rain.r;
         c.rain.s = c.rain.r;
@@ -1049,6 +1068,35 @@
         return c;
       },
     };
+  }
+  /** Each circuit's past qualifying reference lap (s; priors qref, the faster of its last two seasons there) and the
+   * factor k that turns it into this season's practice reference lap (the median of practice lap / past lap over this
+   * season's rounds; sd = the spread of the log ratios). Null when TRACK.speedPrior is off or fewer than speedMin
+   * rounds have both. @param {PriorRow[] | null} P @param {number[]} rounds @param {Data} data
+   * @param {(gd: number) => string | undefined} cid @param {typeof TRACK} o
+   * @returns {{ lap: Record<string, number>, k: number, sd: number, n: number } | null} */
+  function pastLaps(P, rounds, data, cid, o) {
+    if (!o.speed || !o.speedPrior || !P) return null;
+    /** @type {Record<string, PriorRow[]>} */
+    const by = {};
+    for (const x of P) if (x.qref) (by[x.circuit] = by[x.circuit] || []).push(x);
+    /** @type {Record<string, number>} */
+    const lap = {};
+    for (const [c, xs] of Object.entries(by)) {
+      xs.sort((a, b) => b.season - a.season || b.round - a.round);
+      lap[c] = Math.min(...xs.slice(0, 2).map((x) => /** @type {number} */ (x.qref)));
+    }
+    const logs = [];
+    for (const gd of rounds) {
+      const l = data.trackStats && data.trackStats[gd] && data.trackStats[gd].lap,
+        p = lap[cid(gd) || ""];
+      if (l && p) logs.push(Math.log(l / p));
+    }
+    if (logs.length < o.speedMin) return null;
+    const m = quantile(logs, 0.5),
+      mu = logs.reduce((a, v) => a + v, 0) / logs.length;
+    const sd = Math.sqrt(logs.reduce((a, v) => a + (v - mu) ** 2, 0) / (logs.length - 1));
+    return { lap, k: Math.exp(m), sd, n: logs.length };
   }
   /** When races' last safety car came, as the share of the race run (rounded to 0.01): every dry, unflagged past
    * race with one (priors, OpenF1 2023 on) and this season's finished rounds (raceInfo; a walk-forward's data holds
@@ -4206,6 +4254,12 @@
       needs: (/** @type {Data} */ d) => skillCoverage(d, "nSprR", "drivers with past sprints"),
       why: "2021-2025 (24 sprints): a driver's sprint finish beyond his sprint grid slot, against his Grand Prix finishes, predicts itself (random halves r +0.40; main team vs other teams +0.24, 12 drivers). Fragile: sprint qualifying shows no edge, and the sign of some drivers' edges depends on how retirements are counted. Differs from the shipped model on sprint weekends only",
     },
+    {
+      id: "qtight",
+      label: "Qualifying noise halved (0.1% of a lap)",
+      set: { "SIM.qSd": 0.1 },
+      why: "2026-10-07, found comparing an outside sim: our qualifying mixes the midfield into the top eight too often. R5-R15 walk-forward: the top four teams' cars in the qualifying top 8, 6.51 projected vs 7.55 actual (too few in 9 of 11 rounds; 6.86 with this), qualifying log score -2.206 -> -2.168, 59% of actual positions inside the middle 50%; points a tie (CRPS -0.010 +/- 0.018, 3 seeds). Collects its evidence from R17",
+    },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */
   const settingsSnapshot = () =>
@@ -4237,7 +4291,7 @@
     const { seed, persist } = raceSeeds(g, g);
     const simOpt = { ...setup.simOpt, persist };
     const sim = simulate(model, circuit, g.sprint, o.sims, seed, simOpt);
-    /** @type {Record<string, { x: number, p25: number, p75: number, sd?: number, q?: number[] }>} */
+    /** @type {Record<string, { x: number, p25: number, p75: number, sd?: number, q?: number[], parts?: Record<string, unknown> }>} */
     const assets = {};
     sim.ids.forEach((id, i) => {
       const a = /** @type {Asset} */ (data.assets.find((x) => x.id === id)),
@@ -4251,6 +4305,7 @@
         assets[id].q = PROJ_Q.map((p) => Math.round((sl[Math.floor(p * sim.N)] + sh) * 10) / 10);
       }
     });
+    if (o.detail) projectionParts(data, model, sim, assets);
     /** @type {Record<string, unknown>} */
     const out = {
       gd: g.gd,
@@ -4284,6 +4339,59 @@
       out.joint = { ids: sim.ids, n, tot: joint };
     }
     return out;
+  }
+  /** The projection by scoring part, kept with the frozen projection so a round can be scored category by category
+   * (against outside sims too, 2026-10-07): per driver the points per SIM_CATS category, the chances of a race
+   * retirement / fastest lap / DotD, overtakes (race + sprint), the average qualifying and race position (a
+   * retirement counts as last) and the negative points; per constructor the pit-stop points and the qualifying
+   * bonus (its mean beyond its drivers' points without DotD); per asset the chance of each price change after the
+   * race (the game's rule, Engine.priceStep). Before the recent-form blend (default 0). @param {Data} data @param {Model} model
+   * @param {ReturnType<typeof simulate>} sim @param {Record<string, { parts?: Record<string, unknown> }>} assets */
+  function projectionParts(data, model, sim, assets) {
+    const r2 = (/** @type {number} */ v) => Math.round(v * 100) / 100;
+    const F = sim.field,
+      N = sim.N;
+    /** @type {Record<string, number>} */
+    const noDotd = {};
+    sim.ids.forEach((id, i) => {
+      const st = sim.stats[i],
+        d = model.drivers.find((x) => x.id === id),
+        neg = r2(st.mean - st.nnMean);
+      if (d && st.cat && st.q && st.r) {
+        const cat = st.cat;
+        noDotd[d.team] = (noDotd[d.team] || 0) + st.mean - cat.dotd;
+        assets[id].parts = {
+          ...Object.fromEntries(Object.entries(cat).map(([k, v]) => [k, r2(v)])),
+          pDnf: r2(/** @type {number} */ (st.dnf)),
+          pFl: r2(/** @type {number} */ (st.fl)),
+          pDotd: r2(/** @type {number} */ (st.dotd)),
+          ov: r2(/** @type {number} */ (st.xov)),
+          qAvg: r2(st.q.reduce((t, p, k) => t + p * (k + 1), 0)),
+          rAvg: r2(st.r.reduce((t, p, k) => t + p * Math.min(k + 1, F), 0)),
+          neg,
+        };
+      } else assets[id].parts = { pit: r2(st.pit ?? 0), neg };
+    });
+    model.cons.forEach((c) => {
+      const i = sim.ids.indexOf(c.id);
+      if (i < 0) return;
+      const st = sim.stats[i];
+      const parts = /** @type {Record<string, unknown>} */ (assets[c.id].parts);
+      parts.qb = r2(st.mean - (st.pit ?? 0) - (noDotd[c.team] || 0));
+    });
+    sim.ids.forEach((id, i) => {
+      const a = data.assets.find((x) => x.id === id);
+      if (!a) return;
+      const { sum2, n } = priceBase(a, data.done);
+      /** @type {Record<string, number>} */
+      const pc = {};
+      for (let s = 0; s < N; s++) {
+        const d = (Math.round(priceStep(a.price, (sum2 + sim.tot[i * N + s]) / n) * 10) / 10).toFixed(1);
+        pc[d] = (pc[d] || 0) + 1 / N;
+      }
+      const parts = /** @type {Record<string, unknown>} */ (assets[id].parts);
+      parts.price = Object.fromEntries(Object.entries(pc).map(([k, v]) => [k, Math.round(v * 1000) / 1000]));
+    });
   }
   /** The challengers' projections for the coming race, each under its own settings: {id: {label, set, coverage,
    * sameAsShipped, evaluable, assets: {id: {x, q}}}}. champ = the shipped model's projection of the same data (to

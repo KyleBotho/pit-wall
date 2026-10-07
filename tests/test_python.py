@@ -245,6 +245,21 @@ class FiaPenalties(unittest.TestCase):
         self.assertEqual(reads, ["a", "b", "c"])
 
 
+class QualifyingRef(unittest.TestCase):
+    def test_median_of_the_ten_fastest_best_laps(self):
+        """priors.py qref: each driver's best Q1-Q3 lap, the median of the ten fastest; too few times = None."""
+        import priors
+
+        self.assertEqual(priors.lap_seconds("1:15.096"), 75.096)
+        self.assertEqual(priors.lap_seconds("59.5"), 59.5)
+        self.assertIsNone(priors.lap_seconds(""))
+        rows = [{"Q1": f"1:{20 + k}.000", "Q2": f"1:{19 + k}.500" if k < 15 else ""} for k in range(20)]
+        rows.append({"Q1": ""})  # no time set
+        # best laps 79.5, 80.5, ... the ten fastest end at 88.5: median (83.5 + 84.5) / 2
+        self.assertEqual(priors.qualifying_ref(rows), 84.0)
+        self.assertIsNone(priors.qualifying_ref(rows[:4]))
+
+
 class ScLaps(unittest.TestCase):
     def test_safety_car_windows_by_lap(self):
         """The timed safety car's data: [deployed lap, in lap] per safety car, VSCs left out, an unclosed one open."""
