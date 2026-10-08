@@ -15,6 +15,20 @@
    "published": "2026-10-07T02:20+00:00",
    "firstSeen": "2026-10-07T14:00+00:00",
    "read": "tyres"
+  },
+  {
+   "doc": 3,
+   "title": "Doc 3 - Power Unit Information",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_power_unit_information.pdf",
+   "published": "2026-10-08T03:03+00:00",
+   "firstSeen": "2026-10-08T06:42+00:00"
+  },
+  {
+   "doc": 4,
+   "title": "Doc 4 - Heat Hazard Declaration",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_heat_hazard_declaration.pdf",
+   "published": "2026-10-08T03:31+00:00",
+   "firstSeen": "2026-10-08T06:42+00:00"
   }
  ],
  "tech": {
