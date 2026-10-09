@@ -101,6 +101,35 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_competition_notes_-_pit_lane_v2.pdf",
    "published": "2026-10-09T08:09+00:00",
    "firstSeen": "2026-10-09T09:55+00:00"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_free_practice_1_classification.pdf",
+   "published": "2026-10-09T10:38+00:00",
+   "firstSeen": "2026-10-09T11:10+00:00"
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Race Director Notes - SC2 - SC1 Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_race_director_notes_-_sc2_-_sc1_times.pdf",
+   "published": "2026-10-09T10:38+00:00",
+   "firstSeen": "2026-10-09T11:10+00:00"
+  },
+  {
+   "doc": 18,
+   "title": "Doc 18 - Infringement - Free Practice 1 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_free_practice_1_deleted_lap_times.pdf",
+   "published": "2026-10-09T10:38+00:00",
+   "firstSeen": "2026-10-09T11:10+00:00"
+  },
+  {
+   "doc": 19,
+   "title": "Doc 19 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-10-09T10:30+00:00",
+   "firstSeen": "2026-10-09T11:10+00:00",
+   "read": "puNew"
   }
  ],
  "tech": {
@@ -366,6 +395,20 @@
     "MGU-K": 3,
     "ES": 3,
     "PU-CE": 3,
+    "PU-ANC": 4
+   }
+  },
+  "puNew": {
+   "63": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3
+   },
+   "1": {
+    "PU-ANC": 4
+   },
+   "43": {
     "PU-ANC": 4
    }
   }
