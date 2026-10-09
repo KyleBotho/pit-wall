@@ -260,6 +260,16 @@
    "published": "2026-09-26T15:30+00:00",
    "doc": "https://www.fia.com/system/files/decision-document/2026_azerbaijan_grand_prix_-_infringement_-_car_43_-_collision_with_car_10_in_turn_1.pdf",
    "title": "Doc 66 - Infringement - Car 43 - Collision with Car 10 in Turn 1"
+  },
+  {
+   "car": 63,
+   "tla": "RUS",
+   "places": 40,
+   "issued": 17,
+   "target": 17,
+   "published": "2026-10-09T12:03+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_63_-_changes_to_pu_elements.pdf",
+   "title": "Doc 20 - Infringement - Car 63 - Changes to PU elements"
   }
  ]
 }
