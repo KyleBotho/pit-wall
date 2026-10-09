@@ -50,6 +50,57 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_and_emergency_exits_map.pdf",
    "published": "2026-10-08T13:00+00:00",
    "firstSeen": "2026-10-09T06:49+00:00"
+  },
+  {
+   "doc": 8,
+   "title": "Doc 8 - Post-Sprint Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_post-sprint_qualifying_procedure.pdf",
+   "published": "2026-10-09T08:08+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_car_presentation_submissions.pdf",
+   "published": "2026-10-09T08:08+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - PU Elements used per Driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-10-09T08:08+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 11,
+   "title": "Doc 11 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_self_scrutineering.pdf",
+   "published": "2026-10-09T08:09+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_entry_list.pdf",
+   "published": "2026-10-09T08:11+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - Race Director's Competition Notes V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_race_directors_competition_notes_v2.pdf",
+   "published": "2026-10-09T08:09+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - Competition Notes - Pit Lane V2",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_competition_notes_-_pit_lane_v2.pdf",
+   "published": "2026-10-09T08:09+00:00",
+   "firstSeen": "2026-10-09T09:55+00:00"
   }
  ],
  "tech": {
@@ -64,6 +115,259 @@
     "C3",
     "C4"
    ]
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 1,
+    "reasons": {
+     "Circuit specific": 1
+    }
+   },
+   "MER": {
+    "n": 2,
+    "reasons": {
+     "Performance": 2
+    }
+   },
+   "RED": {
+    "n": 2,
+    "reasons": {
+     "Performance": 1,
+     "Reliability": 1
+    }
+   },
+   "FER": {
+    "n": 0,
+    "reasons": {}
+   },
+   "WIL": {
+    "n": 0,
+    "reasons": {}
+   },
+   "VRB": {
+    "n": 0,
+    "reasons": {}
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 0,
+    "reasons": {}
+   },
+   "ALP": {
+    "n": 0,
+    "reasons": {}
+   },
+   "AUD": {
+    "n": 0,
+    "reasons": {}
+   },
+   "CAD": {
+    "n": 0,
+    "reasons": {}
+   }
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "1": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "63": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "12": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "3": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "6": {
+    "ICE": 7,
+    "TC": 6,
+    "EXH": 6,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 7
+   },
+   "16": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "44": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "23": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "55": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "41": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 6
+   },
+   "30": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 6
+   },
+   "18": {
+    "ICE": 5,
+    "TC": 6,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 8
+   },
+   "14": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 9
+   },
+   "31": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "87": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "27": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 5
+   },
+   "5": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "10": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "43": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "11": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "77": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   }
   }
  }
 }
