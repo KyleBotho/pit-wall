@@ -230,6 +230,50 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_provisional_sprint_starting_grid.pdf",
    "published": "2026-10-09T16:00+00:00",
    "firstSeen": "2026-10-09T18:32+00:00"
+  },
+  {
+   "doc": 34,
+   "title": "Doc 34 - Post-Sprint Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_post-sprint_procedure.pdf",
+   "published": "2026-10-10T06:45+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00"
+  },
+  {
+   "doc": 35,
+   "title": "Doc 35 - Post-Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_post-qualifying_procedure.pdf",
+   "published": "2026-10-10T06:48+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00"
+  },
+  {
+   "doc": 36,
+   "title": "Doc 36 - Parc Ferme Issues",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_parc_ferme_issues.pdf",
+   "published": "2026-10-10T07:39+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00"
+  },
+  {
+   "doc": 37,
+   "title": "Doc 37 - Infringement - Car 55 - Changes made during Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_55_-_changes_made_during_parc_ferme.pdf",
+   "published": "2026-10-10T07:49+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 38,
+   "title": "Doc 38 - Parts and Parameters been replaced and or changed during Sprint Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_parts_and_parameters_been_replaced_and_or_changed_during_sprint_parc_ferme.pdf",
+   "published": "2026-10-10T07:54+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00",
+   "read": "parcFerme"
+  },
+  {
+   "doc": 39,
+   "title": "Doc 39 - Final Sprint Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_final_sprint_starting_grid.pdf",
+   "published": "2026-10-10T08:00+00:00",
+   "firstSeen": "2026-10-10T08:00+00:00"
   }
  ],
  "tech": {
@@ -511,6 +555,35 @@
    "43": {
     "PU-ANC": 4
    }
+  },
+  "parcFerme": {
+   "1": [
+    "Steering wheel"
+   ],
+   "3": [
+    "Steering column assembly"
+   ],
+   "6": [
+    "Fuel collector assembly",
+    "ICE (previously used)",
+    "TC (previously used)",
+    "Parameter changes associated with the PU elements replacement"
+   ],
+   "55": [
+    "Engine oil breather pipe seal"
+   ],
+   "41": [
+    "T-tray bracket"
+   ],
+   "14": [
+    "LHS front rim seal"
+   ],
+   "27": [
+    "Headrest"
+   ],
+   "11": [
+    "Front wing/nose assembly"
+   ]
   }
  }
 }
