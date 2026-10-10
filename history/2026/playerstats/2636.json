@@ -807,7 +807,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 26
+            "Value": 24
           },
           {
             "Frequency": "7",
@@ -822,7 +822,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 5
+            "Value": 3
           },
           {
             "Frequency": "-",
@@ -843,7 +843,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 520
+            "Value": 518
           },
           {
             "Frequency": "-",
@@ -873,7 +873,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 31
+            "Value": 29
           },
           {
             "Frequency": "-",
@@ -3563,7 +3563,7 @@
               {
                 "Frequency": "-",
                 "Event": "Qualifying Position",
-                "Value": 5
+                "Value": 3
               },
               {
                 "Frequency": "-",
@@ -3573,7 +3573,7 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 15
+                "Value": 13
               }
             ]
           }
@@ -3582,8 +3582,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/10/2026 2:20:40 PM",
-    "ISTTime": "10/10/2026 7:50:40 PM",
-    "CESTTime": "10/10/2026 4:20:40 PM"
+    "UTCTime": "10/10/2026 2:45:46 PM",
+    "ISTTime": "10/10/2026 8:15:46 PM",
+    "CESTTime": "10/10/2026 4:45:46 PM"
   }
 }
