@@ -699,6 +699,34 @@ test("scoredSessions: a session counts once it ended before the feed and every r
   assert.deepEqual(E.scoredSessions({ evNames, live: { ...live("2026-10-10T15:00:00Z", {}), gd: 15 } }, g), {});
 });
 
+test("qualiOrderFromLive: the scoring lines' positions, a driver with no time at the back, else unknown", () => {
+  const evNames = [
+    { c: "Q POS", s: "Q" },
+    { c: "Q NC", s: "Q" },
+    { c: "Q DQ", s: "Q" },
+  ];
+  const tlas = "ABCDEFGHIJKL".split("").map((x) => x + "AA");
+  const assets = [...tlas.map((tla, k) => ({ id: k + 1, kind: "D", tla })), { id: 99, kind: "C", tla: "" }];
+  const lines = (over) => ({
+    evNames,
+    assets,
+    live: {
+      gd: 17,
+      assets: Object.fromEntries(
+        assets.map((a, k) => [a.id, { act: true, ev: over[a.tla] || [[0, 0, `${tlas.length - k}th`]] }]),
+      ),
+    },
+  });
+  // positions 12th ... 1st in asset order
+  assert.deepEqual(E.qualiOrderFromLive(lines({})), [...tlas].reverse());
+  // no time set (R17 Hadjar: "QF not classified", no position line) or disqualified: at the back, in asset order
+  const back = E.qualiOrderFromLive(lines({ BAA: [[1, -5]], AAA: [[2, -5]] }));
+  assert.deepEqual(back.slice(-2), ["AAA", "BAA"]);
+  assert.deepEqual(back.slice(0, 10), tlas.slice(2).reverse());
+  // a driver with neither line: the lines aren't all in yet, so no order
+  assert.equal(E.qualiOrderFromLive(lines({ CAA: [] })), null);
+});
+
 test("oddsKnown: the qualifying order conditions the market only if the quote came after qualifying", () => {
   const g = { gd: 16, sessions: [{ type: "Qualifying", end: "2026-10-03T09:00:00Z" }] };
   const simOpt = { pen: { VER: 5 }, known: { q: ["NOR"], sq: ["PIA"] } };

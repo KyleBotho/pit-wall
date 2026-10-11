@@ -4012,23 +4012,29 @@
     }
     return out;
   }
-  /** The qualifying order from the live weekend's "Qualifying Position" lines ("7th"), or null unless every racing
-   * driver has one. @param {Data} data @returns {string[] | null} */
+  /** The qualifying order from the live weekend's "Qualifying Position" lines ("7th"), drivers not classified or
+   * disqualified in qualifying (no time: no position line, R17 Hadjar) at the back; null unless every racing driver
+   * has one or the other. @param {Data} data @returns {string[] | null} */
   function qualiOrderFromLive(data) {
     const live = data.live,
       names = data.evNames || [];
     if (!live) return null;
     /** @type {{ tla: string, pos: number }[]} */
     const rows = [];
+    /** @type {string[]} */
+    const back = [];
     for (const a of data.assets) {
       const la = a.kind === "D" && live.assets[a.id];
       if (!la || !la.act) continue;
-      const line = (la.ev || []).find(([i]) => names[i] && names[i].c === "Q POS");
+      const code = (/** @type {[number, number, string?]} */ [i]) => names[i] && names[i].c;
+      const line = (la.ev || []).find((r) => code(r) === "Q POS");
       const pos = line ? parseInt(String(line[2]), 10) : NaN;
-      if (!(pos > 0)) return null;
-      rows.push({ tla: a.tla, pos });
+      if (pos > 0) rows.push({ tla: a.tla, pos });
+      else if ((la.ev || []).some((r) => code(r) === "Q NC" || code(r) === "Q DQ")) back.push(a.tla);
+      else return null; // the scoring lines aren't all in yet
     }
-    return rows.length >= 10 ? rows.sort((x, y) => x.pos - y.pos).map((x) => x.tla) : null;
+    if (rows.length < 10) return null;
+    return [...rows.sort((x, y) => x.pos - y.pos).map((x) => x.tla), ...back];
   }
   /** A market whose books were fetched on both sides of the end of qualifying (a stale book from the cache next to
    * fresh ones, asOf per book): only the books from after it, with at = the oldest of those, so the fit conditions
@@ -4634,6 +4640,7 @@
     RNG_VERSION,
     projectChallengers,
     scoredSessions,
+    qualiOrderFromLive,
     oddsKnown,
     project,
     presetWeights,

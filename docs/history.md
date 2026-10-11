@@ -5,6 +5,15 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-11, refresh runs failing mid-weekend (user: "fails whenever the data isn't released yet"). Not late
+      data: refresh.py finished in every run. Three tests in tests/data.test.js assumed no session of the coming
+      weekend had run, so 21 runs failed (3-4 Oct, 10-11 Oct) and the site didn't deploy from 10 Oct 08:40 UTC until
+      the fix. The skill and challenger-coverage tests now run on Engine.atLock(D); the live-qualifying test skips
+      until F1 Fantasy has scored qualifying. Then (user): a driver with no qualifying time (R17 Hadjar, "QF not
+      classified", no "Qualifying Position" line) goes to the back of the order from the scoring lines
+      (qualiOrderFromLive; disqualified too); before, the order was unknown and qualifying stayed simulated until
+      OpenF1 had it. Actions storage checked the same day: every artifact already 1 day, caches ~1 MB a run plus pip
+      / npm; the public repo's storage doesn't count toward the account quota, and the private repo uploads none.
 - [x] 2026-10-07, lessons from an outside sim (user: F1 Fantasy Tools' new Simulation Builder tab, rhter's sim; "see
       what can be implemented and why our sims are so off"). The comparison itself, with rhter's numbers, is in the
       private repo (`research/competitors/competitors.md`); here only our own and the actual numbers. The gap was

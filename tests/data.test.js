@@ -67,13 +67,8 @@ test("the live weekend: scored qualifying counts as scored, its order from the s
   const Dq = { ...D, done: D.done.filter((g) => g !== gd), weekend: null, odds: null };
   const g = D.schedule.find((x) => x.gd === gd);
   const { simOpt } = E.raceSetup(Dq, g, { next: true });
-  // a driver without a qualifying position (no time set: "QF not classified", R17 Hadjar) leaves the order unknown,
-  // and qualifying stays simulated (raceSetup: its points and grid go together)
-  const names = D.evNames || [];
-  const positioned = D.assets
-    .filter((a) => a.kind === "D" && D.live.assets[a.id] && D.live.assets[a.id].act)
-    .every((a) => (D.live.assets[a.id].ev || []).some(([i]) => names[i] && names[i].c === "Q POS"));
-  if (!positioned) return assert.equal(simOpt.locked.q, undefined, "no full order: qualifying stays simulated");
+  // without an order from the scoring lines (not all in yet) qualifying stays simulated: its points and grid go together
+  if (!E.qualiOrderFromLive(D)) return assert.equal(simOpt.locked.q, undefined, "no order: qualifying stays simulated");
   assert.ok(simOpt.locked.q, "qualifying scored");
   const jolpica = D.results.quali[gd].map((r) => r.tla);
   assert.deepEqual(simOpt.known.q.slice(0, 10), jolpica.slice(0, 10));
