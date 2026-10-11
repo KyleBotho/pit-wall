@@ -787,7 +787,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -22
+            "Value": -21
           },
           {
             "Frequency": "1",
@@ -820,9 +820,9 @@
             "Value": 0
           },
           {
-            "Frequency": "2",
+            "Frequency": "1",
             "Event": "Race Position lost",
-            "Value": -2
+            "Value": -1
           }
         ]
       }
@@ -838,7 +838,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -85
+            "Value": -84
           },
           {
             "Frequency": "5",
@@ -886,9 +886,9 @@
             "Value": 61
           },
           {
-            "Frequency": "7",
+            "Frequency": "6",
             "Event": "Race Position lost",
-            "Value": -7
+            "Value": -6
           },
           {
             "Frequency": "-",
@@ -3562,14 +3562,14 @@
                 "Value": 0
               },
               {
-                "Frequency": "2",
+                "Frequency": "1",
                 "Event": "Race Position lost",
-                "Value": -2
+                "Value": -1
               },
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -2
+                "Value": -1
               }
             ]
           }
@@ -3578,8 +3578,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/11/2026 1:36:05 PM",
-    "ISTTime": "10/11/2026 7:06:05 PM",
-    "CESTTime": "10/11/2026 3:36:05 PM"
+    "UTCTime": "10/11/2026 1:47:03 PM",
+    "ISTTime": "10/11/2026 7:17:03 PM",
+    "CESTTime": "10/11/2026 3:47:03 PM"
   }
 }

@@ -270,6 +270,46 @@
    "published": "2026-10-09T12:03+00:00",
    "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_63_-_changes_to_pu_elements.pdf",
    "title": "Doc 20 - Infringement - Car 63 - Changes to PU elements"
+  },
+  {
+   "car": 63,
+   "tla": "RUS",
+   "places": 20,
+   "issued": 17,
+   "target": 17,
+   "published": "2026-10-11T09:47+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_63_-_additional_changes_to_pu_elements.pdf",
+   "title": "Doc 79 - Infringement - Car 63 - Additional changes to PU elements"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 99,
+   "issued": 17,
+   "target": 17,
+   "published": "2026-10-11T10:27+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_18_-_changes_made_during_parc_ferme.pdf",
+   "title": "Doc 81 - Infringement - Car 18 - Changes made during Parc Ferme"
+  },
+  {
+   "car": 14,
+   "tla": "ALO",
+   "places": 99,
+   "issued": 17,
+   "target": 17,
+   "published": "2026-10-11T10:25+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_14_-_pu_element_and_changes_made_during_parc_ferme.pdf",
+   "title": "Doc 80 - Infringement - Car 14 - PU element and changes made during Parc Ferme"
+  },
+  {
+   "car": 6,
+   "tla": "HAD",
+   "places": 99,
+   "issued": 17,
+   "target": 17,
+   "published": "2026-10-11T11:23+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_car_6_-_pu_elements_and_changes_made_during_parc_ferme.pdf",
+   "title": "Doc 83 - Infringement - Car 6 - PU elements and changes made during Parc Ferme"
   }
  ]
 }
