@@ -573,7 +573,8 @@
    "title": "Doc 82 - Parts and Parameters been replaced and or changed during Race Parc Ferme",
    "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_parts_and_parameters_been_replaced_and_or_changed_during_race_parc_ferme.pdf",
    "published": "2026-10-11T10:52+00:00",
-   "firstSeen": "2026-10-11T13:34+00:00"
+   "firstSeen": "2026-10-11T13:34+00:00",
+   "read": "parcFerme"
   },
   {
    "doc": 83,
@@ -612,6 +613,13 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_provisional_race_classification.pdf",
    "published": "2026-10-11T14:02+00:00",
    "firstSeen": "2026-10-11T14:20+00:00"
+  },
+  {
+   "doc": 88,
+   "title": "Doc 88 - Infringement - Race Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_singapore_grand_prix_-_infringement_-_race_deleted_lap_times.pdf",
+   "published": "2026-10-11T14:53+00:00",
+   "firstSeen": "2026-10-11T15:30+00:00"
   }
  ],
  "tech": {
@@ -913,7 +921,8 @@
     "Engine oil breather pipe seal"
    ],
    "41": [
-    "T-tray bracket"
+    "T-tray bracket",
+    "Gearbox barrel potentiometer"
    ],
    "14": [
     "LHS front rim seal"
@@ -923,6 +932,28 @@
    ],
    "11": [
     "Front wing/nose assembly"
+   ],
+   "63": [
+    "RHS front brake duct bypass",
+    "ES (previously used)",
+    "CE (previously used)"
+   ],
+   "23": [
+    "RIS transponder harness"
+   ],
+   "5": [
+    "Six ignition coils"
+   ],
+   "10": [
+    "RHS rear outboard suspension assembly",
+    "RHS front wheel nut retention device",
+    "Steering rack assembly",
+    "Steering wheel"
+   ],
+   "43": [
+    "RHS rear outboard suspension assembly",
+    "RHS front upper wishbone",
+    "RHS front lower wishbone"
    ]
   }
  }

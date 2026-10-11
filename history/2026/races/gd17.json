@@ -1,0 +1,54 @@
+{
+ "quali": {
+  "wetTyres": 0.0,
+  "wx": {
+   "air": 29.8,
+   "humidity": 75.1,
+   "n": 88,
+   "rainMin": 0,
+   "track": 39.4
+  }
+ },
+ "race": {
+  "lapsRun": 62,
+  "pace": {},
+  "pits": {},
+  "rain": 0,
+  "red": 0,
+  "sc": 0,
+  "scLaps": [],
+  "scLapsV": 2,
+  "vsc": 2,
+  "wx": {
+   "air": 30.3,
+   "humidity": 72.2,
+   "n": 160,
+   "rainMin": 0,
+   "track": 42.5
+  }
+ },
+ "sprint": {
+  "lapsRun": 20,
+  "pace": {},
+  "pits": {},
+  "rain": 1,
+  "red": 0,
+  "sc": 1,
+  "scLaps": [
+   [
+    2,
+    6,
+    "in"
+   ]
+  ],
+  "scLapsV": 2,
+  "vsc": 0,
+  "wx": {
+   "air": 29.9,
+   "humidity": 77.8,
+   "n": 127,
+   "rainMin": 20,
+   "track": 43.4
+  }
+ }
+}
