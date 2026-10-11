@@ -83,6 +83,7 @@ jobs:
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: build
+          retention-days: 1 # the action's default too; deploy reads it minutes later
 
   # Save the season as it happens: the only job that can write to the repo. Runs even if the tests failed.
   # Pushes made with GITHUB_TOKEN don't trigger another run.

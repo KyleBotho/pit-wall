@@ -56,13 +56,24 @@ test("retired cars' overtakes: fitted from this season's retirements", opt, () =
   assert.ok(m.ovRet.phi > 0 && m.ovRet.phi < 0.8, `phi ${m.ovRet.phi}`); // R1-R15: 0.35
 });
 
-test("the live weekend: scored qualifying counts as scored, its order from the scoring lines", opt, () => {
+test("the live weekend: scored qualifying counts as scored, its order from the scoring lines", opt, (t) => {
   const gd = D.live && D.live.gd;
   if (!gd || !(D.results.quali[gd] || []).length) return;
+  // F1 Fantasy scores qualifying some time after Jolpica has its order: nothing to check until it has
+  const racing = Object.values(D.live.assets).filter((a) => a.act);
+  if (!racing.every((a) => a.sess && typeof a.sess.Qualifying === "number"))
+    return t.skip("F1 Fantasy hasn't scored this weekend's qualifying yet");
   // the data as it stood after qualifying: this round not done, OpenF1's order not in yet
   const Dq = { ...D, done: D.done.filter((g) => g !== gd), weekend: null, odds: null };
   const g = D.schedule.find((x) => x.gd === gd);
   const { simOpt } = E.raceSetup(Dq, g, { next: true });
+  // a driver without a qualifying position (no time set: "QF not classified", R17 Hadjar) leaves the order unknown,
+  // and qualifying stays simulated (raceSetup: its points and grid go together)
+  const names = D.evNames || [];
+  const positioned = D.assets
+    .filter((a) => a.kind === "D" && D.live.assets[a.id] && D.live.assets[a.id].act)
+    .every((a) => (D.live.assets[a.id].ev || []).some(([i]) => names[i] && names[i].c === "Q POS"));
+  if (!positioned) return assert.equal(simOpt.locked.q, undefined, "no full order: qualifying stays simulated");
   assert.ok(simOpt.locked.q, "qualifying scored");
   const jolpica = D.results.quali[gd].map((r) => r.tla);
   assert.deepEqual(simOpt.known.q.slice(0, 10), jolpica.slice(0, 10));
@@ -195,7 +206,8 @@ test("the evaluation's input manifest names every data file asOf reads (the accu
 // Fifth review: a challenger frozen without its own input runs as the shipped model; the freeze says so (coverage,
 // sameAsShipped) and marks it not evaluable, so Model health doesn't score it as a test of itself.
 test("frozen challengers carry their input coverage; one without its input isn't evaluable", opt, () => {
-  const d = structuredClone(D);
+  // as at lock: once this weekend's qualifying is known, a qualifying-only challenger rightly matches the shipped one
+  const d = structuredClone(E.atLock(D));
   for (const ri of Object.values(d.raceInfo || {}))
     if (ri.race) for (const k of ["pacePool", "paceSePool"]) delete ri.race[k];
   const o = { sims: 400 };
@@ -218,7 +230,8 @@ test("skill challengers: only a wet qualifying / a sprint changes anything, and 
   // one mid-field driver with an edge of +1.5 places in both skills
   const ds = D.assets.filter((a) => a.kind === "D" && a.active).sort((a, b) => b.price - a.price);
   const who = ds[Math.floor(ds.length / 2)];
-  const data = { ...D, skills: { drivers: { [who.tla]: { wetQ: 1.5, nWetQ: 20, sprR: 1.5, nSprR: 20 } } } };
+  // as at lock: once this weekend's qualifying / sprint orders are known, no skill can move them
+  const data = { ...E.atLock(D), skills: { drivers: { [who.tla]: { wetQ: 1.5, nWetQ: 20, sprR: 1.5, nSprR: 20 } } } };
   const run = (set, rainQ, sprint) =>
     E.withSettings(set, () => {
       const s = E.raceSetup(data, next, {
