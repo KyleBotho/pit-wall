@@ -612,7 +612,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 14
+            "Value": 18
           },
           {
             "Frequency": "7",
@@ -643,8 +643,21 @@
             "Frequency": "1",
             "Event": "Race Position lost",
             "Value": -1
+          },
+          {
+            "Frequency": "4",
+            "Event": "race overtake bonus",
+            "Value": 4
           }
         ]
+      },
+      {
+        "GamedayId": 18,
+        "PlayerValue": 6.4,
+        "OldPlayerValue": 5.8,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -658,7 +671,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 90
+            "Value": 94
           },
           {
             "Frequency": "14",
@@ -706,9 +719,9 @@
             "Value": -10
           },
           {
-            "Frequency": "83",
+            "Frequency": "87",
             "Event": "race overtake bonus",
-            "Value": 83
+            "Value": 87
           }
         ]
       }
@@ -1639,7 +1652,7 @@
             "RaceDayId": 7393,
             "TeamId": 26,
             "DateTime": "10/09/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Marina Bay",
             "MeetingNumber": 17,
             "MeetingName": "Singapore Grand Prix",
@@ -1653,6 +1666,54 @@
             "Season": "2026",
             "SelectedPercentage": "51",
             "CapSelectedPercentage": "2"
+          }
+        ]
+      },
+      {
+        "GamedayId": 18,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 6.4,
+            "OldPlayerValue": 5.8,
+            "RaceDayId": 7398,
+            "TeamId": 26,
+            "DateTime": "10/23/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Austin",
+            "MeetingNumber": 18,
+            "MeetingName": "United States Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Circuit of The Americas",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-24T16:00:00-05:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 6.4,
+            "OldPlayerValue": 5.8,
+            "RaceDayId": 7399,
+            "TeamId": 26,
+            "DateTime": "10/23/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Austin",
+            "MeetingNumber": 18,
+            "MeetingName": "United States Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Circuit of The Americas",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-25T15:00:00-05:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3097,7 +3158,7 @@
             "OldPlayerValue": 5.6,
             "RaceDayId": 7393,
             "DateTime": "10/09/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Marina Bay",
             "MeetingNumber": 17,
             "MeetingName": "Singapore Grand Prix",
@@ -3114,7 +3175,7 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -1
+                "Value": 3
               },
               {
                 "Frequency": "12th",
@@ -3125,16 +3186,47 @@
                 "Frequency": "1",
                 "Event": "Race Position lost",
                 "Value": -1
+              },
+              {
+                "Frequency": "4",
+                "Event": "race overtake bonus",
+                "Value": 4
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 18,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 6.4,
+            "OldPlayerValue": 5.8,
+            "RaceDayId": 7398,
+            "DateTime": "10/23/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Austin",
+            "MeetingNumber": 18,
+            "MeetingName": "United States Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Circuit of The Americas",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-24T16:00:00-05:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/11/2026 2:40:00 PM",
-    "ISTTime": "10/11/2026 8:10:00 PM",
-    "CESTTime": "10/11/2026 4:40:00 PM"
+    "UTCTime": "10/11/2026 5:19:23 PM",
+    "ISTTime": "10/11/2026 10:49:23 PM",
+    "CESTTime": "10/11/2026 7:19:23 PM"
   }
 }
