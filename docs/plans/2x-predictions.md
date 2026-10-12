@@ -224,7 +224,8 @@ Noise settings on 2022-2025 results (past-seasons item 4, the winter project). D
 | T2 | Spearman edge over naive within the top 8 drivers / top 4 constructors | +0.08 / +0.11 | +0.12 / +0.16 | +0.16 / +0.22 |
 | T3 | Fresh-team points over naive a round (and the season replay, 4.4) | −10.6 ± 14.1 | > 0, CI clear of 0 | +15 |
 
-T1 is the headline. T2 and T3 stop us from "winning" T1 with something that doesn't help picking a team. Diagnostics
+T3b (added 2026-10-12, user) is T3 with the money carried from R2: the bank plus the last team sold at the new
+prices (R2-R17: −17.4 ± 22.0 a round). T1 is the headline. T2 and T3 stop us from "winning" T1 with something that doesn't help picking a team. Diagnostics
 stay as walk.js has them: qualifying / race position log scores, overtake level error, retirement Brier, rain and
 safety car Brier, fastest lap log score, coverage. `python backtest/scorecard.py` prints T1-T3 and the floor. Add it
 to refresh.yml after `accuracy.js` (writes `history/<season>/scorecard.json`, shown in Model health).

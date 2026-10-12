@@ -5,6 +5,12 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-12, scorecard T3b (user: "use the budget increase or decrease ... carry over to the next round"):
+      the fresh-team pick with the money carried, from R2 (the first round with a projection; R2-R14 rebuilt,
+      R15 on frozen at lock), $100m at the start, then the bank + the last team sold at the new prices; unlimited
+      transfers, no chips (the transfer rules and the comparison with real players are the season replay, plan 4.4).
+      R2-R17: model 3424 vs naive 3703 (hindsight best 5183), -17.4 +/- 22.0 a round; budget at R17 $113.5m vs
+      $117.7m (naive's picks follow the season average, which is what moves prices). In Model health's scorecard.
 - [x] 2026-10-12, 2x plan "Now" (docs/plans/2x-predictions.md; local session, built on 680c7bd + this change).
       Step 0, the cloud session's numbers with the real engine (fresh refresh, R5-R17 certified): scorecard T1 skill
       10.2% (8.93 vs 9.944, -1.014 +/- 0.282 a round), T3 2417 vs naive 2580 vs best 3807 (2555 in the plan and in

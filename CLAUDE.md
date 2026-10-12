@@ -136,7 +136,7 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
 - Model health: `backtest/accuracy.js` (`npm run accuracy`; refresh.py runs it after each fetch, ~3 s, skipped when
   unchanged) scores every certified round (frozen projection vs result, walk-forward CRPS/MAE) into
-  `history/<season>/accuracy.json`, then `backtest/scorecard.py --json` -> `scorecard.json` (the 2x plan's T1-T3,
+  `history/<season>/accuracy.json`, then `backtest/scorecard.py --json` -> `scorecard.json` (the 2x plan's T1-T3, T3b = T3 with the budget carried from R2,
   Model health's first table) (a sensitivity run, e.g. WX_LATEST=1, keys and writes its own file:
   walk.js CONFIG); `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
   into `history/<season>/fit.json`. Both are embedded as `DATA.modelHealth` and shown in the Sim lab's Model health

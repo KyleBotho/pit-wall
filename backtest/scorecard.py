@@ -119,6 +119,24 @@ def pick_team(cands, vals, cap=CAP):
     return [d[0] for d in ds], [c[0] for c in cs], boost[0]
 
 
+def carried_teams(rounds, picks, price_of, cap=CAP):
+    """T3b: a team picked each round as the fresh team is, but with the money carried over: the first round has the
+    cap, every later one the bank left plus the last team sold at this round's prices (unlimited transfers, no
+    chips: the game's budget path, not its transfer rules). picks: {gd: (cands, vals, actual)}; price_of(id, gd) =
+    the asset's price that round (its last known one if it has none). Returns (points per round, budget per round)."""
+    bank, prev, pts, budgets = cap, None, [], []
+    for gd in rounds:
+        cands, vals, actual = picks[gd]
+        budget = round(bank + (sum(price_of(i, gd) for i in prev[0] + prev[1]) if prev else 0), 4)
+        team = pick_team(cands, vals, budget)
+        price = {c[0]: c[2] for c in cands}
+        bank = round(budget - sum(price[i] for i in team[0] + team[1]), 4)
+        pts.append(team_points(team, actual))
+        budgets.append(budget)
+        prev = team
+    return pts, budgets
+
+
 def team_points(team, actual):
     ds, cs, boost = team
     return sum(actual[i] for i in ds + cs) + actual[boost]
@@ -140,6 +158,23 @@ def scorecard(rows, acc, first=FIRST):
         return [r["y"] for r in by[i] if r["gd"] < gd]
 
     rounds = sorted({gd for (_, gd), r in rows.items() if gd >= first and "x" in r})
+    prices = defaultdict(dict)
+    for r in rows.values():
+        prices[r["id"]][r["gd"]] = r["price"]
+
+    def price_of(i, gd):
+        p = prices[i]
+        return p[gd] if gd in p else p[max(g for g in p if g < gd)]
+
+    def round_picks(gd):
+        """(candidates, model values, naive values, actual points) of the assets with a projection and a past."""
+        here = [r for r in rows.values() if r["gd"] == gd and "x" in r and before(r["id"], gd)]
+        cands = [(r["id"], r["kind"], r["price"]) for r in here]
+        actual = {r["id"]: r["y"] for r in here}
+        vm = {r["id"]: r["x"] for r in here}
+        vn = {r["id"]: st.mean(before(r["id"], gd)) for r in here}
+        return cands, vm, vn, actual
+
     out = {"rounds": rounds, "perRound": []}
     naive_crps, model_crps, mae_m, mae_n = [], [], [], []
     top_m, top_n, team_m, team_n, team_b = [], [], [], [], []
@@ -156,7 +191,8 @@ def scorecard(rows, acc, first=FIRST):
             ]
             for r in (r for r in here if r["kind"] == kind):
                 m = st.mean(before(r["id"], gd))
-                cr.append(crps_sample([m + e for e in resid], r["y"]))
+                if resid:  # none before R4: no spread yet (and no walk-forward CRPS either)
+                    cr.append(crps_sample([m + e for e in resid], r["y"]))
                 em.append(abs(r["y"] - r["x"]))
                 en.append(abs(r["y"] - m))
             # ranking among the top-priced assets (the ones teams are built around)
@@ -164,20 +200,19 @@ def scorecard(rows, acc, first=FIRST):
             ys = [r["y"] for r in top]
             top_m.append((kind, spearman([r["x"] for r in top], ys)))
             top_n.append((kind, spearman([st.mean(before(r["id"], gd)) for r in top], ys)))
-        naive_crps.append(st.mean(cr))
+        naive_crps.append(st.mean(cr) if cr else None)
         model_crps.append(acc.get(gd))
         mae_m.append(st.mean(em))
         mae_n.append(st.mean(en))
-        cands = [(r["id"], r["kind"], r["price"]) for r in here]
-        actual = {r["id"]: r["y"] for r in here}
-        team_m.append(team_points(pick_team(cands, {r["id"]: r["x"] for r in here}), actual))
-        team_n.append(team_points(pick_team(cands, {r["id"]: st.mean(before(r["id"], gd)) for r in here}), actual))
+        cands, vm, vn, actual = round_picks(gd)
+        team_m.append(team_points(pick_team(cands, vm), actual))
+        team_n.append(team_points(pick_team(cands, vn), actual))
         team_b.append(team_points(pick_team(cands, actual), actual))
         out["perRound"].append(
             {
                 "gd": gd,
                 "crps": model_crps[-1],
-                "crpsNaive": round(naive_crps[-1], 3),
+                "crpsNaive": round(naive_crps[-1], 3) if naive_crps[-1] is not None else None,
                 "mae": round(mae_m[-1], 2),
                 "maeNaive": round(mae_n[-1], 2),
                 "team": team_m[-1],
@@ -185,7 +220,7 @@ def scorecard(rows, acc, first=FIRST):
                 "teamBest": team_b[-1],
             }
         )
-    both = [(m, n) for m, n in zip(model_crps, naive_crps, strict=True) if m is not None]
+    both = [(m, n) for m, n in zip(model_crps, naive_crps, strict=True) if m is not None and n is not None]
     if both:
         m, n = zip(*both, strict=True)
         d, se = paired(m, n)
@@ -227,6 +262,30 @@ def scorecard(rows, acc, first=FIRST):
         "sdPerRound": round(st.stdev([x - y for x, y in zip(team_m, team_n, strict=True)]), 1)
         if len(rounds) > 1
         else None,
+    }
+    # T3b: the same picks with the budget carried from round to round (price rises and falls kept), over the whole
+    # season the archive can play: from the first round with a projection (R2: rebuilt; R1 has none), whatever `first`
+    path = sorted({gd for (_, gd), r in rows.items() if "x" in r})
+    pk = {gd: round_picks(gd) for gd in path}
+    path = [gd for gd in path if pk[gd][0]]
+    cm, bm = carried_teams(path, {gd: (pk[gd][0], pk[gd][1], pk[gd][3]) for gd in path}, price_of)
+    cn, bn = carried_teams(path, {gd: (pk[gd][0], pk[gd][2], pk[gd][3]) for gd in path}, price_of)
+    cb, bb = carried_teams(path, {gd: (pk[gd][0], pk[gd][3], pk[gd][3]) for gd in path}, price_of)
+    d, se = paired(cm, cn)
+    out["T3b"] = {
+        "rounds": path,
+        "team": sum(cm),
+        "teamNaive": sum(cn),
+        "teamBest": sum(cb),
+        "perRound": round(d, 1),
+        "se": round(se, 1),
+        "budget": bm[-1],
+        "budgetNaive": bn[-1],
+        "budgetBest": bb[-1],
+        "byRound": [
+            {"gd": g, "team": a, "teamNaive": b, "teamBest": c, "budget": x, "budgetNaive": y}
+            for g, a, b, c, x, y in zip(path, cm, cn, cb, bm, bn, strict=True)
+        ],
     }
     out["floor"] = dnf_floor(by)
     return out
@@ -277,6 +336,13 @@ def show(s):
     print(
         f"T3 fresh $100m team: model {t3['team']:.0f} vs naive {t3['teamNaive']:.0f} (hindsight best "
         f"{t3['teamBest']:.0f}); {t3['perRound']:+.1f} +/- {t3['se']} a round (sd {t3['sdPerRound']})"
+    )
+    b = s["T3b"]
+    print(
+        f"T3b the same with the budget carried R{b['rounds'][0]}-R{b['rounds'][-1]}, $100m at the start: "
+        f"model {b['team']:.0f} vs naive {b['teamNaive']:.0f} (hindsight best {b['teamBest']:.0f}); "
+        f"{b['perRound']:+.1f} +/- {b['se']} a round; budget now ${b['budget']:.1f}m vs ${b['budgetNaive']:.1f}m "
+        f"(best ${b['budgetBest']:.1f}m)"
     )
     print(
         f"Floor: driver retirement rate {fl['pDnf']}; the retirement coin flip alone is {fl['dnfVar']} of the "

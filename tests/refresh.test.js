@@ -328,6 +328,16 @@ test("Model health: the 2x scorecard (T1-T3, the floor) with its definitions in 
       C: { top: 4, model: 0.354, naive: 0.246, edge: 0.108, se: 0.062 },
     },
     T3: { team: 2417, teamNaive: 2580, teamBest: 3807, perRound: -12.5, se: 13.8, sdPerRound: 49.9 },
+    T3b: {
+      rounds: [2, 3, 17],
+      team: 3424,
+      teamNaive: 3703,
+      teamBest: 5183,
+      perRound: -17.4,
+      se: 22,
+      budget: 113.5,
+      budgetNaive: 117.7,
+    },
     floor: { pDnf: 0.19, dnfVar: 158.4, withinVar: 204.4, share: 0.77, dnfCrps: 4.73 },
   };
   const got = mh({ scorecard });
@@ -337,6 +347,10 @@ test("Model health: the 2x scorecard (T1-T3, the floor) with its definitions in 
     /T1 CRPS skill over naive<\/td><td>10%<\/td><td>8\.93 vs 9\.94<\/td><td>−1\.01 ± 0\.28<\/td><td>20% = CRPS 7\.92/,
   );
   assert.match(got, /T3 fresh team a round<\/td><td>−12\.5<\/td><td>2417 vs 2580/);
+  assert.match(
+    got,
+    /T3b budget carried, R2–R17<\/td><td>−17\.4<\/td><td>3424 vs 3703 <span class="dim">\(best 5183; \$113\.5m vs \$117\.7m\)/,
+  );
   assert.match(got, /<details class="info">/);
   assert.match(got, /retirement coin flip alone is 77%/);
   assert.doesNotMatch(mh({}), /2x scorecard/);

@@ -1440,6 +1440,21 @@ class Scorecard(unittest.TestCase):
             brute = sum(abs(a - y) for a in s) / len(s) - sum(abs(a - b) for a in s for b in s) / (2 * len(s) ** 2)
             self.assertAlmostEqual(self.sc.crps_sample(s, y), brute, places=9)
 
+    def test_carried_budget_is_the_bank_plus_the_team_at_new_prices(self):
+        drv = [(f"d{i}", "D") for i in range(6)]
+        con = [("c0", "C"), ("c1", "C"), ("c2", "C")]
+        price = {1: dict.fromkeys([i for i, _ in drv + con], 10.0), 2: dict.fromkeys([i for i, _ in drv + con], 10.0)}
+        price[2].update(d0=14.0, d1=13.0, c0=12.0)  # the first team's assets rose; d5 isn't listed in round 2
+        cands = {g: [(i, k, price[g][i]) for i, k in drv + con if not (g == 2 and i == "d5")] for g in (1, 2)}
+        vals = {1: {"d0": 9, "d1": 8, "d2": 7, "d3": 6, "d4": 5, "d5": 1, "c0": 9, "c1": 8, "c2": 1}}
+        vals[2] = {**vals[1], "c2": 20}
+        actual = dict.fromkeys(price[1], 1)
+        picks = {g: (cands[g], vals[g], actual) for g in (1, 2)}
+        pts, budgets = self.sc.carried_teams([1, 2], picks, lambda i, g: price[g].get(i, price[1][i]), cap=75)
+        # round 1: 7 x $10m from $75m leaves $5m; round 2: d0-d4 + c0, c1 resold at the new prices
+        self.assertEqual(budgets, [75, 84.0])  # $5m bank + 14 + 13 + 30 + 12 + 10
+        self.assertEqual(pts, [8, 8])  # 7 assets + the boost, 1 point each
+
     def test_fresh_team_is_the_best_within_the_cap(self):
         import itertools
         import random

@@ -126,6 +126,7 @@ const SCORE_INFO =
   "<b>T1</b> CRPS skill: 1 − the model's walk-forward CRPS / the naive forecast's (season-to-date average plus the pooled spread of earlier rounds). 2x = double today's skill. " +
   "<b>T2</b> rank order within the top 8 drivers / top 4 constructors by price (Spearman), model minus naive: the assets a team hinges on. " +
   "<b>T3</b> a fresh $100m team picked each round on the projections vs on the season average, actual points (the hindsight best for scale). " +
+  "<b>T3b</b> the same picks with the money carried over from R2 (the first round with a projection): $100m at the start, then the bank plus the last team sold at the new prices; unlimited transfers, no chips. " +
   "<b>Floor</b>: the share of a driver's round-to-round variance that is the retirement coin flip alone, and the CRPS a forecast knowing every retirement chance exactly would still score from it. " +
   "± = standard error over rounds of the per-round difference. Targets: 1.5x = 15% skill, 2x = 20%.";
 function scorecardHtml(sc) {
@@ -133,6 +134,7 @@ function scorecardHtml(sc) {
   const t1 = sc.T1,
     t2 = sc.T2 || {},
     t3 = sc.T3,
+    t3b = sc.T3b,
     fl = sc.floor,
     r = sc.rounds || [];
   const pm = (d, se, f = f2) => `${d > 0 ? "+" : d < 0 ? "−" : ""}${f(Math.abs(d))}${se != null ? ` ± ${f(se)}` : ""}`;
@@ -147,6 +149,9 @@ function scorecardHtml(sc) {
           `<tr><td style="text-align:left">T2 rank, top ${t2[k].top} ${k === "D" ? "drivers" : "constructors"}</td><td>${pm(t2[k].edge, null)}</td><td>${f2(t2[k].model)} vs ${f2(t2[k].naive)}</td><td>${pm(t2[k].edge, t2[k].se)}</td><td></td></tr>`,
       ),
     `<tr><td style="text-align:left">T3 fresh team a round</td><td>${pm(t3.perRound, null, f1)}</td><td>${Math.round(t3.team)} vs ${Math.round(t3.teamNaive)} <span class="dim">(best ${Math.round(t3.teamBest)})</span></td><td>${pm(t3.perRound, t3.se, f1)}</td><td>+15 a round</td></tr>`,
+    t3b
+      ? `<tr><td style="text-align:left">T3b budget carried, R${t3b.rounds[0]}–R${t3b.rounds[t3b.rounds.length - 1]}</td><td>${pm(t3b.perRound, null, f1)}</td><td>${Math.round(t3b.team)} vs ${Math.round(t3b.teamNaive)} <span class="dim">(best ${Math.round(t3b.teamBest)}; $${f1(t3b.budget)}m vs $${f1(t3b.budgetNaive)}m)</span></td><td>${pm(t3b.perRound, t3b.se, f1)}</td><td>+15 a round</td></tr>`
+      : "",
   ].join("");
   return (
     `<p class="note"><b>2x scorecard</b>, R${r[0]}–R${r[r.length - 1]} (${r.length} rounds): what the projections add over a naive forecast.${infoTip(SCORE_INFO)}</p>` +
