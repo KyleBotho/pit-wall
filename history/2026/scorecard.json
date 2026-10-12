@@ -185,6 +185,164 @@
   "se": 13.8,
   "sdPerRound": 49.9
  },
+ "T3b": {
+  "rounds": [
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17
+  ],
+  "team": 3424,
+  "teamNaive": 3703,
+  "teamBest": 5183,
+  "perRound": -17.4,
+  "se": 22.0,
+  "budget": 113.5,
+  "budgetNaive": 117.7,
+  "budgetBest": 122.5,
+  "byRound": [
+   {
+    "gd": 2,
+    "team": 401,
+    "teamNaive": 240,
+    "teamBest": 461,
+    "budget": 100.0,
+    "budgetNaive": 100.0
+   },
+   {
+    "gd": 3,
+    "team": 286,
+    "teamNaive": 202,
+    "teamBest": 298,
+    "budget": 100.9,
+    "budgetNaive": 102.2
+   },
+   {
+    "gd": 4,
+    "team": 185,
+    "teamNaive": 269,
+    "teamBest": 336,
+    "budget": 100.6,
+    "budgetNaive": 105.5
+   },
+   {
+    "gd": 5,
+    "team": 271,
+    "teamNaive": 318,
+    "teamBest": 330,
+    "budget": 100.7,
+    "budgetNaive": 108.0
+   },
+   {
+    "gd": 6,
+    "team": 82,
+    "teamNaive": 213,
+    "teamBest": 297,
+    "budget": 101.2,
+    "budgetNaive": 109.3
+   },
+   {
+    "gd": 7,
+    "team": 73,
+    "teamNaive": 124,
+    "teamBest": 271,
+    "budget": 99.9,
+    "budgetNaive": 110.2
+   },
+   {
+    "gd": 8,
+    "team": 210,
+    "teamNaive": 239,
+    "teamBest": 250,
+    "budget": 100.0,
+    "budgetNaive": 112.3
+   },
+   {
+    "gd": 9,
+    "team": 262,
+    "teamNaive": 296,
+    "teamBest": 360,
+    "budget": 101.2,
+    "budgetNaive": 113.8
+   },
+   {
+    "gd": 10,
+    "team": 187,
+    "teamNaive": 188,
+    "teamBest": 283,
+    "budget": 102.9,
+    "budgetNaive": 115.1
+   },
+   {
+    "gd": 11,
+    "team": 207,
+    "teamNaive": 197,
+    "teamBest": 271,
+    "budget": 105.0,
+    "budgetNaive": 116.8
+   },
+   {
+    "gd": 12,
+    "team": 221,
+    "teamNaive": 224,
+    "teamBest": 322,
+    "budget": 106.5,
+    "budgetNaive": 117.3
+   },
+   {
+    "gd": 13,
+    "team": 157,
+    "teamNaive": 390,
+    "teamBest": 452,
+    "budget": 107.2,
+    "budgetNaive": 116.2
+   },
+   {
+    "gd": 14,
+    "team": 168,
+    "teamNaive": 168,
+    "teamBest": 242,
+    "budget": 109.1,
+    "budgetNaive": 117.5
+   },
+   {
+    "gd": 15,
+    "team": 224,
+    "teamNaive": 191,
+    "teamBest": 307,
+    "budget": 111.4,
+    "budgetNaive": 118.0
+   },
+   {
+    "gd": 16,
+    "team": 229,
+    "teamNaive": 223,
+    "teamBest": 374,
+    "budget": 111.9,
+    "budgetNaive": 117.3
+   },
+   {
+    "gd": 17,
+    "team": 261,
+    "teamNaive": 221,
+    "teamBest": 329,
+    "budget": 113.5,
+    "budgetNaive": 117.7
+   }
+  ]
+ },
  "floor": {
   "pDnf": 0.19,
   "dnfVar": 158.4,
