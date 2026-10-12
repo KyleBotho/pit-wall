@@ -72,7 +72,7 @@
    "mae": 10.46,
    "maeNaive": 12.0,
    "team": 180,
-   "teamNaive": 157,
+   "teamNaive": 182,
    "teamBest": 257
   },
   {
@@ -179,11 +179,11 @@
  },
  "T3": {
   "team": 2417,
-  "teamNaive": 2555,
+  "teamNaive": 2580,
   "teamBest": 3807,
-  "perRound": -10.6,
-  "se": 14.1,
-  "sdPerRound": 50.8
+  "perRound": -12.5,
+  "se": 13.8,
+  "sdPerRound": 49.9
  },
  "floor": {
   "pDnf": 0.19,
