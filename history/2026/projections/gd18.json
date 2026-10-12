@@ -1520,9 +1520,9 @@
   "s": 0.07832553223614673
  },
  "record": {
-  "built": "2026-10-12T10:11:30+00:00",
-  "commit": "886bbb0e60b9eaf449fb05816ad3a947e430ca40",
-  "dataGenerated": "2026-10-12T10:10+00:00",
+  "built": "2026-10-12T10:32:02+00:00",
+  "commit": "01e871623f1dfbab929d11293a1b123773652dfe",
+  "dataGenerated": "2026-10-12T10:31+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -1538,7 +1538,7 @@
   },
   "inputs": {
    "assets": "870108cd5c48",
-   "bands": "2187c0461e30",
+   "bands": "a951e6102f14",
    "cfg": "316ca3bfb5ce",
    "evNames": "b1a52eb2b5a9",
    "live": "4450cba1162a",
@@ -1550,7 +1550,7 @@
    "schedule": "8dbe2cebecf7",
    "skills": "8b3bb274d3c4",
    "trackStats": "1a62a91fba2c",
-   "weather": "5a61c174c47f",
+   "weather": "47eb637b5037",
    "weekend": "37e2b4257c45"
   },
   "lock": "2026-10-24T16:00:00-05:00",
@@ -1599,6 +1599,7 @@
     "mate": "blend",
     "offHalfLife": "Infinity",
     "offPrior": 3,
+    "ovForm": "moved",
     "ovShrink": 12,
     "paceShrink": 0.8,
     "pitBonusPrior": 0.5,
@@ -1684,6 +1685,7 @@
     "sprintSkill": 0,
     "sprintSkillScale": 2.1,
     "tau": 0.07,
+    "tauK": 0,
     "teamSd": 0.1,
     "unc": 1,
     "wetSkill": 0,
