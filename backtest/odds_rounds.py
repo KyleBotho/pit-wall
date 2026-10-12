@@ -2,7 +2,8 @@
 
 The live site archives the odds it used (history/<season>/odds/gdNN.json); this rebuilds the same thing for rounds
 before that archive existed, from Kalshi's hourly price history, so the backtest can fit how much weight the market
-gets. Run from the project folder:  python backtest/odds_rounds.py
+gets. Run from the project folder:  python backtest/odds_rounds.py [--first N]   (N = 1: from R1, ~10 min; the
+stats team's season replay, backtest/stats_team.js, needs R1-R4)
 """
 
 import json
@@ -25,7 +26,8 @@ def cached(name):
     return os.path.join(CACHE, name)
 
 
-FIRST_GD = 5  # the walk-forward backtest starts here; older rounds need one request per driver (historical API)
+# the walk-forward backtest starts here; older rounds need one request per driver (historical API): --first 1 for them
+FIRST_GD = int(sys.argv[sys.argv.index("--first") + 1]) if "--first" in sys.argv else 5
 
 
 def close_mid(c):

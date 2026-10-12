@@ -5,6 +5,15 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-12, the stats team (user: "need to start from R1 Australia ... the test must choose when and where to use
+      its chips and the effects must carry over ... then it can be compared to the Top 100 or Top 10"; "we can call
+      this a stats team"): backtest/stats_team.js, docs/plans/stats-team.md. A season from R1 with the real rules
+      (budget carried with real price changes, free transfers, -10s, six chips once each), the page's 3-race planner
+      on the walk-forward forecasts, scored with hindsight.js's official-score rebuild. Kalshi odds at lock rebuilt
+      for R1-R4 (backtest/odds_rounds.py --first 1; R5-R15 unchanged) so R1 isn't a flat field. Research: the real
+      2026 top 100 played Limitless R3, X3 R2, No Negative R14/R5. Best of 16 strategies, budget building + chips
+      early: 4597 at R17 vs the real top-100 average 4859 (-262) and top-10 4945 (-348); max points from the start
+      4274; budget building +323, chips ~+250; the biggest single gap R13 Monza (-179, overtake level).
 - [x] 2026-10-12, scorecard T3b (user: "use the budget increase or decrease ... carry over to the next round"):
       the fresh-team pick with the money carried, from R2 (the first round with a projection; R2-R14 rebuilt,
       R15 on frozen at lock), $100m at the start, then the bank + the last team sold at the new prices; unlimited

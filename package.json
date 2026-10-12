@@ -14,6 +14,7 @@
     "report": "node backtest/season_report.js",
     "rebuild": "node backtest/rebuild_projections.js",
     "bundle": "node tools/bundle.js",
+    "stats-team": "node backtest/stats_team.js",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm test"
   },
   "devDependencies": {
