@@ -453,8 +453,10 @@ there before re-deciding something.
 - [ ] Twice as good (user, 2026-10-12): `docs/plans/2x-predictions.md`. Points error can't halve (the retirement
       coin flip alone is 77% of a driver's round-to-round variance); 2x = CRPS skill over naive 10% -> 20% (CRPS
       ~7.92), at the floor, so 1.5x is the realistic aim. Levers L1-L10 (overtake level from circuit traffic first),
-      testing first: multi-season replay 2023-2025, model world, anytime-valid confidence sequences, 2027 R1-R8 as
-      the untouched holdout. Model-picked teams trail naive picks -10.6 +/- 14.1 a round (unresolved, not proven).
+      testing first: multi-season replay 2023-2025, model world, anytime-valid confidence sequences. 2027 R1-R8 keeps
+      improving (user): judged as a prequential track record (each round on its frozen-at-lock projection, changes
+      dated before a lock, the end-2026 champion frozen beside it as `ref2026`), final calibration after R8.
+      Model-picked teams trail naive picks -10.6 +/- 14.1 a round (unresolved, not proven).
 - [ ] Qualifying too mixed (history 2026-10-07, found comparing an outside sim): walk-forward R5-R15 puts 6.51 top-four-team
       cars in the qualifying top 8 vs 7.55 actual (too few in 9 of 11 rounds; race top 8 calibrated, 6.22 vs 6.18),
       and our model's qualifying gaps sit well inside the actual per-session gaps. Challenger `qtight` (SIM.qSd 0.1) from R17: points a tie,

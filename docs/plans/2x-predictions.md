@@ -256,8 +256,22 @@ frozen record starts at R15. So:
 
 ### 4.3 Protocol (declared before R18, fifth review's "declared protocol")
 
-* **Frozen set**: R18-R24 (2026) and 2027 R1-R8 are scored only as frozen at lock. Nothing is tuned on a frozen round
-  after it's seen. **2027 R1-R8 is the untouched holdout for the "2x" verdict.**
+* **Prequential track record, not a frozen holdout** (user, 2026-10-12: keep improving through 2027 R1-R8, then the
+  final calibration). The model may change between ANY two rounds, by hand or by refit, as long as:
+  1. each round is scored only on the projection frozen at its lock (refresh.py already does this), with the commit
+     that made it; a past round is never re-scored with a newer model and counted;
+  2. a change ships before the lock of the first round it affects, with a line in docs/history.md saying why (so the
+     verdict can say which rounds each version forecast);
+  3. a **fixed reference** runs beside it: the champion as shipped at the end of 2026, frozen as a challenger
+     (`ref2026`) from 2027 R1. The paired difference live vs reference is the measured gain of the whole winter +
+     in-season programme; live vs naive is T1.
+  Why this is honest: a forecast frozen before round k can't have seen round k, however much rounds 1..k-1 were
+  used to tune it. The verdict is then about the PROCESS (model + its updates), which is what the user plays with.
+  What it gives up: a change made after R3 is only judged on R4-R8 (fewer rounds), and two changes made together
+  can't be told apart. So keep in-season changes few and dated, and test each on the replay first (promotion rule).
+  The anytime-valid sequences below stay valid under this: they don't care that the forecaster changed.
+* **The final calibration after R8** (noise settings, market weight, pooling weight refitted on 2026 + 2027 R1-R8)
+  applies from R9. It is judged like everything else: on the rounds after it, against `ref2026` and naive.
 * **Unit**: the weekend. Paired differences vs the shipped model AND vs the naive forecast AND vs a market-only
   forecast (sim tilted fully to the market, no history: L2 makes it cheap).
 * **Anytime-valid confidence sequences** on the per-weekend paired score differences (Choe & Ramdas, "Comparing
@@ -283,13 +297,13 @@ extra, chips, boost, price changes, bank) driven by `planStoch` on each strategy
 | Now (before R18 lock) | `scorecard.py` into refresh.yml + Model health. Declare the frozen challenger set for R18-R24: L3 (practice share), L6 (rain recalibration), L7 (naive pool), `qtight` continues. Start Polymarket quotes. |
 | R18-R24 | Collect. L1 prototype on 2026 + OpenF1 2023-2025 (walk-forward). Check the live feed's ProjectedGamedayPoints on a Friday. |
 | Winter | Multi-season replay + model world (testing first). Then L2 tilting, L4 state-space pace, L5 hazard, L9 noise refit, L8. Each judged on the replay; fold-over as usual. |
-| 2027 R1-R8 | Frozen holdout: the 2x verdict on T1 (target 20%, checkpoint 15%), T2, T3. |
+| 2027 R1-R8 | Keep improving between rounds (each change before a lock, dated). `ref2026` frozen beside it. After R8: the 2x verdict on the frozen track record (T1 target 20%, checkpoint 15%, T2, T3), then the final calibration for R9+. |
 
 **Needs from the user:** a local session (or these hosts added to the cloud environment's allowed domains:
 fantasy.formula1.com, api.jolpi.ca, api.openf1.org, api.elections.kalshi.com, api.open-meteo.com,
 ensemble-api.open-meteo.com, www.fia.com, livetiming.formula1.com, gamma-api.polymarket.com) for everything that
-runs the engine; the cloud session that wrote this could read only the committed archive. Also a decision on
-whether the 2027 R1-R8 holdout is acceptable (it means no tuning on those rounds until R8 is scored).
+runs the engine; the cloud session that wrote this could read only the committed archive. Decided 2026-10-12: no
+frozen holdout; 2027 R1-R8 keeps improving and is judged as a prequential track record (4.3).
 
 ## 6. Reproduce
 
