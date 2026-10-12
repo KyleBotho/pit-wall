@@ -7,8 +7,9 @@ commit hashes and backtest numbers are as of then).
 ## Recently finished (from CLAUDE.md's Open items)
 - [x] 2026-10-12, 2x plan "Now" (docs/plans/2x-predictions.md; local session, built on 680c7bd + this change).
       Step 0, the cloud session's numbers with the real engine (fresh refresh, R5-R17 certified): scorecard T1 skill
-      10.2% (8.93 vs 9.944, -1.014 +/- 0.282 a round), T3 2417 vs naive 2580 vs best 3807 (naive 2555 in the plan:
-      R17's points refetched since); section 6 CRPS 8.929 (= accuracy.json 8.93), team 2417, best 3807; section 10
+      10.2% (8.93 vs 9.944, -1.014 +/- 0.282 a round), T3 2417 vs naive 2580 vs best 3807 (2555 in the plan and in
+      CI's first scorecard.json: equal-valued naive line-ups were picked by directory order, which differs between
+      Linux and Windows; scorecard.py now sorts the archive listing, -12.5 +/- 13.8 a round); section 6 CRPS 8.929 (= accuracy.json 8.93), team 2417, best 3807; section 10
       (3 seeds x 3,000, R5-R17): real race pace -0.467 +/- 0.134, real overtake level -0.340 +/- 0.146, all three
       -0.672 +/- 0.264 (were -0.44 / -0.41 / -0.75 on R5-R14, within noise).
       Scorecard in the build: refresh.py model_health runs backtest/scorecard.py --json after accuracy.js ->

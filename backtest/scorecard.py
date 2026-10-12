@@ -33,7 +33,9 @@ def load(season):
     """{(id, gd): row} with actual points, kind, price, dnf and (where there is one) the projection."""
     hist = os.path.join(ROOT, "history", str(season))
     rows = {}
-    for f in glob.glob(os.path.join(hist, "playerstats", "*.json")):
+    # sorted: the fresh teams break ties between equal-valued line-ups by the order assets come in (a Linux and
+    # a Windows listing once picked different naive teams, 2555 vs 2580)
+    for f in sorted(glob.glob(os.path.join(hist, "playerstats", "*.json"))):
         with open(f, encoding="utf-8") as fh:
             v = json.load(fh)["Value"]
         for g in v["GamedayWiseStats"]:
