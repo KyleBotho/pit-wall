@@ -1,0 +1,632 @@
+{
+  "2023-01": {
+    "circuit": "bahrain",
+    "deg": 0.2559,
+    "laps": 907,
+    "openf1": "Sakhir",
+    "round": 1,
+    "season": 2023,
+    "traffic": 0.675
+  },
+  "2023-02": {
+    "circuit": "jeddah",
+    "deg": 0.0152,
+    "laps": 829,
+    "openf1": "Jeddah",
+    "round": 2,
+    "season": 2023,
+    "traffic": 0.892
+  },
+  "2023-03": {
+    "circuit": "albert_park",
+    "deg": 0.1061,
+    "laps": 749,
+    "openf1": "Melbourne",
+    "round": 3,
+    "season": 2023,
+    "traffic": 0.444
+  },
+  "2023-04": {
+    "circuit": "baku",
+    "deg": 0.0326,
+    "laps": 828,
+    "openf1": "Baku",
+    "round": 4,
+    "season": 2023,
+    "traffic": 0.504
+  },
+  "2023-05": {
+    "circuit": "miami",
+    "deg": 0.0213,
+    "laps": 1078,
+    "openf1": "Miami",
+    "round": 5,
+    "season": 2023,
+    "traffic": 0.537
+  },
+  "2023-06": {
+    "circuit": "monaco",
+    "deg": 0.0261,
+    "laps": 1071,
+    "openf1": "Monte Carlo",
+    "round": 6,
+    "season": 2023,
+    "traffic": 2.232
+  },
+  "2023-07": {
+    "circuit": "catalunya",
+    "deg": 0.0709,
+    "laps": 1207,
+    "openf1": "Catalunya",
+    "round": 7,
+    "season": 2023,
+    "traffic": 0.37
+  },
+  "2023-08": {
+    "circuit": "villeneuve",
+    "deg": 0.042,
+    "laps": 1106,
+    "openf1": "Montreal",
+    "round": 8,
+    "season": 2023,
+    "traffic": 0.73
+  },
+  "2023-09": {
+    "circuit": "red_bull_ring",
+    "deg": 0.0897,
+    "laps": 1158,
+    "openf1": "Spielberg",
+    "round": 9,
+    "season": 2023,
+    "traffic": 0.665
+  },
+  "2023-10": {
+    "circuit": "silverstone",
+    "deg": 0.0265,
+    "laps": 785,
+    "openf1": "Silverstone",
+    "round": 10,
+    "season": 2023,
+    "traffic": 0.356
+  },
+  "2023-11": {
+    "circuit": "hungaroring",
+    "deg": 0.0651,
+    "laps": 1158,
+    "openf1": "Hungaroring",
+    "round": 11,
+    "season": 2023,
+    "traffic": 1.102
+  },
+  "2023-12": {
+    "circuit": "spa",
+    "deg": 0.1638,
+    "laps": 632,
+    "openf1": "Spa-Francorchamps",
+    "round": 12,
+    "season": 2023,
+    "traffic": 0.922
+  },
+  "2023-13": {
+    "circuit": "zandvoort",
+    "deg": 0.0576,
+    "laps": 753,
+    "openf1": "Zandvoort",
+    "round": 13,
+    "season": 2023,
+    "traffic": 0.939
+  },
+  "2023-14": {
+    "circuit": "monza",
+    "deg": 0.077,
+    "laps": 878,
+    "openf1": "Monza",
+    "round": 14,
+    "season": 2023,
+    "traffic": 0.26
+  },
+  "2023-15": {
+    "circuit": "marina_bay",
+    "deg": 0.0608,
+    "laps": 935,
+    "openf1": "Singapore",
+    "round": 15,
+    "season": 2023,
+    "traffic": 1.903
+  },
+  "2023-16": {
+    "circuit": "suzuka",
+    "deg": 0.1133,
+    "laps": 682,
+    "openf1": "Suzuka",
+    "round": 16,
+    "season": 2023,
+    "traffic": 0.422
+  },
+  "2023-17": {
+    "circuit": "losail",
+    "deg": 0.0234,
+    "laps": 816,
+    "openf1": "Lusail",
+    "round": 17,
+    "season": 2023,
+    "traffic": 0.914
+  },
+  "2023-18": {
+    "circuit": "americas",
+    "deg": 0.0791,
+    "laps": 921,
+    "openf1": "Austin",
+    "round": 18,
+    "season": 2023,
+    "traffic": 0.529
+  },
+  "2023-19": {
+    "circuit": "rodriguez",
+    "deg": 0.0616,
+    "laps": 1098,
+    "openf1": "Mexico City",
+    "round": 19,
+    "season": 2023,
+    "traffic": 0.538
+  },
+  "2023-20": {
+    "circuit": "interlagos",
+    "deg": 0.078,
+    "laps": 979,
+    "openf1": "Interlagos",
+    "round": 20,
+    "season": 2023,
+    "traffic": 0.31
+  },
+  "2023-21": {
+    "circuit": "vegas",
+    "deg": 0.0643,
+    "laps": 700,
+    "openf1": "Las Vegas",
+    "round": 21,
+    "season": 2023,
+    "traffic": 0.545
+  },
+  "2023-22": {
+    "circuit": "yas_marina",
+    "deg": 0.1054,
+    "laps": 1063,
+    "openf1": "Yas Marina Circuit",
+    "round": 22,
+    "season": 2023,
+    "traffic": 0.333
+  },
+  "2024-01": {
+    "circuit": "bahrain",
+    "deg": 0.1144,
+    "laps": 1024,
+    "openf1": "Sakhir",
+    "round": 1,
+    "season": 2024,
+    "traffic": 0.423
+  },
+  "2024-02": {
+    "circuit": "jeddah",
+    "deg": 0.0457,
+    "laps": 794,
+    "openf1": "Jeddah",
+    "round": 2,
+    "season": 2024,
+    "traffic": 0.588
+  },
+  "2024-03": {
+    "circuit": "albert_park",
+    "deg": 0.0836,
+    "laps": 851,
+    "openf1": "Melbourne",
+    "round": 3,
+    "season": 2024,
+    "traffic": 0.338
+  },
+  "2024-04": {
+    "circuit": "suzuka",
+    "deg": 0.1305,
+    "laps": 779,
+    "openf1": "Suzuka",
+    "round": 4,
+    "season": 2024,
+    "traffic": 0.501
+  },
+  "2024-05": {
+    "circuit": "shanghai",
+    "deg": 0.1516,
+    "laps": 745,
+    "openf1": "Shanghai",
+    "round": 5,
+    "season": 2024,
+    "traffic": 0.481
+  },
+  "2024-06": {
+    "circuit": "miami",
+    "deg": 0.0312,
+    "laps": 914,
+    "openf1": "Miami",
+    "round": 6,
+    "season": 2024,
+    "traffic": 0.45
+  },
+  "2024-07": {
+    "circuit": "imola",
+    "deg": 0.0944,
+    "laps": 1165,
+    "openf1": "Imola",
+    "round": 7,
+    "season": 2024,
+    "traffic": 0.735
+  },
+  "2024-08": {
+    "circuit": "monaco",
+    "deg": 0.0399,
+    "laps": 1187,
+    "openf1": "Monte Carlo",
+    "round": 8,
+    "season": 2024,
+    "traffic": 1.208
+  },
+  "2024-09": {
+    "circuit": "villeneuve",
+    "deg": -0.1517,
+    "laps": 734,
+    "openf1": "Montreal",
+    "round": 9,
+    "season": 2024,
+    "traffic": 0.78
+  },
+  "2024-10": {
+    "circuit": "catalunya",
+    "deg": 0.1046,
+    "laps": 1186,
+    "openf1": "Catalunya",
+    "round": 10,
+    "season": 2024,
+    "traffic": 0.407
+  },
+  "2024-11": {
+    "circuit": "red_bull_ring",
+    "deg": 0.1229,
+    "laps": 1260,
+    "openf1": "Spielberg",
+    "round": 11,
+    "season": 2024,
+    "traffic": 0.094
+  },
+  "2024-12": {
+    "circuit": "silverstone",
+    "deg": 0.071,
+    "laps": 492,
+    "openf1": "Silverstone",
+    "round": 12,
+    "season": 2024,
+    "traffic": 0.402
+  },
+  "2024-13": {
+    "circuit": "hungaroring",
+    "deg": 0.0918,
+    "laps": 1255,
+    "openf1": "Hungaroring",
+    "round": 13,
+    "season": 2024,
+    "traffic": 1.401
+  },
+  "2024-14": {
+    "circuit": "spa",
+    "deg": 0.1008,
+    "laps": 745,
+    "openf1": "Spa-Francorchamps",
+    "round": 14,
+    "season": 2024,
+    "traffic": 0.49
+  },
+  "2024-15": {
+    "circuit": "zandvoort",
+    "deg": 0.0729,
+    "laps": 1354,
+    "openf1": "Zandvoort",
+    "round": 15,
+    "season": 2024,
+    "traffic": 0.826
+  },
+  "2024-16": {
+    "circuit": "monza",
+    "deg": 0.0511,
+    "laps": 927,
+    "openf1": "Monza",
+    "round": 16,
+    "season": 2024,
+    "traffic": 0.286
+  },
+  "2024-17": {
+    "circuit": "baku",
+    "deg": 0.0626,
+    "laps": 883,
+    "openf1": "Baku",
+    "round": 17,
+    "season": 2024,
+    "traffic": 0.934
+  },
+  "2024-18": {
+    "circuit": "marina_bay",
+    "deg": 0.0732,
+    "laps": 1110,
+    "openf1": "Singapore",
+    "round": 18,
+    "season": 2024,
+    "traffic": 0.913
+  },
+  "2024-19": {
+    "circuit": "americas",
+    "deg": 0.0456,
+    "laps": 918,
+    "openf1": "Austin",
+    "round": 19,
+    "season": 2024,
+    "traffic": 0.644
+  },
+  "2024-20": {
+    "circuit": "rodriguez",
+    "deg": 0.088,
+    "laps": 1045,
+    "openf1": "Mexico City",
+    "round": 20,
+    "season": 2024,
+    "traffic": 0.163
+  },
+  "2024-21": {
+    "circuit": "interlagos",
+    "deg": null,
+    "laps": 274,
+    "openf1": "Interlagos",
+    "round": 21,
+    "season": 2024,
+    "traffic": 1.233
+  },
+  "2024-22": {
+    "circuit": "vegas",
+    "deg": 0.1973,
+    "laps": 841,
+    "openf1": "Las Vegas",
+    "round": 22,
+    "season": 2024,
+    "traffic": 0.718
+  },
+  "2024-23": {
+    "circuit": "losail",
+    "deg": -0.0045,
+    "laps": 683,
+    "openf1": "Lusail",
+    "round": 23,
+    "season": 2024,
+    "traffic": 0.799
+  },
+  "2024-24": {
+    "circuit": "yas_marina",
+    "deg": 0.0904,
+    "laps": 922,
+    "openf1": "Yas Marina Circuit",
+    "round": 24,
+    "season": 2024,
+    "traffic": 0.204
+  },
+  "2025-01": {
+    "circuit": "albert_park",
+    "deg": -0.1344,
+    "laps": 321,
+    "openf1": "Melbourne",
+    "round": 1,
+    "season": 2025,
+    "traffic": 0.737
+  },
+  "2025-02": {
+    "circuit": "shanghai",
+    "deg": 0.0842,
+    "laps": 993,
+    "openf1": "Shanghai",
+    "round": 2,
+    "season": 2025,
+    "traffic": 0.459
+  },
+  "2025-03": {
+    "circuit": "suzuka",
+    "deg": 0.0544,
+    "laps": 997,
+    "openf1": "Suzuka",
+    "round": 3,
+    "season": 2025,
+    "traffic": 0.493
+  },
+  "2025-04": {
+    "circuit": "bahrain",
+    "deg": 0.1161,
+    "laps": 952,
+    "openf1": "Sakhir",
+    "round": 4,
+    "season": 2025,
+    "traffic": 0.438
+  },
+  "2025-05": {
+    "circuit": "jeddah",
+    "deg": 0.0797,
+    "laps": 792,
+    "openf1": "Jeddah",
+    "round": 5,
+    "season": 2025,
+    "traffic": 0.424
+  },
+  "2025-06": {
+    "circuit": "miami",
+    "deg": 0.0337,
+    "laps": 421,
+    "openf1": "Miami",
+    "round": 6,
+    "season": 2025,
+    "traffic": -0.12
+  },
+  "2025-07": {
+    "circuit": "imola",
+    "deg": 0.0705,
+    "laps": 930,
+    "openf1": "Imola",
+    "round": 7,
+    "season": 2025,
+    "traffic": 0.272
+  },
+  "2025-08": {
+    "circuit": "monaco",
+    "deg": 0.0211,
+    "laps": 1233,
+    "openf1": "Monte Carlo",
+    "round": 8,
+    "season": 2025,
+    "traffic": 3.411
+  },
+  "2025-09": {
+    "circuit": "catalunya",
+    "deg": 0.0778,
+    "laps": 973,
+    "openf1": "Catalunya",
+    "round": 9,
+    "season": 2025,
+    "traffic": 0.355
+  },
+  "2025-10": {
+    "circuit": "villeneuve",
+    "deg": 0.1026,
+    "laps": 1152,
+    "openf1": "Montreal",
+    "round": 10,
+    "season": 2025,
+    "traffic": 0.734
+  },
+  "2025-11": {
+    "circuit": "red_bull_ring",
+    "deg": 0.0898,
+    "laps": 994,
+    "openf1": "Spielberg",
+    "round": 11,
+    "season": 2025,
+    "traffic": 0.343
+  },
+  "2025-12": {
+    "circuit": "silverstone",
+    "deg": -0.3693,
+    "laps": 454,
+    "openf1": "Silverstone",
+    "round": 12,
+    "season": 2025,
+    "traffic": 0.22
+  },
+  "2025-13": {
+    "circuit": "spa",
+    "deg": 0.8561,
+    "laps": 617,
+    "openf1": "Spa-Francorchamps",
+    "round": 13,
+    "season": 2025,
+    "traffic": 0.619
+  },
+  "2025-14": {
+    "circuit": "hungaroring",
+    "deg": 0.0743,
+    "laps": 1290,
+    "openf1": "Hungaroring",
+    "round": 14,
+    "season": 2025,
+    "traffic": 1.513
+  },
+  "2025-15": {
+    "circuit": "zandvoort",
+    "deg": 0.0723,
+    "laps": 990,
+    "openf1": "Zandvoort",
+    "round": 15,
+    "season": 2025,
+    "traffic": 0.732
+  },
+  "2025-16": {
+    "circuit": "monza",
+    "deg": 0.0268,
+    "laps": 916,
+    "openf1": "Monza",
+    "round": 16,
+    "season": 2025,
+    "traffic": 0.471
+  },
+  "2025-17": {
+    "circuit": "baku",
+    "deg": 0.0249,
+    "laps": 836,
+    "openf1": "Baku",
+    "round": 17,
+    "season": 2025,
+    "traffic": 0.819
+  },
+  "2025-18": {
+    "circuit": "marina_bay",
+    "deg": 0.0428,
+    "laps": 1162,
+    "openf1": "Singapore",
+    "round": 18,
+    "season": 2025,
+    "traffic": 1.844
+  },
+  "2025-19": {
+    "circuit": "americas",
+    "deg": 0.052,
+    "laps": 944,
+    "openf1": "Austin",
+    "round": 19,
+    "season": 2025,
+    "traffic": 0.81
+  },
+  "2025-20": {
+    "circuit": "rodriguez",
+    "deg": 0.0651,
+    "laps": 1151,
+    "openf1": "Mexico City",
+    "round": 20,
+    "season": 2025,
+    "traffic": 0.453
+  },
+  "2025-21": {
+    "circuit": "interlagos",
+    "deg": 0.0747,
+    "laps": 1016,
+    "openf1": "Interlagos",
+    "round": 21,
+    "season": 2025,
+    "traffic": 0.669
+  },
+  "2025-22": {
+    "circuit": "vegas",
+    "deg": 0.0347,
+    "laps": 746,
+    "openf1": "Las Vegas",
+    "round": 22,
+    "season": 2025,
+    "traffic": 0.493
+  },
+  "2025-23": {
+    "circuit": "losail",
+    "deg": 0.0484,
+    "laps": 904,
+    "openf1": "Lusail",
+    "round": 23,
+    "season": 2025,
+    "traffic": 1.079
+  },
+  "2025-24": {
+    "circuit": "yas_marina",
+    "deg": 0.1114,
+    "laps": 1082,
+    "openf1": "Yas Marina Circuit",
+    "round": 24,
+    "season": 2025,
+    "traffic": 0.734
+  }
+}

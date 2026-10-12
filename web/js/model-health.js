@@ -1,6 +1,6 @@
 /* ---------- Sim lab > Model health (owner only): how the model did, round by round (pure, tests/refresh.test.js) ----
    mh = DATA.modelHealth: accuracy (backtest/accuracy.js, recomputed when a round's points are certified or the engine
-   changes), scorecard (backtest/scorecard.py, the 2x targets) and fit (the weekly settings fit, .github/workflows/fit.yml). Changes to the model are the owner's call:
+   changes), scorecard (backtest/scorecard.py, the 2x targets), statsTeam (backtest/stats_team.js) and fit (the weekly settings fit, .github/workflows/fit.yml). Changes to the model are the owner's call:
    the fit only proposes. */
 import { esc, infoTip } from "./core.js";
 
@@ -162,6 +162,71 @@ function scorecardHtml(sc) {
   );
 }
 
+// The stats team (backtest/stats_team.js, weekly: fit.yml): a season from R1 played by the numbers with the game's
+// rules and chips, every strategy against the real top 10 / 100 (docs/plans/stats-team.md)
+const ST_BUDGET = {
+  points: "Max points",
+  budget: "Budget building",
+  "budget-r8": "Budget to R8",
+  "budget-4A": "Budget to 4A",
+  "budget-3A": "Budget to 3.5A",
+  "budget-half": "Budget building (half weight)",
+  "budget-2": "Budget building (double weight)",
+};
+const ST_CHIPS = {
+  consensus: "top 100's rounds",
+  early: "early",
+  ev: "expected value",
+  none: "none",
+  hindsight: "best calendar in hindsight",
+};
+const ST_STRUCT = { meta: "meta build 2D1C → 1D2C → 2D2C", "meta-alt": "meta build 1D2C → 2D2C" };
+const ST_SRC = { naive: "Season average · ", oracle: "Hindsight · " };
+const ST_INFO =
+  "Each round on the data as it stood before the lock: the next three races simulated, the Calculator's planner from the team held (budget moved by the real price changes, 2 free transfers with one carried, −10 each extra), six chips once each (Final Fix after qualifying), scored on the real points as F1 scores them. " +
+  "<b>Budget</b>: what an expected price rise is worth (max points: nothing; building: the Calculator's xΔ$Pts 1; to R8 / to 4A / to 3.5A: until R8, or until the budget buys the best projected team with exactly 4 / 3 assets at $18.5m and up). " +
+  "<b>Chips</b>: the rounds most of the real top 100 played them; early (the first round a chip's projected gain clears a floor); expected value (when its gain beats the best expected over the races left); none. " +
+  "<b>Season average</b> rows plan on the naive forecast instead of the model: the difference is what the model is worth. " +
+  "<b>Hindsight</b> rows are told the real points and price changes of the next three races (and play the best chip calendar in hindsight): the most this season gave, an upper benchmark, not a strategy anyone could play. " +
+  "<b>Structures</b>: A-tier counts (D drivers, C constructors at $18.5m and up), fixed or the meta builds in order. " +
+  "Chips held: what the chips not yet played are expected to bring. The top 100's totals are the global leaderboard's.";
+function statsTeamHtml(st) {
+  if (!st || !st.strategies || !st.strategies.length) return "";
+  const top = st.top || {},
+    T = top.total;
+  const label = (n) => {
+    const m = n.match(/^(?:(naive|oracle):)?(?:([\w-]+)\/)?(.*)-([a-z]+)$/);
+    return m
+      ? `${m[1] ? ST_SRC[m[1]] : ""}${m[2] ? (ST_STRUCT[m[2]] || m[2]) + " · " : ""}${ST_BUDGET[m[3]] || m[3]} · chips ${ST_CHIPS[m[4]] || m[4]}`
+      : n;
+  };
+  const rows = st.strategies
+    .map((s) => {
+      const at = s.rows.find((x) => x.gd === top.at),
+        L = s.rows[s.rows.length - 1];
+      const held = Object.values(s.inHand || {}).reduce((t, v) => t + (v || 0), 0);
+      return { s, at, L, held };
+    })
+    .sort((a, b) => b.s.total - a.s.total)
+    .map(
+      ({ s, at, L, held }) =>
+        `<tr><td style="text-align:left">${esc(label(s.name))}</td><td>${s.total}</td>` +
+        `<td>${at && T ? sg(at.total - T[100]) : "–"}</td><td>${at && T ? sg(at.total - T[10]) : "–"}</td>` +
+        `<td style="text-align:left">${esc(
+          s.rows
+            .filter((x) => x.chip)
+            .map((x) => `${x.chip} R${x.gd}`)
+            .join(", ") || "–",
+        )}</td><td>${held ? f1(held) : "–"}</td><td>$${f1(L.budget)}m</td></tr>`,
+    )
+    .join("");
+  const r = st.rounds || [];
+  return (
+    `<p class="note"><b>Stats team</b>, R${r[0]}–R${r[r.length - 1]} (${esc(String(st.generated).replace("T", " ").replace("Z", " UTC"))}): a season played by the numbers from R1, against the real players${T ? ` (after R${top.at}: top 10 ${f1(T[10])}, top 100 ${f1(T[100])}, #1 ${T[1]})` : ""}.${infoTip(ST_INFO)}</p>` +
+    `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Strategy</th><th>Total</th><th>vs top 100</th><th>vs top 10</th><th style="text-align:left">Chips played</th><th title="What the chips not yet played are expected to bring over the races left">Chips held</th><th>Budget</th></tr></thead><tbody>${rows}</tbody></table></div>`
+  );
+}
+
 // calibration by group (drivers / constructors, sprint / normal, wet / dry, safety car or not): walk-forward and,
 // pooled over the certified rounds, the frozen projections
 function groupsHtml(acc) {
@@ -193,6 +258,7 @@ export function modelHealthHtml(mh, schedule = []) {
     return (
       `<p class="note">No model health yet: it's worked out once a round's points are certified.</p>` +
       scorecardHtml(mh && mh.scorecard) +
+      statsTeamHtml(mh && mh.statsTeam) +
       fitHtml(mh && mh.fit) +
       (mh && mh.report ? seasonReportHtml(mh.report, mh.fold) : "")
     );
@@ -231,6 +297,7 @@ export function modelHealthHtml(mh, schedule = []) {
   return (
     summary +
     scorecardHtml(mh.scorecard) +
+    statsTeamHtml(mh.statsTeam) +
     `<div class="tw"><table class="stat"><thead><tr><th style="text-align:left">Round</th><th title="Walk-forward CRPS: lower is better">CRPS</th><th title="Mean absolute error, points">MAE</th><th title="Projected minus actual, points (+ = too high)">Bias</th><th title="Rank correlation">Rank</th>` +
     `<th title="Exact CRPS of the forecast frozen at lock (from its stored samples, R16 on)">Frozen CRPS</th><th title="What the site showed at lock vs the result">Frozen MAE</th><th title="Frozen projection, rank correlation">Frozen rank</th><th title="Share of assets inside the frozen 25–75% range (50% is honest)">In 25–75%</th></tr></thead><tbody>${rows}</tbody></table></div>` +
     miss +

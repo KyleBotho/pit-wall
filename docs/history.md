@@ -5,6 +5,23 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-12, stats team second run (user: the 4 follow-ups + "what would have been the optimal strategy this
+      season?"): A-tier budget targets, expected-value chips, the naive player, the meta builds as structures, and
+      hindsight (`oracle:`, the real next three races + the best chip calendar by exact search). Best playable: budget
+      to 3.5A + chips early 4640 (top 100 4859); the model beats the season-average player by +112 with budget
+      building (4597 vs 4485) but not on points only (4274 vs 4358). Hindsight: 5985, a path like the meta's (1D2C,
+      Limitless R4, 2D1C, 1D2C with Hadjar R7-R10, 2D2C from R11); the meta build in hindsight 5878, fixed 1D2C 5733,
+      2D1C 5593. Weekly from now on (fit.yml `stats` job), shown in Model health. Details: docs/plans/stats-team.md.
+- [x] 2026-10-12, 2x plan L1, the overtake level from circuit traffic (backtest/ovlevel.py, data
+      backtest/ovlevel_past.json: 70 OpenF1 races 2023-2025, each race's traffic penalty from laps.py fit_pace).
+      Traffic persists: a circuit's 2023 vs 2025 traffic r 0.86, its past mean vs its 2026 race traffic 0.87, and
+      the past mean correlates -0.81 with the 2026 log overtake level (15 circuits, in sample; speed +0.69). But it
+      carries the speed rule's information: after speed, -0.19 is left. Walk-forward R5-R17 (13 rounds),
+      |forecast - actual| race overtakes a driver vs the shipped speed rule (1.90): speed + past traffic on 2026 alone
+      -0.039 +/- 0.100; past traffic alone (2026) +0.110 +/- 0.192; pooled with 2023-2025 (season levels as the era
+      factor) speed -0.034 +/- 0.227, traffic -0.019 +/- 0.244, both +0.064 +/- 0.242. None beats the speed rule
+      beyond 2 SE: not a challenger (protocol). The big misses (R13 Monza 11.7 vs 6.9, R16 Sepang 8.4 vs 3.3) are
+      explained by neither; the level's ceiling (-0.34 CRPS) stays open. Compound choice and tyre wear: ~0 correlation.
 - [x] 2026-10-12, the stats team (user: "need to start from R1 Australia ... the test must choose when and where to use
       its chips and the effects must carry over ... then it can be compared to the Top 100 or Top 10"; "we can call
       this a stats team"): backtest/stats_team.js, docs/plans/stats-team.md. A season from R1 with the real rules

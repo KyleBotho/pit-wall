@@ -467,9 +467,10 @@ there before re-deciding something.
       `ProjectedGamedayPoints` differs from `GamedayPoints`. User, 2026-10-12: judge decisions by a season replay
       FROM R1 with carried budget and real transfer rules, against the real top-100 average and the league (plan 4.4).
       Built 2026-10-12 as the stats team (`backtest/stats_team.js`, `npm run stats-team`, docs/plans/stats-team.md):
-      best strategy (budget building, chips early) 4597 at R17 vs the real top-100 average 4859. Next there: a softer
-      "3.5A" budget target, chips by expected value over the rest of the season, the naive projections as a second
-      player, and running it weekly (fit.yml) so it tracks the season.
+      best playable strategy (budget to 3.5A, chips early) 4640 at R17 vs the real top-100 average 4859; hindsight
+      (`oracle:`) 5985, along the meta's structures. Weekly in fit.yml's `stats` job -> history/<season>/
+      stats-team.json -> Model health (lab-only `modelHealth.statsTeam`). L1 (overtake level from circuit traffic,
+      backtest/ovlevel.py): a tie with the speed rule, not a challenger (history 2026-10-12).
 - [ ] Qualifying too mixed (history 2026-10-07, found comparing an outside sim): walk-forward R5-R15 puts 6.51 top-four-team
       cars in the qualifying top 8 vs 7.55 actual (too few in 9 of 11 rounds; race top 8 calibrated, 6.22 vs 6.18),
       and our model's qualifying gaps sit well inside the actual per-session gaps. Challenger `qtight` (SIM.qSd 0.1) from R17: points a tie,

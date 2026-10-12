@@ -355,3 +355,42 @@ test("Model health: the 2x scorecard (T1-T3, the floor) with its definitions in 
   assert.match(got, /retirement coin flip alone is 77%/);
   assert.doesNotMatch(mh({}), /2x scorecard/);
 });
+
+test("Model health: the stats team, strategies by total against the real top 10 / 100, chips played and held", () => {
+  const mh = (x) =>
+    pageModules(["model-health.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } })(
+      `modelHealthHtml(${JSON.stringify(x)}, [])`,
+    );
+  const row = (gd, total, chip = null) => ({ gd, total, chip, budget: 100 + gd });
+  const statsTeam = {
+    generated: "2026-10-13T03:30Z",
+    rounds: [1, 2, 17],
+    top: { at: 17, total: { 1: 4994, 10: 4945.4, 100: 4858.8, 500: 4779.6 } },
+    strategies: [
+      { name: "points-none", total: 3987, rows: [row(1, 200), row(17, 3987)], inHand: {} },
+      {
+        name: "budget-early",
+        total: 4597,
+        rows: [row(1, 262), row(2, 700, "noneg"), row(17, 4597)],
+        inHand: { finalfix: 7.5 },
+      },
+      { name: "naive:budget-ev", total: 4300, rows: [row(17, 4300)], inHand: {} },
+      { name: "oracle:meta/budget-hindsight", total: 5878, rows: [row(17, 5878)], inHand: {} },
+    ],
+  };
+  const got = mh({ statsTeam });
+  assert.match(got, /Stats team<\/b>, R1–R17/);
+  assert.match(got, /top 10 4945\.4, top 100 4858\.8, #1 4994/);
+  // best first; vs top 100 / top 10; chips played; chips held; budget
+  assert.match(
+    got,
+    /Budget building · chips early<\/td><td>4597<\/td><td>-261\.8<\/td><td>-348\.4<\/td><td style="text-align:left">noneg R2<\/td><td>7\.5<\/td><td>\$117\.0m/,
+  );
+  assert.ok(got.indexOf("Budget building · chips early") < got.indexOf("Season average · Budget building"));
+  assert.ok(got.indexOf("Season average") < got.indexOf("Max points · chips none"));
+  assert.match(
+    got,
+    /Hindsight · meta build 2D1C → 1D2C → 2D2C · Budget building · chips best calendar in hindsight<\/td><td>5878/,
+  );
+  assert.doesNotMatch(mh({}), /Stats team/);
+});

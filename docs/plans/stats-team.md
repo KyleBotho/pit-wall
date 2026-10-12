@@ -71,7 +71,51 @@ Chip policies:
 * `early`: each chip the first round its projected gain clears its floor (as the top 100 did).
 * `none`: no chips (the floor for what chips add).
 
-## Results (2026-10-12, R1-R17, 3,000 sims a race, commit after 1927ab0)
+## Results, second run (2026-10-12: tier targets, expected-value chips, the naive player, hindsight)
+
+Added (user, 2026-10-12): budget targets by A-tier counts (`budget-4A` / `budget-3A`: build until the budget buys the
+best projected team with exactly 4 / 3 assets at $18.5m and up; counted over drivers AND constructors, since 3-4 A
+drivers cost $152-187m, out of any 2026 budget), chips by expected value (`ev`: when a chip's gain beats the
+expected best over the races left, worked back over the real calendar), the naive player (`naive:`: the same planner
+on season averages), the meta builds as structures (`meta/`: 2A drivers + 1A constructor -> 1A + 2A ("3.5A" with a
+B driver scoring like an A) -> 2A + 2A; `meta-alt/`: from 1A + 2A), and **hindsight** (`oracle:`: told the real
+points and price changes of the next three races, the best chip calendar found exactly from each chip's real gain
+per round: the most the season gave, an upper benchmark rather than a strategy, and not a proven optimum since it
+looks three races ahead).
+
+Played on the model (prospective), best first:
+
+| Strategy | Total R17 | vs top 100 | Notes |
+|---|---|---|---|
+| budget to 3.5A / chips early | **4640** | −219 | switched to points at R16 |
+| budget / chips early | 4597 | −262 | (budget to 4A: the same, 4A never affordable) |
+| meta build / chips early | 4560 | −299 | the meta's structures cost ~40 on the model |
+| budget / chips expected value | 4521 | −338 | Limitless only at R17; Wildcard held (worth ~1) |
+| budget / top 100's chip rounds | 4500 | −359 | |
+| **season average** budget / chips early | 4485 | −374 | the model is worth +112 over it with budget building |
+| points / chips early | 4274 | −585 | (season average with points only: 4358, ahead of the model) |
+
+**What the season allowed, in hindsight** (the real top 100: 4859, #1 4994):
+
+| Strategy | Total R17 | Chips |
+|---|---|---|
+| free structure, budget weight 1 | **5985** | Wildcard R2, Limitless R4, No Negative R5, Final Fix R6, X3 R13 Monza |
+| free, budget weight ½ / 0 / 2 | 5975 / 5966 / 5949 | the same rounds: the weight hardly matters in hindsight |
+| meta build 2D1C → 1D2C → 2D2C | 5878 | |
+| 1D2C all season | 5733 | |
+| meta from 1D2C | 5712 | |
+| 2D1C all season | 5593 | |
+| free, no chips | 5576 | the chips are worth ~410 timed perfectly |
+| 2D2C as soon as possible | 5339 | |
+
+The hindsight-best team's structure: 1D1C at R1 (Verstappen + Haas, Mercedes and five cheap drivers), 1D2C R2-R3
+(Antonelli, Ferrari + Mercedes, Wildcard at R2), Limitless R4 (Miami sprint, 499 pts), 2D1C R5-R6, **1D2C with
+Hadjar as the B-priced "semi-A" R7-R10**, **2D2C from R11** (budget $129m) to the end ($145m at R17). That is the
+meta's path, with the 2D1C step after Limitless instead of at the start: the meta build in hindsight scores 5878,
+107 below the free optimum, most of it at R1 and R5-R6. Autopilot is worth nothing with perfect knowledge (the Boost
+already sits on the right driver): in real play it is insurance. Four −10 hits were worth taking.
+
+## Results, first run (2026-10-12, R1-R17, 3,000 sims a race, commit after 1927ab0)
 
 Real players after R17 (global leaderboard): #1 4994, top-10 average 4945, top-100 4859, top-500 4780 (cut-off 4722).
 

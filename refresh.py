@@ -1120,9 +1120,9 @@ def model_health():
 
 
 def load_model_health():
-    """accuracy.json, the 2x scorecard (scorecard.json), the weekly settings-fit proposal (fit.json,
-    .github/workflows/fit.yml) and the season fold-over's report (season-report.json, fold.json;
-    .github/workflows/fold.yml), for the Sim lab and Admin."""
+    """accuracy.json, the 2x scorecard (scorecard.json), the stats team (stats-team.json) and the settings-fit
+    proposal (fit.json; both weekly, .github/workflows/fit.yml), the season fold-over's report (season-report.json,
+    fold.json; .github/workflows/fold.yml), for the Sim lab and Admin."""
     out = {}
     # report / fold: the season fold-over's comparison of the challengers and what it folded (fold.yml)
     for k, name in (
@@ -1131,6 +1131,7 @@ def load_model_health():
         ("report", "season-report.json"),
         ("fold", "fold.json"),
         ("scorecard", "scorecard.json"),
+        ("statsTeam", "stats-team.json"),
     ):
         path = os.path.join(ARCHIVE, name)
         if os.path.exists(path):

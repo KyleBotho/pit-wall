@@ -130,6 +130,12 @@ headroom column is what's known about the maximum.
 
 ### L1 Overtake level (the biggest single lever)
 
+**Prototype result (2026-10-12, docs/history.md):** circuit traffic from 70 past races is persistent (r 0.87 with the
+2026 race's) and predicts the level (−0.81) but carries the same information as speed; walk-forward R5-R17 the best
+variant (speed + past traffic) ties the speed rule (−0.04 ± 0.10 overtakes a driver). Not a challenger. Next ideas
+for the level: what made Monza and Sepang run high (both missed by ~5 a driver), the field's pace spread from
+practice, and the safety-car / rain interaction.
+
 The round's overtake level moves every asset at once (±57 race overtake points for the field). Today's forecast is
 the speed rule (TRACK.speed / speedPrior). Build a small level regression, fitted walk-forward on 2026 rounds plus
 2023-2025 OpenF1 overtakes at the same circuits (with an era factor):
