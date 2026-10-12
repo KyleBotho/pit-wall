@@ -195,6 +195,62 @@ class SessionClassification(unittest.TestCase):
         self.assertEqual(extras.fastest_lap(laps, num2), "CCC")
 
 
+class Polymarket(unittest.TestCase):
+    def test_weekend_markets_by_round_kind_and_driver(self):
+        import collect
+
+        sched = [
+            {"gd": 18, "lock": "2026-10-24T16:00:00-05:00", "raceStart": "2026-10-25T15:00:00-05:00"},
+            {"gd": 19, "lock": "2026-10-31T15:00:00-06:00", "raceStart": "2026-11-01T14:00:00-06:00"},
+        ]
+        drivers = {"SAI": "Carlos Sainz", "NOR": "Lando Norris", "COL": "Franco Colapinto", "GAS": "Pierre Gasly"}
+
+        def mk(title, bid, ask, tok, outcomes='["Yes", "No"]'):
+            return {
+                "groupItemTitle": title,
+                "bestBid": bid,
+                "bestAsk": ask,
+                "outcomePrices": '["0.3", "0.7"]',
+                "outcomes": outcomes,
+                "clobTokenIds": f'["{tok}", "x"]',
+                "liquidityNum": 10,
+            }
+
+        events = [
+            {
+                "slug": "f1-united-states-grand-prix-driver-podium-2026-10-25",
+                "markets": [mk("Carlos Sainz Jr.", 0.1, 0.2, "t1"), mk("Lando Norris", None, 0.5, "t2")],
+            },
+            {
+                "slug": "f1-united-states-grand-prix-practice-1-fastest-lap-2026-10-23",
+                "markets": [mk("Norris", 0.2, 0.3, "t3")],
+            },
+            {"slug": "f1-united-states-grand-prix-safety-car-2026-10-25", "markets": [mk("", 0.4, 0.6, "t4")]},
+            {
+                "slug": "f1-mexican-grand-prix-h2h-2026-11-01",
+                "markets": [mk("", 0.4, 0.6, "t5", '["Colapinto", "Gasly"]')],
+            },
+            {"slug": "2026-f1-drivers-champion", "markets": [mk("Lando Norris", 0.5, 0.6, "t6")]},  # season-long
+        ]
+        books, tokens = collect.poly_books(events, sched, drivers)
+        self.assertEqual(sorted(books), [18, 19])
+        self.assertEqual(sorted(books[18]), ["driver-podium", "practice-1-fastest-lap", "safety-car"])
+        self.assertEqual(books[18]["driver-podium"]["SAI"][:4], [0.1, 0.2, None, 0.3])
+        self.assertEqual(list(books[18]["practice-1-fastest-lap"]), ["NOR"])  # a surname only one driver has
+        self.assertEqual(list(books[18]["safety-car"]), ["yes"])
+        self.assertEqual(list(books[19]["h2h"]), ["COL > GAS"])
+        # depth from the order books: the best bid / ask and their sizes
+        answer = [
+            {
+                "asset_id": "t2",
+                "bids": [{"price": "0.02", "size": "100"}],
+                "asks": [{"price": "0.99", "size": "5"}, {"price": "0.5", "size": "500"}],
+            }
+        ]
+        collect.poly_depth(books, tokens, answer)
+        self.assertEqual(books[18]["driver-podium"]["NOR"], [0.02, 0.5, None, 0.3, None, 10.0, 100.0, 500.0])
+
+
 class FiaPenalties(unittest.TestCase):
     def test_decisions_to_grid_places(self):
         import collect
@@ -1023,8 +1079,9 @@ class PageBuild(unittest.TestCase):
         self.assertNotIn("pacePool", page["raceInfo"][gd]["race"])
         self.assertNotIn("scLaps", page["priors"]["races"][0])
         merged = json.loads(json.dumps(page))
-        merged["modelHealth"] = lab["modelHealth"]
-        merged["skills"] = lab["skills"]
+        for k in refresh.LAB_KEYS:  # as mergeLab: modelHealth, skills, wxLock
+            if k in lab:
+                merged[k] = lab[k]
         for g, blocks in lab["raceInfo"].items():
             for s, f in blocks.items():
                 merged["raceInfo"][g][s].update(f)

@@ -53,6 +53,9 @@
     ovShrink: 12, // hand-set: pseudo-overtakes behind each driver's own overtaking skill
     practiceQ: 0.5, // backtested: share of practice short-run pace blended into qualifying pace
     practiceR: 0, // backtested: long runs add nothing to race pace since it comes from race laps (section 4)
+    // share of the practice SHORT-run gap blended into race pace (0 = off; challenger prac60, 2x plan L3): faster in
+    // practice beat the projection's points (residual corr -0.10 +/- 0.05, R5-R17), not only its qualifying
+    practiceQR: 0,
     practicePull: 0.8, // backtested: most % practice can move a driver (a spin or red flag shouldn't wreck one)
     practiceMinLaps: 6, // hand-set: fewer laps than this in a session = no signal
     practiceMinDrivers: 6, // hand-set: fewer drivers with a time than this = no comparison
@@ -168,6 +171,18 @@
     yoyo: 0.144,
     followMin: 0.25, // measured: a held-up car's gap = followMin + exponential(followMean); quantiles 0.36 / 0.71 /
     followMean: 0.45, // 1.26 s (10 / 50 / 90%) in the data
+    // Rain recalibrated (0 = off; challenger raincal, 2x plan L6): each session kind's rain chance (qualifying, sprint,
+    // race; the forecast where there was one at lock, else the circuit's climatology) times the season's ratio of
+    // wet sessions seen to the chances given before them, (seen + rainCalPrior) / (expected + rainCalPrior): a
+    // calibration in the large, shrunk to 1 by rainCalPrior pseudo-sessions. Walk-forward by construction (only the
+    // rounds already run; their chances from data.wxLock and the climatology). R1-R17: 5 wet of ~13 expected.
+    rainCal: 0,
+    rainCalPrior: 2,
+    // Linear pool with the naive forecast (0 = off; challenger pool8, 2x plan L7): this share of the simulated
+    // weekends replaced by naive ones, where each asset scores its season-to-date mean plus a residual drawn from the
+    // pooled (actual - season-to-date mean) of earlier rounds (its kind's; backtest/scorecard.py's naive forecast).
+    // A mixture of samples, not a mean shift; the market fit and the category / position statistics stay the sim's.
+    naivePool: 0,
   };
   // Constructor pit-stop points (2026 rules), from the team's fastest stop of the race: under 2.0 s 20, 2.0-2.19 10,
   // 2.2-2.49 5, 2.5-2.99 2, slower 0; the fastest stop of the race +5. Only used to check OpenF1's stop times
@@ -191,7 +206,7 @@
   /** @typedef {{ season: number, round: number, circuit: string, name: string, starters: number, dnf: number, move: number | null, gain: number | null, gridCorr: number | null, sc?: number, vsc?: number, red?: number, rain?: number, ovt?: number | null, scLaps?: (number | string | null)[][], lapsRun?: number, qref?: number | null }} PriorRow */
   /** @typedef {{ sc: number, vsc: number, red: number, rain: number, pits: Record<string, number[]>, pace: Record<string, number>, paceCtx?: Record<string, number>, pacePool?: Record<string, number>, paceSePool?: Record<string, number>, paceSe?: Record<string, number>, lapCheck?: { ok?: boolean }, scLaps?: (number | string | null)[][], lapsRun?: number, retirements?: Record<string, { cause: string, lap: number, share: number | null }> }} RaceBlock */
   /** @typedef {{ win?: Record<string, number>, podium?: Record<string, number>, top10?: Record<string, number>, pole?: Record<string, number>, fl?: Record<string, number>, gd?: number, at?: string, checked?: string, asOf?: Record<string, string | null>, stale?: string[], dropped?: string[], spread?: Record<string, Record<string, number>> }} Odds */
-  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null, skills?: { drivers: Record<string, { wetQ?: number, sprR?: number, nWetQ?: number, nSprR?: number }> } | null }} Data */
+  /** @typedef {{ schedule: Gameday[], done: number[], assets: Asset[], results: { race: Record<string, ResultRow[]>, quali: Record<string, ResultRow[]>, sprint: Record<string, ResultRow[]> }, trackStats?: Record<string, { ovt: number, lap?: number }>, bands?: Record<string, BandRound>, practice?: PracticeSession[], cfg?: SeasonCfg, evNames?: { c: string, s?: string }[], priors?: { races: PriorRow[] } | null, raceInfo?: Record<string, { race?: RaceBlock, sprint?: RaceBlock, quali?: { wetTyres?: number } }>, wxLock?: Record<string, { q?: number | null, s?: number | null, r?: number | null }>, weather?: Record<string, { q?: number | null, s?: number | null, r?: number | null, ens?: { q?: number | null, s?: number | null, r?: number | null, qr?: number | null, n?: number } }>, odds?: Odds | null, weekend?: { gd: number, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, grid: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string> } | null, lockSnap?: { gd: number, weather?: any, penalties: Record<string, number>, penAt?: Record<string, string>, penParts?: Record<string, [number, string | null][]>, practice?: PracticeSession[], bands?: Record<string, BandRound> } | null, live?: { gd: number, feedTime?: string, assets: Record<string, { act?: boolean, sess?: Record<string, number>, ev?: [number, number, string?][] }> } | null, generated?: string, oddsLock?: Odds | null, skills?: { drivers: Record<string, { wetQ?: number, sprR?: number, nWetQ?: number, nSprR?: number }> } | null }} Data */
 
   const FEAT_NAMES = ["Power", "Street", "Fast corners"];
   /** @type {Circuit} */
@@ -1420,7 +1435,8 @@
       M,
     );
     const wq = Math.min(1, M.practiceQ * o.practiceWeight),
-      wr = Math.min(1, M.practiceR * o.practiceWeight);
+      wr = Math.min(1, M.practiceR * o.practiceWeight),
+      wqr = Math.min(1, M.practiceQR * o.practiceWeight);
     /** @param {Record<string, number>} gaps @param {"qPace" | "rPace"} k @param {number} w */
     const blendPractice = (gaps, k, w) => {
       const ds = dModels.filter((d) => gaps[d.tla] != null);
@@ -1439,6 +1455,7 @@
     };
     blendPractice(pr.gapQ, "qPace", wq);
     blendPractice(pr.gapR, "rPace", wr);
+    blendPractice(pr.gapQ, "rPace", wqr);
     for (const d of dModels) {
       d.practiceQ = pr.q[d.tla] ?? null;
       d.practiceR = pr.r[d.tla] ?? null;
@@ -2194,7 +2211,7 @@
     return order;
   }
   /** @typedef {{ ids: string[], N: number, field: number, tot: Float32Array, nn: Float32Array, stats: AssetStats[], sc: number, ev?: Uint8Array, scOver?: number, wet: number, wetQ?: number, wetQR?: number, laps?: { n: number, pos: number[][], gap: number[][], run: number[][] } | null }} Sim */
-  /** @typedef {{ persist?: number, known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean, lean?: boolean }} SimOpts */
+  /** @typedef {{ persist?: number, known?: Record<string, string[]>, status?: Record<string, Record<string, string>>, fl?: Record<string, string>, locked?: { q?: Record<string, number[]>, s?: Record<string, number[]> }, pen?: Record<string, number>, unc?: number, trace?: boolean, lean?: boolean, naive?: { w: number, m: Record<string, number>, res: { D: number[], C: number[] } } }} SimOpts */
   const SIM_CATS = ["q", "rpos", "gain", "lost", "ovt", "fl", "dotd", "dnf", "sprint"]; // scoring categories per driver
   /** Driver of the Day vote weight for a finishing position and places gained. @param {number} pos @param {number} g */
   const dotdWeight = (pos, g) =>
@@ -3028,6 +3045,7 @@
       S.calS = sprint ? lapCalib(S, true, S.ovLvl * (model.ovSprint || MODEL.sprintOvertakeShare)) : S.calR;
     }
     for (let s = 0; s < N; s++) simSample(S, s);
+    if (opt.naive && opt.naive.w > 0) mixNaive(S, opt.naive, seed);
     return simSummary(S);
   }
 
@@ -3861,13 +3879,101 @@
     }
     return Object.fromEntries(Object.entries(rel).map(([tm, e]) => [tm, (ds * e.s) / (e.n + MODEL.bandShrink)]));
   }
+  /** Each session kind's wet sessions seen this season against the rain chances given before them (SIM.rainCal):
+   * {q, s, r: (seen + rainCalPrior) / (expected + rainCalPrior), n: rounds counted}. A round's chance is the forecast
+   * it had at lock (data.wxLock, refresh.py: the frozen projections' rain, else backtest/weather_by_round.json's
+   * runs issued before lock), else the circuit's climatology. Wet = 3+ minutes of rainfall in a race or sprint
+   * (extras.race_info), wet tyres on half the qualifying laps or more (as skills.py). @param {Data} data
+   * @param {ReturnType<typeof trackModel>} tm */
+  function rainCalRatios(data, tm) {
+    /** @type {Record<"q" | "s" | "r", number[]>} */
+    const k = { q: [0, 0], s: [0, 0], r: [0, 0] }; // [seen, expected]
+    let n = 0;
+    for (const gd of data.done || []) {
+      const g = data.schedule.find((x) => x.gd === gd),
+        ri = data.raceInfo && data.raceInfo[gd];
+      if (!g || !ri) continue;
+      const clim = tm.forCircuit(g).rain || {},
+        fc = (data.wxLock && data.wxLock[gd]) || {};
+      const wet = (/** @type {{ rain?: number } | undefined} */ b) =>
+        b && b.rain != null ? (b.rain > 0 ? 1 : 0) : null;
+      const q = ri.quali && ri.quali.wetTyres != null ? (ri.quali.wetTyres >= 0.5 ? 1 : 0) : null;
+      /** @type {[ "q" | "s" | "r", number | null ][]} */
+      const seen = [
+        ["q", q],
+        ["r", wet(ri.race)],
+        ["s", g.sprint ? wet(ri.sprint) : null],
+      ];
+      let any = false;
+      for (const [kk, y] of seen) {
+        if (y == null) continue;
+        const p = fc[kk] ?? clim[kk] ?? clim.r ?? 0;
+        k[kk][0] += y;
+        k[kk][1] += clamp(p, 0, 1);
+        any = true;
+      }
+      if (any) n++;
+    }
+    const a = SIM.rainCalPrior;
+    const ratio = (/** @type {number[]} */ [o, e]) => (o + a) / (e + a);
+    return { q: ratio(k.q), s: ratio(k.s), r: ratio(k.r), n };
+  }
+  /** A circuit's rain chances scaled by rainCalRatios. @param {Circuit} c @param {{ q: number, s: number, r: number }} f */
+  function withRainCal(c, f) {
+    const rain = { ...(c.rain || {}) };
+    for (const k of /** @type {const} */ (["q", "s", "r"]))
+      if (rain[k] != null) rain[k] = clamp(/** @type {number} */ (rain[k]) * f[k], 0, 1);
+    return { ...c, rain };
+  }
+  /** The naive forecast as a pool member (SIM.naivePool, backtest/scorecard.py's naive): per asset its season-to-date
+   * mean points (active rounds), per kind the residuals (actual - the mean of the asset's earlier rounds) of every
+   * round that had 2+ earlier ones. Assets without a round keep the sim's samples. @param {Data} data @param {number} w */
+  function naiveForecast(data, w) {
+    /** @type {Record<string, number>} */
+    const m = {};
+    /** @type {{ D: number[], C: number[] }} */
+    const res = { D: [], C: [] };
+    for (const a of data.assets) {
+      const h = /** @type {HistRow[]} */ (a.hist.filter((x) => x && x.active)).sort((u, v) => u.gd - v.gd);
+      if (!h.length) continue;
+      let s = 0;
+      h.forEach((x, j) => {
+        if (j >= 2) res[a.kind === "D" ? "D" : "C"].push(Math.round((x.pts - s / j) * 100) / 100);
+        s += x.pts;
+      });
+      m[a.id] = Math.round((s / h.length) * 100) / 100;
+    }
+    return { w, m, res };
+  }
+  /** Replace a share of the simulated weekends with naive ones (opt.naive, naiveForecast): sample s's own stream
+   * decides (so prefixes don't depend on N), each asset with a naive mean then scores mean + a drawn residual of its
+   * kind; its No Negative score keeps the sample's floored negatives. @param {SimState} S
+   * @param {{ w: number, m: Record<string, number>, res: { D: number[], C: number[] } }} nv @param {number} seed */
+  function mixNaive(S, nv, seed) {
+    const { D, C, N, tot, nn, nd } = S;
+    const ids = D.map((d) => d.id).concat(C.map((c) => c.id));
+    for (let s = 0; s < N; s++) {
+      const rng = streamFor(seed ^ 0x6e616976, s);
+      if (rng() >= nv.w) continue;
+      ids.forEach((id, a) => {
+        const mu = nv.m[id],
+          rs = a < nd ? nv.res.D : nv.res.C;
+        if (mu == null || !rs.length) return;
+        const v = mu + rs[Math.floor(rng() * rs.length)],
+          k = a * N + s;
+        nn[k] += v - tot[k];
+        tot[k] = v;
+      });
+    }
+  }
   /** Everything one race's simulation needs, at default settings unless overridden: the circuit (with this
    * weekend's rain forecast), the model (with practice and the market for the next race) and the sim options
    * (grid penalties, orders already known). @param {Data} data @param {Gameday} g
    * @param {{ next?: boolean, halfLife?: number, pw?: number, adj?: Record<string, number>, oddsW?: number, pen?: Record<string, number>, track?: ReturnType<typeof trackModel>, circuit?: Partial<Circuit> }} [o] */
   function raceSetup(data, g, o = {}) {
     const tm = o.track || trackModel(data);
-    const c0 = withWeather(tm.forCircuit(g), data.weather && data.weather[g.gd]);
+    let c0 = withWeather(tm.forCircuit(g), data.weather && data.weather[g.gd]);
+    if (SIM.rainCal) c0 = withRainCal(c0, rainCalRatios(data, tm));
     const c = { ...c0, ...(o.circuit || {}) };
     const next = o.next ?? g.gd === (data.schedule.find((x) => !data.done.includes(x.gd)) || {}).gd;
     let model = buildModel(data, {
@@ -3905,6 +4011,8 @@
       });
     const fl = next && odds && odds.fl;
     if (fl) model = { ...model, drivers: model.drivers.map((d) => ({ ...d, flMk: fl[d.tla] ?? 0 })) };
+    // after the market fit (its own sims stay the model's): the naive pool, a mixture of the sim's weekends
+    if (SIM.naivePool > 0) simOpt.naive = naiveForecast(data, SIM.naivePool);
     // oddsCheck: set by forecastRaces once the race is simulated
     return { circuit: c, model, simOpt, odds: !!odds, oddsCheck: /** @type {OddsCheck | null} */ (null) };
   }
@@ -4265,6 +4373,33 @@
       label: "Qualifying noise halved (0.1% of a lap)",
       set: { "SIM.qSd": 0.1 },
       why: "2026-10-07, found comparing an outside sim: our qualifying mixes the midfield into the top eight too often. R5-R15 walk-forward: the top four teams' cars in the qualifying top 8, 6.51 projected vs 7.55 actual (too few in 9 of 11 rounds; 6.86 with this), qualifying log score -2.206 -> -2.168, 59% of actual positions inside the middle 50%; points a tie (CRPS -0.010 +/- 0.018, 3 seeds). Collects its evidence from R17",
+    },
+    {
+      id: "prac60",
+      label: "Practice short runs weigh more: 60% into qualifying pace, 30% into race pace",
+      set: { "MODEL.practiceQ": 0.6, "MODEL.practiceQR": 0.3 },
+      needs: (/** @type {Data} */ d) => ({
+        n: (d.practice || []).filter((p) => p.done).length,
+        of: (d.practice || []).length || 3,
+        what: "practice sessions run",
+      }),
+      why: "2x plan L3 (2026-10-12): the practice short-run gap correlates -0.10 +/- 0.05 with the points residuals (faster in practice beat the projection, R5-R17); 0.6 tied 0.5 on qualifying. See docs/history.md 2026-10-12 for the walk-forward. Collects its evidence from R18",
+    },
+    {
+      id: "raincal",
+      label: "Rain chances recalibrated to the wet sessions seen this season",
+      set: { "SIM.rainCal": 1 },
+      needs: (/** @type {Data} */ d) => {
+        const n = (d.done || []).filter((gd) => d.raceInfo && d.raceInfo[gd]).length;
+        return { n, of: (d.done || []).length, what: "finished rounds with observed weather" };
+      },
+      why: "2x plan L6 (2026-10-12): rain ran high, forecast + climatology ~13 wet sessions expected R1-R17 vs 5 seen (no wet qualifying in 17, though 2 were forecast at 80%+); rain widens the spread and adds retirements, so dry weekends came out too wide. Collects its evidence from R18",
+    },
+    {
+      id: "pool8",
+      label: "Pooled with the naive forecast (season average + spread), 80% sim",
+      set: { "SIM.naivePool": 0.2 },
+      why: "2x plan L7 (2026-10-12): the standard way to harvest a second opinion; on the archive a w 0.8 blend gave MAE 12.82 -> 12.73 and team picks +8 +/- 7 a round. A mixture of weekends, not a mean shift. Collects its evidence from R18",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */

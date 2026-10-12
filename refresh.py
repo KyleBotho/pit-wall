@@ -53,6 +53,7 @@ from f1feeds import (
     get_optional,
     get_soft,
     load_config,
+    post_json,
     write_text,
 )
 
@@ -529,6 +530,15 @@ def load_extras(now, schedule, done, nxt_g, results, assets):
             "  market odds: "
             + (", ".join(k for k in out["odds"] if k in extras.KALSHI_SERIES) if out["odds"] else "none")
         )
+        # Polymarket (2x plan L2): every race weekend it lists, kept beside Kalshi's quotes; nothing uses them yet
+        try:
+            drivers = {a["tla"]: a["name"] for a in assets if a["kind"] == "D"}
+            pm = gather.polymarket(get_soft, post_json, cached, schedule, drivers, nxt_g["gd"])
+            for gd, books in sorted(pm.items()):
+                if gd not in done and gather.polymarket_vintage(archived, read_json, write_json, gd, books, now):
+                    kept.append(f"R{gd} Polymarket quotes")
+        except Exception as e:  # noqa: BLE001 - collection only; never blocks a build
+            print(f"  ! Polymarket: {e}")
         out["weekend"] = extras.weekend(get_soft, cached, SEASON, nxt_g, now)
         out["weekend"]["gd"] = nxt_g["gd"]
         w = out["weekend"]
@@ -885,6 +895,26 @@ def load_projections(kind="projections"):
     return out
 
 
+def load_wx_lock():
+    """Each round's rain chances as they stood at lock ({gd: {q, s, r}}), for the rain recalibration (engine
+    rainCalRatios, challenger raincal): the frozen projection's (refresh.py's own forecast at lock, R15 on), else
+    backtest/weather_by_round.json's values from runs issued before lock (backtest/weather_rounds.py; its `latest`
+    ones were issued after lock and are left out). A session without one is left out (the climatology stands)."""
+    out = {}
+    wbr = os.path.join(HERE, "backtest", "weather_by_round.json")
+    for gd, w in (read_json(wbr) if os.path.exists(wbr) else {}).items():
+        got = {k: w[k] for k in ("q", "s", "r") if w.get(k) is not None}
+        if got:
+            out[str(gd)] = got
+    folder = os.path.join(ARCHIVE, "projections")
+    for name in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
+        p = read_json(os.path.join(folder, name))
+        rain = p.get("rain")
+        if rain and not p.get("rebuilt"):
+            out[str(p["gd"])] = {k: round(rain[k], 4) for k in ("q", "s", "r") if rain.get(k) is not None}
+    return out
+
+
 # ---------------------------------------------------------------- page
 
 
@@ -994,7 +1024,7 @@ def presim(data, out_dir):
 # downloads (user, 2026-09-28: challengers have no bearing on normal users): a separate file next to index.html that
 # the lab fetches for owners and admins (web/js/lab.js labData). Top-level keys moved whole; per-row fields moved
 # out of raceInfo's race / sprint blocks and the priors' rows.
-LAB_KEYS = ("modelHealth", "skills")
+LAB_KEYS = ("modelHealth", "skills", "wxLock")
 LAB_RACE_FIELDS = ("pacePool", "paceSePool", "pacePoolV", "scLaps", "scLapsV", "lapsRun")
 LAB_PRIOR_FIELDS = ("scLaps", "scLapsV", "lapsRun", "lapsRc", "laps")
 
@@ -1070,11 +1100,29 @@ def model_health():
         print((res.stdout or "").rstrip() or f"  ! model health: {(res.stderr or '').strip()[-300:]}")
     except Exception as e:  # noqa: BLE001
         print(f"  ! model health not updated: {e}")
+    # the 2x scorecard (docs/plans/2x-predictions.md): T1-T3 and the floor from the archive and accuracy.json above
+    try:
+        res = subprocess.run(
+            [sys.executable, os.path.join("backtest", "scorecard.py"), "--json"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=HERE,
+            timeout=300,
+            check=True,
+        )
+        sc = json.loads(res.stdout)
+        write_json(archived("scorecard.json"), sc, indent=1)
+        t1 = sc.get("T1") or {}
+        print(f"  scorecard: CRPS skill over naive {t1.get('skill', 0):.1%} ({len(sc['rounds'])} rounds)")
+    except Exception as e:  # noqa: BLE001 - never blocks a build
+        print(f"  ! scorecard not updated: {e}")
 
 
 def load_model_health():
-    """accuracy.json, the weekly settings-fit proposal (fit.json, .github/workflows/fit.yml) and the season
-    fold-over's report (season-report.json, fold.json; .github/workflows/fold.yml), for the Sim lab and Admin."""
+    """accuracy.json, the 2x scorecard (scorecard.json), the weekly settings-fit proposal (fit.json,
+    .github/workflows/fit.yml) and the season fold-over's report (season-report.json, fold.json;
+    .github/workflows/fold.yml), for the Sim lab and Admin."""
     out = {}
     # report / fold: the season fold-over's comparison of the challengers and what it folded (fold.yml)
     for k, name in (
@@ -1082,6 +1130,7 @@ def load_model_health():
         ("fit", "fit.json"),
         ("report", "season-report.json"),
         ("fold", "fold.json"),
+        ("scorecard", "scorecard.json"),
     ):
         path = os.path.join(ARCHIVE, name)
         if os.path.exists(path):
@@ -1204,6 +1253,7 @@ def collect(prev=None):
         "results": {k: {str(r): v for r, v in sorted(rs.items())} for k, rs in results.items()},
         **ext,
     }
+    data["wxLock"] = load_wx_lock()  # before the freeze: the raincal challenger reads it
     if nxt_g:
         freeze_projection(data, nxt_g)
         lock_snapshot(data, nxt_g)
@@ -1231,6 +1281,7 @@ def main():
         data["bands"] = load_bands()
         data["skills"] = load_skills(data.get("results") or {}, data.get("raceInfo"))
         data["projRebuilt"] = load_projections("rebuilt")
+        data["wxLock"] = load_wx_lock()
     else:
         prev = read_json(cached("data.json")) if os.path.exists(cached("data.json")) else None
         try:

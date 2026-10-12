@@ -81,8 +81,9 @@ Within-asset variance (each asset's own season mean removed), share by scoring c
 * Retirement coin flip alone: CRPS ≥ 4.7 for drivers (`scorecard.py`, two-point forecast that knows p exactly).
 * Idealised driver forecast (true retirement chance + true expected result, race-day spread of the finishers 5-8
   points): CRPS 6.5-7.6 depending on how much of the finishers' spread (9.9 in hindsight) is truly random.
-* Backtest section 10 (2026-09-25): told the real race pace −0.44, real overtake level −0.41, both + qualifying pace
-  −0.75. These are upper bounds (realised pace includes that day's noise).
+* Backtest section 10 (2026-09-25, R5-R14): told the real race pace −0.44, real overtake level −0.41, both +
+  qualifying pace −0.75. Rerun 2026-10-12 on R5-R17 (3 seeds x 3,000, local session): −0.47 ± 0.13, −0.34 ± 0.15,
+  −0.67 ± 0.26: within noise of the first run. These are upper bounds (realised pace includes that day's noise).
 * So the season-level floor is roughly **7.6-8.2** vs 8.93 today: 0.7-1.3 CRPS of headroom in total. 2x skill (7.92)
   needs most of it.
 
@@ -284,11 +285,26 @@ frozen record starts at R15. So:
 * **Kill rule**: a lever that delivers less than half its expected gain on the replay is dropped and noted in
   docs/history.md.
 
+**Declared 2026-10-12, before R18 lock** (R18 United States GP locks 2026-10-24 21:00 UTC). The challenger set frozen
+at every lock R18-R24, beside the shipped model (whose default stays as it is at this commit unless a change is
+dated in docs/history.md before a lock): qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8,
+wetskill, sprintskill, qtight (from R16/R17) and **prac60, raincal, pool8** (new, from R18; settings and their
+walk-forward in docs/history.md 2026-10-12). Each is scored only on rounds it was frozen for and evaluable on
+(accuracy.js), per weekend, paired with the shipped model; no challenger is promoted on R18-R24 alone (fewer than
+the 8-12 untouched weekends of the fifth review). L1 may join as a challenger from a later lock, dated when it does.
+Polymarket quotes are collected from R18 and used by nothing until the winter (L2).
+
 ### 4.4 Decision quality (T3) properly
 
 Fresh-team points are a crude proxy. Build the **season replay**: the real game rules (2 free transfers, −10 per
 extra, chips, boost, price changes, bank) driven by `planStoch` on each strategy's projections, scored by
 `Hind.score`. Run it on 2026 and on the 2023-2025 replay. Compare: shipped, naive, market-only, each promoted lever.
+
+User, 2026-10-12: the replay starts **at R1** (as real players did: R1-R4 from projections rebuilt with only what
+was known then, like `rebuilt/`), carries the budget from price changes, and is benchmarked against **real players'
+seasons**: the global top-100 / top-500 average per round (`data/elite_history.json`, the private repo's global
+snapshots) and the user's league (Supabase league payload, private; never in this repo). One season is one draw of
+chip timing and luck, so this is the headline people relate to; the paired per-round differences stay the test.
 
 ## 5. Roadmap
 

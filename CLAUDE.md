@@ -44,7 +44,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   after each race + the official points (Boost/x3/chip = the plainest combination that rebuilds the score; budget,
   bank, free transfers carried on; see "Round tracking" under Open items).
 - `collect.py` — data kept as it happens (refresh.py, fail-soft): forecast vintages + ECMWF ensemble per session
-  (`history/<season>/weather/`), Kalshi quotes (`quotes/`), the FIA documents index (`fia/`). Also gives the
+  (`history/<season>/weather/`), Kalshi quotes (`quotes/`), Polymarket quotes for every listed race weekend
+  (`quotes/gdNN-polymarket.json`, since 2026-10-12, unused yet), the FIA documents index (`fia/`). Also gives the
   ensemble wet shares behind the weather copula (`weather[gd].ens`). `fia_tech` (2026-09-27): the FIA's technical
   documents read once each (PU elements used / new, Car Presentation Submissions = upgrades, the parc-fermé parts
   list, the Pirelli preview: compounds, Q3 tyre, mandatory race tyres), text kept in `fia/text/<event>/`, summary
@@ -135,7 +136,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   `python -m unittest discover tests` (feed helpers, practice, page build incl. season over).
 - Model health: `backtest/accuracy.js` (`npm run accuracy`; refresh.py runs it after each fetch, ~3 s, skipped when
   unchanged) scores every certified round (frozen projection vs result, walk-forward CRPS/MAE) into
-  `history/<season>/accuracy.json` (a sensitivity run, e.g. WX_LATEST=1, keys and writes its own file:
+  `history/<season>/accuracy.json`, then `backtest/scorecard.py --json` -> `scorecard.json` (the 2x plan's T1-T3,
+  Model health's first table) (a sensitivity run, e.g. WX_LATEST=1, keys and writes its own file:
   walk.js CONFIG); `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
   into `history/<season>/fit.json`. Both are embedded as `DATA.modelHealth` and shown in the Sim lab's Model health
   panel (`web/js/model-health.js`). The fit only proposes; adopting a setting is a manual engine.js change.
@@ -267,6 +269,8 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   driver), `/2026.json` (circuit ids, coordinates) and past seasons (priors.py).
 - OpenF1 per race: `race_control` (SC/VSC/red, grid penalties, incidents), `weather` (rain), `pit`, `stints`, `starting_grid`, `laps`
   (race pace), `session_result` (qualifying order once run). `overtakes` exists for 2023-2025 only.
+- Polymarket `gamma-api.polymarket.com/events?tag_slug=f1` (keyless: every weekend market with bid / ask / last)
+  and `clob.polymarket.com/books` (POST, batched token ids: depth). Collected only (2x plan L2).
 - Kalshi `api.elections.kalshi.com/trade-api/v2` (public reads, no key): series KXF1RACE (winner), KXF1RACEPODIUM,
   KXF1TOP10, KXF1POLE; events `<series>-<AZEGP26>`. Settled markets move to `/historical/markets` (plain price fields).
 - Open-Meteo `api.open-meteo.com/v1/forecast` (no key): hourly precipitation probability; `ensemble-api.open-meteo.com`
@@ -444,7 +448,7 @@ there before re-deciding something.
      job (the backtest harness is built on 2026 fantasy data): a winter project, the results priors to confirm on
      2026.
 - [ ] Independent review (`docs/reviews/2026-09-27/`): batches 1-4 DONE 2026-09-27 (history). Watch from R16 on,
-      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8, wetskill, sprintskill, qtight from R17)
+      all automatic: the frozen record + samples at lock; challengers (qskew2, ovhl6, racectx, racepool, sctimed, dnfcauses, ovenv, oddsq, odds8, wetskill, sprintskill, qtight from R17; prac60, raincal, pool8 from R18)
       scored in Model health after certification (adopt one only after 5+ rounds and a gain beyond 2 SE); lap
       records, FastF1 archive, weather vintages + ensemble, Kalshi quotes, FIA index arriving on their own (health
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session
@@ -457,6 +461,11 @@ there before re-deciding something.
       improving (user): judged as a prequential track record (each round on its frozen-at-lock projection, changes
       dated before a lock, the end-2026 champion frozen beside it as `ref2026`), final calibration after R8.
       Model-picked teams trail naive picks -10.6 +/- 14.1 a round (unresolved, not proven).
+      "Now" done 2026-10-12 (history): the scorecard in the build + Model health, challengers prac60 / raincal / pool8
+      frozen from R18 (all ties walk-forward), Polymarket quotes collected, the protocol declared (plan 4.3). Next
+      (R18-R24): L1 overtake-level regression prototype; on a Friday before lock, check whether the live feed's
+      `ProjectedGamedayPoints` differs from `GamedayPoints`. User, 2026-10-12: judge decisions by a season replay
+      FROM R1 with carried budget and real transfer rules, against the real top-100 average and the league (plan 4.4).
 - [ ] Qualifying too mixed (history 2026-10-07, found comparing an outside sim): walk-forward R5-R15 puts 6.51 top-four-team
       cars in the qualifying top 8 vs 7.55 actual (too few in 9 of 11 rounds; race top 8 calibrated, 6.22 vs 6.18),
       and our model's qualifying gaps sit well inside the actual per-session gaps. Challenger `qtight` (SIM.qSd 0.1) from R17: points a tie,

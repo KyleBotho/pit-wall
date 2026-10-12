@@ -43,6 +43,7 @@ export function labData(onDone) {
 export function mergeLab(x) {
   if (x.modelHealth) DATA.modelHealth = x.modelHealth;
   if (x.skills) DATA.skills = x.skills;
+  if (x.wxLock) DATA.wxLock = x.wxLock;
   for (const [gd, blocks] of Object.entries(x.raceInfo || {}))
     for (const [s, f] of Object.entries(blocks)) {
       const b = DATA.raceInfo && DATA.raceInfo[gd] && DATA.raceInfo[gd][s];
@@ -59,5 +60,6 @@ const NEEDS_LAB = {
   "SIM.scTimed": (v) => !!v,
   "SIM.wetSkill": (v) => !!v,
   "SIM.sprintSkill": (v) => !!v,
+  "SIM.rainCal": (v) => !!v,
 };
 export const needsLabData = (set) => Object.entries(set).some(([k, v]) => NEEDS_LAB[k] && NEEDS_LAB[k](v));

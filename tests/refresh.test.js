@@ -314,3 +314,30 @@ test("season report verdicts: at lock decides (5+ rounds, beyond 2 SE), else loo
   assert.equal(p.d, 2);
   assert.ok(Math.abs(p.se - Math.sqrt(1 / 3)) < 1e-12);
 });
+
+test("Model health: the 2x scorecard (T1-T3, the floor) with its definitions in a popover", () => {
+  const mh = (x) =>
+    pageModules(["model-health.js"], { assets: [], schedule: [], done: [], cfg: { teams: {} } })(
+      `modelHealthHtml(${JSON.stringify(x)}, [])`,
+    );
+  const scorecard = {
+    rounds: [5, 6, 7],
+    T1: { rounds: 3, crps: 8.93, crpsNaive: 9.944, skill: 0.102, dCrps: -1.014, se: 0.282, target2x: 7.92 },
+    T2: {
+      D: { top: 8, model: 0.302, naive: 0.223, edge: 0.079, se: 0.053 },
+      C: { top: 4, model: 0.354, naive: 0.246, edge: 0.108, se: 0.062 },
+    },
+    T3: { team: 2417, teamNaive: 2580, teamBest: 3807, perRound: -12.5, se: 13.8, sdPerRound: 49.9 },
+    floor: { pDnf: 0.19, dnfVar: 158.4, withinVar: 204.4, share: 0.77, dnfCrps: 4.73 },
+  };
+  const got = mh({ scorecard });
+  assert.match(got, /2x scorecard<\/b>, R5–R7 \(3 rounds\)/);
+  assert.match(
+    got,
+    /T1 CRPS skill over naive<\/td><td>10%<\/td><td>8\.93 vs 9\.94<\/td><td>−1\.01 ± 0\.28<\/td><td>20% = CRPS 7\.92/,
+  );
+  assert.match(got, /T3 fresh team a round<\/td><td>−12\.5<\/td><td>2417 vs 2580/);
+  assert.match(got, /<details class="info">/);
+  assert.match(got, /retirement coin flip alone is 77%/);
+  assert.doesNotMatch(mh({}), /2x scorecard/);
+});

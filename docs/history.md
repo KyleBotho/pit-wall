@@ -5,6 +5,38 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-12, 2x plan "Now" (docs/plans/2x-predictions.md; local session, built on 680c7bd + this change).
+      Step 0, the cloud session's numbers with the real engine (fresh refresh, R5-R17 certified): scorecard T1 skill
+      10.2% (8.93 vs 9.944, -1.014 +/- 0.282 a round), T3 2417 vs naive 2580 vs best 3807 (naive 2555 in the plan:
+      R17's points refetched since); section 6 CRPS 8.929 (= accuracy.json 8.93), team 2417, best 3807; section 10
+      (3 seeds x 3,000, R5-R17): real race pace -0.467 +/- 0.134, real overtake level -0.340 +/- 0.146, all three
+      -0.672 +/- 0.264 (were -0.44 / -0.41 / -0.75 on R5-R14, within noise).
+      Scorecard in the build: refresh.py model_health runs backtest/scorecard.py --json after accuracy.js ->
+      history/<season>/scorecard.json -> DATA.modelHealth.scorecard (lab-only), shown first in Model health (T1-T3,
+      the floor, definitions in an i popover).
+      Three challengers frozen from R18 (engine CHALLENGERS; new settings off by default, the shipped default checked
+      output-identical: seeded sims of 4 races + the R18 projection hash the same). Section 9, 3 seeds x 10,000,
+      paired R5-R17 (13 rounds), Delta vs shipped (CRPS, MAE; < 0 better); team = fresh $100m team per round, seed 1:
+      * prac60 (MODEL.practiceQ 0.6 + new MODEL.practiceQR 0.3, the short-run gap into race pace too): CRPS
+        -0.000 +/- 0.042, MAE +0.012 +/- 0.070, places error -0.023 +/- 0.011, log R +0.013; team -6.6 +/- 5.8 a
+        round. The race share picked in one run between two rows: practiceQ 0.6 alone was worse (CRPS +0.017 +/-
+        0.008), adding 0.3 into race pace brought it back to a tie.
+      * raincal (SIM.rainCal: each session kind's rain chance times (wet seen + 2) / (chances given + 2) over the
+        season's finished rounds; forecasts at lock from DATA.wxLock = frozen projections' rain R15 on + weather_by_round
+        runs issued before lock (R4-R5), else climatology). Found: the miss is mostly the CLIMATOLOGY (13 of 17 rounds
+        had no forecast at lock): R1-R17 qualifying 0 wet of ~4.2 expected (R16/R17 forecast 82% / 86%, both dry),
+        races 3 of ~5.6, sprints 2 of ~1.7. A shrink of the forecast towards the climatology (the prompt's wording)
+        couldn't fix that and has 5 rounds to fit on, so it's a calibration in the large instead, walk-forward by
+        construction (asOf cuts wxLock and raceInfo). CRPS -0.005 +/- 0.018, MAE -0.016 +/- 0.028, places error
+        -0.010 +/- 0.003, log Q +0.008, log R +0.010; same team picks.
+      * pool8 (SIM.naivePool 0.2: a fifth of the simulated weekends replaced by naive ones, mean + a drawn residual of
+        the asset's kind, as scorecard.py; after the market fit): CRPS -0.008 +/- 0.049, MAE +0.046 +/- 0.087 (the
+        archive's -0.08 was on frozen + rebuilt means); team +8.0 +/- 7.3 a round (the archive: +8 +/- 7).
+      All ties: frozen as challengers to collect untouched rounds, the default unchanged.
+      Polymarket quotes from R18 (2x plan L2): collect.polymarket, every race weekend Polymarket lists (gamma API,
+      keyless: winner, podium, pole, fastest lap, constructors, practice, safety car, red flag, head-to-heads; bid,
+      ask, last, price, volume, liquidity) + the next race's order-book depth (CLOB /books, batched) ->
+      history/<season>/quotes/gdNN-polymarket.json, kept unless unchanged. Nothing uses them yet.
 - [x] 2026-10-11, refresh runs failing mid-weekend (user: "fails whenever the data isn't released yet"). Not late
       data: refresh.py finished in every run. Three tests in tests/data.test.js assumed no session of the coming
       weekend had run, so 21 runs failed (3-4 Oct, 10-11 Oct) and the site didn't deploy from 10 Oct 08:40 UTC until

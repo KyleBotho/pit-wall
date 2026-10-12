@@ -130,6 +130,24 @@ def get_soft(url, path, reuse=False, meta=None):
     return data
 
 
+def post_json(url, payload, timeout=30):
+    """POST JSON and read JSON back (Polymarket's order books take a batch of token ids): one attempt, paced like
+    the GETs; any failure raises FeedError for the caller (a bonus source: it carries on without)."""
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"User-Agent": UA, "Accept": "application/json", "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            body = r.read().decode("utf-8")
+    except Exception as e:  # noqa: BLE001
+        raise FeedError(f"{url}: {e}") from e
+    finally:
+        time.sleep(PAUSE)
+    return _parse(url, body)
+
+
 def get_optional(url, attempts=1, backoff=15):
     """A feed that may not exist yet: None on 403/404 (a new league's standings file 403s until it's published).
     Other failures are retried slowly, then raised as FeedError; an answer that isn't JSON raises at once."""

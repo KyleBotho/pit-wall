@@ -493,6 +493,20 @@ ${title} (${seeds.length} seeds x ${N} sims; Δ < 0 is better for CRPS, MAE and 
 // Groups run by name: EXP=<group>[,<group>] npm run backtest 9 (default: all groups; EXP=none = the base row).
 // EXP_N / EXP_SEEDS change the sims and seeds; EXP_GRID=1 adds the race-alone score given the real grid (2x time).
 const EXPERIMENTS = {
+  // 2x plan (2026-10-12), the challengers frozen from R18: L3 practice short runs (the race share picked between the
+  // two rows, one run), L6 rain recalibrated, L7 pooled with the naive forecast
+  prac: [
+    ["practice short runs 60% into qualifying", [["MODEL.practiceQ", 0.6]]],
+    [
+      "... + 30% into race pace (prac60)",
+      [
+        ["MODEL.practiceQ", 0.6],
+        ["MODEL.practiceQR", 0.3],
+      ],
+    ],
+  ],
+  raincal: [["rain recalibrated to the season's wet sessions (raincal)", [["SIM.rainCal", 1]]]],
+  pool8: [["pooled with the naive forecast, 80% sim (pool8)", [["SIM.naivePool", 0.2]]]],
   // review batch 4: a race-wide overtaking factor (SIM.ovEnv), and the fastest-stop bonus the old way (pitBonus 0)
   ovenv: [["race-wide overtaking factor", [["SIM.ovEnv", 1]]]],
   pitbonus: [["fastest-stop bonus in each team's line (old)", [["SIM.pitBonus", 0]]]],

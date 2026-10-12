@@ -134,6 +134,7 @@ function asOf(r, drop = []) {
         .map(([g, v]) => [g, +g === r ? { FP: v.FP } : v]),
     ),
     raceInfo: cut(D.raceInfo),
+    wxLock: cut(D.wxLock), // the rain recalibration's past forecasts (SIM.rainCal): earlier rounds only
     practice: PRACTICE[r] || [],
     // this round's rain forecast and grid penalties as at lock (second review: they used to be left out)
     weather: wxAt(r) ? { [r]: wxAt(r) } : {},

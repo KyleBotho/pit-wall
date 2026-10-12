@@ -8,6 +8,9 @@ these.
                                        per-member rain per session (51 members): forecast vintages
   history/<season>/quotes/gdNN.json    every Kalshi quote seen for the next race: bid, ask, last, volume, open
                                        interest per driver and market (the de-vigged odds are in odds/)
+  history/<season>/quotes/gdNN-polymarket.json  Polymarket's quotes for every race weekend it lists (winner, podium,
+                                       pole, fastest lap, constructors, safety car, red flag, head-to-heads): bid,
+                                       ask, last, price, volume, liquidity, and the next race's book depth
   history/<season>/fia/<event>.json    the FIA's decision documents index (title, PDF, published, first seen):
                                        starting grids, penalties, power-unit elements, the Pirelli preview
 """
@@ -141,6 +144,159 @@ def quotes_vintage(archived, read_json, write_json, gd, event, books, now):
         read_json,
         write_json,
         {"gd": gd, "event": event, "cols": ["bid", "ask", "last", "volume", "openInterest"]},
+        {"at": now.isoformat(timespec="minutes"), "books": books},
+        same=lambda e: json.dumps(e["books"], sort_keys=True),
+    )
+
+
+# ---------------------------------------------------------------- Polymarket (2x plan L2: collected, not used yet)
+
+POLY_EVENTS = "https://gamma-api.polymarket.com/events?tag_slug=f1&closed=false&limit=100&offset={off}"
+POLY_BOOKS = "https://clob.polymarket.com/books"
+POLY_COLS = ["bid", "ask", "last", "price", "volume", "liquidity", "bidSize", "askSize"]
+_DATE = re.compile(r"-(\d{4}-\d{2}-\d{2})$")
+
+
+def _norm_name(s):
+    import unicodedata
+
+    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode().lower()
+    s = re.sub(r"\bjr\b\.?", "", s)
+    return re.sub(r"[^a-z ]", "", s).strip()
+
+
+def poly_who(title, drivers):
+    """A market's name (Polymarket's groupItemTitle) as one of our TLAs, else the name itself. drivers: {TLA: full
+    name}; the full name first, then a surname only one driver has."""
+    n = _norm_name(title or "")
+    full = {_norm_name(v): k for k, v in drivers.items()}
+    if n in full:
+        return full[n]
+    last = {}
+    for k, v in drivers.items():
+        last.setdefault(_norm_name(v).split()[-1] if _norm_name(v) else "", []).append(k)
+    hit = last.get(n.split()[-1] if n else "")
+    return hit[0] if hit and len(hit) == 1 else title
+
+
+def poly_round(slug, schedule):
+    """The gameday a weekend market belongs to: the date in its slug falls between two days before the round's lock
+    and its race (local dates); None for anything else (season-long markets)."""
+    m = _DATE.search(slug or "")
+    if not m:
+        return None
+    day = datetime.strptime(m.group(1), "%Y-%m-%d").date()
+    for g in schedule:
+        lock = _dt(g["lock"]).date()
+        if lock - timedelta(days=2) <= day <= _dt(g["raceStart"]).date():
+            return g["gd"]
+    return None
+
+
+def poly_key(slug):
+    """The market kind from an event slug: f1-united-states-grand-prix-driver-podium-2026-10-25 -> driver-podium."""
+    s = _DATE.sub("", slug or "")
+    s = s[3:] if s.startswith("f1-") else s
+    return s.split("grand-prix-", 1)[1] if "grand-prix-" in s else s
+
+
+def _num(v):
+    try:
+        return float(v) if v not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
+def poly_books(events, schedule, drivers):
+    """{gd: {kind: {who: [bid, ask, last, price, volume, liquidity, bidSize, askSize]}}} from Polymarket's open F1
+    events (gamma API), plus {token id: (gd, kind, who)} for the depth. A market's row is its first outcome's (Yes,
+    or the first name of a head-to-head, whose key is "A > B"). Sizes stay None until poly_depth fills them."""
+    out, tokens = {}, {}
+    for e in events or []:
+        gd = poly_round(e.get("slug"), schedule)
+        if gd is None or e.get("closed"):
+            continue
+        kind = poly_key(e.get("slug"))
+        for m in e.get("markets") or []:
+            if m.get("closed"):
+                continue
+            try:
+                outcomes = json.loads(m.get("outcomes") or "[]")
+                prices = json.loads(m.get("outcomePrices") or "[]")
+                toks = json.loads(m.get("clobTokenIds") or "[]")
+            except ValueError:
+                outcomes, prices, toks = [], [], []
+            if outcomes and outcomes[0] != "Yes" and len(outcomes) == 2:
+                who = f"{poly_who(outcomes[0], drivers)} > {poly_who(outcomes[1], drivers)}"
+            else:
+                who = poly_who(m.get("groupItemTitle") or "", drivers) or "yes"  # a lone yes/no market: "yes"
+            row = [
+                _num(m.get("bestBid")),
+                _num(m.get("bestAsk")),
+                _num(m.get("lastTradePrice")),
+                _num(prices[0]) if prices else None,
+                _num(m.get("volumeNum")),
+                _num(m.get("liquidityNum")),
+                None,
+                None,
+            ]
+            out.setdefault(gd, {}).setdefault(kind, {})[who] = row
+            if toks:
+                tokens[toks[0]] = (gd, kind, who)
+    return out, tokens
+
+
+def poly_depth(books, tokens, answer):
+    """Fill best bid / ask and their sizes from CLOB order books (answer: the /books reply, a list)."""
+    for b in answer or []:
+        where = tokens.get(b.get("asset_id"))
+        if not where:
+            continue
+        gd, kind, who = where
+        row = books[gd][kind][who]
+        bids = [(_num(x.get("price")), _num(x.get("size"))) for x in b.get("bids") or []]
+        asks = [(_num(x.get("price")), _num(x.get("size"))) for x in b.get("asks") or []]
+        bids = [x for x in bids if x[0] is not None]
+        asks = [x for x in asks if x[0] is not None]
+        if bids:
+            row[0], row[6] = max(bids)
+        if asks:
+            row[1], row[7] = min(asks)
+
+
+def polymarket(get_soft, post, cached, schedule, drivers, nxt=None):
+    """Polymarket's quotes for every race weekend it lists ({gd: {kind: {who: row}}}, POLY_COLS): one gamma request a
+    page of events, then the order books of the next race's markets (CLOB, 100 tokens a request) for depth.
+    post(url, payload) -> JSON. Fail-soft: returns {} when the listing can't be read."""
+    events, off = [], 0
+    while off < 1000:
+        d = get_soft(POLY_EVENTS.format(off=off), cached(f"pm_events_{off}.json"))
+        if not isinstance(d, list) or not d:
+            break
+        events += d
+        if len(d) < 100:
+            break
+        off += 100
+    books, tokens = poly_books(events, schedule, drivers)
+    want = [t for t, (gd, _, _) in tokens.items() if gd == nxt]
+    for i in range(0, len(want), 100):
+        try:
+            poly_depth(books, tokens, post(POLY_BOOKS, [{"token_id": t} for t in want[i : i + 100]]))
+        except Exception as e:  # noqa: BLE001 - depth is a bonus; the gamma quotes stand
+            print(f"  ! Polymarket order books: {e}")
+            break
+    return books
+
+
+def polymarket_vintage(archived, read_json, write_json, gd, books, now):
+    """One round's Polymarket quotes beside Kalshi's (quotes/gdNN-polymarket.json). Kept unless unchanged."""
+    if not books:
+        return False
+    return _append(
+        archived("quotes", f"gd{gd:02d}-polymarket.json"),
+        read_json,
+        write_json,
+        {"gd": gd, "source": "polymarket", "cols": POLY_COLS},
         {"at": now.isoformat(timespec="minutes"), "books": books},
         same=lambda e: json.dumps(e["books"], sort_keys=True),
     )
