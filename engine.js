@@ -51,6 +51,10 @@
     defaultOvertakes: 3, // hand-set: race overtake points for a driver with no races
     sprintOvertakeShare: 0.4, // hand-set prior; this season's sprints move it (shrunk: they're noisy)
     ovShrink: 12, // hand-set: pseudo-overtakes behind each driver's own overtaking skill
+    // the overtake regression's form for a car that finished: "moved" = log(1 + |places moved|) (gained and lost
+    // alike); "gained" = log(1 + places lost) + places gained / 10, linear (challenger gridk, 2026-10-12: the
+    // shipped form gave a car from 21st to 6th ~7 overtakes for 14; leave-one-round-out MAE 2.312 -> 2.251)
+    ovForm: "moved",
     practiceQ: 0.5, // backtested: share of practice short-run pace blended into qualifying pace
     practiceR: 0, // backtested: long runs add nothing to race pace since it comes from race laps (section 4)
     // share of the practice SHORT-run gap blended into race pace (0 = off; challenger prac60, 2x plan L3): faster in
@@ -90,6 +94,11 @@
     scPerDnf: 0.15, // hand-set: chance a retirement brings out the safety car (2026: ~3 retirements, 43% safety cars)
     scNoise: 1.35, // fitted: race noise under a safety car
     scTau: 0.75, // hand-set: grid slot cost under a safety car (the field bunches up)
+    // the grid slots' cost made concave (0 = off, linear: tau per slot): tau x K x log(1 + slots / K), so the first
+    // slots cost as now and a fast car far back loses less (2026-10-12: cars starting 6+ slots behind their pace
+    // finished 1.6 places better than projected and made 40% more overtakes, R5-R17; Antonelli at Monza from P19,
+    // projected P8.7, won). Challenger "gridk".
+    tauK: 0,
     // the timed safety car (challenger sctimed; 0 = off): each simulated race safety car gets an onset (the share of
     // the race run when the last one came, drawn from the circuit's scAt: dry, unflagged races of past seasons and
     // this season's finished rounds) and its effect scaled by the weight max(0, scTimeA + scTimeB x onset): the
@@ -1514,7 +1523,7 @@
     return cModels;
   }
   /** @typedef {{ id: string, team: string, pitMu: number, pitSd: number, stops: number[], bands?: number[], bonusW?: number }} ConsModel stops = recent races' pit points (bands: without the fastest-stop bonus) */
-  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, targets: Record<string, Record<string, [number, number]>> }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
+  /** @typedef {{ drivers: DriverModel[], cons: ConsModel[], gRate: number, field: number, ovB: number[], ovG?: number, ovRet?: { b: number, phi: number, share: number[] }, oddsFit?: { iters: number, n: number, resid: number[], noise: number, lastStep: number, targets: Record<string, Record<string, [number, number]>> }, ovSprint: number, slopeQ: number, slopeR: number }} Model */
   /**
    * @param {Data} data
    * @param {{ halfLife?: number, adj?: Record<string, number>, practice?: PracticeSession[], practiceWeight?: number, teamShift?: Record<string, number>, paceShift?: Record<string, number>, model?: Partial<typeof MODEL> }} [opt]
@@ -1624,6 +1633,7 @@
       gRate,
       field: F,
       ovB: ovModel.b,
+      ...(ovModel.bg != null ? { ovG: ovModel.bg } : {}),
       ovRet: ovModel.ret,
       ovSprint: ovModel.sprint,
       slopeQ,
@@ -1801,6 +1811,7 @@
     const who = [];
     /** @type {number[]} every retirement's share of the race run (-1 = didn't start), for the sim to draw from */
     const shares = [];
+    const gainedForm = M.ovForm === "gained";
     for (const gd of data.done || []) {
       const rows = data.results.race[gd] || [];
       const lapsRun = rows.map((r) => r.laps ?? -1),
@@ -1814,10 +1825,20 @@
         const ov = byTla[row.tla] && byTla[row.tla][gd];
         if (!ov) continue;
         if (row.cls) {
-          X.push([1, Math.log1p(Math.abs(row.grid - row.pos)), (row.grid - 1) / (F - 1), 0]);
+          X.push(
+            gainedForm
+              ? [
+                  1,
+                  Math.log1p(Math.max(0, row.pos - row.grid)),
+                  (row.grid - 1) / (F - 1),
+                  0,
+                  Math.max(0, row.grid - row.pos) / 10,
+                ]
+              : [1, Math.log1p(Math.abs(row.grid - row.pos)), (row.grid - 1) / (F - 1), 0],
+          );
           run.push(-1);
         } else if (!row.dns && row.laps != null && full > 0) {
-          X.push([1, 0, (row.grid - 1) / (F - 1), 1]);
+          X.push(gainedForm ? [1, 0, (row.grid - 1) / (F - 1), 1, 0] : [1, 0, (row.grid - 1) / (F - 1), 1]);
           run.push(row.laps / full);
         } else continue;
         y.push(ov[0]);
@@ -1834,6 +1855,7 @@
     if (X.length < 40)
       return {
         b: [0, 0, 0],
+        bg: null,
         ret,
         sprint,
         skill: /** @type {Record<string, number>} */ ({}),
@@ -1847,7 +1869,7 @@
         const eta = o[n] + x.reduce((t, v, j) => t + v * b[j], 0);
         return s + y[n] * eta - Math.exp(eta);
       }, 0);
-    let b = [0, 0, 0, 0],
+    let b = gainedForm ? [0, 0, 0, 0, 0] : [0, 0, 0, 0],
       oFit = off;
     if (nRet >= 15) {
       // phi by profile likelihood on a grid
@@ -1871,7 +1893,8 @@
     } else {
       // too few retirements to fit: finishers only; retired cars use the hand-set phi and the finishers' level
       const keep = run.map((f) => f < 0);
-      const Xf = X.filter((_, n) => keep[n]).map((x) => x.slice(0, 3));
+      // every column but the retired cars' own intercept (3)
+      const Xf = X.filter((_, n) => keep[n]).map((x) => x.filter((_, j) => j !== 3));
       const bf = poissonGlm(
         Xf,
         y.filter((_, n) => keep[n]),
@@ -1879,7 +1902,7 @@
         0.5,
         "overtakes (finishers)",
       );
-      b = [...bf, 0];
+      b = [...bf.slice(0, 3), 0, ...bf.slice(3)];
       oFit = expo(ret.phi);
     }
     /** @type {Record<string, [number, number]>} */
@@ -1893,7 +1916,7 @@
     /** @type {Record<string, number>} */
     const skill = {};
     for (const [t, [ob, ex]] of Object.entries(oe)) skill[t] = Math.log((ob + M.ovShrink) / (ex + M.ovShrink));
-    return { b: b.slice(0, 3), ret, sprint, skill, fallback, fitted: true };
+    return { b: b.slice(0, 3), bg: gainedForm ? b[4] : null, ret, sprint, skill, fallback, fitted: true };
   }
 
   /** Driver of the Day popularity per driver: (votes won + k) / (votes expected + k), where "expected" is what the
@@ -2305,6 +2328,7 @@
       tlaIdx: Object.fromEntries(D.map((d, i) => [d.tla, i])),
       rain: circuit.rain || {},
       ovB: model.ovB || [0, 0, 0],
+      ovG: model.ovG ?? null,
       tau: tauFor(circuit.grid ?? DEFAULT_CIRCUIT.grid),
       pSc,
       ovLvl,
@@ -2582,6 +2606,7 @@
     const { out, nd, dnfP, circuit, r, tlaIdx, pSc, tau, lapMode, pts, neg, rCount, F, rp, tShock, tOf, shock, D } = S;
     const { lapBase, lapT, runRace, ovUs, lapNs, lapN, calS, calR, trace, lapPass, ovSum, ovSc, ovNoSc, model, ovB } =
       S;
+    const ovG = S.ovG;
     const { flOddsW, flC, dotdC } = S;
     out.fill(0);
     // retirements: individual, plus multi-car incidents (a share of the same total risk)
@@ -2682,7 +2707,12 @@
       if (laps) continue;
       const s = fixed
         ? fixed.indexOf(D[i].tla)
-        : rp[i] + tShock[tOf[i]] + shock[i] + tauNow * (grid[i] - 1) + skewNoise(r, SIM.rSkew) * sd - (sk ? sk[i] : 0);
+        : rp[i] +
+          tShock[tOf[i]] +
+          shock[i] +
+          tauNow * (SIM.tauK > 0 ? SIM.tauK * Math.log1p((grid[i] - 1) / SIM.tauK) : grid[i] - 1) +
+          skewNoise(r, SIM.rSkew) * sd -
+          (sk ? sk[i] : 0);
       fin.push({ i, s });
     }
     if (laps) {
@@ -2736,9 +2766,11 @@
         addCat(S, i, "rpos", pp);
         addCat(S, i, g >= 0 ? "gain" : "lost", g);
       }
-      const lam =
-        lvl *
-        Math.exp(ovB[0] + ovB[1] * Math.log1p(Math.abs(grid[i] - pos)) + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU);
+      const moved =
+        ovG != null
+          ? ovB[1] * Math.log1p(Math.max(0, pos - grid[i])) + (ovG * Math.max(0, grid[i] - pos)) / 10
+          : ovB[1] * Math.log1p(Math.abs(grid[i] - pos));
+      const lam = lvl * Math.exp(ovB[0] + moved + ovB[2] * ((grid[i] - 1) / (F - 1)) + D[i].ovU);
       const ov =
         laps && SIM.lapOv === "passes"
           ? lapPass[i]
@@ -4400,6 +4432,18 @@
       label: "Pooled with the naive forecast (season average + spread), 80% sim",
       set: { "SIM.naivePool": 0.2 },
       why: "2x plan L7 (2026-10-12): the standard way to harvest a second opinion; on the archive a w 0.8 blend gave MAE 12.82 -> 12.73 and team picks +8 +/- 7 a round. A mixture of weekends, not a mean shift. Collects its evidence from R18",
+    },
+    {
+      id: "ovgain",
+      label: "Overtakes: places gained count linearly",
+      set: { "MODEL.ovForm": "gained" },
+      why: "2026-10-12 (the Monza miss): the shipped form gave big movers half their overtakes; walk-forward R5-R17 overtake error -0.039 +/- 0.011, CRPS -0.019 +/- 0.015 (3 seeds). Collects its evidence from R18",
+    },
+    {
+      id: "gridk",
+      label: "Grid cost concave (K 8) + places gained linear",
+      set: { "SIM.tauK": 8, "MODEL.ovForm": "gained" },
+      why: "2026-10-12: cars starting 6+ slots behind their pace finished 1.6 places better than projected (fixed with the real grid: 10.6 vs 10.3); walk-forward CRPS -0.036 +/- 0.063 (tie). Collects its evidence from R18",
     },
   ];
   /** The engine's settings as plain JSON (Infinity kept as a string). */

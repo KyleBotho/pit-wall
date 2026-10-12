@@ -507,6 +507,19 @@ const EXPERIMENTS = {
   ],
   raincal: [["rain recalibrated to the season's wet sessions (raincal)", [["SIM.rainCal", 1]]]],
   pool8: [["pooled with the naive forecast, 80% sim (pool8)", [["SIM.naivePool", 0.2]]]],
+  // 2026-10-12, the Monza miss: the grid slots' cost concave (SIM.tauK), two values, not a search
+  gridk: [
+    ["grid cost concave, K 4", [["SIM.tauK", 4]]],
+    ["grid cost concave, K 8", [["SIM.tauK", 8]]],
+    ["overtakes: places gained linear", [["MODEL.ovForm", "gained"]]],
+    [
+      "both: K 8 + places gained linear (gridk)",
+      [
+        ["SIM.tauK", 8],
+        ["MODEL.ovForm", "gained"],
+      ],
+    ],
+  ],
   // review batch 4: a race-wide overtaking factor (SIM.ovEnv), and the fastest-stop bonus the old way (pitBonus 0)
   ovenv: [["race-wide overtaking factor", [["SIM.ovEnv", 1]]]],
   pitbonus: [["fastest-stop bonus in each team's line (old)", [["SIM.pitBonus", 0]]]],

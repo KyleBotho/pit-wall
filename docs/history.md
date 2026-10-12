@@ -5,6 +5,12 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-10-12, why Monza (R13) and Sepang (R16) were missed. Level: neither is forecastable from pre-lock data
+      (straights share of the practice lap, speed + straights -0.056 +/- 0.043 vs the speed rule; Sepang a damp race,
+      3.4 stops a driver, two safety cars; rain 2023-2025 no effect, -0.02 +/- 0.12). Fixable: cars starting 6+ slots
+      behind their pace (19 cases) finished 1.6 places better and made 40% more overtakes than projected (Antonelli,
+      30-place penalty known at lock: projected 5.8 overtakes / P8.7, won with 26). New options SIM.tauK (concave grid
+      cost) and MODEL.ovForm "gained"; challengers ovgain and gridk from the next lock (numbers in their why).
 - [x] 2026-10-12, stats team second run (user: the 4 follow-ups + "what would have been the optimal strategy this
       season?"): A-tier budget targets, expected-value chips, the naive player, the meta builds as structures, and
       hindsight (`oracle:`, the real next three races + the best chip calendar by exact search). Best playable: budget

@@ -103,8 +103,28 @@ def rows_2026(data):
         lap = ((data.get("trackStats") or {}).get(str(gd)) or {}).get("lap")
         c = g.get("circuit")
         if vals and lap and km.get(c):
-            out.append({"season": 2026, "gd": gd, "circuit": c, "y": st.mean(vals), "kmh": km[c] * 3600 / lap})
+            out.append(
+                {
+                    "season": 2026,
+                    "gd": gd,
+                    "circuit": c,
+                    "y": st.mean(vals),
+                    "kmh": km[c] * 3600 / lap,
+                    "S": straights(gd),
+                }
+            )
     return out
+
+
+def straights(gd):
+    """The share of the lap above 260 km/h on the weekend's fastest practice lap before the lock (telemetry.py bands,
+    FastF1 car data); qualifying's where practice wasn't kept (R1, R4)."""
+    p = os.path.join(ROOT, "history", "2026", "telemetry", "bands", f"gd{gd:02d}.json")
+    if not os.path.exists(p):
+        return None
+    b = refresh.read_json(p)
+    sh = (b.get("FP") or b.get("Q") or {}).get("share")
+    return sh[3] if sh else None
 
 
 def rows_past(data, past):
@@ -188,8 +208,21 @@ def walk(data, past):
         else:
             speed = lv26
         out = {"gd": cur["gd"], "y": cur["y"], "flat": lv26, "speed": speed}
-        # 2026 alone, as the speed rule (ridge 2, 5+ rounds): the circuit's past traffic, and speed + past traffic
-        for name, feats in (("traffic26", ["T"]), ("speedTraffic26", ["kmh", "T"])):
+        # 2026 alone, as the speed rule (ridge 2, 5+ rounds): the circuit's past traffic, speed + past traffic, the
+        # straights' share of the practice lap (2026-10-12: Monza's miss), and speed + straights
+        for r in rows:
+            r["x"]["S"] = r.get("S") if r.get("S") is not None else 0.0
+        if any(r.get("S") is not None for r in b26):
+            mS = st.mean(r["S"] for r in b26 if r.get("S") is not None)
+            sS = st.pstdev([r["S"] for r in b26 if r.get("S") is not None]) or 1.0
+            for r in rows:
+                r["x"]["S"] = ((r["S"] if r.get("S") is not None else mS) - mS) / sS
+        for name, feats in (
+            ("traffic26", ["T"]),
+            ("speedTraffic26", ["kmh", "T"]),
+            ("straight26", ["S"]),
+            ("speedStraight26", ["kmh", "S"]),
+        ):
             if len(b26) >= 5:
                 _, b = fit(b26, feats, 2.0)
                 out[name] = lv26 + sum(
@@ -208,7 +241,17 @@ def walk(data, past):
 
 def report(res):
     rounds = [r for r in res if r["gd"] >= FROM]
-    keys = ["flat", "speed", "pooledSpeed", "pooledSpeedTraffic", "pooledTraffic", "traffic26", "speedTraffic26"]
+    keys = [
+        "flat",
+        "speed",
+        "pooledSpeed",
+        "pooledSpeedTraffic",
+        "pooledTraffic",
+        "traffic26",
+        "speedTraffic26",
+        "straight26",
+        "speedStraight26",
+    ]
     err = {k: [abs(math.exp(r[k]) - r["y"]) for r in rounds] for k in keys}
     lerr = {k: [abs(r[k] - math.log(r["y"])) for r in rounds] for k in keys}
     span = f"R{rounds[0]['gd']}-R{rounds[-1]['gd']} ({len(rounds)} rounds)"
@@ -221,11 +264,11 @@ def report(res):
         )
     last = res[-1]
     print(f"  slopes at R{last['gd']} (per sd of speed, per s of traffic):", {k: last[k + "B"] for k in keys[2:]})
-    print("  per round (actual, speed rule, 2026 traffic, 2026 speed + traffic):")
+    print("  per round (actual, speed rule, speed + traffic, straights, speed + straights):")
     for r in rounds:
         print(
-            f"    R{r['gd']:<3} {r['y']:5.2f} {math.exp(r['speed']):5.2f} {math.exp(r['traffic26']):5.2f}"
-            f" {math.exp(r['speedTraffic26']):5.2f}"
+            f"    R{r['gd']:<3} {r['y']:5.2f} {math.exp(r['speed']):5.2f} {math.exp(r['speedTraffic26']):5.2f}"
+            f" {math.exp(r['straight26']):5.2f} {math.exp(r['speedStraight26']):5.2f}"
         )
 
 
