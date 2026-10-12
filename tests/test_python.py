@@ -1362,3 +1362,44 @@ class Fold(unittest.TestCase):
         self.assertEqual(fold.through({"season": s, "next": None, "done": [1, 2]}), s)
         self.assertEqual(fold.through({"season": s, "next": None, "done": []}), s - 1)  # not started
         self.assertEqual(fold.through({"season": s - 1, "next": None, "done": [1]}), s - 1)  # another season's data
+
+
+class Scorecard(unittest.TestCase):
+    """backtest/scorecard.py: the 2x plan's scorecard (docs/plans/2x-predictions.md)."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, os.path.join(ROOT, "backtest"))
+        import scorecard
+
+        cls.sc = scorecard
+
+    def test_crps_of_a_sample_is_exact(self):
+        import random
+
+        rnd = random.Random(3)
+        s = [rnd.gauss(10, 8) for _ in range(40)]
+        for y in (-25, 4.5, 10, 31):
+            brute = sum(abs(a - y) for a in s) / len(s) - sum(abs(a - b) for a in s for b in s) / (2 * len(s) ** 2)
+            self.assertAlmostEqual(self.sc.crps_sample(s, y), brute, places=9)
+
+    def test_fresh_team_is_the_best_within_the_cap(self):
+        import itertools
+        import random
+
+        rnd = random.Random(7)
+        cands = [(f"d{i}", "D", round(rnd.uniform(4, 30), 1)) for i in range(9)]
+        cands += [(f"c{i}", "C", round(rnd.uniform(6, 30), 1)) for i in range(5)]
+        vals = {c[0]: rnd.uniform(-5, 60) for c in cands}
+        drv = [c for c in cands if c[1] == "D"]
+        con = [c for c in cands if c[1] == "C"]
+        best = max(
+            (sum(vals[c[0]] for c in ds + cs) + max(vals[d[0]] for d in ds), ds, cs)
+            for ds in itertools.combinations(drv, 5)
+            for cs in itertools.combinations(con, 2)
+            if sum(c[2] for c in ds + cs) <= 100
+        )
+        ds, cs, boost = self.sc.pick_team(cands, vals)
+        self.assertEqual(set(ds), {d[0] for d in best[1]})
+        self.assertEqual(set(cs), {c[0] for c in best[2]})
+        self.assertEqual(boost, max(ds, key=lambda d: vals[d]))

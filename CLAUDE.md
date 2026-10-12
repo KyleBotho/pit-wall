@@ -139,6 +139,9 @@ artifact copy (https://claude.ai/artifact/FBsMrxqHKqWBTC9wqytXTF, last version 1
   walk.js CONFIG); `.github/workflows/fit.yml` (Tuesdays 03:30 UTC, ~20 min) runs `fit.js --save`
   into `history/<season>/fit.json`. Both are embedded as `DATA.modelHealth` and shown in the Sim lab's Model health
   panel (`web/js/model-health.js`). The fit only proposes; adopting a setting is a manual engine.js change.
+- `backtest/scorecard.py` — the "2x" plan's scorecard (`docs/plans/2x-predictions.md`), from the committed archive
+  alone (no cache, no network): T1 CRPS skill over the naive forecast (season-to-date mean + pooled spread; 10.2%
+  R5-R17), T2 rank edge within the top-priced assets, T3 fresh-team points vs naive picks, and the retirement floor.
 - `backtest/run.js` (`npm run backtest [section numbers]`) — 1 price rule, 2 track model (leave-one-round-out, circuit
   history weight alpha), 3 retirements, 4 practice weights, 5 calibration by scoring category, 6 THE GATE:
   walk-forward projected points vs actual (CRPS, MAE, coverage, team pick; variants without market/practice/...),
@@ -447,6 +450,11 @@ there before re-deciding something.
       warns on the lap model and ensemble). Later, with the data: calibrate forecast rain vs observed session
       weather (weather/ + races/ wx), market-quote quality weights (quotes/), grid penalties from FIA documents.
 
+- [ ] Twice as good (user, 2026-10-12): `docs/plans/2x-predictions.md`. Points error can't halve (the retirement
+      coin flip alone is 77% of a driver's round-to-round variance); 2x = CRPS skill over naive 10% -> 20% (CRPS
+      ~7.92), at the floor, so 1.5x is the realistic aim. Levers L1-L10 (overtake level from circuit traffic first),
+      testing first: multi-season replay 2023-2025, model world, anytime-valid confidence sequences, 2027 R1-R8 as
+      the untouched holdout. Model-picked teams trail naive picks -10.6 +/- 14.1 a round (unresolved, not proven).
 - [ ] Qualifying too mixed (history 2026-10-07, found comparing an outside sim): walk-forward R5-R15 puts 6.51 top-four-team
       cars in the qualifying top 8 vs 7.55 actual (too few in 9 of 11 rounds; race top 8 calibrated, 6.22 vs 6.18),
       and our model's qualifying gaps sit well inside the actual per-session gaps. Challenger `qtight` (SIM.qSd 0.1) from R17: points a tie,
