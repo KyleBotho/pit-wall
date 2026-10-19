@@ -1,7 +1,7 @@
 # Fantasy Pit Wall: build history and decisions
 
 Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything here is finished unless marked
-`[ ]`; open items are listed in CLAUDE.md's "Open items". Entries are kept as written at the time (dates,
+`[ ]`; open items are listed in docs/open-items.md. Entries are kept as written at the time (dates,
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)

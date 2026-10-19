@@ -4,7 +4,7 @@ Paste everything below the line into a local Claude Code session started in the 
 
 ---
 
-Read `docs/plans/2x-predictions.md` (the plan) and CLAUDE.md's open item "Twice as good". It was written on
+Read `docs/plans/2x-predictions.md` (the plan) and docs/open-items.md's item "Twice as good". It was written on
 2026-10-12 in a cloud session that couldn't reach the data feeds. It only read the committed `history/2026/` archive
 and never ran the engine. The plan and `backtest/scorecard.py` are on branch `claude/beautiful-faraday-pr6zr7`. Your
 job is the plan's first two roadmap rows ("Now" and "R18-R24"), in the order below. Work on main: `git pull --rebase`,

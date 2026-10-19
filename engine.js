@@ -20,8 +20,8 @@
   const SPTS = [8, 7, 6, 5, 4, 3, 2, 1];
 
   /* Model settings. "backtested"/"fitted" values were chosen by walk-forward tests (`npm run backtest`, `npm run
-     fit`; latest results in CLAUDE.md). "hand-set" values were picked by eye and are only checked by the calibration
-     section there. "measured" values are counted from data. */
+     fit`; latest results in docs/model-decisions.md). "hand-set" values were picked by eye and are only checked by
+     the backtest's calibration section. "measured" values are counted from data. */
   let MODEL = {
     prior: 1.5, // backtested (flat 0.5-4): pseudo-races of the team-mate average mixed into each driver's pace
     defaultGap: 2.5, // hand-set: % off the fastest for a team with no history
