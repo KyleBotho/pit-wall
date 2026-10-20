@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-13T10:59Z",
+ "generated": "2026-10-20T08:53Z",
  "N": 4000,
  "passes": 1,
  "rounds": [
@@ -126,5 +126,5 @@
    "folds": 0
   }
  ],
- "minutes": 10.1
+ "minutes": 10.3
 }
