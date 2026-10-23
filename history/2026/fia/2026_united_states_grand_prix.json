@@ -87,6 +87,45 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_entry_list.pdf",
    "published": "2026-10-23T15:30+00:00",
    "firstSeen": "2026-10-23T17:30+00:00"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-10-23T17:38+00:00",
+   "firstSeen": "2026-10-23T18:56+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - Infringement - Car 43 - PU Element",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_43_-_pu_element.pdf",
+   "published": "2026-10-23T18:44+00:00",
+   "firstSeen": "2026-10-23T18:56+00:00",
+   "grid": 10
+  },
+  {
+   "doc": 15,
+   "title": "Doc 15 - Infringement - Car 5 - PU Elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_5_-_pu_elements.pdf",
+   "published": "2026-10-23T18:52+00:00",
+   "firstSeen": "2026-10-23T18:56+00:00",
+   "grid": 20
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Infringement - Car 41 - PU Element",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_41_-_pu_element.pdf",
+   "published": "2026-10-23T18:56+00:00",
+   "firstSeen": "2026-10-23T18:56+00:00",
+   "grid": 5
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_free_practice_1_classification.pdf",
+   "published": "2026-10-23T18:50+00:00",
+   "firstSeen": "2026-10-23T18:56+00:00"
   }
  ],
  "tech": {
@@ -361,6 +400,31 @@
     "reasons": {
      "Performance": 2
     }
+   }
+  },
+  "puNew": {
+   "41": {
+    "ICE": 5
+   },
+   "5": {
+    "ICE": 3,
+    "TC": 3,
+    "EXH": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "43": {
+    "PU-CE": 3
+   },
+   "81": {
+    "PU-ANC": 4
+   },
+   "12": {
+    "PU-ANC": 5
+   },
+   "55": {
+    "PU-ANC": 4
    }
   }
  }
