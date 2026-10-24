@@ -837,6 +837,16 @@
             "Frequency": "-",
             "Event": "Qualifying Position",
             "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "No Driver Q2",
+            "Value": -1
+          },
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": -1
           }
         ]
       }
@@ -852,7 +862,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -84
+            "Value": -85
           },
           {
             "Frequency": "5",
@@ -892,7 +902,7 @@
           {
             "Frequency": "-",
             "Event": "No Driver Q2",
-            "Value": -17
+            "Value": -18
           },
           {
             "Frequency": "61",
@@ -3664,6 +3674,16 @@
                 "Frequency": "-",
                 "Event": "Qualifying Position",
                 "Value": 0
+              },
+              {
+                "Frequency": "-",
+                "Event": "No Driver Q2",
+                "Value": -1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -1
               }
             ]
           }
@@ -3672,8 +3692,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/24/2026 9:13:44 PM",
-    "ISTTime": "10/25/2026 2:43:44 AM",
-    "CESTTime": "10/24/2026 11:13:44 PM"
+    "UTCTime": "10/24/2026 10:03:22 PM",
+    "ISTTime": "10/25/2026 3:33:22 AM",
+    "CESTTime": "10/25/2026 12:03:22 AM"
   }
 }

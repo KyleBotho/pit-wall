@@ -609,14 +609,9 @@
         "IsActive": 1,
         "StatsWise": [
           {
-            "Frequency": "7th",
+            "Frequency": "13th",
             "Event": "Qualifying Position",
-            "Value": 4
-          },
-          {
-            "Frequency": "-",
-            "Event": "Total",
-            "Value": 4
+            "Value": 0
           }
         ]
       }
@@ -632,7 +627,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 71
+            "Value": 67
           },
           {
             "Frequency": "1",
@@ -657,7 +652,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 12
+            "Value": 8
           },
           {
             "Frequency": "-",
@@ -3151,14 +3146,9 @@
             "IsPlayed": 0,
             "StatsWise": [
               {
-                "Frequency": "7th",
+                "Frequency": "13th",
                 "Event": "Qualifying Position",
-                "Value": 4
-              },
-              {
-                "Frequency": "-",
-                "Event": "Total",
-                "Value": 4
+                "Value": 0
               }
             ]
           }
@@ -3167,8 +3157,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/24/2026 9:11:38 PM",
-    "ISTTime": "10/25/2026 2:41:38 AM",
-    "CESTTime": "10/24/2026 11:11:38 PM"
+    "UTCTime": "10/24/2026 10:03:19 PM",
+    "ISTTime": "10/25/2026 3:33:19 AM",
+    "CESTTime": "10/25/2026 12:03:19 AM"
   }
 }

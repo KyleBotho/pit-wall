@@ -870,8 +870,13 @@
           },
           {
             "Frequency": "-",
+            "Event": "Both Driver Q3",
+            "Value": 10
+          },
+          {
+            "Frequency": "-",
             "Event": "Total",
-            "Value": 7
+            "Value": 17
           }
         ]
       }
@@ -887,7 +892,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 843
+            "Value": 853
           },
           {
             "Frequency": "-",
@@ -932,7 +937,7 @@
           {
             "Frequency": "-",
             "Event": "Both Driver Q3",
-            "Value": 170
+            "Value": 180
           },
           {
             "Frequency": "30",
@@ -3742,8 +3747,13 @@
               },
               {
                 "Frequency": "-",
+                "Event": "Both Driver Q3",
+                "Value": 10
+              },
+              {
+                "Frequency": "-",
                 "Event": "Total",
-                "Value": 7
+                "Value": 17
               }
             ]
           }
@@ -3752,8 +3762,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/24/2026 9:13:43 PM",
-    "ISTTime": "10/25/2026 2:43:43 AM",
-    "CESTTime": "10/24/2026 11:13:43 PM"
+    "UTCTime": "10/24/2026 10:03:21 PM",
+    "ISTTime": "10/25/2026 3:33:21 AM",
+    "CESTTime": "10/25/2026 12:03:21 AM"
   }
 }
