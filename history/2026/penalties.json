@@ -332,6 +332,16 @@
    "title": "Doc 15 - Infringement - Car 5 - PU Elements"
   },
   {
+   "car": 5,
+   "tla": "BOR",
+   "places": 60,
+   "issued": 18,
+   "target": 18,
+   "published": "2026-10-24T20:34+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_5_-_additional_changes_to_pu_elements.pdf",
+   "title": "Doc 35 - Infringement - Car 5 - Additional changes to PU elements"
+  },
+  {
    "car": 41,
    "tla": "LIN",
    "places": 5,
