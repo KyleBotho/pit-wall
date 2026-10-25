@@ -178,6 +178,70 @@
    "firstSeen": "2026-10-24T05:05+00:00"
   },
   {
+   "doc": 26,
+   "title": "Doc 26 - Post-Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_post-qualifying_procedure.pdf",
+   "published": "2026-10-25T13:32+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 27,
+   "title": "Doc 27 - Race Director's Competition Notes V3",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_race_directors_competition_notes_v3.pdf",
+   "published": "2026-10-25T13:35+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 28,
+   "title": "Doc 28 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_new_pu_elements_for_this_competition_0.pdf",
+   "published": "2026-10-25T13:35+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 29,
+   "title": "Doc 29 - Summons - Audi - Pit Lane Incident - Car 27",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_summons_-_audi_-_pit_lane_incident_-_car_27.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 30,
+   "title": "Doc 30 - Summons - Car 5 - Alleged impeding of Car 44",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_summons_-_car_5_-_alleged_impeding_of_car_44.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 31,
+   "title": "Doc 31 - Summons - Car 44 - Alleged impeding by Car 5",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_summons_-_car_44_-_alleged_impeding_by_car_5.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 32,
+   "title": "Doc 32 - Free Practice 3 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_free_practice_3_classification.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 33,
+   "title": "Doc 33 - Summons - Car 6 - Alleged erratic driving",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_summons_-_car_6_-_alleged_erratic_driving.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 34,
+   "title": "Doc 34 - Infringement - Free Practice 3 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_free_practice_3_deleted_lap_times.pdf",
+   "published": "2026-10-25T13:37+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
    "doc": 35,
    "title": "Doc 35 - Infringement - Car 5 - Additional changes to PU elements",
    "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_5_-_additional_changes_to_pu_elements.pdf",
@@ -250,6 +314,27 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_provisional_starting_grid.pdf",
    "published": "2026-10-25T01:31+00:00",
    "firstSeen": "2026-10-25T00:30+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Pre-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_pre-race_procedure.pdf",
+   "published": "2026-10-25T14:28+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 46,
+   "title": "Doc 46 - Post-Race Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_post-race_procedure.pdf",
+   "published": "2026-10-25T14:32+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 47,
+   "title": "Doc 47 - Parc Ferme Issues",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_parc_ferme_issues.pdf",
+   "published": "2026-10-25T16:26+00:00",
+   "firstSeen": "2026-10-25T16:52+00:00"
   }
  ],
  "tech": {
@@ -531,12 +616,13 @@
     "ICE": 5
    },
    "5": {
-    "ICE": 3,
-    "TC": 3,
+    "ICE": 4,
+    "TC": 4,
     "EXH": 3,
-    "ES": 3,
-    "PU-CE": 3,
-    "PU-ANC": 5
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 6,
+    "MGU-K": 3
    },
    "43": {
     "PU-CE": 3
