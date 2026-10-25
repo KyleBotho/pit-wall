@@ -358,6 +358,44 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_final_starting_grid.pdf",
    "published": "2026-10-25T19:00+00:00",
    "firstSeen": "2026-10-25T21:16+00:00"
+  },
+  {
+   "doc": 51,
+   "title": "Doc 51 - Decision - Car 5 - Alleged leaving the track and gaining and advantage",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_decision_-_car_5_-_alleged_leaving_the_track_and_gaining_and_advantage.pdf",
+   "published": "2026-10-25T21:59+00:00",
+   "firstSeen": "2026-10-25T22:20+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 52,
+   "title": "Doc 52 - Infringement - Car 87 - Causing a Collision",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_87_-_causing_a_collision.pdf",
+   "published": "2026-10-25T21:29+00:00",
+   "firstSeen": "2026-10-25T22:20+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 53,
+   "title": "Doc 53 - Infringement - Car 63 - Leaving the track and gaining an advantage",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_63_-_leaving_the_track_and_gaining_an_advantage.pdf",
+   "published": "2026-10-25T21:59+00:00",
+   "firstSeen": "2026-10-25T22:20+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 54,
+   "title": "Doc 54 - Provisional Race Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_provisional_race_classification.pdf",
+   "published": "2026-10-25T21:55+00:00",
+   "firstSeen": "2026-10-25T22:20+00:00"
+  },
+  {
+   "doc": 55,
+   "title": "Doc 55 - Infringement - Race Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_race_deleted_lap_times.pdf",
+   "published": "2026-10-25T22:06+00:00",
+   "firstSeen": "2026-10-25T22:20+00:00"
   }
  ],
  "tech": {
