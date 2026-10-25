@@ -335,6 +335,29 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_parc_ferme_issues.pdf",
    "published": "2026-10-25T16:26+00:00",
    "firstSeen": "2026-10-25T16:52+00:00"
+  },
+  {
+   "doc": 48,
+   "title": "Doc 48 - Infringement - Car 18 - Changes made during Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_18_-_changes_made_during_parc_ferme.pdf",
+   "published": "2026-10-25T17:48+00:00",
+   "firstSeen": "2026-10-25T21:16+00:00",
+   "grid": 99
+  },
+  {
+   "doc": 49,
+   "title": "Doc 49 - Parts and Parameters been replaced and or changed during Parc Ferme",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_parts_and_parameters_been_replaced_and_or_changed_during_parc_ferme.pdf",
+   "published": "2026-10-25T18:51+00:00",
+   "firstSeen": "2026-10-25T21:16+00:00",
+   "read": "parcFerme"
+  },
+  {
+   "doc": 50,
+   "title": "Doc 50 - Final Starting Grid",
+   "url": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_final_starting_grid.pdf",
+   "published": "2026-10-25T19:00+00:00",
+   "firstSeen": "2026-10-25T21:16+00:00"
   }
  ],
  "tech": {
@@ -636,6 +659,27 @@
    "55": {
     "PU-ANC": 4
    }
+  },
+  "parcFerme": {
+   "3": [
+    "Rear crankshaft seal",
+    "LHS rear brake duct caliper splat"
+   ],
+   "14": [
+    "Forward chassis puck",
+    "LHS and RHS rear upper forward wishbone legs, associated tethers and fixings",
+    "Rear wing to gearbox SLM hydraulic QD fittings",
+    "RIS electrical harness"
+   ],
+   "27": [
+    "Middle plank section (previously used)"
+   ],
+   "5": [
+    "LHS rear brake caliper HIU and associated harness"
+   ],
+   "77": [
+    "RHS diffuser vane"
+   ]
   }
  }
 }

@@ -350,6 +350,16 @@
    "published": "2026-10-23T18:56+00:00",
    "doc": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_41_-_pu_element.pdf",
    "title": "Doc 16 - Infringement - Car 41 - PU Element"
+  },
+  {
+   "car": 18,
+   "tla": "STR",
+   "places": 99,
+   "issued": 18,
+   "target": 18,
+   "published": "2026-10-25T17:48+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_18_-_changes_made_during_parc_ferme.pdf",
+   "title": "Doc 48 - Infringement - Car 18 - Changes made during Parc Ferme"
   }
  ]
 }
