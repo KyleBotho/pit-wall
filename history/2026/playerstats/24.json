@@ -1935,7 +1935,7 @@
             "RaceDayId": 7398,
             "TeamId": 24,
             "DateTime": "10/23/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Austin",
             "MeetingNumber": 18,
             "MeetingName": "United States Grand Prix",
@@ -3756,7 +3756,7 @@
             "OldPlayerValue": 5.1,
             "RaceDayId": 7398,
             "DateTime": "10/23/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Austin",
             "MeetingNumber": 18,
             "MeetingName": "United States Grand Prix",
@@ -3812,8 +3812,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/24/2026 10:27:57 PM",
-    "ISTTime": "10/25/2026 3:57:57 AM",
-    "CESTTime": "10/25/2026 12:27:57 AM"
+    "UTCTime": "10/25/2026 1:01:31 AM",
+    "ISTTime": "10/25/2026 6:31:31 AM",
+    "CESTTime": "10/25/2026 2:01:31 AM"
   }
 }
