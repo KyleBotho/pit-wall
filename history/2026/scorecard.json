@@ -12,7 +12,8 @@
   14,
   15,
   16,
-  17
+  17,
+  18
  ],
  "perRound": [
   {
@@ -144,6 +145,16 @@
    "team": 184,
    "teamNaive": 175,
    "teamBest": 298
+  },
+  {
+   "gd": 18,
+   "crps": null,
+   "crpsNaive": 9.58,
+   "mae": 11.39,
+   "maeNaive": 14.13,
+   "team": 45,
+   "teamNaive": 58,
+   "teamBest": 68
   }
  ],
  "T1": {
@@ -156,34 +167,34 @@
   "target2x": 7.92
  },
  "mae": {
-  "model": 12.84,
-  "naive": 13.62,
-  "d": -0.77,
-  "se": 0.42
+  "model": 12.74,
+  "naive": 13.65,
+  "d": -0.91,
+  "se": 0.41
  },
  "T2": {
   "D": {
    "top": 8,
-   "model": 0.302,
-   "naive": 0.223,
-   "edge": 0.079,
-   "se": 0.053
+   "model": 0.325,
+   "naive": 0.25,
+   "edge": 0.075,
+   "se": 0.049
   },
   "C": {
    "top": 4,
-   "model": 0.354,
-   "naive": 0.246,
-   "edge": 0.108,
+   "model": 0.343,
+   "naive": 0.257,
+   "edge": 0.086,
    "se": 0.062
   }
  },
  "T3": {
-  "team": 2417,
-  "teamNaive": 2580,
-  "teamBest": 3807,
-  "perRound": -12.5,
-  "se": 13.8,
-  "sdPerRound": 49.9
+  "team": 2462,
+  "teamNaive": 2638,
+  "teamBest": 3875,
+  "perRound": -12.6,
+  "se": 12.8,
+  "sdPerRound": 47.9
  },
  "T3b": {
   "rounds": [
@@ -202,16 +213,17 @@
    14,
    15,
    16,
-   17
+   17,
+   18
   ],
-  "team": 3424,
-  "teamNaive": 3703,
-  "teamBest": 5183,
-  "perRound": -17.4,
-  "se": 22.0,
-  "budget": 113.5,
-  "budgetNaive": 117.7,
-  "budgetBest": 122.5,
+  "team": 3490,
+  "teamNaive": 3772,
+  "teamBest": 5263,
+  "perRound": -16.6,
+  "se": 20.7,
+  "budget": 115.3,
+  "budgetNaive": 119.3,
+  "budgetBest": 125.8,
   "byRound": [
    {
     "gd": 2,
@@ -340,14 +352,22 @@
     "teamBest": 329,
     "budget": 113.5,
     "budgetNaive": 117.7
+   },
+   {
+    "gd": 18,
+    "team": 66,
+    "teamNaive": 69,
+    "teamBest": 80,
+    "budget": 115.3,
+    "budgetNaive": 119.3
    }
   ]
  },
  "floor": {
-  "pDnf": 0.19,
-  "dnfVar": 158.4,
-  "withinVar": 204.4,
-  "share": 0.77,
-  "dnfCrps": 4.73
+  "pDnf": 0.179,
+  "dnfVar": 142.6,
+  "withinVar": 201.6,
+  "share": 0.71,
+  "dnfCrps": 4.4
  }
 }
