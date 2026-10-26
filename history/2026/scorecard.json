@@ -148,7 +148,7 @@
   },
   {
    "gd": 18,
-   "crps": 6.81,
+   "crps": 6.92,
    "crpsNaive": 7.88,
    "mae": 9.38,
    "maeNaive": 10.39,
@@ -159,12 +159,12 @@
  ],
  "T1": {
   "rounds": 14,
-  "crps": 8.776,
+  "crps": 8.784,
   "crpsNaive": 9.797,
-  "skill": 0.104,
-  "dCrps": -1.02,
+  "skill": 0.103,
+  "dCrps": -1.012,
   "se": 0.258,
-  "target2x": 7.76
+  "target2x": 7.77
  },
  "mae": {
   "model": 12.59,

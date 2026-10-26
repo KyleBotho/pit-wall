@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-26T06:23Z",
- "key": "f9cb5955af7e",
+ "generated": "2026-10-26T13:39Z",
+ "key": "8f359632c686",
  "N": 3000,
  "config": {},
  "rounds": [
@@ -327,9 +327,9 @@
     "crps": 6.89
    },
    "walk": {
-    "crps": 6.81,
-    "mae": 9.31,
-    "bias": -0.87,
+    "crps": 6.92,
+    "mae": 9.47,
+    "bias": -0.94,
     "rho": 0.73,
     "team": 175
    }
@@ -752,10 +752,10 @@
  "season": {
   "from": 5,
   "crps": 8.78,
-  "mae": 12.15,
-  "maeD": 10.51,
-  "maeC": 15.43,
-  "bias": 0.27,
+  "mae": 12.16,
+  "maeD": 10.52,
+  "maeC": 15.45,
+  "bias": 0.26,
   "rho": 0.73,
   "cover80": 0.81,
   "cover50": 0.51,
@@ -770,8 +770,8 @@
    "drivers": {
     "rounds": 14,
     "n": 308,
-    "crps": 7.62,
-    "mae": 10.51,
+    "crps": 7.63,
+    "mae": 10.52,
     "bias": 0.25,
     "cover80": 0.81,
     "cover50": 0.53
@@ -779,9 +779,9 @@
    "constructors": {
     "rounds": 14,
     "n": 154,
-    "crps": 11.08,
-    "mae": 15.43,
-    "bias": 0.31,
+    "crps": 11.09,
+    "mae": 15.45,
+    "bias": 0.3,
     "cover80": 0.81,
     "cover50": 0.47
    },
@@ -797,9 +797,9 @@
    "normal": {
     "rounds": 10,
     "n": 330,
-    "crps": 8.71,
-    "mae": 12.14,
-    "bias": -0.38,
+    "crps": 8.72,
+    "mae": 12.15,
+    "bias": -0.39,
     "cover80": 0.78,
     "cover50": 0.48
    },
@@ -816,9 +816,9 @@
    "dry": {
     "rounds": 12,
     "n": 396,
-    "crps": 8.64,
-    "mae": 11.98,
-    "bias": 0.94,
+    "crps": 8.65,
+    "mae": 11.99,
+    "bias": 0.93,
     "cover80": 0.81,
     "cover50": 0.51,
     "cond": null
@@ -836,9 +836,9 @@
    "no safety car": {
     "rounds": 8,
     "n": 264,
-    "crps": 8.15,
-    "mae": 10.81,
-    "bias": 2.22,
+    "crps": 8.16,
+    "mae": 10.83,
+    "bias": 2.21,
     "cover80": 0.84,
     "cover50": 0.58,
     "cond": null
