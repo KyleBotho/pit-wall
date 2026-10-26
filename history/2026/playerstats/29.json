@@ -881,7 +881,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 46
+            "Value": 55
           },
           {
             "Frequency": "-",
@@ -902,8 +902,26 @@
             "Frequency": "4",
             "Event": "Race Position lost",
             "Value": -4
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 5
+          },
+          {
+            "Frequency": "4",
+            "Event": "race overtake bonus",
+            "Value": 4
           }
         ]
+      },
+      {
+        "GamedayId": 19,
+        "PlayerValue": 33.0,
+        "OldPlayerValue": 32.7,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -917,7 +935,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 925
+            "Value": 934
           },
           {
             "Frequency": "23",
@@ -982,7 +1000,7 @@
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
-            "Value": 69
+            "Value": 74
           },
           {
             "Frequency": "-",
@@ -990,9 +1008,9 @@
             "Value": 10
           },
           {
-            "Frequency": "193",
+            "Frequency": "197",
             "Event": "race overtake bonus",
-            "Value": 193
+            "Value": 197
           },
           {
             "Frequency": "-",
@@ -1976,7 +1994,7 @@
             "RaceDayId": 7399,
             "TeamId": 29,
             "DateTime": "10/23/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Austin",
             "MeetingNumber": 18,
             "MeetingName": "United States Grand Prix",
@@ -1990,6 +2008,54 @@
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 19,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 33.0,
+            "OldPlayerValue": 32.7,
+            "RaceDayId": 7403,
+            "TeamId": 29,
+            "DateTime": "10/30/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Mexico City",
+            "MeetingNumber": 19,
+            "MeetingName": "Mexico City Grand Prix",
+            "CountryId": 9,
+            "CountryName": "Mexico",
+            "CircuitOfficialName": "Autódromo Hermanos Rodríguez",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-31T15:00:00-06:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 33.0,
+            "OldPlayerValue": 32.7,
+            "RaceDayId": 7404,
+            "TeamId": 29,
+            "DateTime": "10/30/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Mexico City",
+            "MeetingNumber": 19,
+            "MeetingName": "Mexico City Grand Prix",
+            "CountryId": 9,
+            "CountryName": "Mexico",
+            "CircuitOfficialName": "Autódromo Hermanos Rodríguez",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-01T14:00:00-06:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3812,7 +3878,7 @@
             "OldPlayerValue": 32.4,
             "RaceDayId": 7399,
             "DateTime": "10/23/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Austin",
             "MeetingNumber": 18,
             "MeetingName": "United States Grand Prix",
@@ -3829,7 +3895,7 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 19
+                "Value": 28
               },
               {
                 "Frequency": "-",
@@ -3840,16 +3906,52 @@
                 "Frequency": "4",
                 "Event": "Race Position lost",
                 "Value": -4
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 5
+              },
+              {
+                "Frequency": "4",
+                "Event": "race overtake bonus",
+                "Value": 4
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 19,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 33.0,
+            "OldPlayerValue": 32.7,
+            "RaceDayId": 7403,
+            "DateTime": "10/30/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Mexico City",
+            "MeetingNumber": 19,
+            "MeetingName": "Mexico City Grand Prix",
+            "CountryId": 9,
+            "CountryName": "Mexico",
+            "CircuitOfficialName": "Autódromo Hermanos Rodríguez",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-10-31T15:00:00-06:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/25/2026 10:16:46 PM",
-    "ISTTime": "10/26/2026 3:46:46 AM",
-    "CESTTime": "10/25/2026 11:16:46 PM"
+    "UTCTime": "10/26/2026 1:53:15 AM",
+    "ISTTime": "10/26/2026 7:23:15 AM",
+    "CESTTime": "10/26/2026 2:53:15 AM"
   }
 }

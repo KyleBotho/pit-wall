@@ -1,6 +1,6 @@
 {
- "generated": "2026-10-26T01:32Z",
- "key": "2e4461620364",
+ "generated": "2026-10-26T02:03Z",
+ "key": "79d03d3a3811",
  "N": 3000,
  "config": {},
  "rounds": [
@@ -29,8 +29,8 @@
    "frozen": null,
    "walk": {
     "crps": 9.23,
-    "mae": 12.24,
-    "bias": 5.71,
+    "mae": 12.18,
+    "bias": 5.56,
     "rho": 0.7,
     "team": 271
    }
@@ -39,10 +39,10 @@
    "gd": 6,
    "frozen": null,
    "walk": {
-    "crps": 10.78,
-    "mae": 14.68,
-    "bias": 5.91,
-    "rho": 0.48,
+    "crps": 10.93,
+    "mae": 14.87,
+    "bias": 6.04,
+    "rho": 0.47,
     "team": 82
    }
   },
@@ -50,9 +50,9 @@
    "gd": 7,
    "frozen": null,
    "walk": {
-    "crps": 9.34,
-    "mae": 12.73,
-    "bias": 4.3,
+    "crps": 9.28,
+    "mae": 12.7,
+    "bias": 4.33,
     "rho": 0.76,
     "team": 73
    }
@@ -61,10 +61,10 @@
    "gd": 8,
    "frozen": null,
    "walk": {
-    "crps": 7.02,
-    "mae": 8.83,
-    "bias": 2.21,
-    "rho": 0.89,
+    "crps": 7.08,
+    "mae": 8.95,
+    "bias": 2.27,
+    "rho": 0.9,
     "team": 210
    }
   },
@@ -72,10 +72,10 @@
    "gd": 9,
    "frozen": null,
    "walk": {
-    "crps": 8.43,
-    "mae": 12.99,
-    "bias": -4.76,
-    "rho": 0.76,
+    "crps": 8.31,
+    "mae": 12.81,
+    "bias": -4.83,
+    "rho": 0.77,
     "team": 273
    }
   },
@@ -83,10 +83,10 @@
    "gd": 10,
    "frozen": null,
    "walk": {
-    "crps": 6.69,
-    "mae": 9.44,
-    "bias": 0.82,
-    "rho": 0.85,
+    "crps": 6.72,
+    "mae": 9.47,
+    "bias": 0.75,
+    "rho": 0.84,
     "team": 180
    }
   },
@@ -94,9 +94,9 @@
    "gd": 11,
    "frozen": null,
    "walk": {
-    "crps": 7.25,
-    "mae": 9.69,
-    "bias": -2.97,
+    "crps": 7.2,
+    "mae": 9.6,
+    "bias": -2.94,
     "rho": 0.74,
     "team": 181
    }
@@ -105,8 +105,8 @@
    "gd": 12,
    "frozen": null,
    "walk": {
-    "crps": 7.9,
-    "mae": 9.77,
+    "crps": 8.04,
+    "mae": 9.95,
     "bias": 3.58,
     "rho": 0.71,
     "team": 211
@@ -116,8 +116,8 @@
    "gd": 13,
    "frozen": null,
    "walk": {
-    "crps": 10.36,
-    "mae": 14.96,
+    "crps": 10.37,
+    "mae": 14.99,
     "bias": -6.36,
     "rho": 0.75,
     "team": 238
@@ -127,10 +127,10 @@
    "gd": 14,
    "frozen": null,
    "walk": {
-    "crps": 7.47,
-    "mae": 10.12,
+    "crps": 7.38,
+    "mae": 10.02,
     "bias": 2.54,
-    "rho": 0.81,
+    "rho": 0.83,
     "team": 138
    }
   },
@@ -177,9 +177,9 @@
     "crps": null
    },
    "walk": {
-    "crps": 10.27,
-    "mae": 14.97,
-    "bias": 1.5,
+    "crps": 10.26,
+    "mae": 15,
+    "bias": 1.48,
     "rho": 0.58,
     "team": 185
    }
@@ -227,9 +227,9 @@
     "crps": 11.22
    },
    "walk": {
-    "crps": 11.2,
-    "mae": 16.58,
-    "bias": -11.16,
+    "crps": 11.09,
+    "mae": 16.44,
+    "bias": -11.03,
     "rho": 0.69,
     "team": 191
    }
@@ -277,32 +277,82 @@
     "crps": 10.09
    },
    "walk": {
-    "crps": 10.15,
-    "mae": 13.87,
-    "bias": 3.16,
+    "crps": 10.17,
+    "mae": 13.81,
+    "bias": 3.25,
     "rho": 0.73,
     "team": 184
+   }
+  },
+  {
+   "gd": 18,
+   "frozen": {
+    "n": 33,
+    "mae": 9.38,
+    "bias": -0.88,
+    "rho": 0.75,
+    "in50": 0.52,
+    "miss": [
+     {
+      "name": "Alpine",
+      "x": 20.5,
+      "y": -12
+     },
+     {
+      "name": "LEC",
+      "x": 27.6,
+      "y": 53
+     },
+     {
+      "name": "COL",
+      "x": 7.3,
+      "y": -18
+     },
+     {
+      "name": "Aston Martin",
+      "x": -5.1,
+      "y": 17
+     },
+     {
+      "name": "Ferrari",
+      "x": 61.2,
+      "y": 81
+     },
+     {
+      "name": "McLaren",
+      "x": 38.3,
+      "y": 58
+     }
+    ],
+    "crps": 6.89
+   },
+   "walk": {
+    "crps": 6.81,
+    "mae": 9.31,
+    "bias": -0.87,
+    "rho": 0.73,
+    "team": 175
    }
   }
  ],
  "frozenGroups": {
   "drivers": {
-   "rounds": 3,
-   "n": 66,
-   "crps": 8.91,
-   "mae": 12.73,
-   "bias": -1.34,
+   "rounds": 4,
+   "n": 88,
+   "crps": 7.87,
+   "mae": 11.47,
+   "bias": -1.15,
    "cover80": null,
-   "cover50": 0.36
+   "cover50": 0.41
   },
   "constructors": {
-   "rounds": 3,
-   "n": 33,
-   "crps": 14.14,
-   "mae": 19.56,
-   "bias": -2.79,
+   "rounds": 4,
+   "n": 44,
+   "crps": 12.46,
+   "mae": 17.88,
+   "bias": -2.46,
    "cover80": null,
-   "cover50": 0.42
+   "cover50": 0.43
   },
   "sprint": {
    "rounds": 1,
@@ -314,13 +364,13 @@
    "cover50": 0.45
   },
   "normal": {
-   "rounds": 2,
-   "n": 66,
-   "crps": 11.22,
-   "mae": 15.67,
-   "bias": -4.31,
+   "rounds": 3,
+   "n": 99,
+   "crps": 9.06,
+   "mae": 13.57,
+   "bias": -3.17,
    "cover80": null,
-   "cover50": 0.35
+   "cover50": 0.4
   },
   "wet": {
    "rounds": 1,
@@ -332,13 +382,13 @@
    "cover50": 0.33
   },
   "dry": {
-   "rounds": 2,
-   "n": 66,
-   "crps": 10.09,
-   "mae": 14.26,
-   "bias": 2.81,
+   "rounds": 3,
+   "n": 99,
+   "crps": 8.49,
+   "mae": 12.64,
+   "bias": 1.58,
    "cover80": null,
-   "cover50": 0.41
+   "cover50": 0.44
   },
   "safety car": {
    "rounds": 2,
@@ -350,13 +400,13 @@
    "cover50": 0.35
   },
   "no safety car": {
-   "rounds": 1,
-   "n": 33,
-   "crps": 10.09,
-   "mae": 13.7,
-   "bias": 3.15,
+   "rounds": 2,
+   "n": 66,
+   "crps": 8.49,
+   "mae": 11.54,
+   "bias": 1.14,
    "cover80": null,
-   "cover50": 0.45
+   "cover50": 0.48
   }
  },
  "challengers": {
@@ -466,95 +516,170 @@
      "qs": 10.57,
      "mae": 13.72
     }
+   },
+   {
+    "gd": 18,
+    "shipped": {
+     "qs": 7.16,
+     "mae": 9.38
+    },
+    "dnfcauses": {
+     "qs": 7.29,
+     "mae": 9.58
+    },
+    "gridk": {
+     "qs": 7.16,
+     "mae": 9.34
+    },
+    "odds8": {
+     "qs": 7.3,
+     "mae": 9.42
+    },
+    "oddsq": {
+     "qs": 7.16,
+     "mae": 9.38
+    },
+    "ovenv": {
+     "qs": 7.18,
+     "mae": 9.35
+    },
+    "ovgain": {
+     "qs": 7.17,
+     "mae": 9.35
+    },
+    "ovhl6": {
+     "qs": 7.17,
+     "mae": 9.33
+    },
+    "pool8": {
+     "qs": 7.2,
+     "mae": 9.44
+    },
+    "prac60": {
+     "qs": 7.03,
+     "mae": 9.25
+    },
+    "qskew2": {
+     "qs": 7.16,
+     "mae": 9.33
+    },
+    "qtight": {
+     "qs": 7.13,
+     "mae": 9.34
+    },
+    "racectx": {
+     "qs": 7.29,
+     "mae": 9.4
+    },
+    "racepool": {
+     "qs": 7.23,
+     "mae": 9.39
+    },
+    "raincal": {
+     "skip": true,
+     "why": "same as shipped"
+    },
+    "sctimed": {
+     "qs": 7.15,
+     "mae": 9.34
+    },
+    "sprintskill": {
+     "skip": true,
+     "why": "same as shipped"
+    },
+    "wetskill": {
+     "skip": true,
+     "why": "same as shipped"
+    }
    }
   ],
   "summary": [
    {
     "id": "dnfcauses",
     "label": "Retirements by cause (team mechanical + field incidents)",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": 0.24,
-    "dqsSe": 0.07,
-    "dmae": 0.28
+    "dqs": 0.2,
+    "dqsSe": 0.05,
+    "dmae": 0.25
    },
    {
     "id": "odds8",
     "label": "Market fit run to (near) convergence: 8 steps on 5,000 sims",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
     "dqs": 0.13,
-    "dqsSe": 0.06,
-    "dmae": 0.17
+    "dqsSe": 0.03,
+    "dmae": 0.12
    },
    {
     "id": "oddsq",
     "label": "Market lines weighted by their bid-ask spread",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": -0.09,
-    "dqsSe": 0.01,
-    "dmae": -0.08
+    "dqs": -0.06,
+    "dqsSe": 0.03,
+    "dmae": -0.05
    },
    {
     "id": "ovenv",
     "label": "Race-wide overtaking factor (a race runs high or low for everyone)",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": -0.05,
-    "dqsSe": 0.07,
-    "dmae": 0.02
+    "dqs": -0.03,
+    "dqsSe": 0.05,
+    "dmae": 0
    },
    {
     "id": "ovhl6",
     "label": "Overtake level weighted to recent rounds (half-life 6)",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": 0.05,
-    "dqsSe": 0.05,
-    "dmae": 0.11
+    "dqs": 0.03,
+    "dqsSe": 0.03,
+    "dmae": 0.05
    },
    {
     "id": "qskew2",
     "label": "Qualifying noise skewed (shape 2)",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
     "dqs": 0,
-    "dqsSe": 0.02,
-    "dmae": 0.01
+    "dqsSe": 0.01,
+    "dmae": -0.01
    },
    {
     "id": "racectx",
     "label": "Race pace from the lap model (tyres, fuel, traffic)",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": 0.24,
-    "dqsSe": 0.13,
-    "dmae": 0.43
+    "dqs": 0.2,
+    "dqsSe": 0.09,
+    "dmae": 0.29
    },
    {
     "id": "racepool",
     "label": "Race pace from the lap model, its tyre / fuel / traffic terms pooled across races",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
-    "dqs": 0.3,
-    "dqsSe": 0.16,
-    "dmae": 0.51
+    "dqs": 0.22,
+    "dqsSe": 0.12,
+    "dmae": 0.34
    },
    {
     "id": "sctimed",
     "label": "Safety car timed: a late one reshuffles the order, an early one hardly",
-    "n": 2,
+    "n": 3,
     "skipped": 0,
     "dqs": -0.03,
-    "dqsSe": 0.03,
-    "dmae": -0.01
+    "dqsSe": 0.02,
+    "dmae": -0.02
    },
    {
     "id": "sprintskill",
     "label": "Sprint race skill per driver (past seasons + this one, shrunk)",
     "n": 1,
-    "skipped": 1,
+    "skipped": 2,
     "dqs": 0.14,
     "dqsSe": null,
     "dmae": 0.36
@@ -563,7 +688,7 @@
     "id": "wetskill",
     "label": "Wet qualifying skill per driver (past seasons + this one, shrunk)",
     "n": 2,
-    "skipped": 0,
+    "skipped": 1,
     "dqs": 0.02,
     "dqsSe": 0.04,
     "dmae": 0.04
@@ -571,105 +696,150 @@
    {
     "id": "qtight",
     "label": "Qualifying noise halved (0.1% of a lap)",
+    "n": 2,
+    "skipped": 0,
+    "dqs": 0.01,
+    "dqsSe": 0.04,
+    "dmae": 0.02
+   },
+   {
+    "id": "gridk",
+    "label": "Grid cost concave (K 8) + places gained linear",
     "n": 1,
     "skipped": 0,
-    "dqs": 0.05,
+    "dqs": -0.01,
     "dqsSe": null,
-    "dmae": 0.08
+    "dmae": -0.04
+   },
+   {
+    "id": "ovgain",
+    "label": "Overtakes: places gained count linearly",
+    "n": 1,
+    "skipped": 0,
+    "dqs": 0.01,
+    "dqsSe": null,
+    "dmae": -0.03
+   },
+   {
+    "id": "pool8",
+    "label": "Pooled with the naive forecast (season average + spread), 80% sim",
+    "n": 1,
+    "skipped": 0,
+    "dqs": 0.04,
+    "dqsSe": null,
+    "dmae": 0.05
+   },
+   {
+    "id": "prac60",
+    "label": "Practice short runs weigh more: 60% into qualifying pace, 30% into race pace",
+    "n": 1,
+    "skipped": 0,
+    "dqs": -0.14,
+    "dqsSe": null,
+    "dmae": -0.13
+   },
+   {
+    "id": "raincal",
+    "label": "Rain chances recalibrated to the wet sessions seen this season",
+    "n": 0,
+    "skipped": 1,
+    "dqs": null,
+    "dqsSe": null,
+    "dmae": null
    }
   ]
  },
  "season": {
   "from": 5,
-  "crps": 8.93,
-  "mae": 12.37,
-  "maeD": 10.74,
-  "maeC": 15.64,
-  "bias": 0.34,
+  "crps": 8.78,
+  "mae": 12.15,
+  "maeD": 10.51,
+  "maeC": 15.43,
+  "bias": 0.27,
   "rho": 0.73,
-  "cover80": 0.8,
+  "cover80": 0.81,
   "cover50": 0.51,
-  "team": 2417,
-  "best": 3807,
+  "team": 2592,
+  "best": 4083,
   "baselines": {
-   "seasonAvg": 13.48,
-   "form": 13.91,
-   "last3": 14.43
+   "seasonAvg": 13.39,
+   "form": 13.8,
+   "last3": 14.36
   },
   "groups": {
    "drivers": {
-    "rounds": 13,
-    "n": 286,
-    "crps": 7.78,
-    "mae": 10.74,
-    "bias": 0.31,
-    "cover80": 0.8,
-    "cover50": 0.52
+    "rounds": 14,
+    "n": 308,
+    "crps": 7.62,
+    "mae": 10.51,
+    "bias": 0.25,
+    "cover80": 0.81,
+    "cover50": 0.53
    },
    "constructors": {
-    "rounds": 13,
-    "n": 143,
-    "crps": 11.23,
-    "mae": 15.64,
-    "bias": 0.42,
-    "cover80": 0.8,
+    "rounds": 14,
+    "n": 154,
+    "crps": 11.08,
+    "mae": 15.43,
+    "bias": 0.31,
+    "cover80": 0.81,
     "cover50": 0.47
    },
    "sprint": {
     "rounds": 4,
     "n": 132,
-    "crps": 8.93,
-    "mae": 12.22,
-    "bias": 1.92,
+    "crps": 8.94,
+    "mae": 12.19,
+    "bias": 1.89,
     "cover80": 0.86,
     "cover50": 0.58
    },
    "normal": {
-    "rounds": 9,
-    "n": 297,
-    "crps": 8.93,
-    "mae": 12.44,
-    "bias": -0.36,
+    "rounds": 10,
+    "n": 330,
+    "crps": 8.71,
+    "mae": 12.14,
+    "bias": -0.38,
     "cover80": 0.78,
-    "cover50": 0.47
+    "cover50": 0.48
    },
    "wet": {
     "rounds": 2,
     "n": 66,
-    "crps": 9.55,
-    "mae": 13.17,
-    "bias": -3.79,
-    "cover80": 0.79,
+    "crps": 9.57,
+    "mae": 13.19,
+    "bias": -3.73,
+    "cover80": 0.77,
     "cover50": 0.53,
     "cond": null
    },
    "dry": {
-    "rounds": 11,
-    "n": 363,
-    "crps": 8.82,
-    "mae": 12.23,
-    "bias": 1.1,
-    "cover80": 0.8,
-    "cover50": 0.5,
+    "rounds": 12,
+    "n": 396,
+    "crps": 8.64,
+    "mae": 11.98,
+    "bias": 0.94,
+    "cover80": 0.81,
+    "cover50": 0.51,
     "cond": null
    },
    "safety car": {
     "rounds": 6,
     "n": 198,
-    "crps": 9.62,
-    "mae": 13.94,
-    "bias": -2.34,
-    "cover80": 0.75,
-    "cover50": 0.41,
+    "crps": 9.61,
+    "mae": 13.93,
+    "bias": -2.32,
+    "cover80": 0.76,
+    "cover50": 0.42,
     "cond": null
    },
    "no safety car": {
-    "rounds": 7,
-    "n": 231,
-    "crps": 8.34,
-    "mae": 11.04,
-    "bias": 2.65,
-    "cover80": 0.85,
+    "rounds": 8,
+    "n": 264,
+    "crps": 8.15,
+    "mae": 10.81,
+    "bias": 2.22,
+    "cover80": 0.84,
     "cover50": 0.58,
     "cond": null
    }
