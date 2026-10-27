@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-20T09:12Z",
+ "generated": "2026-10-27T09:57Z",
  "rounds": [
   1,
   2,
@@ -17,16 +17,17 @@
   14,
   15,
   16,
-  17
+  17,
+  18
  ],
  "sims": 3000,
  "top": {
-  "at": 17,
+  "at": 18,
   "total": {
-   "1": 4994,
-   "10": 4945.4,
-   "100": 4858.8,
-   "500": 4779.6
+   "1": 5268,
+   "10": 5207.9,
+   "100": 5121,
+   "500": 5036.4
   },
   "perRound": {
    "1": {
@@ -106,6 +107,11 @@
     "10": 4945.4,
     "100": 4858.8,
     "gd": 17
+   },
+   {
+    "10": 5207.9,
+    "100": 5121,
+    "gd": 18
    }
   ]
  },
@@ -113,7 +119,7 @@
   {
    "name": "points-consensus",
    "src": "model",
-   "total": 4185,
+   "total": 4333,
    "rows": [
     {
      "gd": 1,
@@ -122,7 +128,7 @@
       "LAW",
       "LEC",
       "RUS",
-      "BEA",
+      "BOR",
       "LIN",
       "FER",
       "RBS"
@@ -133,18 +139,18 @@
      "transfers": 0,
      "penalty": 0,
      "budget": 100,
-     "cost": 99.9,
+     "cost": 98.9,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
     },
     {
      "gd": 2,
      "chip": "x3",
      "team": [
-      "LAW",
+      "HUL",
       "RUS",
       "BOR",
       "LIN",
@@ -158,12 +164,12 @@
      "transfers": 2,
      "penalty": 0,
      "budget": 102.5,
-     "cost": 101.8,
+     "cost": 101.7,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 350.8,
-     "pts": 468,
-     "total": 719
+     "xPts": 354.4,
+     "pts": 440,
+     "total": 684
     },
     {
      "gd": 3,
@@ -182,20 +188,20 @@
      "ff": null,
      "transfers": 4,
      "penalty": 0,
-     "budget": 104.6,
+     "budget": 103.4,
      "cost": 176.8,
      "struct": "5D2C",
      "valW": 0,
-     "xPts": 296.8,
+     "xPts": 296.9,
      "pts": 364,
-     "total": 1083
+     "total": 1048
     },
     {
      "gd": 4,
      "chip": null,
      "team": [
+      "BOT",
       "HUL",
-      "LAW",
       "BOR",
       "LIN",
       "ANT",
@@ -207,21 +213,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 106.3,
-     "cost": 104.4,
+     "budget": 103.9,
+     "cost": 101,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 291.1,
-     "pts": 207,
-     "total": 1290
+     "xPts": 285,
+     "pts": 223,
+     "total": 1271
     },
     {
      "gd": 5,
      "chip": "wildcard",
      "team": [
+      "BOT",
       "HUL",
-      "OCO",
-      "BOR",
+      "LAW",
       "LIN",
       "ANT",
       "FER",
@@ -232,448 +238,13 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 106,
-     "cost": 105.7,
+     "budget": 102.8,
+     "cost": 102.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 294,
-     "pts": 267,
-     "total": 1557
-    },
-    {
-     "gd": 6,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "HAD",
-      "BOR",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 106.1,
-     "cost": 106.1,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 223,
-     "pts": 220,
-     "total": 1777
-    },
-    {
-     "gd": 7,
-     "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "BOR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 105.4,
-     "cost": 103.9,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 225.6,
-     "pts": 100,
-     "total": 1877
-    },
-    {
-     "gd": 8,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 106.7,
-     "cost": 106.1,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 224.8,
-     "pts": 220,
-     "total": 2097
-    },
-    {
-     "gd": 9,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 108.3,
-     "cost": 107.7,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 284.2,
-     "pts": 269,
-     "total": 2366
-    },
-    {
-     "gd": 10,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 110,
-     "cost": 109.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 236.7,
-     "pts": 237,
-     "total": 2603
-    },
-    {
-     "gd": 11,
-     "chip": "finalfix",
-     "team": [
-      "BOT",
-      "HUL",
-      "LEC",
-      "HAD",
-      "LIN",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": "LEC -> HAM",
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 112.1,
-     "cost": 109.5,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 205.9,
-     "pts": 202,
-     "total": 2805
-    },
-    {
-     "gd": 12,
-     "chip": "autopilot",
-     "team": [
-      "HUL",
-      "LAW",
-      "STR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 3,
-     "penalty": 0,
-     "budget": 114.2,
-     "cost": 113.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 271.1,
-     "pts": 246,
-     "total": 3051
-    },
-    {
-     "gd": 13,
-     "chip": null,
-     "team": [
-      "ALB",
-      "HUL",
-      "LEC",
-      "LAW",
-      "LIN",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 115.3,
-     "cost": 114.9,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 249.4,
-     "pts": 195,
-     "total": 3246
-    },
-    {
-     "gd": 14,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LAW",
-      "PER",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 117.8,
-     "cost": 116.8,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 242.9,
-     "pts": 220,
-     "total": 3466
-    },
-    {
-     "gd": 15,
-     "chip": null,
-     "team": [
-      "GAS",
-      "HUL",
-      "BEA",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 119.7,
-     "cost": 118.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 205.3,
-     "pts": 212,
-     "total": 3678
-    },
-    {
-     "gd": 16,
-     "chip": null,
-     "team": [
-      "HUL",
-      "PER",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 120.8,
-     "cost": 120.6,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 183.9,
-     "pts": 258,
-     "total": 3936
-    },
-    {
-     "gd": 17,
-     "chip": null,
-     "team": [
-      "HUL",
-      "PER",
-      "VER",
-      "HAD",
-      "BOR",
-      "FER",
-      "MER"
-     ],
-     "boost": "VER",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 123.2,
-     "cost": 122.1,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 246.8,
-     "pts": 249,
-     "total": 4185
-    }
-   ],
-   "chipsLeft": [],
-   "inHand": {},
-   "reached": null
-  },
-  {
-   "name": "points-early",
-   "src": "model",
-   "total": 4274,
-   "rows": [
-    {
-     "gd": 1,
-     "chip": null,
-     "team": [
-      "LAW",
-      "LEC",
-      "RUS",
-      "BEA",
-      "LIN",
-      "FER",
-      "RBS"
-     ],
-     "boost": "RUS",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 100,
-     "cost": 99.9,
-     "struct": "2D1C",
-     "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
-    },
-    {
-     "gd": 2,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LAW",
-      "PER",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 4,
-     "penalty": 20,
-     "budget": 102.5,
-     "cost": 101.8,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 309.9,
-     "pts": 448,
-     "total": 699
-    },
-    {
-     "gd": 3,
-     "chip": "x3",
-     "team": [
-      "BOT",
-      "HUL",
-      "LAW",
-      "RUS",
-      "ANT",
-      "MER",
-      "AUD"
-     ],
-     "boost": "ANT",
-     "x3": "RUS",
-     "ff": null,
-     "transfers": 3,
-     "penalty": 10,
-     "budget": 104.6,
-     "cost": 104.3,
-     "struct": "2D1C",
-     "valW": 0,
-     "xPts": 275.1,
-     "pts": 308,
-     "total": 1007
-    },
-    {
-     "gd": 4,
-     "chip": "limitless",
-     "team": [
-      "LEC",
-      "NOR",
-      "RUS",
-      "PIA",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "RUS",
-     "x3": null,
-     "ff": null,
-     "transfers": 4,
-     "penalty": 0,
-     "budget": 105.1,
-     "cost": 181.6,
-     "struct": "5D2C",
-     "valW": 0,
-     "xPts": 394.1,
-     "pts": 409,
-     "total": 1416
-    },
-    {
-     "gd": 5,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "LAW",
-      "BEA",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 105.2,
-     "cost": 105.2,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 291.4,
-     "pts": 315,
-     "total": 1731
+     "xPts": 289.9,
+     "pts": 289,
+     "total": 1560
     },
     {
      "gd": 6,
@@ -692,13 +263,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 105.3,
+     "budget": 102.9,
      "cost": 102.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 220.5,
+     "xPts": 220.4,
      "pts": 197,
-     "total": 1928
+     "total": 1757
     },
     {
      "gd": 7,
@@ -706,7 +277,7 @@
      "team": [
       "BOT",
       "HUL",
-      "HAD",
+      "LAW",
       "LIN",
       "ANT",
       "FER",
@@ -717,13 +288,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 105.8,
-     "cost": 105.6,
+     "budget": 103.4,
+     "cost": 102.2,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 226.7,
-     "pts": 88,
-     "total": 2016
+     "xPts": 220,
+     "pts": 75,
+     "total": 1832
     },
     {
      "gd": 8,
@@ -731,7 +302,7 @@
      "team": [
       "BOT",
       "HUL",
-      "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -740,23 +311,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 106.3,
-     "cost": 106.1,
+     "budget": 103.9,
+     "cost": 99.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 224.8,
-     "pts": 220,
-     "total": 2236
+     "xPts": 218,
+     "pts": 210,
+     "total": 2042
     },
     {
      "gd": 9,
      "chip": null,
      "team": [
-      "BOT",
       "HUL",
-      "HAD",
+      "BEA",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -765,23 +336,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 107.9,
-     "cost": 107.7,
+     "budget": 105.1,
+     "cost": 105,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 284.2,
-     "pts": 269,
-     "total": 2505
+     "xPts": 280.8,
+     "pts": 270,
+     "total": 2312
     },
     {
      "gd": 10,
      "chip": null,
      "team": [
-      "BOT",
       "HUL",
-      "HAD",
+      "BEA",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -792,63 +363,63 @@
      "ff": null,
      "transfers": 0,
      "penalty": 0,
-     "budget": 109.6,
-     "cost": 109.4,
+     "budget": 107,
+     "cost": 106.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 236.7,
-     "pts": 237,
-     "total": 2742
+     "xPts": 227.4,
+     "pts": 214,
+     "total": 2526
     },
     {
      "gd": 11,
-     "chip": null,
+     "chip": "finalfix",
      "team": [
       "BOT",
       "HUL",
       "LEC",
       "HAD",
-      "LIN",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": "BOR -> ALB",
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 109.3,
+     "cost": 109.3,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 204.9,
+     "pts": 216,
+     "total": 2742
+    },
+    {
+     "gd": 12,
+     "chip": "autopilot",
+     "team": [
+      "HUL",
+      "LEC",
+      "LAW",
+      "STR",
+      "BOR",
       "FER",
       "MER"
      ],
      "boost": "LEC",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 111.7,
-     "cost": 109.5,
+     "budget": 111.4,
+     "cost": 111.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 205.9,
-     "pts": 216,
-     "total": 2958
-    },
-    {
-     "gd": 12,
-     "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "STR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 3,
-     "penalty": 0,
-     "budget": 113.8,
-     "cost": 113.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 271.1,
-     "pts": 246,
-     "total": 3204
+     "xPts": 258.6,
+     "pts": 248,
+     "total": 2990
     },
     {
      "gd": 13,
@@ -857,7 +428,7 @@
       "ALB",
       "HUL",
       "LEC",
-      "LAW",
+      "BOR",
       "LIN",
       "FER",
       "MER"
@@ -867,21 +438,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 114.9,
-     "cost": 114.9,
+     "budget": 112.9,
+     "cost": 108.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 249.4,
-     "pts": 195,
-     "total": 3399
+     "xPts": 244.6,
+     "pts": 184,
+     "total": 3174
     },
     {
      "gd": 14,
-     "chip": null,
+     "chip": "noneg",
      "team": [
       "ALB",
-      "GAS",
       "HUL",
+      "TSU",
       "LIN",
       "ANT",
       "FER",
@@ -892,46 +463,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 117.4,
-     "cost": 116.9,
+     "budget": 115.4,
+     "cost": 114.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 202.6,
-     "pts": 190,
-     "total": 3589
+     "xPts": 239.2,
+     "pts": 207,
+     "total": 3381
     },
     {
      "gd": 15,
-     "chip": "finalfix",
+     "chip": null,
      "team": [
-      "GAS",
       "HUL",
       "BEA",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": "ANT -> LEC",
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 119.5,
-     "cost": 118.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 205.3,
-     "pts": 178,
-     "total": 3767
-    },
-    {
-     "gd": 16,
-     "chip": "autopilot",
-     "team": [
-      "HUL",
-      "PER",
-      "HAD",
+      "COL",
       "LIN",
       "ANT",
       "FER",
@@ -942,13 +488,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 120.6,
-     "cost": 120.6,
+     "budget": 117.5,
+     "cost": 117,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 183.9,
-     "pts": 258,
-     "total": 4025
+     "xPts": 202.7,
+     "pts": 209,
+     "total": 3590
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "HUL",
+      "PER",
+      "BEA",
+      "HAD",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 118.6,
+     "cost": 117.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 180.9,
+     "pts": 237,
+     "total": 3827
     },
     {
      "gd": 17,
@@ -956,6 +527,31 @@
      "team": [
       "HUL",
       "PER",
+      "VER",
+      "BEA",
+      "HAD",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 120.6,
+     "cost": 120.3,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 243.7,
+     "pts": 296,
+     "total": 4123
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
       "VER",
       "HAD",
       "BOR",
@@ -967,27 +563,23 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 123,
-     "cost": 122.1,
+     "budget": 123.6,
+     "cost": 123.3,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 246.8,
-     "pts": 249,
-     "total": 4274
+     "xPts": 209.8,
+     "pts": 210,
+     "total": 4333
     }
    ],
-   "chipsLeft": [
-    "wildcard"
-   ],
-   "inHand": {
-    "wildcard": 0.7
-   },
+   "chipsLeft": [],
+   "inHand": {},
    "reached": null
   },
   {
-   "name": "points-ev",
+   "name": "points-early",
    "src": "model",
-   "total": 4215,
+   "total": 4574,
    "rows": [
     {
      "gd": 1,
@@ -996,7 +588,7 @@
       "LAW",
       "LEC",
       "RUS",
-      "BEA",
+      "BOR",
       "LIN",
       "FER",
       "RBS"
@@ -1007,21 +599,71 @@
      "transfers": 0,
      "penalty": 0,
      "budget": 100,
-     "cost": 99.9,
+     "cost": 98.9,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
     },
     {
      "gd": 2,
-     "chip": null,
+     "chip": "noneg",
      "team": [
+      "BOT",
+      "LAW",
+      "BOR",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 102.5,
+     "cost": 102.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 317.7,
+     "pts": 440,
+     "total": 684
+    },
+    {
+     "gd": 3,
+     "chip": "x3",
+     "team": [
+      "BOT",
       "HUL",
       "LAW",
-      "PER",
-      "LIN",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "BEA",
+     "x3": "ANT",
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 103.4,
+     "cost": 103.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 270,
+     "pts": 311,
+     "total": 995
+    },
+    {
+     "gd": 4,
+     "chip": "limitless",
+     "team": [
+      "LEC",
+      "NOR",
+      "RUS",
+      "PIA",
       "ANT",
       "FER",
       "MER"
@@ -1030,68 +672,18 @@
      "x3": null,
      "ff": null,
      "transfers": 4,
-     "penalty": 20,
-     "budget": 102.5,
-     "cost": 101.8,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 272.5,
-     "pts": 419,
-     "total": 670
-    },
-    {
-     "gd": 3,
-     "chip": null,
-     "team": [
-      "HUL",
-      "PER",
-      "BEA",
-      "BOR",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
      "penalty": 0,
-     "budget": 104.6,
-     "cost": 104.6,
-     "struct": "1D2C",
+     "budget": 104.3,
+     "cost": 181.6,
+     "struct": "5D2C",
      "valW": 0,
-     "xPts": 226.9,
-     "pts": 270,
-     "total": 940
-    },
-    {
-     "gd": 4,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LAW",
-      "BOR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 105.5,
-     "cost": 104.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 334.4,
-     "pts": 292,
-     "total": 1232
+     "xPts": 393.1,
+     "pts": 409,
+     "total": 1404
     },
     {
      "gd": 5,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "BOT",
       "HUL",
@@ -1110,9 +702,9 @@
      "cost": 104.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 293.1,
+     "xPts": 291.7,
      "pts": 274,
-     "total": 1506
+     "total": 1678
     },
     {
      "gd": 6,
@@ -1135,9 +727,9 @@
      "cost": 102.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 220.5,
+     "xPts": 220.4,
      "pts": 197,
-     "total": 1703
+     "total": 1875
     },
     {
      "gd": 7,
@@ -1160,9 +752,9 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 226.7,
+     "xPts": 223.9,
      "pts": 88,
-     "total": 1791
+     "total": 1963
     },
     {
      "gd": 8,
@@ -1185,13 +777,13 @@
      "cost": 106.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 224.8,
+     "xPts": 225.5,
      "pts": 220,
-     "total": 2011
+     "total": 2183
     },
     {
      "gd": 9,
-     "chip": "finalfix",
+     "chip": null,
      "team": [
       "BOT",
       "HUL",
@@ -1203,16 +795,16 @@
      ],
      "boost": "ANT",
      "x3": null,
-     "ff": "HAD -> GAS",
+     "ff": null,
      "transfers": 0,
      "penalty": 0,
      "budget": 108.3,
      "cost": 107.7,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 284.2,
-     "pts": 273,
-     "total": 2284
+     "xPts": 283.8,
+     "pts": 269,
+     "total": 2452
     },
     {
      "gd": 10,
@@ -1235,15 +827,15 @@
      "cost": 109.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 236.7,
+     "xPts": 236.1,
      "pts": 237,
-     "total": 2521
+     "total": 2689
     },
     {
      "gd": 11,
      "chip": null,
      "team": [
-      "BOT",
+      "ALO",
       "HUL",
       "LEC",
       "HAD",
@@ -1254,15 +846,15 @@
      "boost": "LEC",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
      "budget": 112.1,
-     "cost": 109.5,
+     "cost": 112.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 205.9,
-     "pts": 216,
-     "total": 2737
+     "xPts": 206.4,
+     "pts": 242,
+     "total": 2931
     },
     {
      "gd": 12,
@@ -1281,38 +873,38 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 114.2,
+     "budget": 114.8,
      "cost": 113.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 271.1,
+     "xPts": 273.1,
      "pts": 246,
-     "total": 2983
+     "total": 3177
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
       "ALB",
+      "HAM",
       "HUL",
-      "LEC",
       "LAW",
       "LIN",
       "FER",
       "MER"
      ],
-     "boost": "LEC",
+     "boost": "HAM",
      "x3": null,
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 115.3,
-     "cost": 114.9,
+     "budget": 115.9,
+     "cost": 115.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 249.4,
-     "pts": 195,
-     "total": 3178
+     "xPts": 253.3,
+     "pts": 271,
+     "total": 3448
     },
     {
      "gd": 14,
@@ -1331,21 +923,160 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 117.8,
+     "budget": 118.6,
      "cost": 116.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 202.6,
+     "xPts": 204.1,
      "pts": 190,
-     "total": 3368
+     "total": 3638
     },
     {
      "gd": 15,
-     "chip": null,
+     "chip": "finalfix",
      "team": [
-      "GAS",
+      "ALB",
       "HUL",
       "BEA",
+      "HAD",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": "ANT -> RUS",
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 120.7,
+     "cost": 119.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 204.6,
+     "pts": 234,
+     "total": 3872
+    },
+    {
+     "gd": 16,
+     "chip": "autopilot",
+     "team": [
+      "HUL",
+      "PER",
+      "HAD",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 121.8,
+     "cost": 121.8,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 185.1,
+     "pts": 243,
+     "total": 4115
+    },
+    {
+     "gd": 17,
+     "chip": null,
+     "team": [
+      "HUL",
+      "PER",
+      "VER",
+      "HAD",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 123,
+     "cost": 122.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 247.2,
+     "pts": 249,
+     "total": 4364
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "VER",
+      "HAD",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 124.8,
+     "cost": 123.3,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 209.8,
+     "pts": 210,
+     "total": 4574
+    }
+   ],
+   "chipsLeft": [
+    "wildcard"
+   ],
+   "inHand": {
+    "wildcard": 1.1
+   },
+   "reached": null
+  },
+  {
+   "name": "points-ev",
+   "src": "model",
+   "total": 4447,
+   "rows": [
+    {
+     "gd": 1,
+     "chip": null,
+     "team": [
+      "LAW",
+      "LEC",
+      "RUS",
+      "BOR",
+      "LIN",
+      "FER",
+      "RBS"
+     ],
+     "boost": "RUS",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 100,
+     "cost": 98.9,
+     "struct": "2D1C",
+     "valW": 0,
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
+    },
+    {
+     "gd": 2,
+     "chip": null,
+     "team": [
+      "BOT",
+      "LAW",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -1354,24 +1085,249 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 119.9,
-     "cost": 118.4,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 102.5,
+     "cost": 102.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 205.3,
-     "pts": 212,
-     "total": 3580
+     "xPts": 279.8,
+     "pts": 391,
+     "total": 635
     },
     {
-     "gd": 16,
+     "gd": 3,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LAW",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 103.4,
+     "cost": 103.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 226.6,
+     "pts": 275,
+     "total": 910
+    },
+    {
+     "gd": 4,
+     "chip": "noneg",
+     "team": [
+      "BOT",
+      "HUL",
+      "LAW",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 104.3,
+     "cost": 104.3,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 331,
+     "pts": 279,
+     "total": 1189
+    },
+    {
+     "gd": 5,
+     "chip": "autopilot",
+     "team": [
+      "BOT",
+      "HUL",
+      "OCO",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 105.2,
+     "cost": 104.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 291.7,
+     "pts": 274,
+     "total": 1463
+    },
+    {
+     "gd": 6,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "BOR",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 105.7,
+     "cost": 102.8,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 220.4,
+     "pts": 197,
+     "total": 1660
+    },
+    {
+     "gd": 7,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "HAD",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 106.2,
+     "cost": 105.6,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 223.9,
+     "pts": 88,
+     "total": 1748
+    },
+    {
+     "gd": 8,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "HAD",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 106.7,
+     "cost": 106.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 225.5,
+     "pts": 220,
+     "total": 1968
+    },
+    {
+     "gd": 9,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "HAD",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 108.3,
+     "cost": 107.7,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 283.8,
+     "pts": 269,
+     "total": 2237
+    },
+    {
+     "gd": 10,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "HAD",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 110,
+     "cost": 109.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 236.1,
+     "pts": 237,
+     "total": 2474
+    },
+    {
+     "gd": 11,
+     "chip": "finalfix",
+     "team": [
+      "ALO",
+      "HUL",
+      "LEC",
+      "HAD",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": "ALO -> PER",
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 112.1,
+     "cost": 112.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 206.4,
+     "pts": 212,
+     "total": 2686
+    },
+    {
+     "gd": 12,
      "chip": null,
      "team": [
       "HUL",
       "LAW",
-      "PER",
-      "HAD",
+      "STR",
+      "LIN",
       "ANT",
       "FER",
       "MER"
@@ -1381,13 +1337,113 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 121,
-     "cost": 120.9,
+     "budget": 114.8,
+     "cost": 113.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 186.2,
-     "pts": 247,
-     "total": 3827
+     "xPts": 273.1,
+     "pts": 246,
+     "total": 2932
+    },
+    {
+     "gd": 13,
+     "chip": null,
+     "team": [
+      "ALB",
+      "HAM",
+      "HUL",
+      "LAW",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "HAM",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 115.9,
+     "cost": 115.8,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 253.3,
+     "pts": 271,
+     "total": 3203
+    },
+    {
+     "gd": 14,
+     "chip": null,
+     "team": [
+      "ALB",
+      "GAS",
+      "HUL",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 118.6,
+     "cost": 116.9,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 204.1,
+     "pts": 190,
+     "total": 3393
+    },
+    {
+     "gd": 15,
+     "chip": null,
+     "team": [
+      "ALB",
+      "HUL",
+      "BEA",
+      "HAD",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 120.7,
+     "cost": 119.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 204.6,
+     "pts": 220,
+     "total": 3613
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "HUL",
+      "PER",
+      "HAD",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 121.8,
+     "cost": 121.8,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 185.1,
+     "pts": 243,
+     "total": 3856
     },
     {
      "gd": 17,
@@ -1410,25 +1466,48 @@
      "cost": 192.9,
      "struct": "5D2C",
      "valW": 0,
-     "xPts": 347.1,
+     "xPts": 346.2,
      "pts": 388,
-     "total": 4215
+     "total": 4244
+    },
+    {
+     "gd": 18,
+     "chip": "wildcard",
+     "team": [
+      "HUL",
+      "LAW",
+      "VER",
+      "BOR",
+      "COL",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 124.6,
+     "cost": 122.7,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 212.6,
+     "pts": 203,
+     "total": 4447
     }
    ],
    "chipsLeft": [
-    "wildcard",
     "x3"
    ],
    "inHand": {
-    "wildcard": 0.7,
-    "x3": 48
+    "x3": 46.9
    },
    "reached": null
   },
   {
    "name": "points-none",
    "src": "model",
-   "total": 3987,
+   "total": 4349,
    "rows": [
     {
      "gd": 1,
@@ -1437,7 +1516,7 @@
       "LAW",
       "LEC",
       "RUS",
-      "BEA",
+      "BOR",
       "LIN",
       "FER",
       "RBS"
@@ -1448,20 +1527,20 @@
      "transfers": 0,
      "penalty": 0,
      "budget": 100,
-     "cost": 99.9,
+     "cost": 98.9,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
     },
     {
      "gd": 2,
      "chip": null,
      "team": [
-      "HUL",
+      "BOT",
       "LAW",
-      "PER",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -1470,24 +1549,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 4,
-     "penalty": 20,
+     "transfers": 3,
+     "penalty": 10,
      "budget": 102.5,
-     "cost": 101.8,
+     "cost": 102.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 272.5,
-     "pts": 419,
-     "total": 670
+     "xPts": 279.8,
+     "pts": 391,
+     "total": 635
     },
     {
      "gd": 3,
      "chip": null,
      "team": [
+      "BOT",
       "HUL",
-      "PER",
+      "LAW",
       "BEA",
-      "BOR",
       "ANT",
       "FER",
       "MER"
@@ -1497,21 +1576,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 104.6,
-     "cost": 104.6,
+     "budget": 103.4,
+     "cost": 103.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 226.9,
-     "pts": 270,
-     "total": 940
+     "xPts": 226.6,
+     "pts": 275,
+     "total": 910
     },
     {
      "gd": 4,
      "chip": null,
      "team": [
+      "BOT",
       "HUL",
-      "LAW",
-      "BOR",
+      "OCO",
       "LIN",
       "ANT",
       "FER",
@@ -1522,13 +1601,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 105.5,
-     "cost": 104.4,
+     "budget": 104.3,
+     "cost": 104.3,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 291.1,
-     "pts": 207,
-     "total": 1147
+     "xPts": 288.8,
+     "pts": 230,
+     "total": 1140
     },
     {
      "gd": 5,
@@ -1545,48 +1624,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 0,
      "penalty": 0,
-     "budget": 105.2,
+     "budget": 104.4,
      "cost": 104.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 293.1,
+     "xPts": 291.7,
      "pts": 274,
-     "total": 1421
+     "total": 1414
     },
     {
      "gd": 6,
      "chip": null,
      "team": [
-      "BOT",
       "HUL",
       "BOR",
       "COL",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 105.7,
-     "cost": 102.8,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 220.5,
-     "pts": 197,
-     "total": 1618
-    },
-    {
-     "gd": 7,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "HAD",
       "LIN",
       "ANT",
       "FER",
@@ -1597,13 +1651,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 106.2,
-     "cost": 105.6,
+     "budget": 104.9,
+     "cost": 104.7,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 226.7,
-     "pts": 88,
-     "total": 1706
+     "xPts": 221.5,
+     "pts": 238,
+     "total": 1652
+    },
+    {
+     "gd": 7,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LAW",
+      "BOR",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 105.4,
+     "cost": 103.9,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 222.8,
+     "pts": 100,
+     "total": 1752
     },
     {
      "gd": 8,
@@ -1620,15 +1699,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
      "budget": 106.7,
      "cost": 106.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 224.8,
+     "xPts": 225.5,
      "pts": 220,
-     "total": 1926
+     "total": 1972
     },
     {
      "gd": 9,
@@ -1651,9 +1730,9 @@
      "cost": 107.7,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 284.2,
+     "xPts": 283.8,
      "pts": 269,
-     "total": 2195
+     "total": 2241
     },
     {
      "gd": 10,
@@ -1676,15 +1755,15 @@
      "cost": 109.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 236.7,
+     "xPts": 236.1,
      "pts": 237,
-     "total": 2432
+     "total": 2478
     },
     {
      "gd": 11,
      "chip": null,
      "team": [
-      "BOT",
+      "ALO",
       "HUL",
       "LEC",
       "HAD",
@@ -1695,15 +1774,15 @@
      "boost": "LEC",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
      "budget": 112.1,
-     "cost": 109.5,
+     "cost": 112.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 205.9,
-     "pts": 216,
-     "total": 2648
+     "xPts": 206.4,
+     "pts": 242,
+     "total": 2720
     },
     {
      "gd": 12,
@@ -1722,38 +1801,38 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 114.2,
+     "budget": 114.8,
      "cost": 113.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 271.1,
+     "xPts": 273.1,
      "pts": 246,
-     "total": 2894
+     "total": 2966
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
       "ALB",
+      "HAM",
       "HUL",
-      "LEC",
       "LAW",
       "LIN",
       "FER",
       "MER"
      ],
-     "boost": "LEC",
+     "boost": "HAM",
      "x3": null,
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 115.3,
-     "cost": 114.9,
+     "budget": 115.9,
+     "cost": 115.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 249.4,
-     "pts": 195,
-     "total": 3089
+     "xPts": 253.3,
+     "pts": 271,
+     "total": 3237
     },
     {
      "gd": 14,
@@ -1772,46 +1851,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 117.8,
+     "budget": 118.6,
      "cost": 116.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 202.6,
+     "xPts": 204.1,
      "pts": 190,
-     "total": 3279
+     "total": 3427
     },
     {
      "gd": 15,
      "chip": null,
      "team": [
-      "GAS",
+      "ALB",
       "HUL",
       "BEA",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 119.9,
-     "cost": 118.4,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 205.3,
-     "pts": 212,
-     "total": 3491
-    },
-    {
-     "gd": 16,
-     "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "PER",
       "HAD",
       "ANT",
       "FER",
@@ -1820,15 +1874,40 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 121,
-     "cost": 120.9,
+     "budget": 120.7,
+     "cost": 119.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 186.2,
-     "pts": 247,
-     "total": 3738
+     "xPts": 204.6,
+     "pts": 220,
+     "total": 3647
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "HUL",
+      "PER",
+      "HAD",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 121.8,
+     "cost": 121.8,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 185.1,
+     "pts": 243,
+     "total": 3890
     },
     {
      "gd": 17,
@@ -1851,9 +1930,34 @@
      "cost": 122.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 246.8,
+     "xPts": 247.2,
      "pts": 249,
-     "total": 3987
+     "total": 4139
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "VER",
+      "HAD",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 124.8,
+     "cost": 123.3,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 209.8,
+     "pts": 210,
+     "total": 4349
     }
    ],
    "chipsLeft": [
@@ -1865,19 +1969,19 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 0.7,
-    "limitless": 79.3,
-    "x3": 48,
-    "noneg": 41,
-    "autopilot": 5.6,
-    "finalfix": 11.1
+    "wildcard": 1.1,
+    "limitless": 79.7,
+    "x3": 48.1,
+    "noneg": 39.4,
+    "autopilot": 5.2,
+    "finalfix": 8.9
    },
    "reached": null
   },
   {
    "name": "budget-consensus",
    "src": "model",
-   "total": 4500,
+   "total": 4689,
    "rows": [
     {
      "gd": 1,
@@ -1900,7 +2004,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -1925,7 +2029,7 @@
      "cost": 101.8,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 398.6,
+     "xPts": 398.7,
      "pts": 468,
      "total": 730
     },
@@ -1950,7 +2054,7 @@
      "cost": 176.8,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 296.8,
+     "xPts": 296.9,
      "pts": 364,
      "total": 1094
     },
@@ -1975,7 +2079,7 @@
      "cost": 106.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 325.7,
+     "xPts": 325.5,
      "pts": 203,
      "total": 1297
     },
@@ -1985,8 +2089,8 @@
      "team": [
       "BOT",
       "OCO",
+      "PER",
       "BOR",
-      "COL",
       "ANT",
       "FER",
       "MER"
@@ -1994,22 +2098,22 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 4,
      "penalty": 0,
      "budget": 107.5,
-     "cost": 106.4,
+     "cost": 105.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 316.8,
-     "pts": 319,
-     "total": 1616
+     "xPts": 318.2,
+     "pts": 283,
+     "total": 1580
     },
     {
      "gd": 6,
      "chip": null,
      "team": [
       "BOT",
-      "OCO",
+      "BEA",
       "BOR",
       "COL",
       "ANT",
@@ -2019,15 +2123,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 110,
-     "cost": 108.9,
+     "budget": 108.8,
+     "cost": 107.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
-     "pts": 206,
-     "total": 1822
+     "xPts": 254.9,
+     "pts": 175,
+     "total": 1755
     },
     {
      "gd": 7,
@@ -2035,8 +2139,8 @@
      "team": [
       "HUL",
       "LAW",
-      "HAD",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -2044,23 +2148,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 111.3,
-     "cost": 109.6,
+     "budget": 109.3,
+     "cost": 107.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
-     "pts": 112,
-     "total": 1934
+     "xPts": 253.5,
+     "pts": 99,
+     "total": 1854
     },
     {
      "gd": 8,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -2069,15 +2173,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 113.4,
-     "cost": 111.5,
+     "budget": 111.4,
+     "cost": 108.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
-     "pts": 244,
-     "total": 2178
+     "xPts": 257.3,
+     "pts": 242,
+     "total": 2096
     },
     {
      "gd": 9,
@@ -2086,7 +2190,7 @@
       "HAM",
       "HUL",
       "HAD",
-      "COL",
+      "BOR",
       "LIN",
       "FER",
       "MER"
@@ -2094,23 +2198,23 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 115.5,
-     "cost": 113.6,
+     "budget": 113.5,
+     "cost": 109.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
-     "pts": 311,
-     "total": 2489
+     "xPts": 315.7,
+     "pts": 300,
+     "total": 2396
     },
     {
      "gd": 10,
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "HAD",
-      "COL",
       "LIN",
       "ANT",
       "FER",
@@ -2119,15 +2223,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 118.2,
-     "cost": 116.8,
+     "budget": 116.2,
+     "cost": 115.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 244,
-     "total": 2733
+     "xPts": 273.1,
+     "pts": 239,
+     "total": 2635
     },
     {
      "gd": 11,
@@ -2143,74 +2247,24 @@
      ],
      "boost": "LEC",
      "x3": null,
-     "ff": "LEC -> HAM",
-     "transfers": 1,
+     "ff": "LIN -> BEA",
+     "transfers": 2,
      "penalty": 0,
-     "budget": 120.9,
+     "budget": 118.5,
      "cost": 117.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 239.3,
-     "pts": 221,
-     "total": 2954
+     "xPts": 239.6,
+     "pts": 236,
+     "total": 2871
     },
     {
      "gd": 12,
      "chip": "autopilot",
      "team": [
       "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 123.2,
-     "cost": 122.8,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 303.1,
-     "pts": 275,
-     "total": 3229
-    },
-    {
-     "gd": 13,
-     "chip": null,
-     "team": [
-      "HAM",
-      "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "FER",
-      "MER"
-     ],
-     "boost": "HAM",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 124.8,
-     "cost": 123.5,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 279.4,
-     "pts": 207,
-     "total": 3436
-    },
-    {
-     "gd": 14,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LEC",
-      "PER",
+      "LAW",
+      "TSU",
       "LIN",
       "ANT",
       "FER",
@@ -2219,15 +2273,65 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 120.8,
+     "cost": 120.7,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 295,
+     "pts": 261,
+     "total": 3132
+    },
+    {
+     "gd": 13,
+     "chip": null,
+     "team": [
+      "ALB",
+      "HUL",
+      "LAW",
+      "RUS",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "RUS",
+     "x3": null,
+     "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 126.2,
-     "cost": 126,
+     "budget": 121.3,
+     "cost": 118.3,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 269.1,
+     "pts": 285,
+     "total": 3417
+    },
+    {
+     "gd": 14,
+     "chip": "noneg",
+     "team": [
+      "ALB",
+      "HUL",
+      "LEC",
+      "PER",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 124,
+     "cost": 123.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 271.6,
-     "pts": 223,
-     "total": 3659
+     "xPts": 260.2,
+     "pts": 212,
+     "total": 3629
     },
     {
      "gd": 15,
@@ -2236,7 +2340,7 @@
       "BOT",
       "HUL",
       "PER",
-      "RUS",
+      "VER",
       "ANT",
       "FER",
       "MER"
@@ -2246,21 +2350,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 127.8,
-     "cost": 126.2,
+     "budget": 126,
+     "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 222.6,
-     "pts": 266,
-     "total": 3925
+     "xPts": 222.5,
+     "pts": 264,
+     "total": 3893
     },
     {
      "gd": 16,
      "chip": null,
      "team": [
       "HUL",
+      "LEC",
       "PER",
-      "VER",
       "BEA",
       "ANT",
       "FER",
@@ -2271,38 +2375,63 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 130,
-     "cost": 129.9,
+     "budget": 128.2,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
-     "pts": 269,
-     "total": 4194
+     "xPts": 193.6,
+     "pts": 245,
+     "total": 4138
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
+      "LEC",
+      "PER",
       "VER",
-      "HAD",
-      "LIN",
+      "BEA",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 131.7,
-     "cost": 130.2,
-     "struct": "1D2C",
+     "budget": 129.7,
+     "cost": 128.4,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 306,
-     "total": 4500
+     "xPts": 266,
+     "pts": 331,
+     "total": 4469
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 132.4,
+     "cost": 130.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 227,
+     "pts": 220,
+     "total": 4689
     }
    ],
    "chipsLeft": [],
@@ -2312,7 +2441,7 @@
   {
    "name": "budget-early",
    "src": "model",
-   "total": 4597,
+   "total": 4779,
    "rows": [
     {
      "gd": 1,
@@ -2335,7 +2464,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -2360,7 +2489,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 361.6,
+     "xPts": 361.8,
      "pts": 447,
      "total": 709
     },
@@ -2385,7 +2514,7 @@
      "cost": 103.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 324.1,
+     "xPts": 325.6,
      "pts": 289,
      "total": 998
     },
@@ -2401,7 +2530,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -2410,7 +2539,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1407
     },
@@ -2435,7 +2564,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1710
     },
@@ -2460,7 +2589,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1916
     },
@@ -2485,7 +2614,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 2028
     },
@@ -2493,9 +2622,9 @@
      "gd": 8,
      "chip": null,
      "team": [
-      "GAS",
-      "HUL",
+      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -2504,19 +2633,19 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
      "budget": 115,
-     "cost": 115,
+     "cost": 114.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.4,
-     "pts": 240,
-     "total": 2268
+     "xPts": 263.4,
+     "pts": 244,
+     "total": 2272
     },
     {
      "gd": 9,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "GAS",
       "HAM",
@@ -2529,15 +2658,15 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 117.5,
+     "budget": 117.3,
      "cost": 116.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.6,
+     "xPts": 321.5,
      "pts": 307,
-     "total": 2575
+     "total": 2579
     },
     {
      "gd": 10,
@@ -2556,23 +2685,23 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 119.8,
+     "budget": 119.6,
      "cost": 116.8,
      "struct": "1D2C",
      "valW": 1,
      "xPts": 274.3,
      "pts": 244,
-     "total": 2819
+     "total": 2823
     },
     {
      "gd": 11,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
+      "BOT",
+      "HUL",
       "LEC",
-      "HAD",
-      "BOR",
-      "COL",
       "LIN",
+      "ANT",
       "FER",
       "MER"
      ],
@@ -2581,13 +2710,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 122.5,
-     "cost": 121.7,
-     "struct": "1D2C",
+     "budget": 122.3,
+     "cost": 121.2,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 243.3,
-     "pts": 236,
-     "total": 3055
+     "xPts": 241.7,
+     "pts": 229,
+     "total": 3052
     },
     {
      "gd": 12,
@@ -2604,24 +2733,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 125.4,
+     "budget": 123.9,
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
-     "total": 3328
+     "total": 3325
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
-      "ALB",
       "HAM",
       "HUL",
       "LEC",
+      "STR",
       "LIN",
       "FER",
       "MER"
@@ -2629,23 +2758,23 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 127,
-     "cost": 125.7,
+     "budget": 125.5,
+     "cost": 123.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
-     "pts": 234,
-     "total": 3562
+     "xPts": 280.7,
+     "pts": 207,
+     "total": 3532
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "ALB",
       "HUL",
       "LEC",
+      "PER",
       "LIN",
       "ANT",
       "FER",
@@ -2654,15 +2783,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 129,
-     "cost": 128.8,
+     "budget": 126.9,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 234,
-     "pts": 205,
-     "total": 3767
+     "xPts": 232.1,
+     "pts": 183,
+     "total": 3715
     },
     {
      "gd": 15,
@@ -2671,7 +2800,7 @@
       "BOT",
       "HUL",
       "VER",
-      "LIN",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -2679,15 +2808,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": "ANT -> LEC",
-     "transfers": 2,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 131.2,
-     "cost": 130.9,
+     "budget": 128.5,
+     "cost": 128.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.9,
-     "pts": 236,
-     "total": 4003
+     "xPts": 225.4,
+     "pts": 225,
+     "total": 3940
     },
     {
      "gd": 16,
@@ -2696,7 +2825,7 @@
       "HUL",
       "PER",
       "VER",
-      "LIN",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -2706,38 +2835,63 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 134,
-     "cost": 133.1,
+     "budget": 130.5,
+     "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 203.4,
-     "pts": 290,
-     "total": 4293
+     "xPts": 200.3,
+     "pts": 269,
+     "total": 4209
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
+      "LEC",
       "PER",
       "VER",
       "LIN",
-      "ANT",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 136.1,
-     "cost": 135.2,
+     "budget": 132.2,
+     "cost": 132,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 276.1,
-     "pts": 304,
-     "total": 4597
+     "xPts": 275.9,
+     "pts": 314,
+     "total": 4523
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 134.9,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4779
     }
    ],
    "chipsLeft": [],
@@ -2747,7 +2901,7 @@
   {
    "name": "budget-ev",
    "src": "model",
-   "total": 4521,
+   "total": 4777,
    "rows": [
     {
      "gd": 1,
@@ -2770,7 +2924,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -2795,7 +2949,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -2820,7 +2974,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -2845,13 +2999,13 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 377.2,
+     "xPts": 376.9,
      "pts": 303,
      "total": 1242
     },
     {
      "gd": 5,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
       "BOT",
       "OCO",
@@ -2870,7 +3024,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1545
     },
@@ -2895,7 +3049,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1751
     },
@@ -2920,13 +3074,13 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1863
     },
     {
      "gd": 8,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
@@ -2945,7 +3099,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2107
     },
@@ -2970,7 +3124,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 267,
      "total": 2374
     },
@@ -3020,7 +3174,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2854
     },
@@ -3045,7 +3199,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 375.2,
+     "xPts": 376.7,
      "pts": 349,
      "total": 3203
     },
@@ -3070,7 +3224,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3437
     },
@@ -3095,7 +3249,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3620
     },
@@ -3120,7 +3274,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3864
     },
@@ -3145,7 +3299,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4133
     },
@@ -3170,23 +3324,48 @@
      "cost": 192.9,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 347.1,
+     "xPts": 346.2,
      "pts": 388,
      "total": 4521
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4777
     }
    ],
    "chipsLeft": [
     "wildcard"
    ],
    "inHand": {
-    "wildcard": 1.4
+    "wildcard": 1.8
    },
    "reached": null
   },
   {
    "name": "budget-none",
    "src": "model",
-   "total": 4348,
+   "total": 4604,
    "rows": [
     {
      "gd": 1,
@@ -3209,7 +3388,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -3234,7 +3413,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -3259,7 +3438,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -3309,7 +3488,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1478
     },
@@ -3334,7 +3513,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1684
     },
@@ -3359,7 +3538,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1796
     },
@@ -3384,7 +3563,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2040
     },
@@ -3409,7 +3588,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 311,
      "total": 2351
     },
@@ -3459,7 +3638,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2831
     },
@@ -3484,7 +3663,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
      "total": 3104
     },
@@ -3509,7 +3688,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3338
     },
@@ -3534,7 +3713,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3521
     },
@@ -3559,7 +3738,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3765
     },
@@ -3584,7 +3763,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4034
     },
@@ -3609,9 +3788,34 @@
      "cost": 132,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 276.1,
+     "xPts": 275.9,
      "pts": 314,
      "total": 4348
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135.2,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4604
     }
    ],
    "chipsLeft": [
@@ -3623,19 +3827,19 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 1.4,
-    "limitless": 51.4,
-    "x3": 57.4,
-    "noneg": 41.3,
-    "autopilot": 10.8,
-    "finalfix": 7.6
+    "wildcard": 2.1,
+    "limitless": 50.5,
+    "x3": 58,
+    "noneg": 39.2,
+    "autopilot": 10.7,
+    "finalfix": 6.2
    },
    "reached": null
   },
   {
    "name": "budget-r8-consensus",
    "src": "model",
-   "total": 4399,
+   "total": 4538,
    "rows": [
     {
      "gd": 1,
@@ -3658,7 +3862,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -3683,7 +3887,7 @@
      "cost": 101.8,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 398.6,
+     "xPts": 398.7,
      "pts": 468,
      "total": 730
     },
@@ -3708,7 +3912,7 @@
      "cost": 176.8,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 296.8,
+     "xPts": 296.9,
      "pts": 364,
      "total": 1094
     },
@@ -3733,7 +3937,7 @@
      "cost": 106.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 325.7,
+     "xPts": 325.5,
      "pts": 203,
      "total": 1297
     },
@@ -3743,8 +3947,8 @@
      "team": [
       "BOT",
       "OCO",
+      "PER",
       "BOR",
-      "COL",
       "ANT",
       "FER",
       "MER"
@@ -3752,22 +3956,22 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 4,
      "penalty": 0,
      "budget": 107.5,
-     "cost": 106.4,
+     "cost": 105.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 316.8,
-     "pts": 319,
-     "total": 1616
+     "xPts": 318.2,
+     "pts": 283,
+     "total": 1580
     },
     {
      "gd": 6,
      "chip": null,
      "team": [
       "BOT",
-      "OCO",
+      "BEA",
       "BOR",
       "COL",
       "ANT",
@@ -3777,15 +3981,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 110,
-     "cost": 108.9,
+     "budget": 108.8,
+     "cost": 107.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
-     "pts": 206,
-     "total": 1822
+     "xPts": 254.9,
+     "pts": 175,
+     "total": 1755
     },
     {
      "gd": 7,
@@ -3793,8 +3997,8 @@
      "team": [
       "HUL",
       "LAW",
-      "HAD",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -3802,23 +4006,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 111.3,
-     "cost": 109.6,
+     "budget": 109.3,
+     "cost": 107.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
-     "pts": 112,
-     "total": 1934
+     "xPts": 253.5,
+     "pts": 99,
+     "total": 1854
     },
     {
      "gd": 8,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -3827,40 +4031,40 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 113.4,
-     "cost": 111.5,
+     "budget": 111.4,
+     "cost": 108.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
-     "pts": 244,
-     "total": 2178
+     "xPts": 257.3,
+     "pts": 242,
+     "total": 2096
     },
     {
      "gd": 9,
      "chip": null,
      "team": [
+      "HAM",
       "HUL",
+      "LAW",
       "HAD",
-      "COL",
       "LIN",
-      "ANT",
       "FER",
       "MER"
      ],
-     "boost": "ANT",
+     "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 115.5,
-     "cost": 114.5,
+     "budget": 113.5,
+     "cost": 112.7,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 294,
-     "pts": 291,
-     "total": 2469
+     "xPts": 291.6,
+     "pts": 306,
+     "total": 2402
     },
     {
      "gd": 10,
@@ -3879,13 +4083,13 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 117.8,
+     "budget": 116.2,
      "cost": 115.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 245.1,
+     "xPts": 244.5,
      "pts": 239,
-     "total": 2708
+     "total": 2641
     },
     {
      "gd": 11,
@@ -3901,16 +4105,16 @@
      ],
      "boost": "LEC",
      "x3": null,
-     "ff": "LEC -> HAM",
+     "ff": "ANT -> HAM",
      "transfers": 3,
      "penalty": 0,
-     "budget": 120.1,
+     "budget": 118.5,
      "cost": 118.2,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 216.3,
-     "pts": 191,
-     "total": 2899
+     "xPts": 215.7,
+     "pts": 200,
+     "total": 2841
     },
     {
      "gd": 12,
@@ -3929,47 +4133,47 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 120.5,
+     "budget": 118.9,
      "cost": 118.6,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 279.6,
+     "xPts": 281.4,
      "pts": 276,
-     "total": 3175
+     "total": 3117
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
-      "ALB",
-      "HAM",
       "HUL",
       "LEC",
-      "STR",
+      "LAW",
+      "TSU",
+      "LIN",
       "FER",
       "MER"
      ],
-     "boost": "HAM",
+     "boost": "LEC",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 121.7,
-     "cost": 120.9,
-     "struct": "2D2C",
+     "budget": 120.1,
+     "cost": 119.4,
+     "struct": "1D2C",
      "valW": 0,
-     "xPts": 257.5,
-     "pts": 213,
-     "total": 3388
+     "xPts": 251.9,
+     "pts": 195,
+     "total": 3312
     },
     {
      "gd": 14,
      "chip": "noneg",
      "team": [
-      "BOT",
       "HUL",
-      "LEC",
+      "LAW",
       "PER",
+      "LIN",
       "ANT",
       "FER",
       "MER"
@@ -3977,48 +4181,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 123.5,
-     "cost": 121,
-     "struct": "2D2C",
+     "budget": 122.2,
+     "cost": 116.8,
+     "struct": "1D2C",
      "valW": 0,
-     "xPts": 252.5,
-     "pts": 219,
-     "total": 3607
+     "xPts": 242.6,
+     "pts": 220,
+     "total": 3532
     },
     {
      "gd": 15,
      "chip": null,
      "team": [
-      "BOT",
-      "HUL",
-      "LEC",
-      "PER",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 124.9,
-     "cost": 122.4,
-     "struct": "2D2C",
-     "valW": 0,
-     "xPts": 207.3,
-     "pts": 241,
-     "total": 3848
-    },
-    {
-     "gd": 16,
-     "chip": null,
-     "team": [
       "GAS",
       "HUL",
-      "BEA",
+      "PER",
       "HAD",
       "ANT",
       "FER",
@@ -4027,15 +4206,40 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 126.5,
-     "cost": 125.8,
+     "budget": 124.1,
+     "cost": 121.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 192.8,
-     "pts": 228,
-     "total": 4076
+     "xPts": 209,
+     "pts": 226,
+     "total": 3758
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "HUL",
+      "BEA",
+      "HAD",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 125.4,
+     "cost": 124.4,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 191,
+     "pts": 241,
+     "total": 3999
     },
     {
      "gd": 17,
@@ -4054,13 +4258,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 127.9,
+     "budget": 126.8,
      "cost": 126.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 254.5,
+     "xPts": 254.3,
      "pts": 323,
-     "total": 4399
+     "total": 4322
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "VER",
+      "BEA",
+      "HAD",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 129.8,
+     "cost": 126.7,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 214.7,
+     "pts": 216,
+     "total": 4538
     }
    ],
    "chipsLeft": [],
@@ -4070,7 +4299,7 @@
   {
    "name": "budget-r8-early",
    "src": "model",
-   "total": 4510,
+   "total": 4786,
    "rows": [
     {
      "gd": 1,
@@ -4093,7 +4322,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -4118,7 +4347,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 361.6,
+     "xPts": 361.8,
      "pts": 447,
      "total": 709
     },
@@ -4143,7 +4372,7 @@
      "cost": 103.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 324.1,
+     "xPts": 325.6,
      "pts": 289,
      "total": 998
     },
@@ -4159,7 +4388,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -4168,7 +4397,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1407
     },
@@ -4193,7 +4422,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1710
     },
@@ -4218,7 +4447,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1916
     },
@@ -4243,7 +4472,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 2028
     },
@@ -4251,9 +4480,59 @@
      "gd": 8,
      "chip": null,
      "team": [
+      "LAW",
+      "HAD",
+      "BOR",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 115,
+     "cost": 114.3,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 263.4,
+     "pts": 244,
+     "total": 2272
+    },
+    {
+     "gd": 9,
+     "chip": null,
+     "team": [
       "GAS",
+      "HAM",
       "HUL",
       "HAD",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "HAM",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 117.3,
+     "cost": 116.6,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 297.9,
+     "pts": 307,
+     "total": 2579
+    },
+    {
+     "gd": 10,
+     "chip": null,
+     "team": [
+      "HUL",
+      "HAD",
+      "COL",
       "LIN",
       "ANT",
       "FER",
@@ -4264,41 +4543,16 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 115,
-     "cost": 115,
-     "struct": "1D2C",
-     "valW": 1,
-     "xPts": 260.4,
-     "pts": 240,
-     "total": 2268
-    },
-    {
-     "gd": 9,
-     "chip": null,
-     "team": [
-      "GAS",
-      "HUL",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 117.5,
-     "cost": 117.5,
+     "budget": 119.6,
+     "cost": 116.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 299.1,
-     "pts": 287,
-     "total": 2555
+     "xPts": 244.1,
+     "pts": 244,
+     "total": 2823
     },
     {
-     "gd": 10,
+     "gd": 11,
      "chip": "autopilot",
      "team": [
       "BOT",
@@ -4314,45 +4568,20 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 119.4,
-     "cost": 119.4,
-     "struct": "2D2C",
-     "valW": 0,
-     "xPts": 244.1,
-     "pts": 239,
-     "total": 2794
-    },
-    {
-     "gd": 11,
-     "chip": null,
-     "team": [
-      "BOT",
-      "HUL",
-      "LEC",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 121.2,
+     "budget": 122.3,
      "cost": 121.2,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 221.3,
+     "xPts": 221.2,
      "pts": 229,
-     "total": 3023
+     "total": 3052
     },
     {
      "gd": 12,
      "chip": null,
      "team": [
+      "HAM",
       "HUL",
-      "LEC",
       "STR",
       "LIN",
       "ANT",
@@ -4362,15 +4591,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 122.8,
-     "cost": 122.8,
+     "budget": 123.9,
+     "cost": 123.9,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 287,
-     "pts": 273,
-     "total": 3296
+     "xPts": 289.1,
+     "pts": 257,
+     "total": 3309
     },
     {
      "gd": 13,
@@ -4378,33 +4607,33 @@
      "team": [
       "HAM",
       "HUL",
-      "LEC",
-      "PER",
+      "STR",
       "LIN",
+      "ANT",
       "FER",
       "MER"
      ],
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 0,
      "penalty": 0,
-     "budget": 124.4,
-     "cost": 123.7,
+     "budget": 125.3,
+     "cost": 125.3,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 262.1,
-     "pts": 230,
-     "total": 3526
+     "xPts": 262.8,
+     "pts": 312,
+     "total": 3621
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "ALB",
       "HUL",
       "LEC",
       "PER",
+      "LIN",
       "ANT",
       "FER",
       "MER"
@@ -4414,22 +4643,22 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 125.6,
-     "cost": 123.8,
+     "budget": 127.1,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 212.2,
-     "pts": 182,
-     "total": 3708
+     "xPts": 217.3,
+     "pts": 183,
+     "total": 3804
     },
     {
      "gd": 15,
      "chip": null,
      "team": [
+      "ALB",
       "HUL",
       "LEC",
-      "PER",
-      "LIN",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -4437,24 +4666,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 127.6,
-     "cost": 127.6,
+     "budget": 128.7,
+     "cost": 128.6,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 213.8,
-     "pts": 252,
-     "total": 3960
+     "xPts": 215.7,
+     "pts": 214,
+     "total": 4018
     },
     {
      "gd": 16,
      "chip": null,
      "team": [
+      "GAS",
       "HUL",
-      "LEC",
-      "PER",
-      "LIN",
+      "BEA",
+      "HAD",
       "ANT",
       "FER",
       "MER"
@@ -4462,24 +4691,49 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 129.2,
-     "cost": 129.2,
-     "struct": "2D2C",
+     "budget": 128.9,
+     "cost": 125.8,
+     "struct": "1D2C",
      "valW": 0,
-     "xPts": 190.2,
-     "pts": 266,
-     "total": 4226
+     "xPts": 191.9,
+     "pts": 228,
+     "total": 4246
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LEC",
-      "PER",
+      "LAW",
       "VER",
+      "HAD",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 130.3,
+     "cost": 130.2,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 260.7,
+     "pts": 306,
+     "total": 4552
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LAW",
+      "VER",
+      "HAD",
       "BOR",
       "FER",
       "MER"
@@ -4487,29 +4741,29 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 131.1,
+     "budget": 133.3,
      "cost": 130.2,
-     "struct": "2D2C",
+     "struct": "1D2C",
      "valW": 0,
-     "xPts": 259.5,
-     "pts": 284,
-     "total": 4510
+     "xPts": 219,
+     "pts": 234,
+     "total": 4786
     }
    ],
    "chipsLeft": [
     "finalfix"
    ],
    "inHand": {
-    "finalfix": 2.5
+    "finalfix": 3.3
    },
    "reached": null
   },
   {
    "name": "budget-r8-ev",
    "src": "model",
-   "total": 4480,
+   "total": 4771,
    "rows": [
     {
      "gd": 1,
@@ -4532,7 +4786,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -4557,7 +4811,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -4582,7 +4836,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -4607,13 +4861,13 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 377.2,
+     "xPts": 376.9,
      "pts": 303,
      "total": 1242
     },
     {
      "gd": 5,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
       "BOT",
       "OCO",
@@ -4632,7 +4886,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1545
     },
@@ -4657,7 +4911,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1751
     },
@@ -4682,13 +4936,13 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1863
     },
     {
      "gd": 8,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
@@ -4707,7 +4961,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2107
     },
@@ -4732,38 +4986,13 @@
      "cost": 186.2,
      "struct": "5D2C",
      "valW": 0,
-     "xPts": 386.9,
+     "xPts": 385.8,
      "pts": 358,
      "total": 2465
     },
     {
      "gd": 10,
      "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 0,
-     "penalty": 0,
-     "budget": 118.6,
-     "cost": 115.9,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 245.1,
-     "pts": 239,
-     "total": 2704
-    },
-    {
-     "gd": 11,
-     "chip": "finalfix",
      "team": [
       "HUL",
       "HAD",
@@ -4775,16 +5004,41 @@
      ],
      "boost": "ANT",
      "x3": null,
-     "ff": "ANT -> HAM",
+     "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 120.9,
-     "cost": 119.5,
+     "budget": 118.6,
+     "cost": 116.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 211.8,
-     "pts": 219,
-     "total": 2923
+     "xPts": 244.1,
+     "pts": 244,
+     "total": 2709
+    },
+    {
+     "gd": 11,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LEC",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 121.3,
+     "cost": 121.2,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 221.2,
+     "pts": 229,
+     "total": 2938
     },
     {
      "gd": 12,
@@ -4801,15 +5055,15 @@
      "boost": "LEC",
      "x3": "ANT",
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 123,
+     "budget": 122.9,
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 359.1,
+     "xPts": 360.9,
      "pts": 349,
-     "total": 3272
+     "total": 3287
     },
     {
      "gd": 13,
@@ -4828,13 +5082,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 124.6,
+     "budget": 124.5,
      "cost": 123.7,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 262.1,
+     "xPts": 263.4,
      "pts": 230,
-     "total": 3502
+     "total": 3517
     },
     {
      "gd": 14,
@@ -4853,13 +5107,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 125.8,
+     "budget": 125.7,
      "cost": 123.8,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 212.2,
+     "xPts": 213.3,
      "pts": 182,
-     "total": 3684
+     "total": 3699
     },
     {
      "gd": 15,
@@ -4878,13 +5132,13 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 127.8,
+     "budget": 127.7,
      "cost": 127.6,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 213.8,
+     "xPts": 214.5,
      "pts": 252,
-     "total": 3936
+     "total": 3951
     },
     {
      "gd": 16,
@@ -4903,17 +5157,17 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 129.4,
+     "budget": 129.3,
      "cost": 129.3,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 196.4,
+     "xPts": 195.3,
      "pts": 238,
-     "total": 4174
+     "total": 4189
     },
     {
      "gd": 17,
-     "chip": "wildcard",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
@@ -4928,23 +5182,52 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 130.8,
+     "budget": 130.7,
      "cost": 130.2,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 260.8,
+     "xPts": 260.7,
      "pts": 306,
-     "total": 4480
+     "total": 4495
+    },
+    {
+     "gd": 18,
+     "chip": "wildcard",
+     "team": [
+      "ALB",
+      "HUL",
+      "LEC",
+      "VER",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 133.7,
+     "cost": 132.7,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 225.9,
+     "pts": 276,
+     "total": 4771
     }
    ],
-   "chipsLeft": [],
-   "inHand": {},
+   "chipsLeft": [
+    "finalfix"
+   ],
+   "inHand": {
+    "finalfix": 3.2
+   },
    "reached": null
   },
   {
    "name": "budget-r8-none",
    "src": "model",
-   "total": 4280,
+   "total": 4484,
    "rows": [
     {
      "gd": 1,
@@ -4967,7 +5250,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -4992,7 +5275,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -5017,7 +5300,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -5067,7 +5350,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1478
     },
@@ -5092,7 +5375,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1684
     },
@@ -5117,7 +5400,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1796
     },
@@ -5142,7 +5425,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2040
     },
@@ -5167,37 +5450,12 @@
      "cost": 114.5,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 294,
+     "xPts": 293.8,
      "pts": 291,
      "total": 2331
     },
     {
      "gd": 10,
-     "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "HAD",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 118.6,
-     "cost": 115.9,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 245.1,
-     "pts": 239,
-     "total": 2570
-    },
-    {
-     "gd": 11,
      "chip": null,
      "team": [
       "HUL",
@@ -5211,15 +5469,40 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 0,
      "penalty": 0,
-     "budget": 120.9,
-     "cost": 119.5,
+     "budget": 118.6,
+     "cost": 116.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 211.8,
+     "xPts": 244.1,
+     "pts": 244,
+     "total": 2575
+    },
+    {
+     "gd": 11,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LEC",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 121.3,
+     "cost": 121.2,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 221.2,
      "pts": 229,
-     "total": 2799
+     "total": 2804
     },
     {
      "gd": 12,
@@ -5236,15 +5519,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 123,
+     "budget": 122.9,
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 287,
+     "xPts": 288.6,
      "pts": 273,
-     "total": 3072
+     "total": 3077
     },
     {
      "gd": 13,
@@ -5263,13 +5546,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 124.6,
+     "budget": 124.5,
      "cost": 123.7,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 262.1,
+     "xPts": 263.4,
      "pts": 230,
-     "total": 3302
+     "total": 3307
     },
     {
      "gd": 14,
@@ -5288,13 +5571,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 125.8,
+     "budget": 125.7,
      "cost": 123.8,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 212.2,
+     "xPts": 213.3,
      "pts": 182,
-     "total": 3484
+     "total": 3489
     },
     {
      "gd": 15,
@@ -5313,13 +5596,13 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 127.8,
+     "budget": 127.7,
      "cost": 127.6,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 213.8,
+     "xPts": 214.5,
      "pts": 252,
-     "total": 3736
+     "total": 3741
     },
     {
      "gd": 16,
@@ -5338,13 +5621,13 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 129.4,
+     "budget": 129.3,
      "cost": 129.3,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 196.4,
+     "xPts": 195.3,
      "pts": 238,
-     "total": 3974
+     "total": 3979
     },
     {
      "gd": 17,
@@ -5363,13 +5646,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 130.8,
+     "budget": 130.7,
      "cost": 130.2,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 260.8,
+     "xPts": 260.7,
      "pts": 306,
-     "total": 4280
+     "total": 4285
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LAW",
+      "VER",
+      "HAD",
+      "COL",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 133.7,
+     "cost": 132,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 218.5,
+     "pts": 199,
+     "total": 4484
     }
    ],
    "chipsLeft": [
@@ -5381,19 +5689,19 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 1.1,
-    "limitless": 66.9,
-    "x3": 57.1,
-    "noneg": 40.6,
+    "wildcard": 3.3,
+    "limitless": 66.5,
+    "x3": 57.2,
+    "noneg": 38.6,
     "autopilot": 9.5,
-    "finalfix": 3.8
+    "finalfix": 3.2
    },
    "reached": null
   },
   {
    "name": "budget-4A-consensus",
    "src": "model",
-   "total": 4500,
+   "total": 4689,
    "rows": [
     {
      "gd": 1,
@@ -5416,7 +5724,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -5441,7 +5749,7 @@
      "cost": 101.8,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 398.6,
+     "xPts": 398.7,
      "pts": 468,
      "total": 730
     },
@@ -5466,7 +5774,7 @@
      "cost": 176.8,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 296.8,
+     "xPts": 296.9,
      "pts": 364,
      "total": 1094
     },
@@ -5491,7 +5799,7 @@
      "cost": 106.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 325.7,
+     "xPts": 325.5,
      "pts": 203,
      "total": 1297
     },
@@ -5501,8 +5809,8 @@
      "team": [
       "BOT",
       "OCO",
+      "PER",
       "BOR",
-      "COL",
       "ANT",
       "FER",
       "MER"
@@ -5510,22 +5818,22 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 4,
      "penalty": 0,
      "budget": 107.5,
-     "cost": 106.4,
+     "cost": 105.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 316.8,
-     "pts": 319,
-     "total": 1616
+     "xPts": 318.2,
+     "pts": 283,
+     "total": 1580
     },
     {
      "gd": 6,
      "chip": null,
      "team": [
       "BOT",
-      "OCO",
+      "BEA",
       "BOR",
       "COL",
       "ANT",
@@ -5535,15 +5843,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 110,
-     "cost": 108.9,
+     "budget": 108.8,
+     "cost": 107.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
-     "pts": 206,
-     "total": 1822
+     "xPts": 254.9,
+     "pts": 175,
+     "total": 1755
     },
     {
      "gd": 7,
@@ -5551,8 +5859,8 @@
      "team": [
       "HUL",
       "LAW",
-      "HAD",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -5560,23 +5868,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 111.3,
-     "cost": 109.6,
+     "budget": 109.3,
+     "cost": 107.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
-     "pts": 112,
-     "total": 1934
+     "xPts": 253.5,
+     "pts": 99,
+     "total": 1854
     },
     {
      "gd": 8,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -5585,15 +5893,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 113.4,
-     "cost": 111.5,
+     "budget": 111.4,
+     "cost": 108.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
-     "pts": 244,
-     "total": 2178
+     "xPts": 257.3,
+     "pts": 242,
+     "total": 2096
     },
     {
      "gd": 9,
@@ -5602,7 +5910,7 @@
       "HAM",
       "HUL",
       "HAD",
-      "COL",
+      "BOR",
       "LIN",
       "FER",
       "MER"
@@ -5610,23 +5918,23 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 115.5,
-     "cost": 113.6,
+     "budget": 113.5,
+     "cost": 109.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
-     "pts": 311,
-     "total": 2489
+     "xPts": 315.7,
+     "pts": 300,
+     "total": 2396
     },
     {
      "gd": 10,
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "HAD",
-      "COL",
       "LIN",
       "ANT",
       "FER",
@@ -5635,15 +5943,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 118.2,
-     "cost": 116.8,
+     "budget": 116.2,
+     "cost": 115.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 244,
-     "total": 2733
+     "xPts": 273.1,
+     "pts": 239,
+     "total": 2635
     },
     {
      "gd": 11,
@@ -5659,74 +5967,24 @@
      ],
      "boost": "LEC",
      "x3": null,
-     "ff": "LEC -> HAM",
-     "transfers": 1,
+     "ff": "LIN -> BEA",
+     "transfers": 2,
      "penalty": 0,
-     "budget": 120.9,
+     "budget": 118.5,
      "cost": 117.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 239.3,
-     "pts": 221,
-     "total": 2954
+     "xPts": 239.6,
+     "pts": 236,
+     "total": 2871
     },
     {
      "gd": 12,
      "chip": "autopilot",
      "team": [
       "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 123.2,
-     "cost": 122.8,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 303.1,
-     "pts": 275,
-     "total": 3229
-    },
-    {
-     "gd": 13,
-     "chip": null,
-     "team": [
-      "HAM",
-      "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "FER",
-      "MER"
-     ],
-     "boost": "HAM",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 124.8,
-     "cost": 123.5,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 279.4,
-     "pts": 207,
-     "total": 3436
-    },
-    {
-     "gd": 14,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LEC",
-      "PER",
+      "LAW",
+      "TSU",
       "LIN",
       "ANT",
       "FER",
@@ -5735,15 +5993,65 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 120.8,
+     "cost": 120.7,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 295,
+     "pts": 261,
+     "total": 3132
+    },
+    {
+     "gd": 13,
+     "chip": null,
+     "team": [
+      "ALB",
+      "HUL",
+      "LAW",
+      "RUS",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "RUS",
+     "x3": null,
+     "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 126.2,
-     "cost": 126,
+     "budget": 121.3,
+     "cost": 118.3,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 269.1,
+     "pts": 285,
+     "total": 3417
+    },
+    {
+     "gd": 14,
+     "chip": "noneg",
+     "team": [
+      "ALB",
+      "HUL",
+      "LEC",
+      "PER",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 124,
+     "cost": 123.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 271.6,
-     "pts": 223,
-     "total": 3659
+     "xPts": 260.2,
+     "pts": 212,
+     "total": 3629
     },
     {
      "gd": 15,
@@ -5752,7 +6060,7 @@
       "BOT",
       "HUL",
       "PER",
-      "RUS",
+      "VER",
       "ANT",
       "FER",
       "MER"
@@ -5762,21 +6070,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 127.8,
-     "cost": 126.2,
+     "budget": 126,
+     "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 222.6,
-     "pts": 266,
-     "total": 3925
+     "xPts": 222.5,
+     "pts": 264,
+     "total": 3893
     },
     {
      "gd": 16,
      "chip": null,
      "team": [
       "HUL",
+      "LEC",
       "PER",
-      "VER",
       "BEA",
       "ANT",
       "FER",
@@ -5787,38 +6095,63 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 130,
-     "cost": 129.9,
+     "budget": 128.2,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
-     "pts": 269,
-     "total": 4194
+     "xPts": 193.6,
+     "pts": 245,
+     "total": 4138
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
+      "LEC",
+      "PER",
       "VER",
-      "HAD",
-      "LIN",
+      "BEA",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 131.7,
-     "cost": 130.2,
-     "struct": "1D2C",
+     "budget": 129.7,
+     "cost": 128.4,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 306,
-     "total": 4500
+     "xPts": 266,
+     "pts": 331,
+     "total": 4469
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 132.4,
+     "cost": 130.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 227,
+     "pts": 220,
+     "total": 4689
     }
    ],
    "chipsLeft": [],
@@ -5828,7 +6161,7 @@
   {
    "name": "budget-4A-early",
    "src": "model",
-   "total": 4597,
+   "total": 4779,
    "rows": [
     {
      "gd": 1,
@@ -5851,7 +6184,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -5876,7 +6209,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 361.6,
+     "xPts": 361.8,
      "pts": 447,
      "total": 709
     },
@@ -5901,7 +6234,7 @@
      "cost": 103.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 324.1,
+     "xPts": 325.6,
      "pts": 289,
      "total": 998
     },
@@ -5917,7 +6250,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -5926,7 +6259,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1407
     },
@@ -5951,7 +6284,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1710
     },
@@ -5976,7 +6309,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1916
     },
@@ -6001,7 +6334,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 2028
     },
@@ -6009,9 +6342,9 @@
      "gd": 8,
      "chip": null,
      "team": [
-      "GAS",
-      "HUL",
+      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -6020,19 +6353,19 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
      "budget": 115,
-     "cost": 115,
+     "cost": 114.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.4,
-     "pts": 240,
-     "total": 2268
+     "xPts": 263.4,
+     "pts": 244,
+     "total": 2272
     },
     {
      "gd": 9,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "GAS",
       "HAM",
@@ -6045,15 +6378,15 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 117.5,
+     "budget": 117.3,
      "cost": 116.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.6,
+     "xPts": 321.5,
      "pts": 307,
-     "total": 2575
+     "total": 2579
     },
     {
      "gd": 10,
@@ -6072,23 +6405,23 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 119.8,
+     "budget": 119.6,
      "cost": 116.8,
      "struct": "1D2C",
      "valW": 1,
      "xPts": 274.3,
      "pts": 244,
-     "total": 2819
+     "total": 2823
     },
     {
      "gd": 11,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
+      "BOT",
+      "HUL",
       "LEC",
-      "HAD",
-      "BOR",
-      "COL",
       "LIN",
+      "ANT",
       "FER",
       "MER"
      ],
@@ -6097,13 +6430,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 122.5,
-     "cost": 121.7,
-     "struct": "1D2C",
+     "budget": 122.3,
+     "cost": 121.2,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 243.3,
-     "pts": 236,
-     "total": 3055
+     "xPts": 241.7,
+     "pts": 229,
+     "total": 3052
     },
     {
      "gd": 12,
@@ -6120,24 +6453,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 125.4,
+     "budget": 123.9,
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
-     "total": 3328
+     "total": 3325
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
-      "ALB",
       "HAM",
       "HUL",
       "LEC",
+      "STR",
       "LIN",
       "FER",
       "MER"
@@ -6145,23 +6478,23 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 127,
-     "cost": 125.7,
+     "budget": 125.5,
+     "cost": 123.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
-     "pts": 234,
-     "total": 3562
+     "xPts": 280.7,
+     "pts": 207,
+     "total": 3532
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "ALB",
       "HUL",
       "LEC",
+      "PER",
       "LIN",
       "ANT",
       "FER",
@@ -6170,15 +6503,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 129,
-     "cost": 128.8,
+     "budget": 126.9,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 234,
-     "pts": 205,
-     "total": 3767
+     "xPts": 232.1,
+     "pts": 183,
+     "total": 3715
     },
     {
      "gd": 15,
@@ -6187,7 +6520,7 @@
       "BOT",
       "HUL",
       "VER",
-      "LIN",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -6195,15 +6528,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": "ANT -> LEC",
-     "transfers": 2,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 131.2,
-     "cost": 130.9,
+     "budget": 128.5,
+     "cost": 128.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.9,
-     "pts": 236,
-     "total": 4003
+     "xPts": 225.4,
+     "pts": 225,
+     "total": 3940
     },
     {
      "gd": 16,
@@ -6212,7 +6545,7 @@
       "HUL",
       "PER",
       "VER",
-      "LIN",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -6222,38 +6555,63 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 134,
-     "cost": 133.1,
+     "budget": 130.5,
+     "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 203.4,
-     "pts": 290,
-     "total": 4293
+     "xPts": 200.3,
+     "pts": 269,
+     "total": 4209
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
+      "LEC",
       "PER",
       "VER",
       "LIN",
-      "ANT",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 136.1,
-     "cost": 135.2,
+     "budget": 132.2,
+     "cost": 132,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 276.1,
-     "pts": 304,
-     "total": 4597
+     "xPts": 275.9,
+     "pts": 314,
+     "total": 4523
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 134.9,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4779
     }
    ],
    "chipsLeft": [],
@@ -6263,7 +6621,7 @@
   {
    "name": "budget-4A-ev",
    "src": "model",
-   "total": 4521,
+   "total": 4777,
    "rows": [
     {
      "gd": 1,
@@ -6286,7 +6644,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -6311,7 +6669,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -6336,7 +6694,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -6361,13 +6719,13 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 377.2,
+     "xPts": 376.9,
      "pts": 303,
      "total": 1242
     },
     {
      "gd": 5,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
       "BOT",
       "OCO",
@@ -6386,7 +6744,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1545
     },
@@ -6411,7 +6769,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1751
     },
@@ -6436,13 +6794,13 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1863
     },
     {
      "gd": 8,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
@@ -6461,7 +6819,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2107
     },
@@ -6486,7 +6844,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 267,
      "total": 2374
     },
@@ -6536,7 +6894,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2854
     },
@@ -6561,7 +6919,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 375.2,
+     "xPts": 376.7,
      "pts": 349,
      "total": 3203
     },
@@ -6586,7 +6944,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3437
     },
@@ -6611,7 +6969,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3620
     },
@@ -6636,7 +6994,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3864
     },
@@ -6661,7 +7019,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4133
     },
@@ -6686,23 +7044,48 @@
      "cost": 192.9,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 347.1,
+     "xPts": 346.2,
      "pts": 388,
      "total": 4521
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4777
     }
    ],
    "chipsLeft": [
     "wildcard"
    ],
    "inHand": {
-    "wildcard": 1.4
+    "wildcard": 1.8
    },
    "reached": null
   },
   {
    "name": "budget-4A-none",
    "src": "model",
-   "total": 4348,
+   "total": 4604,
    "rows": [
     {
      "gd": 1,
@@ -6725,7 +7108,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -6750,7 +7133,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -6775,7 +7158,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -6825,7 +7208,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1478
     },
@@ -6850,7 +7233,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1684
     },
@@ -6875,7 +7258,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1796
     },
@@ -6900,7 +7283,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2040
     },
@@ -6925,7 +7308,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 311,
      "total": 2351
     },
@@ -6975,7 +7358,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2831
     },
@@ -7000,7 +7383,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
      "total": 3104
     },
@@ -7025,7 +7408,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3338
     },
@@ -7050,7 +7433,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3521
     },
@@ -7075,7 +7458,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3765
     },
@@ -7100,7 +7483,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4034
     },
@@ -7125,9 +7508,34 @@
      "cost": 132,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 276.1,
+     "xPts": 275.9,
      "pts": 314,
      "total": 4348
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135.2,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 234.3,
+     "pts": 256,
+     "total": 4604
     }
    ],
    "chipsLeft": [
@@ -7139,19 +7547,19 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 1.4,
-    "limitless": 51.4,
-    "x3": 57.4,
-    "noneg": 41.3,
-    "autopilot": 10.8,
-    "finalfix": 7.6
+    "wildcard": 2.1,
+    "limitless": 50.5,
+    "x3": 58,
+    "noneg": 39.2,
+    "autopilot": 10.7,
+    "finalfix": 6.2
    },
    "reached": null
   },
   {
    "name": "budget-3A-consensus",
    "src": "model",
-   "total": 4500,
+   "total": 4738,
    "rows": [
     {
      "gd": 1,
@@ -7174,7 +7582,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -7199,7 +7607,7 @@
      "cost": 101.8,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 398.6,
+     "xPts": 398.7,
      "pts": 468,
      "total": 730
     },
@@ -7224,7 +7632,7 @@
      "cost": 176.8,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 296.8,
+     "xPts": 296.9,
      "pts": 364,
      "total": 1094
     },
@@ -7249,7 +7657,7 @@
      "cost": 106.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 325.7,
+     "xPts": 325.5,
      "pts": 203,
      "total": 1297
     },
@@ -7259,8 +7667,8 @@
      "team": [
       "BOT",
       "OCO",
+      "PER",
       "BOR",
-      "COL",
       "ANT",
       "FER",
       "MER"
@@ -7268,22 +7676,22 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 4,
      "penalty": 0,
      "budget": 107.5,
-     "cost": 106.4,
+     "cost": 105.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 316.8,
-     "pts": 319,
-     "total": 1616
+     "xPts": 318.2,
+     "pts": 283,
+     "total": 1580
     },
     {
      "gd": 6,
      "chip": null,
      "team": [
       "BOT",
-      "OCO",
+      "BEA",
       "BOR",
       "COL",
       "ANT",
@@ -7293,15 +7701,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 110,
-     "cost": 108.9,
+     "budget": 108.8,
+     "cost": 107.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
-     "pts": 206,
-     "total": 1822
+     "xPts": 254.9,
+     "pts": 175,
+     "total": 1755
     },
     {
      "gd": 7,
@@ -7309,8 +7717,8 @@
      "team": [
       "HUL",
       "LAW",
-      "HAD",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -7318,23 +7726,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 111.3,
-     "cost": 109.6,
+     "budget": 109.3,
+     "cost": 107.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
-     "pts": 112,
-     "total": 1934
+     "xPts": 253.5,
+     "pts": 99,
+     "total": 1854
     },
     {
      "gd": 8,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -7343,15 +7751,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 113.4,
-     "cost": 111.5,
+     "budget": 111.4,
+     "cost": 108.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
-     "pts": 244,
-     "total": 2178
+     "xPts": 257.3,
+     "pts": 242,
+     "total": 2096
     },
     {
      "gd": 9,
@@ -7360,7 +7768,7 @@
       "HAM",
       "HUL",
       "HAD",
-      "COL",
+      "BOR",
       "LIN",
       "FER",
       "MER"
@@ -7368,23 +7776,23 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 115.5,
-     "cost": 113.6,
+     "budget": 113.5,
+     "cost": 109.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
-     "pts": 311,
-     "total": 2489
+     "xPts": 315.7,
+     "pts": 300,
+     "total": 2396
     },
     {
      "gd": 10,
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "HAD",
-      "COL",
       "LIN",
       "ANT",
       "FER",
@@ -7393,15 +7801,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 118.2,
-     "cost": 116.8,
+     "budget": 116.2,
+     "cost": 115.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 244,
-     "total": 2733
+     "xPts": 273.1,
+     "pts": 239,
+     "total": 2635
     },
     {
      "gd": 11,
@@ -7417,74 +7825,24 @@
      ],
      "boost": "LEC",
      "x3": null,
-     "ff": "LEC -> HAM",
-     "transfers": 1,
+     "ff": "LIN -> BEA",
+     "transfers": 2,
      "penalty": 0,
-     "budget": 120.9,
+     "budget": 118.5,
      "cost": 117.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 239.3,
-     "pts": 221,
-     "total": 2954
+     "xPts": 239.6,
+     "pts": 236,
+     "total": 2871
     },
     {
      "gd": 12,
      "chip": "autopilot",
      "team": [
       "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "LEC",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 123.2,
-     "cost": 122.8,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 303.1,
-     "pts": 275,
-     "total": 3229
-    },
-    {
-     "gd": 13,
-     "chip": null,
-     "team": [
-      "HAM",
-      "HUL",
-      "LEC",
-      "STR",
-      "LIN",
-      "FER",
-      "MER"
-     ],
-     "boost": "HAM",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 124.8,
-     "cost": 123.5,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 279.4,
-     "pts": 207,
-     "total": 3436
-    },
-    {
-     "gd": 14,
-     "chip": "noneg",
-     "team": [
-      "HUL",
-      "LEC",
-      "PER",
+      "LAW",
+      "TSU",
       "LIN",
       "ANT",
       "FER",
@@ -7493,15 +7851,65 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 120.8,
+     "cost": 120.7,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 295,
+     "pts": 261,
+     "total": 3132
+    },
+    {
+     "gd": 13,
+     "chip": null,
+     "team": [
+      "ALB",
+      "HUL",
+      "LAW",
+      "RUS",
+      "LIN",
+      "FER",
+      "MER"
+     ],
+     "boost": "RUS",
+     "x3": null,
+     "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 126.2,
-     "cost": 126,
+     "budget": 121.3,
+     "cost": 118.3,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 269.1,
+     "pts": 285,
+     "total": 3417
+    },
+    {
+     "gd": 14,
+     "chip": "noneg",
+     "team": [
+      "ALB",
+      "HUL",
+      "LEC",
+      "PER",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 124,
+     "cost": 123.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 271.6,
-     "pts": 223,
-     "total": 3659
+     "xPts": 260.2,
+     "pts": 212,
+     "total": 3629
     },
     {
      "gd": 15,
@@ -7510,7 +7918,7 @@
       "BOT",
       "HUL",
       "PER",
-      "RUS",
+      "VER",
       "ANT",
       "FER",
       "MER"
@@ -7520,21 +7928,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 127.8,
-     "cost": 126.2,
+     "budget": 126,
+     "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 222.6,
-     "pts": 266,
-     "total": 3925
+     "xPts": 222.5,
+     "pts": 264,
+     "total": 3893
     },
     {
      "gd": 16,
      "chip": null,
      "team": [
       "HUL",
+      "LEC",
       "PER",
-      "VER",
       "BEA",
       "ANT",
       "FER",
@@ -7545,48 +7953,73 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 130,
-     "cost": 129.9,
+     "budget": 128.2,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
-     "pts": 269,
-     "total": 4194
+     "xPts": 193.6,
+     "pts": 245,
+     "total": 4138
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
+      "LEC",
+      "PER",
       "VER",
-      "HAD",
-      "LIN",
+      "BEA",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 131.7,
-     "cost": 130.2,
-     "struct": "1D2C",
+     "budget": 129.7,
+     "cost": 128.4,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 274.3,
-     "pts": 306,
-     "total": 4500
+     "xPts": 266,
+     "pts": 331,
+     "total": 4469
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "PER",
+      "VER",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 132.4,
+     "cost": 131.7,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 224.2,
+     "pts": 269,
+     "total": 4738
     }
    ],
    "chipsLeft": [],
    "inHand": {},
-   "reached": null
+   "reached": 18
   },
   {
    "name": "budget-3A-early",
    "src": "model",
-   "total": 4640,
+   "total": 4779,
    "rows": [
     {
      "gd": 1,
@@ -7609,7 +8042,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -7634,7 +8067,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 361.6,
+     "xPts": 361.8,
      "pts": 447,
      "total": 709
     },
@@ -7659,7 +8092,7 @@
      "cost": 103.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 324.1,
+     "xPts": 325.6,
      "pts": 289,
      "total": 998
     },
@@ -7675,7 +8108,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -7684,7 +8117,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1407
     },
@@ -7709,7 +8142,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1710
     },
@@ -7734,7 +8167,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1916
     },
@@ -7759,7 +8192,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 2028
     },
@@ -7767,9 +8200,9 @@
      "gd": 8,
      "chip": null,
      "team": [
-      "GAS",
-      "HUL",
+      "LAW",
       "HAD",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -7778,19 +8211,19 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
      "budget": 115,
-     "cost": 115,
+     "cost": 114.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.4,
-     "pts": 240,
-     "total": 2268
+     "xPts": 263.4,
+     "pts": 244,
+     "total": 2272
     },
     {
      "gd": 9,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "GAS",
       "HAM",
@@ -7803,15 +8236,15 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 3,
      "penalty": 0,
-     "budget": 117.5,
+     "budget": 117.3,
      "cost": 116.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.6,
+     "xPts": 321.5,
      "pts": 307,
-     "total": 2575
+     "total": 2579
     },
     {
      "gd": 10,
@@ -7830,23 +8263,23 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 119.8,
+     "budget": 119.6,
      "cost": 116.8,
      "struct": "1D2C",
      "valW": 1,
      "xPts": 274.3,
      "pts": 244,
-     "total": 2819
+     "total": 2823
     },
     {
      "gd": 11,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
+      "BOT",
+      "HUL",
       "LEC",
-      "HAD",
-      "BOR",
-      "COL",
       "LIN",
+      "ANT",
       "FER",
       "MER"
      ],
@@ -7855,13 +8288,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 122.5,
-     "cost": 121.7,
-     "struct": "1D2C",
+     "budget": 122.3,
+     "cost": 121.2,
+     "struct": "2D2C",
      "valW": 1,
-     "xPts": 243.3,
-     "pts": 236,
-     "total": 3055
+     "xPts": 241.7,
+     "pts": 229,
+     "total": 3052
     },
     {
      "gd": 12,
@@ -7878,24 +8311,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 125.4,
+     "budget": 123.9,
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
-     "total": 3328
+     "total": 3325
     },
     {
      "gd": 13,
      "chip": null,
      "team": [
-      "ALB",
       "HAM",
       "HUL",
       "LEC",
+      "STR",
       "LIN",
       "FER",
       "MER"
@@ -7903,24 +8336,74 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 127,
-     "cost": 125.7,
+     "budget": 125.5,
+     "cost": 123.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
-     "pts": 234,
-     "total": 3562
+     "xPts": 280.7,
+     "pts": 207,
+     "total": 3532
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "ALB",
       "HUL",
       "LEC",
+      "PER",
       "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 126.9,
+     "cost": 126,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 232.1,
+     "pts": 183,
+     "total": 3715
+    },
+    {
+     "gd": 15,
+     "chip": "finalfix",
+     "team": [
+      "BOT",
+      "HUL",
+      "VER",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": "ANT -> LEC",
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 128.5,
+     "cost": 128.5,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 225.4,
+     "pts": 225,
+     "total": 3940
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "HUL",
+      "PER",
+      "VER",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -7930,73 +8413,23 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 129,
-     "cost": 128.8,
+     "budget": 130.5,
+     "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 234,
-     "pts": 205,
-     "total": 3767
-    },
-    {
-     "gd": 15,
-     "chip": "finalfix",
-     "team": [
-      "BOT",
-      "HUL",
-      "VER",
-      "LIN",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": "ANT -> LEC",
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 131.2,
-     "cost": 130.9,
-     "struct": "2D2C",
-     "valW": 1,
-     "xPts": 226.9,
-     "pts": 236,
-     "total": 4003
-    },
-    {
-     "gd": 16,
-     "chip": null,
-     "team": [
-      "HUL",
-      "LAW",
-      "PER",
-      "VER",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 2,
-     "penalty": 0,
-     "budget": 134,
-     "cost": 133.4,
-     "struct": "2D2C",
-     "valW": 0,
-     "xPts": 197.3,
-     "pts": 279,
-     "total": 4282
+     "xPts": 200.3,
+     "pts": 269,
+     "total": 4209
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
       "LEC",
+      "PER",
       "VER",
-      "BEA",
+      "LIN",
       "FER",
       "MER"
      ],
@@ -8005,23 +8438,48 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 135.7,
-     "cost": 134.7,
+     "budget": 132.2,
+     "cost": 132,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 275.9,
+     "pts": 314,
+     "total": 4523
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 134.9,
+     "cost": 134.5,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 267.2,
-     "pts": 358,
-     "total": 4640
+     "xPts": 228.2,
+     "pts": 256,
+     "total": 4779
     }
    ],
    "chipsLeft": [],
    "inHand": {},
-   "reached": 16
+   "reached": 18
   },
   {
    "name": "budget-3A-ev",
    "src": "model",
-   "total": 4521,
+   "total": 4777,
    "rows": [
     {
      "gd": 1,
@@ -8044,7 +8502,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -8069,7 +8527,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -8094,7 +8552,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -8119,13 +8577,13 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 377.2,
+     "xPts": 376.9,
      "pts": 303,
      "total": 1242
     },
     {
      "gd": 5,
-     "chip": null,
+     "chip": "autopilot",
      "team": [
       "BOT",
       "OCO",
@@ -8144,7 +8602,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1545
     },
@@ -8169,7 +8627,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1751
     },
@@ -8194,13 +8652,13 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1863
     },
     {
      "gd": 8,
-     "chip": "autopilot",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
@@ -8219,7 +8677,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2107
     },
@@ -8244,7 +8702,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 267,
      "total": 2374
     },
@@ -8294,7 +8752,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2854
     },
@@ -8319,7 +8777,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 375.2,
+     "xPts": 376.7,
      "pts": 349,
      "total": 3203
     },
@@ -8344,7 +8802,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3437
     },
@@ -8369,7 +8827,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3620
     },
@@ -8394,7 +8852,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3864
     },
@@ -8419,7 +8877,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4133
     },
@@ -8444,23 +8902,48 @@
      "cost": 192.9,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 347.1,
+     "xPts": 346.2,
      "pts": 388,
      "total": 4521
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 228.2,
+     "pts": 256,
+     "total": 4777
     }
    ],
    "chipsLeft": [
     "wildcard"
    ],
    "inHand": {
-    "wildcard": 1.4
+    "wildcard": 1.8
    },
-   "reached": null
+   "reached": 18
   },
   {
    "name": "budget-3A-none",
    "src": "model",
-   "total": 4348,
+   "total": 4604,
    "rows": [
     {
      "gd": 1,
@@ -8483,7 +8966,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -8508,7 +8991,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -8533,7 +9016,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -8583,7 +9066,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1478
     },
@@ -8608,7 +9091,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1684
     },
@@ -8633,7 +9116,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 1796
     },
@@ -8658,7 +9141,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2040
     },
@@ -8683,7 +9166,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 311,
      "total": 2351
     },
@@ -8733,7 +9216,7 @@
      "cost": 121.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 243.3,
+     "xPts": 244.2,
      "pts": 236,
      "total": 2831
     },
@@ -8758,7 +9241,7 @@
      "cost": 122.8,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
+     "xPts": 304.4,
      "pts": 273,
      "total": 3104
     },
@@ -8783,7 +9266,7 @@
      "cost": 125.7,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 285,
+     "xPts": 286.8,
      "pts": 234,
      "total": 3338
     },
@@ -8808,7 +9291,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3521
     },
@@ -8833,7 +9316,7 @@
      "cost": 129.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 226.1,
+     "xPts": 226.6,
      "pts": 244,
      "total": 3765
     },
@@ -8858,7 +9341,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4034
     },
@@ -8883,9 +9366,34 @@
      "cost": 132,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 276.1,
+     "xPts": 275.9,
      "pts": 314,
      "total": 4348
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "VER",
+      "BEA",
+      "BOR",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 135.2,
+     "cost": 134.5,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 228.2,
+     "pts": 256,
+     "total": 4604
     }
    ],
    "chipsLeft": [
@@ -8897,19 +9405,19 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 1.4,
-    "limitless": 51.4,
-    "x3": 57.4,
-    "noneg": 41.3,
-    "autopilot": 10.8,
-    "finalfix": 7.6
+    "wildcard": 2.1,
+    "limitless": 51.9,
+    "x3": 58,
+    "noneg": 39.2,
+    "autopilot": 10.7,
+    "finalfix": 6.2
    },
-   "reached": null
+   "reached": 18
   },
   {
    "name": "naive:points-early",
    "src": "naive",
-   "total": 4358,
+   "total": 4516,
    "rows": [
     {
      "gd": 1,
@@ -8918,7 +9426,7 @@
       "LAW",
       "LEC",
       "RUS",
-      "BEA",
+      "BOR",
       "LIN",
       "FER",
       "RBS"
@@ -8929,20 +9437,20 @@
      "transfers": 0,
      "penalty": 0,
      "budget": 100,
-     "cost": 99.9,
+     "cost": 98.9,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
     },
     {
      "gd": 2,
      "chip": "noneg",
      "team": [
-      "HUL",
+      "BOT",
       "LAW",
-      "PER",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -8951,15 +9459,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 4,
-     "penalty": 20,
+     "transfers": 3,
+     "penalty": 10,
      "budget": 102.5,
-     "cost": 101.8,
+     "cost": 102.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 309.9,
-     "pts": 448,
-     "total": 699
+     "xPts": 317.7,
+     "pts": 440,
+     "total": 684
     },
     {
      "gd": 3,
@@ -8968,23 +9476,23 @@
       "BOT",
       "HUL",
       "LAW",
-      "RUS",
+      "BEA",
       "ANT",
-      "MER",
-      "AUD"
+      "FER",
+      "MER"
      ],
-     "boost": "ANT",
-     "x3": "RUS",
+     "boost": "BEA",
+     "x3": "ANT",
      "ff": null,
-     "transfers": 3,
-     "penalty": 10,
-     "budget": 104.6,
-     "cost": 104.3,
-     "struct": "2D1C",
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 103.4,
+     "cost": 103.4,
+     "struct": "1D2C",
      "valW": 0,
-     "xPts": 275.1,
-     "pts": 308,
-     "total": 1007
+     "xPts": 270,
+     "pts": 311,
+     "total": 995
     },
     {
      "gd": 4,
@@ -9003,13 +9511,13 @@
      "ff": null,
      "transfers": 4,
      "penalty": 0,
-     "budget": 105.1,
+     "budget": 104.3,
      "cost": 181.9,
      "struct": "5D2C",
      "valW": 0,
-     "xPts": 398.3,
+     "xPts": 398.5,
      "pts": 386,
-     "total": 1393
+     "total": 1381
     },
     {
      "gd": 5,
@@ -9026,15 +9534,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
-     "penalty": 10,
+     "transfers": 2,
+     "penalty": 0,
      "budget": 105.2,
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 296.4,
-     "pts": 288,
-     "total": 1681
+     "xPts": 306.6,
+     "pts": 298,
+     "total": 1679
     },
     {
      "gd": 6,
@@ -9057,9 +9565,9 @@
      "cost": 106,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 295.1,
+     "xPts": 294.6,
      "pts": 202,
-     "total": 1883
+     "total": 1881
     },
     {
      "gd": 7,
@@ -9068,31 +9576,6 @@
       "BOT",
       "LAW",
       "PER",
-      "BOR",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 107,
-     "cost": 105.6,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 264.6,
-     "pts": 95,
-     "total": 1978
-    },
-    {
-     "gd": 8,
-     "chip": null,
-     "team": [
-      "PER",
-      "BEA",
-      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -9103,13 +9586,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 107.5,
-     "cost": 107.3,
+     "budget": 107,
+     "cost": 105.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 236.7,
-     "pts": 206,
-     "total": 2184
+     "xPts": 265.5,
+     "pts": 98,
+     "total": 1979
+    },
+    {
+     "gd": 8,
+     "chip": null,
+     "team": [
+      "BOT",
+      "LAW",
+      "PER",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 107.1,
+     "cost": 105.9,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 233.1,
+     "pts": 190,
+     "total": 2169
     },
     {
      "gd": 9,
@@ -9126,15 +9634,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 107.8,
+     "budget": 107.7,
      "cost": 107.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 230.4,
+     "xPts": 230.2,
      "pts": 284,
-     "total": 2468
+     "total": 2453
     },
     {
      "gd": 10,
@@ -9153,13 +9661,13 @@
      "ff": null,
      "transfers": 0,
      "penalty": 0,
-     "budget": 109.1,
+     "budget": 109,
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 245.2,
+     "xPts": 246.6,
      "pts": 193,
-     "total": 2661
+     "total": 2646
     },
     {
      "gd": 11,
@@ -9178,13 +9686,13 @@
      "ff": null,
      "transfers": 0,
      "penalty": 0,
-     "budget": 110.8,
+     "budget": 110.7,
      "cost": 110.6,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 241.7,
+     "xPts": 241.9,
      "pts": 195,
-     "total": 2856
+     "total": 2841
     },
     {
      "gd": 12,
@@ -9203,13 +9711,13 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 112.3,
+     "budget": 112.2,
      "cost": 112,
      "struct": "1D2C",
      "valW": 0,
      "xPts": 236.1,
      "pts": 259,
-     "total": 3115
+     "total": 3100
     },
     {
      "gd": 13,
@@ -9228,22 +9736,22 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 112.4,
+     "budget": 112.3,
      "cost": 112.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 237.1,
+     "xPts": 237.5,
      "pts": 389,
-     "total": 3504
+     "total": 3489
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "HUL",
-      "OCO",
+      "ALB",
       "PER",
       "TSU",
+      "BEA",
       "ANT",
       "FER",
       "MER"
@@ -9253,44 +9761,19 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 113.3,
-     "cost": 113.3,
+     "budget": 113.2,
+     "cost": 111.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 255.3,
+     "xPts": 253.5,
      "pts": 165,
-     "total": 3669
+     "total": 3654
     },
     {
      "gd": 15,
      "chip": null,
      "team": [
-      "HUL",
-      "LAW",
       "OCO",
-      "PER",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 114,
-     "cost": 114,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 245.4,
-     "pts": 230,
-     "total": 3899
-    },
-    {
-     "gd": 16,
-     "chip": null,
-     "team": [
-      "LAW",
       "PER",
       "BEA",
       "LIN",
@@ -9303,13 +9786,38 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 114.9,
-     "cost": 114.8,
+     "budget": 113.9,
+     "cost": 113.5,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 242.9,
-     "pts": 238,
-     "total": 4137
+     "xPts": 244.7,
+     "pts": 235,
+     "total": 3889
+    },
+    {
+     "gd": 16,
+     "chip": null,
+     "team": [
+      "LAW",
+      "OCO",
+      "PER",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 115.2,
+     "cost": 115.1,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 246.4,
+     "pts": 222,
+     "total": 4111
     },
     {
      "gd": 17,
@@ -9328,13 +9836,38 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 116.5,
+     "budget": 116.4,
      "cost": 116.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 249.1,
+     "xPts": 249,
      "pts": 221,
-     "total": 4358
+     "total": 4332
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "LAW",
+      "PER",
+      "BEA",
+      "COL",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 118,
+     "cost": 118,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 243.2,
+     "pts": 184,
+     "total": 4516
     }
    ],
    "chipsLeft": [
@@ -9343,16 +9876,16 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 0.7,
-    "autopilot": 3.3,
-    "finalfix": 0.2
+    "wildcard": 0,
+    "autopilot": 3.1,
+    "finalfix": 0
    },
    "reached": null
   },
   {
    "name": "naive:points-ev",
    "src": "naive",
-   "total": 4162,
+   "total": 4378,
    "rows": [
     {
      "gd": 1,
@@ -9361,7 +9894,7 @@
       "LAW",
       "LEC",
       "RUS",
-      "BEA",
+      "BOR",
       "LIN",
       "FER",
       "RBS"
@@ -9372,20 +9905,20 @@
      "transfers": 0,
      "penalty": 0,
      "budget": 100,
-     "cost": 99.9,
+     "cost": 98.9,
      "struct": "2D1C",
      "valW": 0,
-     "xPts": 146.8,
-     "pts": 251,
-     "total": 251
+     "xPts": 145.2,
+     "pts": 244,
+     "total": 244
     },
     {
      "gd": 2,
      "chip": null,
      "team": [
-      "HUL",
+      "BOT",
       "LAW",
-      "PER",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -9394,24 +9927,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 4,
-     "penalty": 20,
+     "transfers": 3,
+     "penalty": 10,
      "budget": 102.5,
-     "cost": 101.8,
+     "cost": 102.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 272.5,
-     "pts": 419,
-     "total": 670
+     "xPts": 279.8,
+     "pts": 391,
+     "total": 635
     },
     {
      "gd": 3,
      "chip": null,
      "team": [
+      "BOT",
       "HUL",
-      "PER",
+      "LAW",
       "BEA",
-      "BOR",
       "ANT",
       "FER",
       "MER"
@@ -9421,21 +9954,21 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 104.6,
-     "cost": 104.6,
+     "budget": 103.4,
+     "cost": 103.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 226.9,
-     "pts": 270,
-     "total": 940
+     "xPts": 226.6,
+     "pts": 275,
+     "total": 910
     },
     {
      "gd": 4,
      "chip": "noneg",
      "team": [
-      "BOT",
+      "HUL",
       "LAW",
-      "BEA",
+      "PER",
       "BOR",
       "ANT",
       "FER",
@@ -9446,22 +9979,22 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 105.5,
-     "cost": 105.1,
+     "budget": 104.3,
+     "cost": 103.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 339.3,
-     "pts": 295,
-     "total": 1235
+     "xPts": 338.1,
+     "pts": 305,
+     "total": 1215
     },
     {
      "gd": 5,
      "chip": null,
      "team": [
       "BOT",
-      "OCO",
       "PER",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -9471,13 +10004,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 106.4,
-     "cost": 105.8,
+     "budget": 105.2,
+     "cost": 104.3,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 310.5,
-     "pts": 283,
-     "total": 1518
+     "xPts": 306.8,
+     "pts": 300,
+     "total": 1515
     },
     {
      "gd": 6,
@@ -9494,48 +10027,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 107.7,
+     "budget": 106.9,
      "cost": 106.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 300.4,
+     "xPts": 299.8,
      "pts": 210,
-     "total": 1728
+     "total": 1725
     },
     {
      "gd": 7,
      "chip": null,
      "team": [
-      "BOT",
-      "LAW",
-      "OCO",
-      "BOR",
-      "ANT",
-      "FER",
-      "MER"
-     ],
-     "boost": "ANT",
-     "x3": null,
-     "ff": null,
-     "transfers": 1,
-     "penalty": 0,
-     "budget": 109,
-     "cost": 108.9,
-     "struct": "1D2C",
-     "valW": 0,
-     "xPts": 271,
-     "pts": 95,
-     "total": 1823
-    },
-    {
-     "gd": 8,
-     "chip": null,
-     "team": [
       "LAW",
       "PER",
-      "BEA",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -9544,23 +10052,23 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 110.3,
-     "cost": 110.2,
+     "budget": 108.2,
+     "cost": 107.5,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 244.6,
-     "pts": 208,
-     "total": 2031
+     "xPts": 271.1,
+     "pts": 123,
+     "total": 1848
     },
     {
-     "gd": 9,
+     "gd": 8,
      "chip": null,
      "team": [
       "LAW",
       "PER",
-      "BEA",
+      "BOR",
       "LIN",
       "ANT",
       "FER",
@@ -9571,13 +10079,38 @@
      "ff": null,
      "transfers": 0,
      "penalty": 0,
-     "budget": 110.6,
-     "cost": 110.5,
+     "budget": 109.1,
+     "cost": 108.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 238,
-     "pts": 290,
-     "total": 2321
+     "xPts": 242.3,
+     "pts": 212,
+     "total": 2060
+    },
+    {
+     "gd": 9,
+     "chip": null,
+     "team": [
+      "LAW",
+      "PER",
+      "BOR",
+      "LIN",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 0,
+     "penalty": 0,
+     "budget": 110.2,
+     "cost": 109.5,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 236.1,
+     "pts": 293,
+     "total": 2353
     },
     {
      "gd": 10,
@@ -9594,15 +10127,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 1,
      "penalty": 0,
      "budget": 111.9,
      "cost": 111.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 253.1,
+     "xPts": 253.6,
      "pts": 188,
-     "total": 2509
+     "total": 2541
     },
     {
      "gd": 11,
@@ -9627,7 +10160,7 @@
      "valW": 0,
      "xPts": 248.1,
      "pts": 198,
-     "total": 2707
+     "total": 2739
     },
     {
      "gd": 12,
@@ -9650,9 +10183,9 @@
      "cost": 113.8,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 242.1,
+     "xPts": 241.9,
      "pts": 244,
-     "total": 2951
+     "total": 2983
     },
     {
      "gd": 13,
@@ -9675,9 +10208,9 @@
      "cost": 114.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 242.4,
+     "xPts": 242.7,
      "pts": 380,
-     "total": 3331
+     "total": 3363
     },
     {
      "gd": 14,
@@ -9700,9 +10233,9 @@
      "cost": 114.9,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 258.5,
+     "xPts": 258.1,
      "pts": 167,
-     "total": 3498
+     "total": 3530
     },
     {
      "gd": 15,
@@ -9725,9 +10258,9 @@
      "cost": 115,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 250.9,
+     "xPts": 250.3,
      "pts": 221,
-     "total": 3719
+     "total": 3751
     },
     {
      "gd": 16,
@@ -9750,13 +10283,13 @@
      "cost": 115.1,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 245.9,
+     "xPts": 246.4,
      "pts": 222,
-     "total": 3941
+     "total": 3973
     },
     {
      "gd": 17,
-     "chip": null,
+     "chip": "wildcard",
      "team": [
       "LAW",
       "PER",
@@ -9775,31 +10308,52 @@
      "cost": 116.4,
      "struct": "1D2C",
      "valW": 0,
-     "xPts": 249.1,
+     "xPts": 249,
      "pts": 221,
-     "total": 4162
+     "total": 4194
+    },
+    {
+     "gd": 18,
+     "chip": "finalfix",
+     "team": [
+      "LAW",
+      "PER",
+      "SAI",
+      "BEA",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": "SAI -> COL",
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 118.5,
+     "cost": 117.6,
+     "struct": "1D2C",
+     "valW": 0,
+     "xPts": 241.9,
+     "pts": 184,
+     "total": 4378
     }
    ],
    "chipsLeft": [
-    "wildcard",
     "limitless",
     "x3",
-    "autopilot",
-    "finalfix"
+    "autopilot"
    ],
    "inHand": {
-    "wildcard": 0.7,
-    "limitless": 84.4,
-    "x3": 58.8,
-    "autopilot": 3.5,
-    "finalfix": 0
+    "limitless": 82.9,
+    "x3": 57.8,
+    "autopilot": 3.2
    },
    "reached": null
   },
   {
    "name": "naive:budget-early",
    "src": "naive",
-   "total": 4485,
+   "total": 4718,
    "rows": [
     {
      "gd": 1,
@@ -9822,7 +10376,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -9847,7 +10401,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 361.6,
+     "xPts": 361.8,
      "pts": 447,
      "total": 709
     },
@@ -9872,7 +10426,7 @@
      "cost": 103.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 324.1,
+     "xPts": 325.6,
      "pts": 289,
      "total": 998
     },
@@ -9897,7 +10451,7 @@
      "cost": 181.9,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 398.3,
+     "xPts": 398.5,
      "pts": 386,
      "total": 1384
     },
@@ -9922,7 +10476,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 342.9,
+     "xPts": 343,
      "pts": 303,
      "total": 1687
     },
@@ -9947,7 +10501,7 @@
      "cost": 111.4,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 338.7,
+     "xPts": 338,
      "pts": 217,
      "total": 1904
     },
@@ -9972,7 +10526,7 @@
      "cost": 112,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 302.4,
+     "xPts": 304.4,
      "pts": 100,
      "total": 2004
     },
@@ -9997,7 +10551,7 @@
      "cost": 114.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 275.3,
+     "xPts": 275.6,
      "pts": 210,
      "total": 2214
     },
@@ -10031,7 +10585,7 @@
      "chip": null,
      "team": [
       "LAW",
-      "BEA",
+      "BOR",
       "COL",
       "LIN",
       "ANT",
@@ -10041,13 +10595,13 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 0,
      "penalty": 0,
      "budget": 119.4,
-     "cost": 117.2,
+     "cost": 116.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 285.4,
+     "xPts": 287,
      "pts": 213,
      "total": 2740
     },
@@ -10066,13 +10620,13 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 0,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 121.9,
+     "budget": 122.3,
      "cost": 119.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 281.2,
+     "xPts": 281.1,
      "pts": 221,
      "total": 2961
     },
@@ -10093,11 +10647,11 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 124.2,
+     "budget": 124.6,
      "cost": 123.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 268.1,
+     "xPts": 267.8,
      "pts": 260,
      "total": 3221
     },
@@ -10118,11 +10672,11 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 124.3,
+     "budget": 124.7,
      "cost": 120.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 252.8,
+     "xPts": 253.2,
      "pts": 380,
      "total": 3601
     },
@@ -10143,11 +10697,11 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 125.6,
+     "budget": 126,
      "cost": 124.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 295,
+     "xPts": 294.4,
      "pts": 187,
      "total": 3788
     },
@@ -10168,16 +10722,41 @@
      "ff": null,
      "transfers": 3,
      "penalty": 0,
-     "budget": 126.7,
+     "budget": 127.1,
      "cost": 125,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 271.8,
+     "xPts": 271.3,
      "pts": 203,
      "total": 3991
     },
     {
      "gd": 16,
+     "chip": null,
+     "team": [
+      "LAW",
+      "OCO",
+      "BEA",
+      "HAD",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 127.4,
+     "cost": 127.2,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 265.7,
+     "pts": 238,
+     "total": 4229
+    },
+    {
+     "gd": 17,
      "chip": null,
      "team": [
       "LAW",
@@ -10191,24 +10770,24 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 127,
-     "cost": 126.9,
+     "budget": 129.2,
+     "cost": 129.1,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 262.9,
-     "pts": 254,
-     "total": 4245
+     "xPts": 269.3,
+     "pts": 267,
+     "total": 4496
     },
     {
-     "gd": 17,
+     "gd": 18,
      "chip": null,
      "team": [
       "LAW",
-      "PER",
+      "OCO",
+      "BEA",
       "HAD",
-      "LIN",
       "ANT",
       "FER",
       "MER"
@@ -10218,13 +10797,13 @@
      "ff": null,
      "transfers": 1,
      "penalty": 0,
-     "budget": 129.2,
-     "cost": 126.3,
+     "budget": 132,
+     "cost": 131.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 269.6,
-     "pts": 240,
-     "total": 4485
+     "xPts": 266.4,
+     "pts": 222,
+     "total": 4718
     }
    ],
    "chipsLeft": [
@@ -10232,15 +10811,15 @@
     "finalfix"
    ],
    "inHand": {
-    "autopilot": 3.6,
-    "finalfix": 3.8
+    "autopilot": 4.1,
+    "finalfix": 3.1
    },
    "reached": null
   },
   {
    "name": "naive:budget-ev",
    "src": "naive",
-   "total": 4367,
+   "total": 4607,
    "rows": [
     {
      "gd": 1,
@@ -10263,7 +10842,7 @@
      "cost": 89.5,
      "struct": "1D1C",
      "valW": 1,
-     "xPts": 168.3,
+     "xPts": 168.4,
      "pts": 262,
      "total": 262
     },
@@ -10288,7 +10867,7 @@
      "cost": 102.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 324.3,
+     "xPts": 324.4,
      "pts": 408,
      "total": 670
     },
@@ -10313,7 +10892,7 @@
      "cost": 104.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 263,
+     "xPts": 262.3,
      "pts": 269,
      "total": 939
     },
@@ -10338,7 +10917,7 @@
      "cost": 105.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 382.9,
+     "xPts": 382.4,
      "pts": 303,
      "total": 1242
     },
@@ -10363,7 +10942,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 342.9,
+     "xPts": 343,
      "pts": 303,
      "total": 1545
     },
@@ -10388,7 +10967,7 @@
      "cost": 110.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 336.4,
+     "xPts": 335.5,
      "pts": 186,
      "total": 1731
     },
@@ -10413,7 +10992,7 @@
      "cost": 111.1,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 295.8,
+     "xPts": 295.3,
      "pts": 122,
      "total": 1853
     },
@@ -10438,7 +11017,7 @@
      "cost": 112.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 274.6,
+     "xPts": 274.7,
      "pts": 214,
      "total": 2067
     },
@@ -10488,7 +11067,7 @@
      "cost": 116.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 285.3,
+     "xPts": 287,
      "pts": 213,
      "total": 2593
     },
@@ -10513,7 +11092,7 @@
      "cost": 119.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 280.5,
+     "xPts": 280.8,
      "pts": 228,
      "total": 2821
     },
@@ -10523,8 +11102,8 @@
      "team": [
       "HUL",
       "LAW",
-      "TSU",
       "BOR",
+      "COL",
       "ANT",
       "FER",
       "MER"
@@ -10532,15 +11111,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": "HUL -> PER",
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
      "budget": 122.2,
-     "cost": 120.5,
+     "cost": 121.4,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 265.3,
-     "pts": 253,
-     "total": 3074
+     "xPts": 265.1,
+     "pts": 254,
+     "total": 3075
     },
     {
      "gd": 13,
@@ -10563,9 +11142,9 @@
      "cost": 189.1,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 326.3,
+     "xPts": 326.5,
      "pts": 417,
-     "total": 3491
+     "total": 3492
     },
     {
      "gd": 14,
@@ -10584,13 +11163,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 126,
+     "budget": 125.6,
      "cost": 124.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 295,
+     "xPts": 294.4,
      "pts": 187,
-     "total": 3678
+     "total": 3679
     },
     {
      "gd": 15,
@@ -10609,13 +11188,13 @@
      "ff": null,
      "transfers": 2,
      "penalty": 0,
-     "budget": 127.1,
+     "budget": 126.7,
      "cost": 125.4,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 270.9,
+     "xPts": 270.3,
      "pts": 211,
-     "total": 3889
+     "total": 3890
     },
     {
      "gd": 16,
@@ -10623,7 +11202,7 @@
      "team": [
       "LAW",
       "OCO",
-      "BEA",
+      "PER",
       "HAD",
       "ANT",
       "FER",
@@ -10632,15 +11211,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 127.2,
-     "cost": 127.2,
+     "budget": 126.8,
+     "cost": 124.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 265.2,
-     "pts": 238,
-     "total": 4127
+     "xPts": 263,
+     "pts": 240,
+     "total": 4130
     },
     {
      "gd": 17,
@@ -10657,15 +11236,40 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 129,
+     "budget": 128.4,
      "cost": 126.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 269.6,
+     "xPts": 269.5,
      "pts": 240,
-     "total": 4367
+     "total": 4370
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "ALO",
+      "LAW",
+      "OCO",
+      "HAD",
+      "ANT",
+      "FER",
+      "MER"
+     ],
+     "boost": "ANT",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 131.2,
+     "cost": 130.8,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 263.4,
+     "pts": 237,
+     "total": 4607
     }
    ],
    "chipsLeft": [
@@ -10674,16 +11278,16 @@
     "autopilot"
    ],
    "inHand": {
-    "wildcard": 1.7,
-    "x3": 60.1,
-    "autopilot": 3.5
+    "wildcard": 2.9,
+    "x3": 62.2,
+    "autopilot": 3.4
    },
    "reached": null
   },
   {
    "name": "meta/budget-early",
    "src": "model",
-   "total": 4560,
+   "total": 4798,
    "rows": [
     {
      "gd": 1,
@@ -10706,7 +11310,7 @@
      "cost": 98.9,
      "struct": "2D1C",
      "valW": 1,
-     "xPts": 165.5,
+     "xPts": 164.7,
      "pts": 244,
      "total": 244
     },
@@ -10731,7 +11335,7 @@
      "cost": 102.2,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 355.5,
+     "xPts": 355.9,
      "pts": 417,
      "total": 661
     },
@@ -10756,7 +11360,7 @@
      "cost": 104.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 303.7,
+     "xPts": 303.2,
      "pts": 348,
      "total": 1009
     },
@@ -10772,7 +11376,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -10781,7 +11385,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1418
     },
@@ -10806,7 +11410,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1721
     },
@@ -10831,7 +11435,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1927
     },
@@ -10856,7 +11460,7 @@
      "cost": 109.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 260.3,
+     "xPts": 258,
      "pts": 112,
      "total": 2039
     },
@@ -10881,7 +11485,7 @@
      "cost": 111.5,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 259.8,
+     "xPts": 260.6,
      "pts": 244,
      "total": 2283
     },
@@ -10906,7 +11510,7 @@
      "cost": 113.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 317.4,
+     "xPts": 318,
      "pts": 311,
      "total": 2594
     },
@@ -10956,7 +11560,7 @@
      "cost": 121.2,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 241.8,
+     "xPts": 241.7,
      "pts": 229,
      "total": 3067
     },
@@ -10981,7 +11585,7 @@
      "cost": 122.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.6,
+     "xPts": 306,
      "pts": 271,
      "total": 3338
     },
@@ -11006,7 +11610,7 @@
      "cost": 123.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 279.4,
+     "xPts": 280.7,
      "pts": 207,
      "total": 3545
     },
@@ -11031,7 +11635,7 @@
      "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 229.6,
+     "xPts": 232.1,
      "pts": 183,
      "total": 3728
     },
@@ -11056,7 +11660,7 @@
      "cost": 126.2,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 222.6,
+     "xPts": 222.9,
      "pts": 232,
      "total": 3960
     },
@@ -11081,7 +11685,7 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
      "total": 4229
     },
@@ -11106,23 +11710,48 @@
      "cost": 131.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 274.3,
+     "xPts": 274.6,
      "pts": 331,
      "total": 4560
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LAW",
+      "LEC",
+      "VER",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 1,
+     "penalty": 0,
+     "budget": 134.6,
+     "cost": 134,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 231.6,
+     "pts": 238,
+     "total": 4798
     }
    ],
    "chipsLeft": [
     "wildcard"
    ],
    "inHand": {
-    "wildcard": 0.8
+    "wildcard": 0.6
    },
    "reached": null
   },
   {
    "name": "meta-alt/budget-early",
    "src": "model",
-   "total": 4524,
+   "total": 4798,
    "rows": [
     {
      "gd": 1,
@@ -11145,7 +11774,7 @@
      "cost": 99.6,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 152.2,
+     "xPts": 150.9,
      "pts": 208,
      "total": 208
     },
@@ -11170,7 +11799,7 @@
      "cost": 102,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 351.2,
+     "xPts": 351.1,
      "pts": 459,
      "total": 667
     },
@@ -11195,7 +11824,7 @@
      "cost": 105.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 318.6,
+     "xPts": 319.6,
      "pts": 346,
      "total": 1013
     },
@@ -11211,7 +11840,7 @@
       "FER",
       "MER"
      ],
-     "boost": "RUS",
+     "boost": "ANT",
      "x3": null,
      "ff": null,
      "transfers": 4,
@@ -11220,7 +11849,7 @@
      "cost": 181.6,
      "struct": "5D2C",
      "valW": 1,
-     "xPts": 394.1,
+     "xPts": 393.1,
      "pts": 409,
      "total": 1422
     },
@@ -11245,7 +11874,7 @@
      "cost": 108.8,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 321.9,
+     "xPts": 322,
      "pts": 303,
      "total": 1725
     },
@@ -11270,7 +11899,7 @@
      "cost": 108.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 254.4,
+     "xPts": 256.2,
      "pts": 206,
      "total": 1931
     },
@@ -11295,7 +11924,7 @@
      "cost": 113.4,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 265.9,
+     "xPts": 262.9,
      "pts": 114,
      "total": 2045
     },
@@ -11320,7 +11949,7 @@
      "cost": 114.3,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 262.4,
+     "xPts": 263.4,
      "pts": 244,
      "total": 2289
     },
@@ -11345,7 +11974,7 @@
      "cost": 118.2,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 301.6,
+     "xPts": 299.8,
      "pts": 321,
      "total": 2610
     },
@@ -11370,7 +11999,7 @@
      "cost": 119.4,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 264.9,
+     "xPts": 264,
      "pts": 238,
      "total": 2848
     },
@@ -11395,7 +12024,7 @@
      "cost": 121.2,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 241.8,
+     "xPts": 241.7,
      "pts": 229,
      "total": 3077
     },
@@ -11406,7 +12035,7 @@
       "HUL",
       "LEC",
       "STR",
-      "LIN",
+      "BOR",
       "ANT",
       "FER",
       "MER"
@@ -11414,15 +12043,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
      "budget": 122.8,
-     "cost": 122.8,
+     "cost": 122.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 303.1,
-     "pts": 273,
-     "total": 3350
+     "xPts": 306,
+     "pts": 271,
+     "total": 3348
     },
     {
      "gd": 13,
@@ -11439,24 +12068,24 @@
      "boost": "HAM",
      "x3": null,
      "ff": null,
-     "transfers": 1,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 124.4,
+     "budget": 124.8,
      "cost": 123.5,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 279.4,
+     "xPts": 280.7,
      "pts": 207,
-     "total": 3557
+     "total": 3555
     },
     {
      "gd": 14,
      "chip": null,
      "team": [
-      "ALB",
       "HUL",
       "LEC",
       "PER",
+      "LIN",
       "ANT",
       "FER",
       "MER"
@@ -11464,15 +12093,15 @@
      "boost": "ANT",
      "x3": null,
      "ff": null,
-     "transfers": 3,
+     "transfers": 2,
      "penalty": 0,
-     "budget": 125.8,
-     "cost": 123.8,
+     "budget": 126.2,
+     "cost": 126,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 228.2,
-     "pts": 182,
-     "total": 3739
+     "xPts": 232.1,
+     "pts": 183,
+     "total": 3738
     },
     {
      "gd": 15,
@@ -11495,9 +12124,9 @@
      "cost": 126.2,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 222.6,
+     "xPts": 222.9,
      "pts": 232,
-     "total": 3971
+     "total": 3970
     },
     {
      "gd": 16,
@@ -11520,48 +12149,73 @@
      "cost": 129.9,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 200.6,
+     "xPts": 200.3,
      "pts": 269,
-     "total": 4240
+     "total": 4239
     },
     {
      "gd": 17,
      "chip": null,
      "team": [
       "HUL",
-      "LEC",
       "PER",
       "VER",
-      "BOR",
+      "BEA",
+      "ANT",
       "FER",
       "MER"
      ],
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 0,
      "penalty": 0,
      "budget": 131.7,
-     "cost": 130.2,
+     "cost": 131.6,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 268.6,
-     "pts": 284,
-     "total": 4524
+     "xPts": 266.9,
+     "pts": 321,
+     "total": 4560
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "BOT",
+      "HUL",
+      "LAW",
+      "LEC",
+      "VER",
+      "FER",
+      "MER"
+     ],
+     "boost": "VER",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 134.2,
+     "cost": 134,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 231.6,
+     "pts": 238,
+     "total": 4798
     }
    ],
    "chipsLeft": [
     "wildcard"
    ],
    "inHand": {
-    "wildcard": 0
+    "wildcard": 0.5
    },
    "reached": null
   },
   {
    "name": "oracle:points-hindsight",
    "src": "oracle",
-   "total": 5966,
+   "total": 6278,
    "rows": [
     {
      "gd": 1,
@@ -11943,8 +12597,8 @@
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "LEC",
-      "PER",
       "VER",
       "LIN",
       "FER",
@@ -11953,15 +12607,15 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
-     "penalty": 10,
+     "transfers": 4,
+     "penalty": 20,
      "budget": 136.5,
-     "cost": 128.2,
+     "cost": 134.3,
      "struct": "2D2C",
      "valW": 0,
-     "xPts": 370,
-     "pts": 370,
-     "total": 5607
+     "xPts": 368,
+     "pts": 368,
+     "total": 5605
     },
     {
      "gd": 17,
@@ -11978,15 +12632,40 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 138.7,
+     "budget": 138.9,
      "cost": 133.1,
      "struct": "2D2C",
      "valW": 0,
      "xPts": 359,
      "pts": 359,
-     "total": 5966
+     "total": 5964
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "STR",
+      "BOR",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 141.9,
+     "cost": 128.7,
+     "struct": "2D2C",
+     "valW": 0,
+     "xPts": 314,
+     "pts": 314,
+     "total": 6278
     }
    ],
    "chipsLeft": [
@@ -12000,7 +12679,7 @@
   {
    "name": "oracle:budget-half-hindsight",
    "src": "oracle",
-   "total": 5975,
+   "total": 6288,
    "rows": [
     {
      "gd": 1,
@@ -12382,8 +13061,8 @@
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "LEC",
-      "PER",
       "VER",
       "LIN",
       "FER",
@@ -12392,15 +13071,15 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
-     "penalty": 10,
+     "transfers": 4,
+     "penalty": 20,
      "budget": 137.3,
-     "cost": 128.2,
+     "cost": 134.3,
      "struct": "2D2C",
      "valW": 0.5,
-     "xPts": 377.7,
-     "pts": 370,
-     "total": 5616
+     "xPts": 376.4,
+     "pts": 368,
+     "total": 5614
     },
     {
      "gd": 17,
@@ -12417,15 +13096,40 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 139.5,
+     "budget": 139.7,
      "cost": 133.1,
      "struct": "2D2C",
      "valW": 0.5,
      "xPts": 368,
      "pts": 359,
-     "total": 5975
+     "total": 5973
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "HAD",
+      "BOR",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 142.7,
+     "cost": 142,
+     "struct": "2D2C",
+     "valW": 0.5,
+     "xPts": 318.5,
+     "pts": 315,
+     "total": 6288
     }
    ],
    "chipsLeft": [
@@ -12439,7 +13143,7 @@
   {
    "name": "oracle:budget-hindsight",
    "src": "oracle",
-   "total": 5985,
+   "total": 6296,
    "rows": [
     {
      "gd": 1,
@@ -12865,6 +13569,31 @@
      "xPts": 377,
      "pts": 359,
      "total": 5985
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HAM",
+      "HUL",
+      "LEC",
+      "STR",
+      "VER",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 147.9,
+     "cost": 147.2,
+     "struct": "3D2C",
+     "valW": 1,
+     "xPts": 321.5,
+     "pts": 311,
+     "total": 6296
     }
    ],
    "chipsLeft": [
@@ -12878,7 +13607,7 @@
   {
    "name": "oracle:budget-2-hindsight",
    "src": "oracle",
-   "total": 5949,
+   "total": 6260,
    "rows": [
     {
      "gd": 1,
@@ -13304,6 +14033,31 @@
      "xPts": 395,
      "pts": 359,
      "total": 5949
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HAM",
+      "HUL",
+      "LEC",
+      "STR",
+      "VER",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 149.3,
+     "cost": 147.2,
+     "struct": "3D2C",
+     "valW": 2,
+     "xPts": 332,
+     "pts": 311,
+     "total": 6260
     }
    ],
    "chipsLeft": [
@@ -13317,7 +14071,7 @@
   {
    "name": "oracle:2D1C/budget-hindsight",
    "src": "oracle",
-   "total": 5593,
+   "total": 5882,
    "rows": [
     {
      "gd": 1,
@@ -13446,7 +14200,7 @@
     },
     {
      "gd": 6,
-     "chip": null,
+     "chip": "finalfix",
      "team": [
       "HAM",
       "LAW",
@@ -13458,7 +14212,7 @@
      ],
      "boost": "ANT",
      "x3": null,
-     "ff": null,
+     "ff": "COL -> HAD",
      "transfers": 1,
      "penalty": 0,
      "budget": 115.5,
@@ -13466,8 +14220,8 @@
      "struct": "2D1C",
      "valW": 1,
      "xPts": 314.9,
-     "pts": 286,
-     "total": 2081
+     "pts": 303,
+     "total": 2098
     },
     {
      "gd": 7,
@@ -13492,7 +14246,7 @@
      "valW": 1,
      "xPts": 307.2,
      "pts": 264,
-     "total": 2345
+     "total": 2362
     },
     {
      "gd": 8,
@@ -13517,7 +14271,7 @@
      "valW": 1,
      "xPts": 304.5,
      "pts": 270,
-     "total": 2615
+     "total": 2632
     },
     {
      "gd": 9,
@@ -13542,7 +14296,7 @@
      "valW": 1,
      "xPts": 399.4,
      "pts": 356,
-     "total": 2971
+     "total": 2988
     },
     {
      "gd": 10,
@@ -13567,7 +14321,7 @@
      "valW": 1,
      "xPts": 304.3,
      "pts": 264,
-     "total": 3235
+     "total": 3252
     },
     {
      "gd": 11,
@@ -13592,7 +14346,7 @@
      "valW": 1,
      "xPts": 297.6,
      "pts": 258,
-     "total": 3493
+     "total": 3510
     },
     {
      "gd": 12,
@@ -13617,7 +14371,7 @@
      "valW": 1,
      "xPts": 326.1,
      "pts": 303,
-     "total": 3796
+     "total": 3813
     },
     {
      "gd": 13,
@@ -13642,7 +14396,7 @@
      "valW": 1,
      "xPts": 598,
      "pts": 565,
-     "total": 4361
+     "total": 4378
     },
     {
      "gd": 14,
@@ -13667,7 +14421,7 @@
      "valW": 1,
      "xPts": 249.9,
      "pts": 231,
-     "total": 4592
+     "total": 4609
     },
     {
      "gd": 15,
@@ -13692,7 +14446,7 @@
      "valW": 1,
      "xPts": 332.4,
      "pts": 306,
-     "total": 4898
+     "total": 4915
     },
     {
      "gd": 16,
@@ -13717,32 +14471,57 @@
      "valW": 1,
      "xPts": 380.7,
      "pts": 359,
-     "total": 5257
+     "total": 5274
     },
     {
      "gd": 17,
-     "chip": "finalfix",
+     "chip": null,
      "team": [
       "HUL",
       "LAW",
       "LEC",
       "VER",
-      "BEA",
+      "HAD",
       "FER",
       "RBS"
      ],
      "boost": "VER",
      "x3": null,
-     "ff": "BEA -> HAD",
-     "transfers": 3,
-     "penalty": 10,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
      "budget": 145.6,
-     "cost": 116.6,
+     "cost": 126.5,
      "struct": "2D1C",
      "valW": 1,
      "xPts": 336.8,
-     "pts": 336,
-     "total": 5593
+     "pts": 317,
+     "total": 5591
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "HAD",
+      "BOR",
+      "ANT",
+      "FER",
+      "RBS"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 148.9,
+     "cost": 125.8,
+     "struct": "2D1C",
+     "valW": 1,
+     "xPts": 299.5,
+     "pts": 291,
+     "total": 5882
     }
    ],
    "chipsLeft": [
@@ -13756,7 +14535,7 @@
   {
    "name": "oracle:1D2C/budget-hindsight",
    "src": "oracle",
-   "total": 5733,
+   "total": 6017,
    "rows": [
     {
      "gd": 1,
@@ -13885,7 +14664,7 @@
     },
     {
      "gd": 6,
-     "chip": "noneg",
+     "chip": null,
      "team": [
       "LAW",
       "OCO",
@@ -13904,9 +14683,9 @@
      "cost": 109.9,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 304.3,
-     "pts": 289,
-     "total": 2102
+     "xPts": 278.3,
+     "pts": 263,
+     "total": 2076
     },
     {
      "gd": 7,
@@ -13931,7 +14710,7 @@
      "valW": 1,
      "xPts": 318.6,
      "pts": 285,
-     "total": 2387
+     "total": 2361
     },
     {
      "gd": 8,
@@ -13956,7 +14735,7 @@
      "valW": 1,
      "xPts": 276.5,
      "pts": 248,
-     "total": 2635
+     "total": 2609
     },
     {
      "gd": 9,
@@ -13981,7 +14760,7 @@
      "valW": 1,
      "xPts": 419.4,
      "pts": 376,
-     "total": 3011
+     "total": 2985
     },
     {
      "gd": 10,
@@ -14006,7 +14785,7 @@
      "valW": 1,
      "xPts": 329.9,
      "pts": 287,
-     "total": 3298
+     "total": 3272
     },
     {
      "gd": 11,
@@ -14031,7 +14810,7 @@
      "valW": 1,
      "xPts": 284.6,
      "pts": 245,
-     "total": 3543
+     "total": 3517
     },
     {
      "gd": 12,
@@ -14056,7 +14835,7 @@
      "valW": 1,
      "xPts": 344.7,
      "pts": 326,
-     "total": 3869
+     "total": 3843
     },
     {
      "gd": 13,
@@ -14081,7 +14860,7 @@
      "valW": 1,
      "xPts": 595,
      "pts": 566,
-     "total": 4435
+     "total": 4409
     },
     {
      "gd": 14,
@@ -14106,7 +14885,7 @@
      "valW": 1,
      "xPts": 267.9,
      "pts": 249,
-     "total": 4684
+     "total": 4658
     },
     {
      "gd": 15,
@@ -14131,14 +14910,14 @@
      "valW": 1,
      "xPts": 338.2,
      "pts": 315,
-     "total": 4999
+     "total": 4973
     },
     {
      "gd": 16,
      "chip": null,
      "team": [
       "HUL",
-      "LAW",
+      "OCO",
       "VER",
       "HAD",
       "LIN",
@@ -14148,40 +14927,65 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
      "budget": 134.9,
      "cost": 125.7,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 400.3,
-     "pts": 380,
-     "total": 5379
+     "xPts": 395.3,
+     "pts": 375,
+     "total": 5348
     },
     {
      "gd": 17,
-     "chip": "finalfix",
+     "chip": "noneg",
      "team": [
       "HUL",
       "LAW",
-      "SAI",
       "VER",
       "BEA",
+      "HAD",
       "FER",
       "RBR"
      ],
      "boost": "VER",
      "x3": null,
-     "ff": "SAI -> LEC",
+     "ff": null,
      "transfers": 2,
      "penalty": 0,
      "budget": 137.8,
-     "cost": 117.1,
+     "cost": 125,
      "struct": "1D2C",
      "valW": 1,
-     "xPts": 348.8,
-     "pts": 354,
-     "total": 5733
+     "xPts": 377.8,
+     "pts": 358,
+     "total": 5706
+    },
+    {
+     "gd": 18,
+     "chip": "finalfix",
+     "team": [
+      "HUL",
+      "LEC",
+      "HAD",
+      "BOR",
+      "LIN",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": "HAD -> ANT",
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 141.1,
+     "cost": 124.9,
+     "struct": "1D2C",
+     "valW": 1,
+     "xPts": 298.5,
+     "pts": 311,
+     "total": 6017
     }
    ],
    "chipsLeft": [
@@ -14195,7 +14999,7 @@
   {
    "name": "oracle:2D2C/budget-hindsight",
    "src": "oracle",
-   "total": 5339,
+   "total": 5643,
    "rows": [
     {
      "gd": 1,
@@ -14621,6 +15425,31 @@
      "xPts": 365.2,
      "pts": 352,
      "total": 5339
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "ALO",
+      "HUL",
+      "LEC",
+      "BOR",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 133.7,
+     "cost": 131.1,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 313,
+     "pts": 304,
+     "total": 5643
     }
    ],
    "chipsLeft": [
@@ -14634,7 +15463,7 @@
   {
    "name": "oracle:meta/budget-hindsight",
    "src": "oracle",
-   "total": 5878,
+   "total": 6189,
    "rows": [
     {
      "gd": 1,
@@ -15016,8 +15845,8 @@
      "chip": null,
      "team": [
       "HUL",
+      "LAW",
       "LEC",
-      "PER",
       "VER",
       "LIN",
       "FER",
@@ -15026,15 +15855,15 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 3,
-     "penalty": 10,
+     "transfers": 4,
+     "penalty": 20,
      "budget": 136.1,
-     "cost": 128.2,
+     "cost": 134.3,
      "struct": "2D2C",
      "valW": 1,
-     "xPts": 385.4,
-     "pts": 370,
-     "total": 5519
+     "xPts": 384.8,
+     "pts": 368,
+     "total": 5517
     },
     {
      "gd": 17,
@@ -15051,15 +15880,40 @@
      "boost": "VER",
      "x3": null,
      "ff": null,
-     "transfers": 2,
+     "transfers": 1,
      "penalty": 0,
-     "budget": 138.3,
+     "budget": 138.5,
      "cost": 133.1,
      "struct": "2D2C",
      "valW": 1,
      "xPts": 377,
      "pts": 359,
-     "total": 5878
+     "total": 5876
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HUL",
+      "LEC",
+      "BOR",
+      "LIN",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 0,
+     "budget": 141.5,
+     "cost": 135.7,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 322,
+     "pts": 313,
+     "total": 6189
     }
    ],
    "chipsLeft": [
@@ -15073,7 +15927,7 @@
   {
    "name": "oracle:meta-alt/budget-hindsight",
    "src": "oracle",
-   "total": 5712,
+   "total": 6016,
    "rows": [
     {
      "gd": 1,
@@ -15499,6 +16353,31 @@
      "xPts": 365.2,
      "pts": 352,
      "total": 5712
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "ALO",
+      "HUL",
+      "LEC",
+      "BOR",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 2,
+     "penalty": 0,
+     "budget": 133.3,
+     "cost": 131.1,
+     "struct": "2D2C",
+     "valW": 1,
+     "xPts": 313,
+     "pts": 304,
+     "total": 6016
     }
    ],
    "chipsLeft": [
@@ -15512,7 +16391,7 @@
   {
    "name": "oracle:budget-none",
    "src": "oracle",
-   "total": 5576,
+   "total": 5886,
    "rows": [
     {
      "gd": 1,
@@ -15938,6 +16817,31 @@
      "xPts": 377,
      "pts": 359,
      "total": 5576
+    },
+    {
+     "gd": 18,
+     "chip": null,
+     "team": [
+      "HAM",
+      "HUL",
+      "LEC",
+      "STR",
+      "ANT",
+      "FER",
+      "RBR"
+     ],
+     "boost": "LEC",
+     "x3": null,
+     "ff": null,
+     "transfers": 3,
+     "penalty": 10,
+     "budget": 147,
+     "cost": 146.1,
+     "struct": "3D2C",
+     "valW": 1,
+     "xPts": 320.5,
+     "pts": 310,
+     "total": 5886
     }
    ],
    "chipsLeft": [
@@ -15949,12 +16853,12 @@
     "finalfix"
    ],
    "inHand": {
-    "wildcard": 26.9,
-    "limitless": 57.7,
-    "x3": 100.3,
-    "noneg": 5.7,
+    "wildcard": 25.8,
+    "limitless": 52.5,
+    "x3": 97.1,
+    "noneg": 5.4,
     "autopilot": 0,
-    "finalfix": 13.5
+    "finalfix": 12.5
    },
    "reached": null
   }

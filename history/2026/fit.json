@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-20T08:53Z",
+ "generated": "2026-10-27T09:25Z",
  "N": 4000,
  "passes": 1,
  "rounds": [
@@ -15,64 +15,41 @@
   14,
   15,
   16,
-  17
+  17,
+  18
  ],
  "holdout": {
   "rounds": [
-   15,
    16,
-   17
+   17,
+   18
   ],
-  "shipped": 10.535,
-  "fitted": 10.627,
-  "dCrps": 0.092,
-  "se": 0.075,
+  "shipped": 9.389,
+  "fitted": 9.446,
+  "dCrps": 0.058,
+  "se": 0.031,
   "folds": [
-   {
-    "gd": 15,
-    "train": [
-     5,
-     14
-    ],
-    "shipped": 10.199,
-    "fitted": 10.141,
-    "dCrps": -0.058,
-    "changes": [
-     {
-      "setting": "MODEL.paceShrink",
-      "fitted": 1
-     },
-     {
-      "setting": "SIM.tau",
-      "fitted": 0.02
-     },
-     {
-      "setting": "SIM.oddsW",
-      "fitted": 0.75
-     }
-    ]
-   },
    {
     "gd": 16,
     "train": [
      5,
      15
     ],
-    "shipped": 11.24,
-    "fitted": 11.405,
-    "dCrps": 0.165,
+    "shipped": 11.122,
+    "fitted": 11.228,
+    "dCrps": 0.106,
     "changes": [
      {
       "setting": "MODEL.paceShrink",
-      "fitted": 1
+      "fitted": 0.9
      },
      {
-      "setting": "SIM.drvSd",
-      "fitted": 0.05
+      "setting": "SIM.tau",
+      "fitted": 0.03
      },
      {
-      "setting": "SIM.oddsW",
-      "fitted": 0.75
+      "setting": "SIM.pitStops",
+      "fitted": 0
      }
     ]
    },
@@ -82,49 +59,43 @@
      5,
      16
     ],
-    "shipped": 10.166,
-    "fitted": 10.336,
-    "dCrps": 0.17,
+    "shipped": 10.161,
+    "fitted": 10.161,
+    "dCrps": 0,
+    "changes": []
+   },
+   {
+    "gd": 18,
+    "train": [
+     5,
+     17
+    ],
+    "shipped": 6.883,
+    "fitted": 6.95,
+    "dCrps": 0.067,
     "changes": [
      {
-      "setting": "MODEL.paceShrink",
-      "fitted": 1
-     },
-     {
-      "setting": "SIM.tau",
-      "fitted": 0.05
+      "setting": "SIM.rSd",
+      "fitted": 0.25
      }
     ]
    }
   ]
  },
  "shipped": {
-  "crps": 8.922,
-  "mae": 12.369,
-  "rho": 0.725,
-  "cover80": 0.795,
-  "cover50": 0.52
+  "crps": 8.76,
+  "mae": 12.132,
+  "rho": 0.728,
+  "cover80": 0.801,
+  "cover50": 0.506
  },
  "fitted": {
-  "crps": 8.908,
-  "mae": 12.368,
-  "rho": 0.729,
-  "cover80": 0.795,
-  "cover50": 0.497
+  "crps": 8.76,
+  "mae": 12.132,
+  "rho": 0.728,
+  "cover80": 0.801,
+  "cover50": 0.506
  },
- "changes": [
-  {
-   "setting": "MODEL.paceShrink",
-   "shipped": 0.8,
-   "fitted": 1,
-   "folds": 3
-  },
-  {
-   "setting": "SIM.teamSd",
-   "shipped": 0.1,
-   "fitted": 0.2,
-   "folds": 0
-  }
- ],
- "minutes": 10.3
+ "changes": [],
+ "minutes": 14.1
 }
