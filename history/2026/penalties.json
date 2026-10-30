@@ -360,6 +360,16 @@
    "published": "2026-10-25T17:48+00:00",
    "doc": "https://www.fia.com/system/files/decision-document/2026_united_states_grand_prix_-_infringement_-_car_18_-_changes_made_during_parc_ferme.pdf",
    "title": "Doc 48 - Infringement - Car 18 - Changes made during Parc Ferme"
+  },
+  {
+   "car": 77,
+   "tla": "BOT",
+   "places": 50,
+   "issued": 19,
+   "target": 19,
+   "published": "2026-10-30T19:52+00:00",
+   "doc": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_infringement_-_car_77_-_pu_elements.pdf",
+   "title": "Doc 17 - Infringement - Car 77 - PU elements"
   }
  ]
 }

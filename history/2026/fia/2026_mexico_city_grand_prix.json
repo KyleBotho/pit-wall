@@ -57,6 +57,59 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_race_directors_competition_notes.pdf",
    "published": "2026-10-29T22:10+00:00",
    "firstSeen": "2026-10-29T23:00+00:00"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - PU Elements used per Driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-10-30T14:37+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_self_scrutineering.pdf",
+   "published": "2026-10-30T14:37+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00"
+  },
+  {
+   "doc": 11,
+   "title": "Doc 11 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_entry_list.pdf",
+   "published": "2026-10-30T15:40+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_car_presentation_submissions.pdf",
+   "published": "2026-10-30T16:00+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-10-30T19:09+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Summons - Audi - Alleged release of car 98 in an unsafe condition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_summons_-_audi_-_alleged_release_of_car_98_in_an_unsafe_condition.pdf",
+   "published": "2026-10-30T19:52+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00"
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Infringement - Car 77 - PU elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_infringement_-_car_77_-_pu_elements.pdf",
+   "published": "2026-10-30T19:52+00:00",
+   "firstSeen": "2026-10-30T19:55+00:00",
+   "grid": 50
   }
  ],
  "tech": {
@@ -71,6 +124,277 @@
     "C3",
     "C4"
    ]
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "1": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "63": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "12": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 6
+   },
+   "3": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "6": {
+    "ICE": 8,
+    "TC": 7,
+    "EXH": 7,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 8
+   },
+   "16": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "44": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "23": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "55": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "41": {
+    "ICE": 6,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 6
+   },
+   "30": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 2,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 6
+   },
+   "14": {
+    "ICE": 5,
+    "TC": 6,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 9
+   },
+   "31": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "87": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "27": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 2,
+    "PU-CE": 2,
+    "PU-ANC": 5
+   },
+   "5": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 4,
+    "ES": 5,
+    "PU-CE": 5,
+    "PU-ANC": 7
+   },
+   "10": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "43": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "11": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "77": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   }
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 1,
+    "reasons": {
+     "Circuit specific": 1
+    }
+   },
+   "MER": {
+    "n": 0,
+    "reasons": {}
+   },
+   "RED": {
+    "n": 2,
+    "reasons": {
+     "Reliability": 1,
+     "Performance": 1
+    }
+   },
+   "FER": {
+    "n": 2,
+    "reasons": {
+     "Circuit specific": 1
+    }
+   },
+   "WIL": {
+    "n": 0,
+    "reasons": {}
+   },
+   "VRB": {
+    "n": 2,
+    "reasons": {
+     "Circuit specific": 2
+    }
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 0,
+    "reasons": {}
+   },
+   "AUD": {
+    "n": 1,
+    "reasons": {
+     "Performance": 1
+    }
+   },
+   "ALP": {
+    "n": 1,
+    "reasons": {
+     "Reliability": 1
+    }
+   },
+   "CAD": {
+    "n": 0,
+    "reasons": {}
+   }
+  },
+  "puNew": {
+   "77": {
+    "ICE": 4,
+    "TC": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3
+   },
+   "41": {
+    "ES": 2,
+    "PU-CE": 2
+   },
+   "30": {
+    "ES": 2,
+    "PU-CE": 2
+   },
+   "27": {
+    "ES": 2,
+    "PU-CE": 2
+   }
   }
  }
 }
