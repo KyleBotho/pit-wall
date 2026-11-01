@@ -160,11 +160,11 @@
   {
    "gd": 19,
    "crps": null,
-   "crpsNaive": 9.63,
-   "mae": 10.27,
-   "maeNaive": 14.06,
+   "crpsNaive": 10.078,
+   "mae": 10.77,
+   "maeNaive": 14.56,
    "team": 69,
-   "teamNaive": 52,
+   "teamNaive": 35,
    "teamBest": 69
   }
  ],
@@ -178,8 +178,8 @@
   "target2x": 7.72
  },
  "mae": {
-  "model": 12.44,
-  "naive": 13.43,
+  "model": 12.47,
+  "naive": 13.46,
   "d": -0.99,
   "se": 0.41
  },
@@ -201,11 +201,11 @@
  },
  "T3": {
   "team": 2661,
-  "teamNaive": 2798,
+  "teamNaive": 2781,
   "teamBest": 4152,
-  "perRound": -9.1,
-  "se": 12.2,
-  "sdPerRound": 47.1
+  "perRound": -8,
+  "se": 12.4,
+  "sdPerRound": 47.9
  },
  "T3b": {
   "rounds": [
@@ -228,11 +228,11 @@
    18,
    19
   ],
-  "team": 3705,
-  "teamNaive": 3981,
+  "team": 3707,
+  "teamNaive": 3974,
   "teamBest": 5575,
-  "perRound": -15.3,
-  "se": 19.5,
+  "perRound": -14.8,
+  "se": 19.6,
   "budget": 115.1,
   "budgetNaive": 119.7,
   "budgetBest": 125.8,
@@ -375,8 +375,8 @@
    },
    {
     "gd": 19,
-    "team": 71,
-    "teamNaive": 69,
+    "team": 73,
+    "teamNaive": 62,
     "teamBest": 82,
     "budget": 115.1,
     "budgetNaive": 119.7
@@ -385,8 +385,8 @@
  },
  "floor": {
   "pDnf": 0.177,
-  "dnfVar": 139.4,
-  "withinVar": 198.2,
+  "dnfVar": 139.3,
+  "withinVar": 198.5,
   "share": 0.7,
   "dnfCrps": 4.32
  }

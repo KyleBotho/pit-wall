@@ -597,12 +597,12 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 3
+            "Value": -5
           },
           {
-            "Frequency": "8th",
-            "Event": "Qualifying Position",
-            "Value": 3
+            "Frequency": "-",
+            "Event": "QF not classified ",
+            "Value": -5
           }
         ]
       }
@@ -618,7 +618,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 177
+            "Value": 169
           },
           {
             "Frequency": "18",
@@ -638,7 +638,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 16
+            "Value": 13
           },
           {
             "Frequency": "-",
@@ -649,6 +649,11 @@
             "Frequency": "-",
             "Event": "Race not classified ",
             "Value": -20
+          },
+          {
+            "Frequency": "-",
+            "Event": "QF not classified ",
+            "Value": -5
           },
           {
             "Frequency": "34",
@@ -1669,7 +1674,7 @@
             "RaceDayId": 7403,
             "TeamId": 2636,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -3186,7 +3191,7 @@
             "OldPlayerValue": 9.9,
             "RaceDayId": 7403,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -3203,12 +3208,12 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 3
+                "Value": -5
               },
               {
-                "Frequency": "8th",
-                "Event": "Qualifying Position",
-                "Value": 3
+                "Frequency": "-",
+                "Event": "QF not classified ",
+                "Value": -5
               }
             ]
           },
@@ -3237,8 +3242,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/31/2026 10:45:37 PM",
-    "ISTTime": "11/1/2026 4:15:37 AM",
-    "CESTTime": "10/31/2026 11:45:37 PM"
+    "UTCTime": "11/1/2026 2:08:12 AM",
+    "ISTTime": "11/1/2026 7:38:12 AM",
+    "CESTTime": "11/1/2026 3:08:12 AM"
   }
 }
