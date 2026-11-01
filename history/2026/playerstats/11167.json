@@ -11,9 +11,9 @@
         "IsActive": 1,
         "StatsWise": [
           {
-            "Frequency": "18th",
-            "Event": "Qualifying Position",
-            "Value": 0
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 5
           },
           {
             "Frequency": "13th",
@@ -21,13 +21,13 @@
             "Value": 0
           },
           {
-            "Frequency": "5",
-            "Event": "Race position gained",
-            "Value": 5
+            "Frequency": "18th",
+            "Event": "Qualifying Position",
+            "Value": 0
           },
           {
-            "Frequency": "-",
-            "Event": "Total",
+            "Frequency": "5",
+            "Event": "Race position gained",
             "Value": 5
           }
         ]
@@ -43,8 +43,8 @@
         "StatsWise": [
           {
             "Frequency": "-",
-            "Event": "Qualifying Position",
-            "Value": 0
+            "Event": "Total",
+            "Value": 5
           },
           {
             "Frequency": "-",
@@ -52,13 +52,13 @@
             "Value": 0
           },
           {
-            "Frequency": "5",
-            "Event": "Race position gained",
-            "Value": 5
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 0
           },
           {
-            "Frequency": "-",
-            "Event": "Total",
+            "Frequency": "5",
+            "Event": "Race position gained",
             "Value": 5
           }
         ]
@@ -85,7 +85,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-31T21:00:00+00:00",
+            "SessionStartDate": "2026-10-31T15:00:00-06:00",
             "Season": "2026",
             "SelectedPercentage": null,
             "CapSelectedPercentage": null
@@ -96,7 +96,7 @@
             "RaceDayId": 7404,
             "TeamId": 26,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "2",
+            "MatchStatus": "5",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -106,7 +106,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-11-01T20:00:00+00:00",
+            "SessionStartDate": "2026-11-01T14:00:00-06:00",
             "Season": "2026",
             "SelectedPercentage": null,
             "CapSelectedPercentage": null
@@ -134,7 +134,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-31T21:00:00+00:00",
+            "SessionStartDate": "2026-10-31T15:00:00-06:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -150,7 +150,7 @@
             "OldPlayerValue": null,
             "RaceDayId": 7404,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -160,10 +160,15 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-11-01T20:00:00+00:00",
+            "SessionStartDate": "2026-11-01T14:00:00-06:00",
             "Season": "2026",
-            "IsPlayed": 0,
+            "IsPlayed": 1,
             "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 5
+              },
               {
                 "Frequency": "13th",
                 "Event": "Race Position",
@@ -173,11 +178,6 @@
                 "Frequency": "5",
                 "Event": "Race position gained",
                 "Value": 5
-              },
-              {
-                "Frequency": "-",
-                "Event": "Total",
-                "Value": 5
               }
             ]
           }
@@ -186,8 +186,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/1/2026 10:28:28 PM",
-    "ISTTime": "11/2/2026 3:58:28 AM",
-    "CESTTime": "11/1/2026 11:28:28 PM"
+    "UTCTime": "11/1/2026 11:19:54 PM",
+    "ISTTime": "11/2/2026 4:49:54 AM",
+    "CESTTime": "11/2/2026 12:19:54 AM"
   }
 }
