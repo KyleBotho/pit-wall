@@ -1,4 +1,13 @@
 {
- "notices": {},
+ "notices": {
+  "card:active:118:False": {
+   "first": "2026-11-01T00:30+00:00",
+   "msg": "Esteban Ocon (Haas F1 Team) is now inactive (a stand-in or a driver out?)."
+  },
+  "card:new:11167": {
+   "first": "2026-11-01T00:30+00:00",
+   "msg": "New card: Ryo Hirakawa (Haas F1 Team), $6.0m."
+  }
+ },
  "since": {}
 }

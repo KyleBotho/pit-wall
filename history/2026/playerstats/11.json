@@ -644,16 +644,22 @@
         "GamedayId": 19,
         "PlayerValue": 4.0,
         "OldPlayerValue": 4.6,
-        "IsPlayed": 0,
+        "IsPlayed": 1,
         "IsActive": 1,
-        "StatsWise": []
+        "StatsWise": [
+          {
+            "Frequency": "17th",
+            "Event": "Qualifying Position",
+            "Value": 0
+          }
+        ]
       }
     ],
     "TourWiseStats": [
       {
         "TourId": 4,
-        "PlayerValue": 4.6,
-        "OldPlayerValue": 5.2,
+        "PlayerValue": 4.0,
+        "OldPlayerValue": 4.6,
         "IsPlayed": 1,
         "IsActive": 1,
         "StatsWise": [
@@ -1711,7 +1717,7 @@
             "RaceDayId": 7403,
             "TeamId": 210,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -1723,8 +1729,8 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-10-31T15:00:00-06:00",
             "Season": "2026",
-            "SelectedPercentage": null,
-            "CapSelectedPercentage": null
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
           },
           {
             "PlayerValue": 4.0,
@@ -1732,7 +1738,7 @@
             "RaceDayId": 7404,
             "TeamId": 210,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "0",
+            "MatchStatus": "1",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -1744,8 +1750,8 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-01T14:00:00-06:00",
             "Season": "2026",
-            "SelectedPercentage": null,
-            "CapSelectedPercentage": null
+            "SelectedPercentage": "10",
+            "CapSelectedPercentage": "0"
           }
         ]
       }
@@ -3255,7 +3261,7 @@
             "OldPlayerValue": 4.6,
             "RaceDayId": 7403,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "5",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -3267,6 +3273,32 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-10-31T15:00:00-06:00",
             "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "17th",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
+          },
+          {
+            "PlayerValue": 4.0,
+            "OldPlayerValue": 4.6,
+            "RaceDayId": 7404,
+            "DateTime": "10/30/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Mexico City",
+            "MeetingNumber": 19,
+            "MeetingName": "Mexico City Grand Prix",
+            "CountryId": 9,
+            "CountryName": "Mexico",
+            "CircuitOfficialName": "Autódromo Hermanos Rodríguez",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-01T14:00:00-06:00",
+            "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
           }
@@ -3275,8 +3307,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "10/26/2026 1:53:15 AM",
-    "ISTTime": "10/26/2026 7:23:15 AM",
-    "CESTTime": "10/26/2026 2:53:15 AM"
+    "UTCTime": "10/31/2026 10:45:38 PM",
+    "ISTTime": "11/1/2026 4:15:38 AM",
+    "CESTTime": "10/31/2026 11:45:38 PM"
   }
 }
