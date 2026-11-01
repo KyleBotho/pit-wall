@@ -665,12 +665,22 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 5
+            "Value": 16
           },
           {
             "Frequency": "6th",
             "Event": "Qualifying Position",
             "Value": 5
+          },
+          {
+            "Frequency": "5th",
+            "Event": "Race Position",
+            "Value": 10
+          },
+          {
+            "Frequency": "1",
+            "Event": "Race position gained",
+            "Value": 1
           }
         ]
       }
@@ -686,7 +696,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 385
+            "Value": 396
           },
           {
             "Frequency": "-",
@@ -716,7 +726,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 178
+            "Value": 188
           },
           {
             "Frequency": "-",
@@ -734,9 +744,9 @@
             "Value": -80
           },
           {
-            "Frequency": "20",
+            "Frequency": "21",
             "Event": "Race position gained",
-            "Value": 20
+            "Value": 21
           },
           {
             "Frequency": "7",
@@ -777,7 +787,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-07T16:00:00+11:00",
+            "SessionStartDate": "2026-03-07T05:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "10",
             "CapSelectedPercentage": "8"
@@ -798,7 +808,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-08T15:00:00+11:00",
+            "SessionStartDate": "2026-03-08T04:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "10",
             "CapSelectedPercentage": "8"
@@ -825,7 +835,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-14T11:00:00+08:00",
+            "SessionStartDate": "2026-03-14T03:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -846,7 +856,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-14T15:00:00+08:00",
+            "SessionStartDate": "2026-03-14T07:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -867,7 +877,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-15T15:00:00+08:00",
+            "SessionStartDate": "2026-03-15T07:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -894,7 +904,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-28T15:00:00+09:00",
+            "SessionStartDate": "2026-03-28T06:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "7",
             "CapSelectedPercentage": "5"
@@ -915,7 +925,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-29T14:00:00+09:00",
+            "SessionStartDate": "2026-03-29T05:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "7",
             "CapSelectedPercentage": "5"
@@ -942,7 +952,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-02T12:00:00-04:00",
+            "SessionStartDate": "2026-05-02T16:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -963,7 +973,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-02T16:00:00-04:00",
+            "SessionStartDate": "2026-05-02T20:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -984,7 +994,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-03T13:00:00-04:00",
+            "SessionStartDate": "2026-05-03T17:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1011,7 +1021,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-23T12:00:00-04:00",
+            "SessionStartDate": "2026-05-23T16:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1032,7 +1042,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-23T16:00:00-04:00",
+            "SessionStartDate": "2026-05-23T20:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1053,7 +1063,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-24T16:00:00-04:00",
+            "SessionStartDate": "2026-05-24T20:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1080,7 +1090,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-06T16:00:00+02:00",
+            "SessionStartDate": "2026-06-06T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1101,7 +1111,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-07T15:00:00+02:00",
+            "SessionStartDate": "2026-06-07T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1128,7 +1138,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-13T16:00:00+02:00",
+            "SessionStartDate": "2026-06-13T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1149,7 +1159,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-14T15:00:00+02:00",
+            "SessionStartDate": "2026-06-14T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1176,7 +1186,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-27T16:00:00+02:00",
+            "SessionStartDate": "2026-06-27T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1197,7 +1207,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-28T15:00:00+02:00",
+            "SessionStartDate": "2026-06-28T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1224,7 +1234,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-04T12:00:00+01:00",
+            "SessionStartDate": "2026-07-04T11:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1245,7 +1255,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-04T16:00:00+01:00",
+            "SessionStartDate": "2026-07-04T15:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1266,7 +1276,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-05T15:00:00+01:00",
+            "SessionStartDate": "2026-07-05T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1293,7 +1303,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-18T16:00:00+02:00",
+            "SessionStartDate": "2026-07-18T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1314,7 +1324,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-19T15:00:00+02:00",
+            "SessionStartDate": "2026-07-19T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1341,7 +1351,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-25T16:00:00+02:00",
+            "SessionStartDate": "2026-07-25T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1362,7 +1372,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-26T15:00:00+02:00",
+            "SessionStartDate": "2026-07-26T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1389,7 +1399,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "SessionStartDate": "2026-08-22T10:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1410,7 +1420,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "SessionStartDate": "2026-08-22T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1431,7 +1441,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "SessionStartDate": "2026-08-23T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1458,7 +1468,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "SessionStartDate": "2026-09-05T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1479,7 +1489,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "SessionStartDate": "2026-09-06T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1506,7 +1516,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "SessionStartDate": "2026-09-12T14:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1527,7 +1537,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "SessionStartDate": "2026-09-13T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1554,7 +1564,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "SessionStartDate": "2026-09-25T12:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1575,7 +1585,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-26T15:00:00+04:00",
+            "SessionStartDate": "2026-09-26T11:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1602,7 +1612,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-03T16:00:00+08:00",
+            "SessionStartDate": "2026-10-03T08:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1623,7 +1633,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-04T15:00:00+08:00",
+            "SessionStartDate": "2026-10-04T07:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "6"
@@ -1650,7 +1660,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-10T17:00:00+08:00",
+            "SessionStartDate": "2026-10-10T09:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1671,7 +1681,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-10T21:00:00+08:00",
+            "SessionStartDate": "2026-10-10T13:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1692,7 +1702,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-11T20:00:00+08:00",
+            "SessionStartDate": "2026-10-11T12:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "6"
@@ -1719,7 +1729,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-24T16:00:00-05:00",
+            "SessionStartDate": "2026-10-24T21:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1740,7 +1750,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-25T15:00:00-05:00",
+            "SessionStartDate": "2026-10-25T20:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1767,7 +1777,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-31T15:00:00-06:00",
+            "SessionStartDate": "2026-10-31T21:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1778,7 +1788,7 @@
             "RaceDayId": 7404,
             "TeamId": 27,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "2",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -1788,7 +1798,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-11-01T14:00:00-06:00",
+            "SessionStartDate": "2026-11-01T20:00:00+00:00",
             "Season": "2026",
             "SelectedPercentage": "8",
             "CapSelectedPercentage": "5"
@@ -1816,7 +1826,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-07T16:00:00+11:00",
+            "SessionStartDate": "2026-03-07T05:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -1847,7 +1857,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-08T15:00:00+11:00",
+            "SessionStartDate": "2026-03-08T04:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -1894,7 +1904,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-14T11:00:00+08:00",
+            "SessionStartDate": "2026-03-14T03:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -1935,7 +1945,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-14T15:00:00+08:00",
+            "SessionStartDate": "2026-03-14T07:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -1966,7 +1976,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-15T15:00:00+08:00",
+            "SessionStartDate": "2026-03-15T07:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2003,7 +2013,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-28T15:00:00+09:00",
+            "SessionStartDate": "2026-03-28T06:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2034,7 +2044,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-03-29T14:00:00+09:00",
+            "SessionStartDate": "2026-03-29T05:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2076,7 +2086,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-02T12:00:00-04:00",
+            "SessionStartDate": "2026-05-02T16:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2112,7 +2122,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-02T16:00:00-04:00",
+            "SessionStartDate": "2026-05-02T20:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2143,7 +2153,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-03T13:00:00-04:00",
+            "SessionStartDate": "2026-05-03T17:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2195,7 +2205,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-23T12:00:00-04:00",
+            "SessionStartDate": "2026-05-23T16:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2236,7 +2246,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-23T16:00:00-04:00",
+            "SessionStartDate": "2026-05-23T20:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2267,7 +2277,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-05-24T16:00:00-04:00",
+            "SessionStartDate": "2026-05-24T20:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2309,7 +2319,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-06T16:00:00+02:00",
+            "SessionStartDate": "2026-06-06T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2340,7 +2350,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-07T15:00:00+02:00",
+            "SessionStartDate": "2026-06-07T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2377,7 +2387,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-13T16:00:00+02:00",
+            "SessionStartDate": "2026-06-13T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2408,7 +2418,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-14T15:00:00+02:00",
+            "SessionStartDate": "2026-06-14T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2450,7 +2460,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-27T16:00:00+02:00",
+            "SessionStartDate": "2026-06-27T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2481,7 +2491,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-06-28T15:00:00+02:00",
+            "SessionStartDate": "2026-06-28T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2528,7 +2538,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-04T12:00:00+01:00",
+            "SessionStartDate": "2026-07-04T11:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2569,7 +2579,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-04T16:00:00+01:00",
+            "SessionStartDate": "2026-07-04T15:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2600,7 +2610,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-05T15:00:00+01:00",
+            "SessionStartDate": "2026-07-05T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2647,7 +2657,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-18T16:00:00+02:00",
+            "SessionStartDate": "2026-07-18T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2678,7 +2688,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-19T15:00:00+02:00",
+            "SessionStartDate": "2026-07-19T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2730,7 +2740,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-25T16:00:00+02:00",
+            "SessionStartDate": "2026-07-25T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2761,7 +2771,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-07-26T15:00:00+02:00",
+            "SessionStartDate": "2026-07-26T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2803,7 +2813,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T12:00:00+02:00",
+            "SessionStartDate": "2026-08-22T10:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2844,7 +2854,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-22T16:00:00+02:00",
+            "SessionStartDate": "2026-08-22T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2875,7 +2885,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-08-23T15:00:00+02:00",
+            "SessionStartDate": "2026-08-23T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2922,7 +2932,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-05T16:00:00+02:00",
+            "SessionStartDate": "2026-09-05T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -2953,7 +2963,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-06T15:00:00+02:00",
+            "SessionStartDate": "2026-09-06T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3000,7 +3010,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-12T16:00:00+02:00",
+            "SessionStartDate": "2026-09-12T14:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3031,7 +3041,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-13T15:00:00+02:00",
+            "SessionStartDate": "2026-09-13T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3073,7 +3083,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-25T16:00:00+04:00",
+            "SessionStartDate": "2026-09-25T12:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3104,7 +3114,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-09-26T15:00:00+04:00",
+            "SessionStartDate": "2026-09-26T11:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3146,7 +3156,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-03T16:00:00+08:00",
+            "SessionStartDate": "2026-10-03T08:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3177,7 +3187,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-04T15:00:00+08:00",
+            "SessionStartDate": "2026-10-04T07:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3224,7 +3234,7 @@
             "SessionName": "Sprint Qualifying",
             "SessionType": "Sprint Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-10T17:00:00+08:00",
+            "SessionStartDate": "2026-10-10T09:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3260,7 +3270,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-10T21:00:00+08:00",
+            "SessionStartDate": "2026-10-10T13:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3291,7 +3301,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-11T20:00:00+08:00",
+            "SessionStartDate": "2026-10-11T12:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3338,7 +3348,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-24T16:00:00-05:00",
+            "SessionStartDate": "2026-10-24T21:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3369,7 +3379,7 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-25T15:00:00-05:00",
+            "SessionStartDate": "2026-10-25T20:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3416,7 +3426,7 @@
             "SessionName": "Qualifying",
             "SessionType": "Qualifying",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-10-31T15:00:00-06:00",
+            "SessionStartDate": "2026-10-31T21:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 1,
             "StatsWise": [
@@ -3447,18 +3457,34 @@
             "SessionName": "Race",
             "SessionType": "Race",
             "SessionNumber": "0",
-            "SessionStartDate": "2026-11-01T14:00:00-06:00",
+            "SessionStartDate": "2026-11-01T20:00:00+00:00",
             "Season": "2026",
             "IsPlayed": 0,
-            "StatsWise": []
+            "StatsWise": [
+              {
+                "Frequency": "5th",
+                "Event": "Race Position",
+                "Value": 10
+              },
+              {
+                "Frequency": "1",
+                "Event": "Race position gained",
+                "Value": 1
+              },
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 11
+              }
+            ]
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/1/2026 2:08:12 AM",
-    "ISTTime": "11/1/2026 7:38:12 AM",
-    "CESTTime": "11/1/2026 3:08:12 AM"
+    "UTCTime": "11/1/2026 10:21:21 PM",
+    "ISTTime": "11/2/2026 3:51:21 AM",
+    "CESTTime": "11/1/2026 11:21:21 PM"
   }
 }
