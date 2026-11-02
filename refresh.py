@@ -253,6 +253,8 @@ def load_results(done):
                         r["grid"] = qpos.get(r["tla"], 0)
                         r["gridFromQuali"] = True  # health.py warns if Jolpica never fills it in
     for rows in results["quali"].values():
+        # the season table's rows can come out of order (R19: 1-7, 12, 13, 8, 8, 9 ...)
+        rows.sort(key=lambda r: r["pos"])
         quali_gaps(rows)
     return results
 
@@ -367,7 +369,14 @@ def load_playerstats(assets, done, feeds, feed_times, live_gd, results):
         for old in glob.glob(cached(f"ps_{a['id']}_*.json")):
             if old != ps_path:
                 os.remove(old)
-        ps = get(f"{F1}/popup/playerstats_{a['id']}.json", ps_path, reuse=True)
+        try:
+            ps = get(f"{F1}/popup/playerstats_{a['id']}.json", ps_path, reuse=True)
+        except FeedError as e:
+            # a new card's file can follow the player feed by hours; any other card failing is an outage: stop
+            if os.path.exists(archived("playerstats", f"{a['id']}.json")):
+                raise
+            print(f"  ! no scoring lines yet for new card {a['id']}: {e}")
+            continue
         shutil.copyfile(ps_path, archived("playerstats", f"{a['id']}.json"))
         for m in (ps.get("Value") or {}).get("MatchWiseStats") or []:
             g = m.get("GamedayId")

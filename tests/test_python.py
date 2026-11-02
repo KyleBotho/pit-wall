@@ -144,6 +144,47 @@ class FeedHelpers(unittest.TestCase):
             self.assertEqual(os.listdir(d), ["x.json"])
 
 
+class Results(unittest.TestCase):
+    def test_rows_in_position_order_whatever_order_jolpica_sends_them(self):
+        # R19: the season table's rows came as 1-7, 12, 13, 8, 8, 9 ...
+        def row(tla, pos):
+            return {"position": str(pos), "Driver": {"code": tla}, "Constructor": {"constructorId": "x", "name": "X"}}
+
+        rows = [row("AAA", 1), row("CCC", 12), row("BBB", 8)]
+        page = {
+            "RaceTable": {"Races": [{"round": "19", "QualifyingResults": rows, "Results": [], "SprintResults": []}]}
+        }
+        with mock.patch.object(refresh, "jolpica_pages", return_value=[page]):
+            out = refresh.load_results([19])
+        self.assertEqual([r["tla"] for r in out["quali"][19]], ["AAA", "BBB", "CCC"])
+
+
+class PlayerStats(unittest.TestCase):
+    def run_stats(self, published):
+        """load_playerstats for a card whose stats file 404s; published: it had stats in an earlier build."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = lambda *a: os.path.join(tmp, "-".join(a))  # noqa: E731
+            if published:
+                open(path("playerstats", "1.json"), "w").close()
+            feed = [{"PlayerId": "1", "IsActive": "1", "GamedayPoints": 0}]
+            with (
+                mock.patch.object(refresh, "cached", path),
+                mock.patch.object(refresh, "archived", path),
+                mock.patch.object(refresh, "get", side_effect=f1feeds.FeedError("404")),
+            ):
+                return refresh.load_playerstats(
+                    [{"id": "1", "kind": "D", "hist": []}], [], {19: feed}, {}, 19, {"race": {}}
+                )
+
+    def test_a_new_cards_missing_stats_file_doesnt_stop_the_build(self):
+        _, _, live = self.run_stats(published=False)
+        self.assertEqual(live["assets"]["1"]["ev"], [])
+
+    def test_a_known_cards_failure_still_stops_it(self):
+        with self.assertRaises(f1feeds.FeedError):
+            self.run_stats(published=True)
+
+
 class MarketOdds(unittest.TestCase):
     def test_a_cached_book_keeps_its_own_time(self):
         import extras

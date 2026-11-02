@@ -70,7 +70,16 @@ test("the live weekend: scored qualifying counts as scored, its order from the s
   // without an order from the scoring lines (not all in yet) qualifying stays simulated: its points and grid go together
   if (!E.qualiOrderFromLive(D)) return assert.equal(simOpt.locked.q, undefined, "no order: qualifying stays simulated");
   assert.ok(simOpt.locked.q, "qualifying scored");
-  const jolpica = D.results.quali[gd].map((r) => r.tla);
+  // a driver the scoring lines have no position for goes to the back; Jolpica can still rank him (R19 Lawson: 8th)
+  const back = new Set(
+    D.assets
+      .filter((a) => {
+        const la = a.kind === "D" && D.live.assets[a.id];
+        return la && la.act && !la.ev.some(([i]) => D.evNames[i].c === "Q POS");
+      })
+      .map((a) => a.tla),
+  );
+  const jolpica = D.results.quali[gd].map((r) => r.tla).filter((tla) => !back.has(tla));
   assert.deepEqual(simOpt.known.q.slice(0, 10), jolpica.slice(0, 10));
 });
 
