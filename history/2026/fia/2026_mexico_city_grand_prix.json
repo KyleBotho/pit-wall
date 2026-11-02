@@ -541,6 +541,49 @@
    "published": "2026-11-01T23:12+00:00",
    "firstSeen": "2026-11-01T23:30+00:00",
    "grid": 0
+  },
+  {
+   "doc": 77,
+   "title": "Doc 77 - Summons - Car 10 - Alleged failure to slow for yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_summons_-_car_10_-_alleged_failure_to_slow_for_yellow_flags.pdf",
+   "published": "2026-11-01T23:46+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00"
+  },
+  {
+   "doc": 78,
+   "title": "Doc 78 - Summons - Car 43 - Alleged failure to slow for yellow flags",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_summons_-_car_43_-_alleged_failure_to_slow_for_yellow_flags.pdf",
+   "published": "2026-11-01T23:46+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00"
+  },
+  {
+   "doc": 79,
+   "title": "Doc 79 - Infringement - Car 81 - Causing a collision",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_infringement_-_car_81_-_causing_a_collision.pdf",
+   "published": "2026-11-01T23:57+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 80,
+   "title": "Doc 80 - Infringement - Race Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_infringement_-_race_deleted_lap_times.pdf",
+   "published": "2026-11-02T00:05+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00"
+  },
+  {
+   "doc": 81,
+   "title": "Doc 81 - Race Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_race_scrutineering.pdf",
+   "published": "2026-11-02T00:15+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00"
+  },
+  {
+   "doc": 82,
+   "title": "Doc 82 - Summons - Car 63 - Alleged failure to attend mandatory post-race commitments",
+   "url": "https://www.fia.com/system/files/decision-document/2026_mexico_city_grand_prix_-_summons_-_car_63_-_alleged_failure_to_attend_mandatory_post-race_commitments.pdf",
+   "published": "2026-11-02T00:43+00:00",
+   "firstSeen": "2026-11-02T01:00+00:00"
   }
  ],
  "tech": {
