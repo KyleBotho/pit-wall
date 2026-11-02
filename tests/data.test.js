@@ -33,16 +33,38 @@ test("the price rule reproduces this season's price changes", opt, () => {
   assert.ok(ok / n >= 0.99, `rule matches ${ok}/${n} real changes`); // 493/495 after R15
 });
 
-test("each round's scoring lines add up to the asset's points", opt, () => {
-  let n = 0,
-    bad = [];
-  for (const a of D.assets)
+function lineMismatches(data) {
+  let n = 0;
+  const bad = [];
+  for (const a of data.assets)
     for (const h of a.hist) {
       if (!h || !h.ev || !h.ev.length) continue;
+      // playerstats follows the player feed after a race (R18: 8 assets for an hour); refresh.py refetches these
+      const la = data.live && h.gd === data.live.gd && data.live.assets[a.id];
+      if (la && la.lag) continue;
       n++;
       const s = h.ev.reduce((t, r) => t + r[1], 0);
       if (Math.abs(s - h.pts) > 0.5) bad.push(`${a.tla || a.team} R${h.gd}: lines ${s} vs ${h.pts}`);
     }
+  return { n, bad };
+}
+
+test("scoring lines: only those still catching up with a just-finished round's points are let off", () => {
+  const hist = (gd) => [{ gd, pts: 7, ev: [[0, 5]] }];
+  const live = { gd: 18, assets: { 1: { lag: true }, 2: {} } };
+  const assets = [
+    { id: "1", tla: "AAA", hist: hist(18) }, // lagging, this round
+    { id: "1", tla: "BBB", hist: hist(17) }, // an older round doesn't catch up
+    { id: "2", tla: "CCC", hist: hist(18) }, // not lagging
+  ];
+  assert.deepEqual(
+    lineMismatches({ assets, live }).bad.map((x) => x.slice(0, 3)),
+    ["BBB", "CCC"],
+  );
+});
+
+test("each round's scoring lines add up to the asset's points", opt, () => {
+  const { n, bad } = lineMismatches(D);
   assert.ok(n > 100);
   assert.ok(bad.length / n < 0.01, bad.slice(0, 5).join("; "));
 });
