@@ -15,8 +15,8 @@
         "DriverTLA": "GAS",
         "DriverReference": "PIEGAS01",
         "CountryName": "Rouen, France",
-        "OverallPpints": "141.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "138.00",
+        "GamedayPoints": "-1.00",
         "SelectedPercentage": "20",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 10.2,
@@ -29,9 +29,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "2",
-        "RacePoints": "0",
+        "RacePoints": "-3",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "7.00",
         "F1PlayerId": "8",
         "FirstName": "Pierre",
         "LastName": "Gasly",
@@ -45,27 +45,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 0,
-            "nonegative_points": 1
+            "points": -3,
+            "nonegative_points": 5
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 99.0,
+          "overtaking_pts": 104.0,
           "q3_finishes_pts": 33.0,
-          "top10_race_position_pts": 41.0,
+          "top10_race_position_pts": 40.0,
           "top8_sprint_position_pts": 2.0,
-          "total_position_pts": 76.0,
-          "total_position_gained_lost": 6.0,
+          "total_position_pts": 75.0,
+          "total_position_gained_lost": -1.0,
           "total_dnf_dq_pts": -40.0,
-          "value_for_money": 0.77
+          "value_for_money": 0.76
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "2.00",
-        "ProjectedNoNegativePoints": "3.00",
-        "ProjectedOverallPpints": "141.00"
+        "ProjectedGamedayPoints": "-1.00",
+        "ProjectedNoNegativePoints": "7.00",
+        "ProjectedOverallPpints": "138.00"
       },
       {
         "PlayerId": "11059",
@@ -81,8 +81,8 @@
         "DriverTLA": "COL",
         "DriverReference": "FRACOL01",
         "CountryName": "Buenos Aires, Argentina",
-        "OverallPpints": "112.00",
-        "GamedayPoints": "7.00",
+        "OverallPpints": "106.00",
+        "GamedayPoints": "1.00",
         "SelectedPercentage": "19",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 8.8,
@@ -95,9 +95,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "7",
+        "RacePoints": "1",
         "SprintPoints": "",
-        "NoNegativePoints": "7.00",
+        "NoNegativePoints": "5.00",
         "F1PlayerId": "1059",
         "FirstName": "Franco",
         "LastName": "Colapinto",
@@ -111,27 +111,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 7,
-            "nonegative_points": 7
+            "points": 1,
+            "nonegative_points": 5
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 102.0,
+          "overtaking_pts": 107.0,
           "q3_finishes_pts": 10.0,
-          "top10_race_position_pts": 31.0,
+          "top10_race_position_pts": 27.0,
           "top8_sprint_position_pts": 0.0,
-          "total_position_pts": 41.0,
-          "total_position_gained_lost": 39.0,
+          "total_position_pts": 37.0,
+          "total_position_gained_lost": 32.0,
           "total_dnf_dq_pts": -70.0,
-          "value_for_money": 0.72
+          "value_for_money": 0.68
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "7.00",
-        "ProjectedNoNegativePoints": "7.00",
-        "ProjectedOverallPpints": "112.00"
+        "ProjectedGamedayPoints": "1.00",
+        "ProjectedNoNegativePoints": "5.00",
+        "ProjectedOverallPpints": "106.00"
       },
       {
         "PlayerId": "12",
@@ -147,8 +147,8 @@
         "DriverTLA": "ALO",
         "DriverReference": "FERALO01",
         "CountryName": "Oviedo, Spain",
-        "OverallPpints": "19.00",
-        "GamedayPoints": "-20.00",
+        "OverallPpints": "20.00",
+        "GamedayPoints": "-19.00",
         "SelectedPercentage": "10",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 5.4,
@@ -161,9 +161,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "-20",
+        "RacePoints": "-19",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "1.00",
         "F1PlayerId": "2",
         "FirstName": "Fernando",
         "LastName": "Alonso",
@@ -177,27 +177,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -20,
-            "nonegative_points": 0
+            "points": -19,
+            "nonegative_points": 1
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 108.0,
+          "overtaking_pts": 109.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 7.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 7.0,
           "total_position_gained_lost": 54.0,
           "total_dnf_dq_pts": -150.0,
-          "value_for_money": 0.17
+          "value_for_money": 0.18
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-20.00",
-        "ProjectedNoNegativePoints": "0.00",
-        "ProjectedOverallPpints": "19.00"
+        "ProjectedGamedayPoints": "-19.00",
+        "ProjectedNoNegativePoints": "1.00",
+        "ProjectedOverallPpints": "20.00"
       },
       {
         "PlayerId": "129",
@@ -279,8 +279,8 @@
         "DriverTLA": "HUL",
         "DriverReference": "NICHUL01",
         "CountryName": "Emmerich am Rhein, Germany",
-        "OverallPpints": "42.00",
-        "GamedayPoints": "-5.00",
+        "OverallPpints": "49.00",
+        "GamedayPoints": "2.00",
         "SelectedPercentage": "36",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 6.6,
@@ -293,9 +293,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "1",
-        "RacePoints": "-6",
+        "RacePoints": "1",
         "SprintPoints": "",
-        "NoNegativePoints": "1.00",
+        "NoNegativePoints": "6.00",
         "F1PlayerId": "11",
         "FirstName": "Nico",
         "LastName": "Hulkenberg",
@@ -309,27 +309,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -6,
-            "nonegative_points": 0
+            "points": 1,
+            "nonegative_points": 5
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 119.0,
+          "overtaking_pts": 124.0,
           "q3_finishes_pts": 5.0,
           "top10_race_position_pts": 11.0,
           "top8_sprint_position_pts": 2.0,
           "total_position_pts": 18.0,
-          "total_position_gained_lost": 15.0,
+          "total_position_gained_lost": 17.0,
           "total_dnf_dq_pts": -110.0,
-          "value_for_money": 0.31
+          "value_for_money": 0.36
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-5.00",
-        "ProjectedNoNegativePoints": "1.00",
-        "ProjectedOverallPpints": "42.00"
+        "ProjectedGamedayPoints": "2.00",
+        "ProjectedNoNegativePoints": "6.00",
+        "ProjectedOverallPpints": "49.00"
       },
       {
         "PlayerId": "11051",
@@ -345,8 +345,8 @@
         "DriverTLA": "BOR",
         "DriverReference": "GABBOR01",
         "CountryName": "São Paulo, Brazil",
-        "OverallPpints": "86.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "95.00",
+        "GamedayPoints": "11.00",
         "SelectedPercentage": "31",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 7.0,
@@ -354,14 +354,14 @@
         "HigestGridStart": "9",
         "HigestChampFinish": "",
         "FastestPitstopAward": "",
-        "BestRaceFinishCount": 2,
+        "BestRaceFinishCount": 3,
         "HighestGridStartCount": 3,
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "2",
+        "RacePoints": "11",
         "SprintPoints": "",
-        "NoNegativePoints": "2.00",
+        "NoNegativePoints": "11.00",
         "F1PlayerId": "1051",
         "FirstName": "Gabriel",
         "LastName": "Bortoleto",
@@ -375,27 +375,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 2,
-            "nonegative_points": 2
+            "points": 11,
+            "nonegative_points": 11
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 111.0,
+          "overtaking_pts": 113.0,
           "q3_finishes_pts": 8.0,
-          "top10_race_position_pts": 10.0,
+          "top10_race_position_pts": 14.0,
           "top8_sprint_position_pts": 0.0,
-          "total_position_pts": 18.0,
-          "total_position_gained_lost": 17.0,
+          "total_position_pts": 22.0,
+          "total_position_gained_lost": 20.0,
           "total_dnf_dq_pts": -60.0,
-          "value_for_money": 0.71
+          "value_for_money": 0.78
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "2.00",
-        "ProjectedNoNegativePoints": "2.00",
-        "ProjectedOverallPpints": "86.00"
+        "ProjectedGamedayPoints": "11.00",
+        "ProjectedNoNegativePoints": "11.00",
+        "ProjectedOverallPpints": "95.00"
       },
       {
         "PlayerId": "13",
@@ -411,8 +411,8 @@
         "DriverTLA": "BOT",
         "DriverReference": "VALBOT01",
         "CountryName": "Nastola, Finland",
-        "OverallPpints": "-137.00",
-        "GamedayPoints": "-20.00",
+        "OverallPpints": "-133.00",
+        "GamedayPoints": "-16.00",
         "SelectedPercentage": "20",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.0,
@@ -425,9 +425,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "-20",
+        "RacePoints": "-16",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "4.00",
         "F1PlayerId": "3",
         "FirstName": "Valtteri",
         "LastName": "Bottas",
@@ -441,27 +441,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -20,
-            "nonegative_points": 0
+            "points": -16,
+            "nonegative_points": 4
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 45.0,
+          "overtaking_pts": 49.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 0.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 0.0,
           "total_position_gained_lost": 18.0,
           "total_dnf_dq_pts": -200.0,
-          "value_for_money": -2.4
+          "value_for_money": -2.33
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-20.00",
-        "ProjectedNoNegativePoints": "0.00",
-        "ProjectedOverallPpints": "-137.00"
+        "ProjectedGamedayPoints": "-16.00",
+        "ProjectedNoNegativePoints": "4.00",
+        "ProjectedOverallPpints": "-133.00"
       },
       {
         "PlayerId": "121",
@@ -477,8 +477,8 @@
         "DriverTLA": "PER",
         "DriverReference": "SERPER01",
         "CountryName": "Guadalajara, Mexico",
-        "OverallPpints": "22.00",
-        "GamedayPoints": "3.00",
+        "OverallPpints": "36.00",
+        "GamedayPoints": "17.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.6,
@@ -491,9 +491,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "3",
+        "RacePoints": "17",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "17.00",
         "F1PlayerId": "21",
         "FirstName": "Sergio",
         "LastName": "Perez",
@@ -507,27 +507,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 3,
-            "nonegative_points": 3
+            "points": 17,
+            "nonegative_points": 17
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 89.0,
+          "overtaking_pts": 102.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 0.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 0.0,
-          "total_position_gained_lost": 43.0,
+          "total_position_gained_lost": 44.0,
           "total_dnf_dq_pts": -110.0,
-          "value_for_money": 0.39
+          "value_for_money": 0.63
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "3.00",
-        "ProjectedNoNegativePoints": "3.00",
-        "ProjectedOverallPpints": "22.00"
+        "ProjectedGamedayPoints": "17.00",
+        "ProjectedNoNegativePoints": "17.00",
+        "ProjectedOverallPpints": "36.00"
       },
       {
         "PlayerId": "110",
@@ -543,8 +543,8 @@
         "DriverTLA": "HAM",
         "DriverReference": "LEWHAM01",
         "CountryName": "Stevenage, England",
-        "OverallPpints": "520.00",
-        "GamedayPoints": "37.00",
+        "OverallPpints": "521.00",
+        "GamedayPoints": "38.00",
         "SelectedPercentage": "18",
         "CaptainSelectedPercentage": "9",
         "OldPlayerValue": 24.4,
@@ -557,9 +557,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "10",
-        "RacePoints": "27",
+        "RacePoints": "28",
         "SprintPoints": "",
-        "NoNegativePoints": "38.00",
+        "NoNegativePoints": "39.00",
         "F1PlayerId": "10",
         "FirstName": "Lewis",
         "LastName": "Hamilton",
@@ -573,14 +573,14 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 27,
-            "nonegative_points": 28
+            "points": 28,
+            "nonegative_points": 29
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 25.0,
           "dotd_pts": 20.0,
-          "overtaking_pts": 99.0,
+          "overtaking_pts": 100.0,
           "q3_finishes_pts": 132.0,
           "top10_race_position_pts": 232.0,
           "top8_sprint_position_pts": 27.0,
@@ -591,9 +591,9 @@
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "37.00",
-        "ProjectedNoNegativePoints": "38.00",
-        "ProjectedOverallPpints": "520.00"
+        "ProjectedGamedayPoints": "38.00",
+        "ProjectedNoNegativePoints": "39.00",
+        "ProjectedOverallPpints": "521.00"
       },
       {
         "PlayerId": "115",
@@ -609,8 +609,8 @@
         "DriverTLA": "LEC",
         "DriverReference": "CHALEC01",
         "CountryName": "Monte Carlo, Monaco",
-        "OverallPpints": "499.00",
-        "GamedayPoints": "19.00",
+        "OverallPpints": "500.00",
+        "GamedayPoints": "20.00",
         "SelectedPercentage": "27",
         "CaptainSelectedPercentage": "15",
         "OldPlayerValue": 24.1,
@@ -623,9 +623,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "8",
-        "RacePoints": "11",
+        "RacePoints": "12",
         "SprintPoints": "",
-        "NoNegativePoints": "20.00",
+        "NoNegativePoints": "21.00",
         "F1PlayerId": "15",
         "FirstName": "Charles",
         "LastName": "Leclerc",
@@ -639,14 +639,14 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 11,
-            "nonegative_points": 12
+            "points": 12,
+            "nonegative_points": 13
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 45.0,
           "dotd_pts": 30.0,
-          "overtaking_pts": 92.0,
+          "overtaking_pts": 93.0,
           "q3_finishes_pts": 129.0,
           "top10_race_position_pts": 211.0,
           "top8_sprint_position_pts": 34.0,
@@ -657,9 +657,9 @@
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "19.00",
-        "ProjectedNoNegativePoints": "20.00",
-        "ProjectedOverallPpints": "499.00"
+        "ProjectedGamedayPoints": "20.00",
+        "ProjectedNoNegativePoints": "21.00",
+        "ProjectedOverallPpints": "500.00"
       },
       {
         "PlayerId": "118",
@@ -741,8 +741,8 @@
         "DriverTLA": "BEA",
         "DriverReference": "OLIBEA01",
         "CountryName": "Chelmsford, England",
-        "OverallPpints": "61.00",
-        "GamedayPoints": "-20.00",
+        "OverallPpints": "66.00",
+        "GamedayPoints": "-15.00",
         "SelectedPercentage": "52",
         "CaptainSelectedPercentage": "2",
         "OldPlayerValue": 6.4,
@@ -755,9 +755,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "-20",
+        "RacePoints": "-15",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "5.00",
         "F1PlayerId": "1031",
         "FirstName": "Oliver",
         "LastName": "Bearman",
@@ -771,27 +771,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -20,
-            "nonegative_points": 0
+            "points": -15,
+            "nonegative_points": 5
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 111.0,
+          "overtaking_pts": 116.0,
           "q3_finishes_pts": 1.0,
           "top10_race_position_pts": 19.0,
           "top8_sprint_position_pts": 4.0,
           "total_position_pts": 24.0,
           "total_position_gained_lost": 31.0,
           "total_dnf_dq_pts": -105.0,
-          "value_for_money": 0.52
+          "value_for_money": 0.56
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-20.00",
-        "ProjectedNoNegativePoints": "0.00",
-        "ProjectedOverallPpints": "61.00"
+        "ProjectedGamedayPoints": "-15.00",
+        "ProjectedNoNegativePoints": "5.00",
+        "ProjectedOverallPpints": "66.00"
       },
       {
         "PlayerId": "11167",
@@ -807,8 +807,8 @@
         "DriverTLA": "HIR",
         "DriverReference": "",
         "CountryName": "Kure, Japan",
-        "OverallPpints": "5.00",
-        "GamedayPoints": "5.00",
+        "OverallPpints": "16.00",
+        "GamedayPoints": "16.00",
         "SelectedPercentage": "",
         "CaptainSelectedPercentage": "",
         "OldPlayerValue": 0.0,
@@ -821,9 +821,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "5",
+        "RacePoints": "16",
         "SprintPoints": "",
-        "NoNegativePoints": "5.00",
+        "NoNegativePoints": "16.00",
         "F1PlayerId": "1167",
         "FirstName": "Ryo",
         "LastName": "Hirakawa",
@@ -837,27 +837,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 5,
-            "nonegative_points": 5
+            "points": 16,
+            "nonegative_points": 16
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 0.0,
+          "overtaking_pts": 7.0,
           "q3_finishes_pts": 0.0,
-          "top10_race_position_pts": 0.0,
+          "top10_race_position_pts": 1.0,
           "top8_sprint_position_pts": 0.0,
-          "total_position_pts": 0.0,
-          "total_position_gained_lost": 5.0,
+          "total_position_pts": 1.0,
+          "total_position_gained_lost": 8.0,
           "total_dnf_dq_pts": 0.0,
-          "value_for_money": 0.83
+          "value_for_money": 2.67
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "5.00",
-        "ProjectedNoNegativePoints": "5.00",
-        "ProjectedOverallPpints": "5.00"
+        "ProjectedGamedayPoints": "16.00",
+        "ProjectedNoNegativePoints": "16.00",
+        "ProjectedOverallPpints": "16.00"
       },
       {
         "PlayerId": "117",
@@ -873,8 +873,8 @@
         "DriverTLA": "NOR",
         "DriverReference": "LANNOR01",
         "CountryName": "Bristol, England",
-        "OverallPpints": "396.00",
-        "GamedayPoints": "16.00",
+        "OverallPpints": "398.00",
+        "GamedayPoints": "18.00",
         "SelectedPercentage": "8",
         "CaptainSelectedPercentage": "5",
         "OldPlayerValue": 26.1,
@@ -887,9 +887,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "5",
-        "RacePoints": "11",
+        "RacePoints": "13",
         "SprintPoints": "",
-        "NoNegativePoints": "16.00",
+        "NoNegativePoints": "18.00",
         "F1PlayerId": "17",
         "FirstName": "Lando",
         "LastName": "Norris",
@@ -903,27 +903,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 11,
-            "nonegative_points": 11
+            "points": 13,
+            "nonegative_points": 13
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 30.0,
           "dotd_pts": 10.0,
-          "overtaking_pts": 86.0,
+          "overtaking_pts": 88.0,
           "q3_finishes_pts": 116.0,
           "top10_race_position_pts": 188.0,
           "top8_sprint_position_pts": 33.0,
           "total_position_pts": 337.0,
           "total_position_gained_lost": 13.0,
           "total_dnf_dq_pts": -80.0,
-          "value_for_money": 0.8
+          "value_for_money": 0.81
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "16.00",
-        "ProjectedNoNegativePoints": "16.00",
-        "ProjectedOverallPpints": "396.00"
+        "ProjectedGamedayPoints": "18.00",
+        "ProjectedNoNegativePoints": "18.00",
+        "ProjectedOverallPpints": "398.00"
       },
       {
         "PlayerId": "1982",
@@ -939,8 +939,8 @@
         "DriverTLA": "PIA",
         "DriverReference": "OSCPIA01",
         "CountryName": "Melbourne, Victoria",
-        "OverallPpints": "289.00",
-        "GamedayPoints": "11.00",
+        "OverallPpints": "285.00",
+        "GamedayPoints": "7.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "5",
         "OldPlayerValue": 23.4,
@@ -953,9 +953,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "11",
+        "RacePoints": "7",
         "SprintPoints": "",
-        "NoNegativePoints": "11.00",
+        "NoNegativePoints": "8.00",
         "F1PlayerId": "982",
         "FirstName": "Oscar",
         "LastName": "Piastri",
@@ -969,27 +969,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 11,
-            "nonegative_points": 11
+            "points": 7,
+            "nonegative_points": 8
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 10.0,
-          "overtaking_pts": 107.0,
+          "overtaking_pts": 115.0,
           "q3_finishes_pts": 95.0,
-          "top10_race_position_pts": 129.0,
+          "top10_race_position_pts": 123.0,
           "top8_sprint_position_pts": 21.0,
-          "total_position_pts": 245.0,
-          "total_position_gained_lost": -13.0,
+          "total_position_pts": 239.0,
+          "total_position_gained_lost": -19.0,
           "total_dnf_dq_pts": -60.0,
-          "value_for_money": 0.65
+          "value_for_money": 0.64
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "11.00",
-        "ProjectedNoNegativePoints": "11.00",
-        "ProjectedOverallPpints": "289.00"
+        "ProjectedGamedayPoints": "7.00",
+        "ProjectedNoNegativePoints": "8.00",
+        "ProjectedOverallPpints": "285.00"
       },
       {
         "PlayerId": "124",
@@ -1071,8 +1071,8 @@
         "DriverTLA": "ANT",
         "DriverReference": "ANDANT01",
         "CountryName": "Bologna, Italy",
-        "OverallPpints": "742.00",
-        "GamedayPoints": "22.00",
+        "OverallPpints": "744.00",
+        "GamedayPoints": "24.00",
         "SelectedPercentage": "36",
         "CaptainSelectedPercentage": "24",
         "OldPlayerValue": 27.1,
@@ -1085,9 +1085,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "6",
-        "RacePoints": "16",
+        "RacePoints": "18",
         "SprintPoints": "",
-        "NoNegativePoints": "22.00",
+        "NoNegativePoints": "24.00",
         "F1PlayerId": "1161",
         "FirstName": "Kimi",
         "LastName": "Antonelli",
@@ -1101,14 +1101,14 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 16,
-            "nonegative_points": 16
+            "points": 18,
+            "nonegative_points": 18
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 80.0,
           "dotd_pts": 30.0,
-          "overtaking_pts": 91.0,
+          "overtaking_pts": 93.0,
           "q3_finishes_pts": 151.0,
           "top10_race_position_pts": 349.0,
           "top8_sprint_position_pts": 31.0,
@@ -1119,9 +1119,9 @@
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "22.00",
-        "ProjectedNoNegativePoints": "22.00",
-        "ProjectedOverallPpints": "742.00"
+        "ProjectedGamedayPoints": "24.00",
+        "ProjectedNoNegativePoints": "24.00",
+        "ProjectedOverallPpints": "744.00"
       },
       {
         "PlayerId": "11149",
@@ -1137,8 +1137,8 @@
         "DriverTLA": "LIN",
         "DriverReference": "ARVLIN01",
         "CountryName": "London, England",
-        "OverallPpints": "130.00",
-        "GamedayPoints": "-17.00",
+        "OverallPpints": "133.00",
+        "GamedayPoints": "-14.00",
         "SelectedPercentage": "43",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 10.0,
@@ -1151,9 +1151,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "3",
-        "RacePoints": "-20",
+        "RacePoints": "-17",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "6.00",
         "F1PlayerId": "1149",
         "FirstName": "Arvid",
         "LastName": "Lindblad",
@@ -1167,27 +1167,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -20,
-            "nonegative_points": 0
+            "points": -17,
+            "nonegative_points": 3
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 97.0,
+          "overtaking_pts": 100.0,
           "q3_finishes_pts": 22.0,
           "top10_race_position_pts": 37.0,
           "top8_sprint_position_pts": 1.0,
           "total_position_pts": 60.0,
           "total_position_gained_lost": 33.0,
           "total_dnf_dq_pts": -60.0,
-          "value_for_money": 0.65
+          "value_for_money": 0.66
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-17.00",
-        "ProjectedNoNegativePoints": "3.00",
-        "ProjectedOverallPpints": "130.00"
+        "ProjectedGamedayPoints": "-14.00",
+        "ProjectedNoNegativePoints": "6.00",
+        "ProjectedOverallPpints": "133.00"
       },
       {
         "PlayerId": "114",
@@ -1203,8 +1203,8 @@
         "DriverTLA": "LAW",
         "DriverReference": "LIALAW01",
         "CountryName": "Hastings, New Zealand",
-        "OverallPpints": "184.00",
-        "GamedayPoints": "10.00",
+        "OverallPpints": "201.00",
+        "GamedayPoints": "27.00",
         "SelectedPercentage": "29",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 9.9,
@@ -1217,9 +1217,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "-5",
-        "RacePoints": "15",
+        "RacePoints": "32",
         "SprintPoints": "",
-        "NoNegativePoints": "15.00",
+        "NoNegativePoints": "32.00",
         "F1PlayerId": "14",
         "FirstName": "Liam",
         "LastName": "Lawson",
@@ -1233,27 +1233,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 15,
-            "nonegative_points": 15
+            "points": 32,
+            "nonegative_points": 32
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 75.0,
+          "overtaking_pts": 86.0,
           "q3_finishes_pts": 13.0,
-          "top10_race_position_pts": 58.0,
+          "top10_race_position_pts": 62.0,
           "top8_sprint_position_pts": 7.0,
-          "total_position_pts": 78.0,
-          "total_position_gained_lost": 56.0,
+          "total_position_pts": 82.0,
+          "total_position_gained_lost": 58.0,
           "total_dnf_dq_pts": -25.0,
-          "value_for_money": 1.1
+          "value_for_money": 1.2
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "10.00",
-        "ProjectedNoNegativePoints": "15.00",
-        "ProjectedOverallPpints": "184.00"
+        "ProjectedGamedayPoints": "27.00",
+        "ProjectedNoNegativePoints": "32.00",
+        "ProjectedOverallPpints": "201.00"
       },
       {
         "PlayerId": "130",
@@ -1335,8 +1335,8 @@
         "DriverTLA": "VER",
         "DriverReference": "MAXVER01",
         "CountryName": "Hasselt, Belgium",
-        "OverallPpints": "559.00",
-        "GamedayPoints": "46.00",
+        "OverallPpints": "562.00",
+        "GamedayPoints": "49.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "16",
         "OldPlayerValue": 28.2,
@@ -1349,9 +1349,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "7",
-        "RacePoints": "39",
+        "RacePoints": "42",
         "SprintPoints": "",
-        "NoNegativePoints": "46.00",
+        "NoNegativePoints": "49.00",
         "F1PlayerId": "31",
         "FirstName": "Max",
         "LastName": "Verstappen",
@@ -1365,27 +1365,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 39,
-            "nonegative_points": 39
+            "points": 42,
+            "nonegative_points": 42
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 20.0,
           "dotd_pts": 90.0,
-          "overtaking_pts": 124.0,
+          "overtaking_pts": 127.0,
           "q3_finishes_pts": 112.0,
           "top10_race_position_pts": 241.0,
           "top8_sprint_position_pts": 20.0,
           "total_position_pts": 373.0,
           "total_position_gained_lost": 17.0,
           "total_dnf_dq_pts": -65.0,
-          "value_for_money": 1.03
+          "value_for_money": 1.04
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "46.00",
-        "ProjectedNoNegativePoints": "46.00",
-        "ProjectedOverallPpints": "559.00"
+        "ProjectedGamedayPoints": "49.00",
+        "ProjectedNoNegativePoints": "49.00",
+        "ProjectedOverallPpints": "562.00"
       },
       {
         "PlayerId": "11032",
@@ -1401,8 +1401,8 @@
         "DriverTLA": "HAD",
         "DriverReference": "ISAHAD01",
         "CountryName": "Paris, France",
-        "OverallPpints": "213.00",
-        "GamedayPoints": "-1.00",
+        "OverallPpints": "233.00",
+        "GamedayPoints": "19.00",
         "SelectedPercentage": "29",
         "CaptainSelectedPercentage": "3",
         "OldPlayerValue": 16.3,
@@ -1415,9 +1415,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "4",
-        "RacePoints": "-5",
+        "RacePoints": "15",
         "SprintPoints": "",
-        "NoNegativePoints": "4.00",
+        "NoNegativePoints": "21.00",
         "F1PlayerId": "1032",
         "FirstName": "Isack",
         "LastName": "Hadjar",
@@ -1431,27 +1431,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -5,
-            "nonegative_points": 0
+            "points": 15,
+            "nonegative_points": 17
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 88.0,
+          "overtaking_pts": 103.0,
           "q3_finishes_pts": 68.0,
-          "top10_race_position_pts": 105.0,
+          "top10_race_position_pts": 107.0,
           "top8_sprint_position_pts": 0.0,
-          "total_position_pts": 173.0,
-          "total_position_gained_lost": 12.0,
+          "total_position_pts": 175.0,
+          "total_position_gained_lost": 15.0,
           "total_dnf_dq_pts": -60.0,
-          "value_for_money": 0.81
+          "value_for_money": 0.88
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-1.00",
-        "ProjectedNoNegativePoints": "4.00",
-        "ProjectedOverallPpints": "213.00"
+        "ProjectedGamedayPoints": "19.00",
+        "ProjectedNoNegativePoints": "21.00",
+        "ProjectedOverallPpints": "233.00"
       },
       {
         "PlayerId": "116",
@@ -1533,8 +1533,8 @@
         "DriverTLA": "SAI",
         "DriverReference": "CARSAI01",
         "CountryName": "Madrid, Spain",
-        "OverallPpints": "120.00",
-        "GamedayPoints": "0.00",
+        "OverallPpints": "127.00",
+        "GamedayPoints": "7.00",
         "SelectedPercentage": "22",
         "CaptainSelectedPercentage": "1",
         "OldPlayerValue": 8.4,
@@ -1547,9 +1547,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "0",
+        "RacePoints": "7",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "7.00",
         "F1PlayerId": "25",
         "FirstName": "Carlos",
         "LastName": "Sainz",
@@ -1563,27 +1563,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 0,
-            "nonegative_points": 0
+            "points": 7,
+            "nonegative_points": 7
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 118.0,
+          "overtaking_pts": 122.0,
           "q3_finishes_pts": 2.0,
           "top10_race_position_pts": 7.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 9.0,
-          "total_position_gained_lost": 38.0,
+          "total_position_gained_lost": 41.0,
           "total_dnf_dq_pts": -45.0,
-          "value_for_money": 0.77
+          "value_for_money": 0.82
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "0.00",
-        "ProjectedNoNegativePoints": "0.00",
-        "ProjectedOverallPpints": "120.00"
+        "ProjectedGamedayPoints": "7.00",
+        "ProjectedNoNegativePoints": "7.00",
+        "ProjectedOverallPpints": "127.00"
       },
       {
         "PlayerId": "11",
@@ -1599,8 +1599,8 @@
         "DriverTLA": "ALB",
         "DriverReference": "ALEALB01",
         "CountryName": "London, England",
-        "OverallPpints": "2.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "11.00",
+        "GamedayPoints": "11.00",
         "SelectedPercentage": "10",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 4.6,
@@ -1613,9 +1613,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "0",
-        "RacePoints": "2",
+        "RacePoints": "11",
         "SprintPoints": "",
-        "NoNegativePoints": "2.00",
+        "NoNegativePoints": "11.00",
         "F1PlayerId": "1",
         "FirstName": "Alexander",
         "LastName": "Albon",
@@ -1629,27 +1629,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 2,
-            "nonegative_points": 2
+            "points": 11,
+            "nonegative_points": 11
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 100.0,
+          "overtaking_pts": 106.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 5.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 5.0,
-          "total_position_gained_lost": 27.0,
+          "total_position_gained_lost": 30.0,
           "total_dnf_dq_pts": -130.0,
-          "value_for_money": 0.03
+          "value_for_money": 0.14
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "2.00",
-        "ProjectedNoNegativePoints": "2.00",
-        "ProjectedOverallPpints": "2.00"
+        "ProjectedGamedayPoints": "11.00",
+        "ProjectedNoNegativePoints": "11.00",
+        "ProjectedOverallPpints": "11.00"
       },
       {
         "PlayerId": "28",
@@ -1665,8 +1665,8 @@
         "DriverTLA": "MER",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "1475.00",
-        "GamedayPoints": "45.00",
+        "OverallPpints": "1482.00",
+        "GamedayPoints": "52.00",
         "SelectedPercentage": "35",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 34.0,
@@ -1679,9 +1679,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "25",
-        "RacePoints": "20",
+        "RacePoints": "27",
         "SprintPoints": "",
-        "NoNegativePoints": "48.00",
+        "NoNegativePoints": "55.00",
         "F1PlayerId": "8",
         "FirstName": "Mercedes",
         "LastName": "Mercedes",
@@ -1695,27 +1695,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 20,
-            "nonegative_points": 23
+            "points": 27,
+            "nonegative_points": 30
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 100.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 189.0,
+          "overtaking_pts": 191.0,
           "q3_finishes_pts": 293.0,
           "top10_race_position_pts": 565.0,
           "top8_sprint_position_pts": 65.0,
           "total_position_pts": 923.0,
           "total_position_gained_lost": -3.0,
           "total_dnf_dq_pts": -50.0,
-          "value_for_money": 2.28
+          "value_for_money": 2.29
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "45.00",
-        "ProjectedNoNegativePoints": "48.00",
-        "ProjectedOverallPpints": "1475.00"
+        "ProjectedGamedayPoints": "52.00",
+        "ProjectedNoNegativePoints": "55.00",
+        "ProjectedOverallPpints": "1482.00"
       },
       {
         "PlayerId": "29",
@@ -1731,8 +1731,8 @@
         "DriverTLA": "RBR",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "979.00",
-        "GamedayPoints": "45.00",
+        "OverallPpints": "1012.00",
+        "GamedayPoints": "78.00",
         "SelectedPercentage": "8",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 32.7,
@@ -1745,9 +1745,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "21",
-        "RacePoints": "24",
+        "RacePoints": "57",
         "SprintPoints": "",
-        "NoNegativePoints": "46.00",
+        "NoNegativePoints": "78.00",
         "F1PlayerId": "9",
         "FirstName": "Red Bull Racing",
         "LastName": "Red Bull Racing",
@@ -1761,27 +1761,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 24,
-            "nonegative_points": 25
+            "points": 57,
+            "nonegative_points": 57
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 20.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 234.0,
+          "overtaking_pts": 252.0,
           "q3_finishes_pts": 186.0,
-          "top10_race_position_pts": 360.0,
+          "top10_race_position_pts": 362.0,
           "top8_sprint_position_pts": 20.0,
-          "total_position_pts": 566.0,
-          "total_position_gained_lost": 40.0,
+          "total_position_pts": 568.0,
+          "total_position_gained_lost": 43.0,
           "total_dnf_dq_pts": -130.0,
-          "value_for_money": 1.56
+          "value_for_money": 1.61
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "45.00",
-        "ProjectedNoNegativePoints": "46.00",
-        "ProjectedOverallPpints": "979.00"
+        "ProjectedGamedayPoints": "78.00",
+        "ProjectedNoNegativePoints": "78.00",
+        "ProjectedOverallPpints": "1012.00"
       },
       {
         "PlayerId": "27",
@@ -1834,12 +1834,12 @@
         "AdditionalStats": {
           "fastest_lap_pts": 30.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 193.0,
+          "overtaking_pts": 203.0,
           "q3_finishes_pts": 211.0,
-          "top10_race_position_pts": 317.0,
+          "top10_race_position_pts": 311.0,
           "top8_sprint_position_pts": 54.0,
-          "total_position_pts": 582.0,
-          "total_position_gained_lost": 0.0,
+          "total_position_pts": 576.0,
+          "total_position_gained_lost": -6.0,
           "total_dnf_dq_pts": -140.0,
           "value_for_money": 1.49
         },
@@ -1863,8 +1863,8 @@
         "DriverTLA": "FER",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "1245.00",
-        "GamedayPoints": "66.00",
+        "OverallPpints": "1252.00",
+        "GamedayPoints": "73.00",
         "SelectedPercentage": "41",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 28.2,
@@ -1877,9 +1877,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "28",
-        "RacePoints": "38",
+        "RacePoints": "45",
         "SprintPoints": "",
-        "NoNegativePoints": "68.00",
+        "NoNegativePoints": "75.00",
         "F1PlayerId": "5",
         "FirstName": "Ferrari",
         "LastName": "Ferrari",
@@ -1893,27 +1893,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 38,
-            "nonegative_points": 40
+            "points": 45,
+            "nonegative_points": 47
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 70.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 191.0,
+          "overtaking_pts": 193.0,
           "q3_finishes_pts": 261.0,
           "top10_race_position_pts": 443.0,
           "top8_sprint_position_pts": 61.0,
           "total_position_pts": 765.0,
           "total_position_gained_lost": 3.0,
           "total_dnf_dq_pts": -60.0,
-          "value_for_money": 2.3
+          "value_for_money": 2.31
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "66.00",
-        "ProjectedNoNegativePoints": "68.00",
-        "ProjectedOverallPpints": "1245.00"
+        "ProjectedGamedayPoints": "73.00",
+        "ProjectedNoNegativePoints": "75.00",
+        "ProjectedOverallPpints": "1252.00"
       },
       {
         "PlayerId": "23",
@@ -1929,8 +1929,8 @@
         "DriverTLA": "ALP",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "386.00",
-        "GamedayPoints": "14.00",
+        "OverallPpints": "382.00",
+        "GamedayPoints": "10.00",
         "SelectedPercentage": "7",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 18.8,
@@ -1943,9 +1943,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "7",
-        "RacePoints": "7",
+        "RacePoints": "3",
         "SprintPoints": "",
-        "NoNegativePoints": "14.00",
+        "NoNegativePoints": "22.00",
         "F1PlayerId": "3",
         "FirstName": "Alpine",
         "LastName": "Alpine",
@@ -1959,27 +1959,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 7,
-            "nonegative_points": 7
+            "points": 3,
+            "nonegative_points": 15
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 201.0,
+          "overtaking_pts": 211.0,
           "q3_finishes_pts": 43.0,
-          "top10_race_position_pts": 72.0,
+          "top10_race_position_pts": 67.0,
           "top8_sprint_position_pts": 2.0,
-          "total_position_pts": 117.0,
-          "total_position_gained_lost": 45.0,
+          "total_position_pts": 112.0,
+          "total_position_gained_lost": 31.0,
           "total_dnf_dq_pts": -110.0,
-          "value_for_money": 1.1
+          "value_for_money": 1.09
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "14.00",
-        "ProjectedNoNegativePoints": "14.00",
-        "ProjectedOverallPpints": "386.00"
+        "ProjectedGamedayPoints": "10.00",
+        "ProjectedNoNegativePoints": "22.00",
+        "ProjectedOverallPpints": "382.00"
       },
       {
         "PlayerId": "2636",
@@ -1995,8 +1995,8 @@
         "DriverTLA": "RBS",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "552.00",
-        "GamedayPoints": "-7.00",
+        "OverallPpints": "582.00",
+        "GamedayPoints": "23.00",
         "SelectedPercentage": "33",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 16.5,
@@ -2009,9 +2009,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "-2",
-        "RacePoints": "-5",
+        "RacePoints": "25",
         "SprintPoints": "",
-        "NoNegativePoints": "23.00",
+        "NoNegativePoints": "53.00",
         "F1PlayerId": "636",
         "FirstName": "Racing Bulls",
         "LastName": "Racing Bulls",
@@ -2025,27 +2025,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -5,
-            "nonegative_points": 15
+            "points": 25,
+            "nonegative_points": 45
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 188.0,
+          "overtaking_pts": 202.0,
           "q3_finishes_pts": 35.0,
-          "top10_race_position_pts": 96.0,
+          "top10_race_position_pts": 100.0,
           "top8_sprint_position_pts": 8.0,
-          "total_position_pts": 139.0,
-          "total_position_gained_lost": 95.0,
+          "total_position_pts": 143.0,
+          "total_position_gained_lost": 97.0,
           "total_dnf_dq_pts": -90.0,
-          "value_for_money": 1.7
+          "value_for_money": 1.79
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-7.00",
-        "ProjectedNoNegativePoints": "23.00",
-        "ProjectedOverallPpints": "552.00"
+        "ProjectedGamedayPoints": "23.00",
+        "ProjectedNoNegativePoints": "53.00",
+        "ProjectedOverallPpints": "582.00"
       },
       {
         "PlayerId": "26",
@@ -2061,8 +2061,8 @@
         "DriverTLA": "HAA",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "283.00",
-        "GamedayPoints": "-14.00",
+        "OverallPpints": "301.00",
+        "GamedayPoints": "4.00",
         "SelectedPercentage": "24",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 12.0,
@@ -2075,9 +2075,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "1",
-        "RacePoints": "-15",
+        "RacePoints": "3",
         "SprintPoints": "",
-        "NoNegativePoints": "6.00",
+        "NoNegativePoints": "24.00",
         "F1PlayerId": "6",
         "FirstName": "Haas F1 Team",
         "LastName": "Haas F1 Team",
@@ -2091,27 +2091,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -15,
-            "nonegative_points": 5
+            "points": 3,
+            "nonegative_points": 23
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 249.0,
+          "overtaking_pts": 261.0,
           "q3_finishes_pts": 1.0,
-          "top10_race_position_pts": 26.0,
+          "top10_race_position_pts": 27.0,
           "top8_sprint_position_pts": 4.0,
-          "total_position_pts": 31.0,
-          "total_position_gained_lost": 79.0,
+          "total_position_pts": 32.0,
+          "total_position_gained_lost": 82.0,
           "total_dnf_dq_pts": -125.0,
-          "value_for_money": 1.18
+          "value_for_money": 1.26
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-14.00",
-        "ProjectedNoNegativePoints": "6.00",
-        "ProjectedOverallPpints": "283.00"
+        "ProjectedGamedayPoints": "4.00",
+        "ProjectedNoNegativePoints": "24.00",
+        "ProjectedOverallPpints": "301.00"
       },
       {
         "PlayerId": "210",
@@ -2127,8 +2127,8 @@
         "DriverTLA": "WIL",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "203.00",
-        "GamedayPoints": "5.00",
+        "OverallPpints": "234.00",
+        "GamedayPoints": "36.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 12.6,
@@ -2141,9 +2141,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "3",
-        "RacePoints": "2",
+        "RacePoints": "33",
         "SprintPoints": "",
-        "NoNegativePoints": "5.00",
+        "NoNegativePoints": "36.00",
         "F1PlayerId": "10",
         "FirstName": "Williams",
         "LastName": "Williams",
@@ -2157,27 +2157,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": 2,
-            "nonegative_points": 2
+            "points": 33,
+            "nonegative_points": 33
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 218.0,
+          "overtaking_pts": 228.0,
           "q3_finishes_pts": 2.0,
           "top10_race_position_pts": 12.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 14.0,
-          "total_position_gained_lost": 65.0,
+          "total_position_gained_lost": 71.0,
           "total_dnf_dq_pts": -175.0,
-          "value_for_money": 0.89
+          "value_for_money": 1.03
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "5.00",
-        "ProjectedNoNegativePoints": "5.00",
-        "ProjectedOverallPpints": "203.00"
+        "ProjectedGamedayPoints": "36.00",
+        "ProjectedNoNegativePoints": "36.00",
+        "ProjectedOverallPpints": "234.00"
       },
       {
         "PlayerId": "2640",
@@ -2193,8 +2193,8 @@
         "DriverTLA": "AUD",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "269.00",
-        "GamedayPoints": "2.00",
+        "OverallPpints": "290.00",
+        "GamedayPoints": "23.00",
         "SelectedPercentage": "21",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 10.4,
@@ -2202,14 +2202,14 @@
         "HigestGridStart": "7",
         "HigestChampFinish": "",
         "FastestPitstopAward": "",
-        "BestRaceFinishCount": 4,
+        "BestRaceFinishCount": 5,
         "HighestGridStartCount": 1,
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "6",
-        "RacePoints": "-4",
+        "RacePoints": "17",
         "SprintPoints": "",
-        "NoNegativePoints": "6.00",
+        "NoNegativePoints": "23.00",
         "F1PlayerId": "640",
         "FirstName": "Audi",
         "LastName": "Audi",
@@ -2223,27 +2223,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -4,
-            "nonegative_points": 0
+            "points": 17,
+            "nonegative_points": 17
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 230.0,
+          "overtaking_pts": 237.0,
           "q3_finishes_pts": 13.0,
-          "top10_race_position_pts": 21.0,
+          "top10_race_position_pts": 25.0,
           "top8_sprint_position_pts": 2.0,
-          "total_position_pts": 36.0,
-          "total_position_gained_lost": 32.0,
+          "total_position_pts": 40.0,
+          "total_position_gained_lost": 37.0,
           "total_dnf_dq_pts": -180.0,
-          "value_for_money": 1.29
+          "value_for_money": 1.39
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "2.00",
-        "ProjectedNoNegativePoints": "6.00",
-        "ProjectedOverallPpints": "269.00"
+        "ProjectedGamedayPoints": "23.00",
+        "ProjectedNoNegativePoints": "23.00",
+        "ProjectedOverallPpints": "290.00"
       },
       {
         "PlayerId": "24",
@@ -2259,8 +2259,8 @@
         "DriverTLA": "AST",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "-114.00",
-        "GamedayPoints": "-41.00",
+        "OverallPpints": "-111.00",
+        "GamedayPoints": "-38.00",
         "SelectedPercentage": "3",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 4.5,
@@ -2273,9 +2273,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "-1",
-        "RacePoints": "-40",
+        "RacePoints": "-37",
         "SprintPoints": "",
-        "NoNegativePoints": "0.00",
+        "NoNegativePoints": "3.00",
         "F1PlayerId": "4",
         "FirstName": "Aston Martin",
         "LastName": "Aston Martin",
@@ -2289,27 +2289,27 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -40,
-            "nonegative_points": 0
+            "points": -37,
+            "nonegative_points": 3
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 187.0,
+          "overtaking_pts": 188.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 7.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 7.0,
           "total_position_gained_lost": 88.0,
           "total_dnf_dq_pts": -430.0,
-          "value_for_money": -1.18
+          "value_for_money": -1.15
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-41.00",
-        "ProjectedNoNegativePoints": "0.00",
-        "ProjectedOverallPpints": "-114.00"
+        "ProjectedGamedayPoints": "-38.00",
+        "ProjectedNoNegativePoints": "3.00",
+        "ProjectedOverallPpints": "-111.00"
       },
       {
         "PlayerId": "2641",
@@ -2325,8 +2325,8 @@
         "DriverTLA": "CAD",
         "DriverReference": "",
         "CountryName": "",
-        "OverallPpints": "-120.00",
-        "GamedayPoints": "-18.00",
+        "OverallPpints": "-102.00",
+        "GamedayPoints": "0.00",
         "SelectedPercentage": "9",
         "CaptainSelectedPercentage": "0",
         "OldPlayerValue": 3.0,
@@ -2339,9 +2339,9 @@
         "HighestChampFinishCount": 0,
         "FastestPitstopAwardCount": 0,
         "QualifyingPoints": "-1",
-        "RacePoints": "-17",
+        "RacePoints": "1",
         "SprintPoints": "",
-        "NoNegativePoints": "3.00",
+        "NoNegativePoints": "21.00",
         "F1PlayerId": "641",
         "FirstName": "Cadillac",
         "LastName": "Cadillac",
@@ -2355,33 +2355,33 @@
           {
             "sessionnumber": 2,
             "sessiontype": "Race",
-            "points": -17,
-            "nonegative_points": 3
+            "points": 1,
+            "nonegative_points": 21
           }
         ],
         "AdditionalStats": {
           "fastest_lap_pts": 0.0,
           "dotd_pts": 0.0,
-          "overtaking_pts": 134.0,
+          "overtaking_pts": 151.0,
           "q3_finishes_pts": 0.0,
           "top10_race_position_pts": 0.0,
           "top8_sprint_position_pts": 0.0,
           "total_position_pts": 0.0,
-          "total_position_gained_lost": 61.0,
+          "total_position_gained_lost": 62.0,
           "total_dnf_dq_pts": -310.0,
-          "value_for_money": -2.11
+          "value_for_money": -1.79
         },
         "old_Value": 0.0,
         "new_value": 0.0,
-        "ProjectedGamedayPoints": "-18.00",
-        "ProjectedNoNegativePoints": "3.00",
-        "ProjectedOverallPpints": "-120.00"
+        "ProjectedGamedayPoints": "0.00",
+        "ProjectedNoNegativePoints": "21.00",
+        "ProjectedOverallPpints": "-102.00"
       }
     ],
     "FeedTime": {
-      "UTCTime": "11/1/2026 11:19:33 PM",
-      "ISTTime": "11/2/2026 4:49:33 AM",
-      "CESTTime": "11/2/2026 12:19:33 AM"
+      "UTCTime": "11/2/2026 2:52:13 AM",
+      "ISTTime": "11/2/2026 8:22:13 AM",
+      "CESTTime": "11/2/2026 3:52:13 AM"
     }
   },
   "Meta": {
@@ -2389,9 +2389,9 @@
     "RetVal": 1,
     "Success": true,
     "Timestamp": {
-      "UTCTime": "11/1/2026 11:19:33 PM",
-      "ISTTime": "11/2/2026 4:49:33 AM",
-      "CESTTime": "11/2/2026 12:19:33 AM"
+      "UTCTime": "11/2/2026 2:52:13 AM",
+      "ISTTime": "11/2/2026 8:22:13 AM",
+      "CESTTime": "11/2/2026 3:52:13 AM"
     },
     "StatusCode": 200,
     "Maintenance": ""

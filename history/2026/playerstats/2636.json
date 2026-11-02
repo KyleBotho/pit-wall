@@ -910,12 +910,12 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -7
+            "Value": 23
           },
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 2
+            "Value": 6
           },
           {
             "Frequency": "-",
@@ -938,11 +938,29 @@
             "Value": 5
           },
           {
-            "Frequency": "13",
+            "Frequency": "15",
             "Event": "Race position gained",
-            "Value": 13
+            "Value": 15
+          },
+          {
+            "Frequency": "-",
+            "Event": "Fastest Pitstop",
+            "Value": 10
+          },
+          {
+            "Frequency": "14",
+            "Event": "race overtake bonus",
+            "Value": 14
           }
         ]
+      },
+      {
+        "GamedayId": 20,
+        "PlayerValue": 17.7,
+        "OldPlayerValue": 17.1,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -956,7 +974,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 552
+            "Value": 582
           },
           {
             "Frequency": "-",
@@ -981,7 +999,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 96
+            "Value": 100
           },
           {
             "Frequency": "-",
@@ -1014,9 +1032,9 @@
             "Value": 50
           },
           {
-            "Frequency": "88",
+            "Frequency": "90",
             "Event": "Race position gained",
-            "Value": 88
+            "Value": 90
           },
           {
             "Frequency": "15",
@@ -1026,7 +1044,7 @@
           {
             "Frequency": "-",
             "Event": "Fastest Pitstop",
-            "Value": 88
+            "Value": 98
           },
           {
             "Frequency": "-",
@@ -1034,9 +1052,9 @@
             "Value": 20
           },
           {
-            "Frequency": "158",
+            "Frequency": "172",
             "Event": "race overtake bonus",
-            "Value": 158
+            "Value": 172
           },
           {
             "Frequency": "-",
@@ -2068,7 +2086,7 @@
             "RaceDayId": 7404,
             "TeamId": 2636,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -2082,6 +2100,54 @@
             "Season": "2026",
             "SelectedPercentage": "33",
             "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 17.7,
+            "OldPlayerValue": 17.1,
+            "RaceDayId": 7408,
+            "TeamId": 2636,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 17.7,
+            "OldPlayerValue": 17.1,
+            "RaceDayId": 7409,
+            "TeamId": 2636,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-08T14:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3982,7 +4048,7 @@
             "OldPlayerValue": 16.5,
             "RaceDayId": 7404,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -3999,12 +4065,12 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -5
+                "Value": 25
               },
               {
                 "Frequency": "-",
                 "Event": "Race Position",
-                "Value": 2
+                "Value": 6
               },
               {
                 "Frequency": "-",
@@ -4012,19 +4078,55 @@
                 "Value": -20
               },
               {
-                "Frequency": "13",
+                "Frequency": "15",
                 "Event": "Race position gained",
-                "Value": 13
+                "Value": 15
+              },
+              {
+                "Frequency": "-",
+                "Event": "Fastest Pitstop",
+                "Value": 10
+              },
+              {
+                "Frequency": "14",
+                "Event": "race overtake bonus",
+                "Value": 14
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 17.7,
+            "OldPlayerValue": 17.1,
+            "RaceDayId": 7408,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/1/2026 11:19:55 PM",
-    "ISTTime": "11/2/2026 4:49:55 AM",
-    "CESTTime": "11/2/2026 12:19:55 AM"
+    "UTCTime": "11/2/2026 2:52:33 AM",
+    "ISTTime": "11/2/2026 8:22:33 AM",
+    "CESTTime": "11/2/2026 3:52:33 AM"
   }
 }

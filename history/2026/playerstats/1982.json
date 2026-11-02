@@ -655,12 +655,12 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 11
+            "Value": 7
           },
           {
-            "Frequency": "7th",
+            "Frequency": "13th",
             "Event": "Race Position",
-            "Value": 6
+            "Value": 0
           },
           {
             "Frequency": "12th",
@@ -668,11 +668,24 @@
             "Value": 0
           },
           {
-            "Frequency": "5",
-            "Event": "Race position gained",
-            "Value": 5
+            "Frequency": "1",
+            "Event": "Race Position lost",
+            "Value": -1
+          },
+          {
+            "Frequency": "8",
+            "Event": "race overtake bonus",
+            "Value": 8
           }
         ]
+      },
+      {
+        "GamedayId": 20,
+        "PlayerValue": 23.0,
+        "OldPlayerValue": 23.3,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -686,7 +699,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 289
+            "Value": 285
           },
           {
             "Frequency": "12",
@@ -711,7 +724,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 129
+            "Value": 123
           },
           {
             "Frequency": "-",
@@ -729,19 +742,19 @@
             "Value": -60
           },
           {
-            "Frequency": "21",
+            "Frequency": "16",
             "Event": "Race position gained",
-            "Value": 21
+            "Value": 16
           },
           {
-            "Frequency": "23",
+            "Frequency": "24",
             "Event": "Race Position lost",
-            "Value": -23
+            "Value": -24
           },
           {
-            "Frequency": "94",
+            "Frequency": "102",
             "Event": "race overtake bonus",
-            "Value": 94
+            "Value": 102
           }
         ]
       }
@@ -1768,7 +1781,7 @@
             "RaceDayId": 7404,
             "TeamId": 27,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -1782,6 +1795,54 @@
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "5"
+          }
+        ]
+      },
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 23.0,
+            "OldPlayerValue": 23.3,
+            "RaceDayId": 7408,
+            "TeamId": 27,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 23.0,
+            "OldPlayerValue": 23.3,
+            "RaceDayId": 7409,
+            "TeamId": 27,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-08T14:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3417,7 +3478,7 @@
             "OldPlayerValue": 23.4,
             "RaceDayId": 7404,
             "DateTime": "10/30/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Mexico City",
             "MeetingNumber": 19,
             "MeetingName": "Mexico City Grand Prix",
@@ -3434,27 +3495,58 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": 11
+                "Value": 7
               },
               {
-                "Frequency": "7th",
+                "Frequency": "13th",
                 "Event": "Race Position",
-                "Value": 6
+                "Value": 0
               },
               {
-                "Frequency": "5",
-                "Event": "Race position gained",
-                "Value": 5
+                "Frequency": "1",
+                "Event": "Race Position lost",
+                "Value": -1
+              },
+              {
+                "Frequency": "8",
+                "Event": "race overtake bonus",
+                "Value": 8
               }
             ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 23.0,
+            "OldPlayerValue": 23.3,
+            "RaceDayId": 7408,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
           }
         ]
       }
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/1/2026 11:19:54 PM",
-    "ISTTime": "11/2/2026 4:49:54 AM",
-    "CESTTime": "11/2/2026 12:19:54 AM"
+    "UTCTime": "11/2/2026 2:52:32 AM",
+    "ISTTime": "11/2/2026 8:22:32 AM",
+    "CESTTime": "11/2/2026 3:52:32 AM"
   }
 }
