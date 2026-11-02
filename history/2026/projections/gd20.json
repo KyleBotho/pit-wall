@@ -1529,9 +1529,9 @@
   "s": 0.25850571241632686
  },
  "record": {
-  "built": "2026-11-02T06:46:12+00:00",
-  "commit": "ce7b5bcecc169f4e05c430daa4cc68c1800f513b",
-  "dataGenerated": "2026-11-02T06:45+00:00",
+  "built": "2026-11-02T06:55:42+00:00",
+  "commit": "3fb3c781ea44319e2bd2cebe7f23d4add46de9f5",
+  "dataGenerated": "2026-11-02T06:54+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -1559,7 +1559,7 @@
    "schedule": "bab32e555894",
    "skills": "84fff467073b",
    "trackStats": "3dab0e60f463",
-   "weather": "346f59d7cb0f",
+   "weather": "cd32d8e04ea1",
    "weekend": "0d85e5156488"
   },
   "lock": "2026-11-07T15:00:00-03:00",
