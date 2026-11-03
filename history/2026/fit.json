@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-27T09:25Z",
+ "generated": "2026-11-03T11:25Z",
  "N": 4000,
  "passes": 1,
  "rounds": [
@@ -16,28 +16,29 @@
   15,
   16,
   17,
-  18
+  18,
+  19
  ],
  "holdout": {
   "rounds": [
-   16,
    17,
-   18
+   18,
+   19
   ],
-  "shipped": 9.389,
-  "fitted": 9.446,
-  "dCrps": 0.058,
-  "se": 0.031,
+  "shipped": 8.49,
+  "fitted": 8.577,
+  "dCrps": 0.088,
+  "se": 0.081,
   "folds": [
    {
-    "gd": 16,
+    "gd": 17,
     "train": [
      5,
-     15
+     16
     ],
-    "shipped": 11.122,
-    "fitted": 11.228,
-    "dCrps": 0.106,
+    "shipped": 10.185,
+    "fitted": 10.434,
+    "dCrps": 0.249,
     "changes": [
      {
       "setting": "MODEL.paceShrink",
@@ -54,28 +55,33 @@
     ]
    },
    {
-    "gd": 17,
-    "train": [
-     5,
-     16
-    ],
-    "shipped": 10.161,
-    "fitted": 10.161,
-    "dCrps": 0,
-    "changes": []
-   },
-   {
     "gd": 18,
     "train": [
      5,
      17
     ],
-    "shipped": 6.883,
-    "fitted": 6.95,
-    "dCrps": 0.067,
+    "shipped": 6.919,
+    "fitted": 6.933,
+    "dCrps": 0.014,
     "changes": [
      {
-      "setting": "SIM.rSd",
+      "setting": "SIM.qSd",
+      "fitted": 0.25
+     }
+    ]
+   },
+   {
+    "gd": 19,
+    "train": [
+     5,
+     18
+    ],
+    "shipped": 8.365,
+    "fitted": 8.365,
+    "dCrps": 0,
+    "changes": [
+     {
+      "setting": "SIM.qSd",
       "fitted": 0.25
      }
     ]
@@ -83,19 +89,26 @@
   ]
  },
  "shipped": {
-  "crps": 8.76,
-  "mae": 12.132,
-  "rho": 0.728,
-  "cover80": 0.801,
-  "cover50": 0.506
+  "crps": 8.748,
+  "mae": 12.141,
+  "rho": 0.733,
+  "cover80": 0.794,
+  "cover50": 0.513
  },
  "fitted": {
-  "crps": 8.76,
-  "mae": 12.132,
-  "rho": 0.728,
-  "cover80": 0.801,
-  "cover50": 0.506
+  "crps": 8.729,
+  "mae": 12.081,
+  "rho": 0.733,
+  "cover80": 0.796,
+  "cover50": 0.517
  },
- "changes": [],
- "minutes": 14.1
+ "changes": [
+  {
+   "setting": "SIM.qSd",
+   "shipped": 0.2,
+   "fitted": 0.25,
+   "folds": 2
+  }
+ ],
+ "minutes": 18.6
 }
