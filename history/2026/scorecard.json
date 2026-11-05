@@ -19,7 +19,7 @@
  "perRound": [
   {
    "gd": 5,
-   "crps": 9.22,
+   "crps": 9.13,
    "crpsNaive": 8.999,
    "mae": 12.38,
    "maeNaive": 12.58,
@@ -29,7 +29,7 @@
   },
   {
    "gd": 6,
-   "crps": 10.87,
+   "crps": 10.9,
    "crpsNaive": 12.377,
    "mae": 14.71,
    "maeNaive": 17.97,
@@ -39,7 +39,7 @@
   },
   {
    "gd": 7,
-   "crps": 9.33,
+   "crps": 9.26,
    "crpsNaive": 9.76,
    "mae": 12.81,
    "maeNaive": 12.97,
@@ -49,7 +49,7 @@
   },
   {
    "gd": 8,
-   "crps": 7.05,
+   "crps": 7.02,
    "crpsNaive": 7.903,
    "mae": 9.33,
    "maeNaive": 10.49,
@@ -59,7 +59,7 @@
   },
   {
    "gd": 9,
-   "crps": 8.43,
+   "crps": 8.38,
    "crpsNaive": 11.353,
    "mae": 14.53,
    "maeNaive": 14.53,
@@ -69,7 +69,7 @@
   },
   {
    "gd": 10,
-   "crps": 6.71,
+   "crps": 6.59,
    "crpsNaive": 9.017,
    "mae": 10.46,
    "maeNaive": 12.0,
@@ -79,7 +79,7 @@
   },
   {
    "gd": 11,
-   "crps": 7.22,
+   "crps": 7.28,
    "crpsNaive": 8.657,
    "mae": 9.32,
    "maeNaive": 12.09,
@@ -89,7 +89,7 @@
   },
   {
    "gd": 12,
-   "crps": 8.03,
+   "crps": 7.99,
    "crpsNaive": 9.66,
    "mae": 10.57,
    "maeNaive": 12.75,
@@ -99,7 +99,7 @@
   },
   {
    "gd": 13,
-   "crps": 10.34,
+   "crps": 10.32,
    "crpsNaive": 11.72,
    "mae": 17.66,
    "maeNaive": 15.75,
@@ -119,7 +119,7 @@
   },
   {
    "gd": 15,
-   "crps": 10.28,
+   "crps": 10.15,
    "crpsNaive": 11.124,
    "mae": 14.82,
    "maeNaive": 16.11,
@@ -139,7 +139,7 @@
   },
   {
    "gd": 17,
-   "crps": 10.16,
+   "crps": 10.23,
    "crpsNaive": 9.679,
    "mae": 13.7,
    "maeNaive": 14.21,
@@ -149,7 +149,7 @@
   },
   {
    "gd": 18,
-   "crps": 6.95,
+   "crps": 6.93,
    "crpsNaive": 7.88,
    "mae": 9.38,
    "maeNaive": 10.39,
@@ -159,7 +159,7 @@
   },
   {
    "gd": 19,
-   "crps": 8.38,
+   "crps": 8.37,
    "crpsNaive": 8.6,
    "mae": 11.46,
    "maeNaive": 12.87,
@@ -170,12 +170,12 @@
  ],
  "T1": {
   "rounds": 15,
-  "crps": 8.771,
+  "crps": 8.743,
   "crpsNaive": 9.717,
-  "skill": 0.097,
-  "dCrps": -0.946,
-  "se": 0.245,
-  "target2x": 7.83
+  "skill": 0.1,
+  "dCrps": -0.974,
+  "se": 0.249,
+  "target2x": 7.77
  },
  "mae": {
   "model": 12.52,

@@ -1,0 +1,48 @@
+{
+ "event": "2026_sao_paulo_grand_prix",
+ "docs": [
+  {
+   "doc": 1,
+   "title": "Doc 1 - Competition Visa",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_competition_visa.pdf",
+   "published": "2026-11-05T08:14+00:00",
+   "firstSeen": "2026-11-05T20:18+00:00"
+  },
+  {
+   "doc": 2,
+   "title": "Doc 2 - Competition Notes - Pirelli Preview",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_competition_notes_-_pirelli_preview.pdf",
+   "published": "2026-11-05T08:14+00:00",
+   "firstSeen": "2026-11-05T20:18+00:00",
+   "read": "tyres"
+  },
+  {
+   "doc": 3,
+   "title": "Doc 3 - Power Unit Information",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_power_unit_information.pdf",
+   "published": "2026-11-05T19:23+00:00",
+   "firstSeen": "2026-11-05T20:18+00:00"
+  },
+  {
+   "doc": 4,
+   "title": "Doc 4 - Car Display Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_car_display_procedure.pdf",
+   "published": "2026-11-05T19:31+00:00",
+   "firstSeen": "2026-11-05T20:18+00:00"
+  }
+ ],
+ "tech": {
+  "tyres": {
+   "compounds": [
+    "C3",
+    "C4",
+    "C5"
+   ],
+   "q3": "C5",
+   "race": [
+    "C3",
+    "C4"
+   ]
+  }
+ }
+}

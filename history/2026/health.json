@@ -1,4 +1,13 @@
 {
- "notices": {},
+ "notices": {
+  "card:active:11167:False": {
+   "first": "2026-11-05T20:18+00:00",
+   "msg": "Ryo Hirakawa (Haas F1 Team) is now inactive (a stand-in or a driver out?)."
+  },
+  "card:new:11205": {
+   "first": "2026-11-05T20:18+00:00",
+   "msg": "New card: Rafael C\u00e2mara (Haas F1 Team), $6.0m."
+  }
+ },
  "since": {}
 }

@@ -1,0 +1,109 @@
+{
+  "Value": {
+    "PlayerId": 11205,
+    "PlayerSkill": 1,
+    "GamedayWiseStats": [
+      {
+        "GamedayId": 20,
+        "PlayerValue": 6.0,
+        "OldPlayerValue": null,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
+      }
+    ],
+    "TourWiseStats": [
+      {
+        "TourId": 4,
+        "PlayerValue": 6.0,
+        "OldPlayerValue": null,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
+      }
+    ],
+    "FixtureWiseStats": [
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 6.0,
+            "OldPlayerValue": null,
+            "RaceDayId": 7408,
+            "TeamId": 26,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": "0",
+            "CapSelectedPercentage": "0"
+          },
+          {
+            "PlayerValue": 6.0,
+            "OldPlayerValue": null,
+            "RaceDayId": 7409,
+            "TeamId": 26,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-08T14:00:00-03:00",
+            "Season": "2026",
+            "SelectedPercentage": "0",
+            "CapSelectedPercentage": "0"
+          }
+        ]
+      }
+    ],
+    "MatchWiseStats": [
+      {
+        "GamedayId": 20,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 6.0,
+            "OldPlayerValue": null,
+            "RaceDayId": 7408,
+            "DateTime": "11/06/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "São Paulo",
+            "MeetingNumber": 20,
+            "MeetingName": "São Paulo Grand Prix",
+            "CountryId": 11,
+            "CountryName": "Brazil",
+            "CircuitOfficialName": "Autódromo José Carlos Pace",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-07T15:00:00-03:00",
+            "Season": "2026",
+            "IsPlayed": 0,
+            "StatsWise": []
+          }
+        ]
+      }
+    ]
+  },
+  "FeedTime": {
+    "UTCTime": "11/5/2026 8:17:10 PM",
+    "ISTTime": "11/6/2026 1:47:10 AM",
+    "CESTTime": "11/5/2026 9:17:10 PM"
+  }
+}
