@@ -50,6 +50,79 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_competition_notes_-_circuit_map_pit_lane_drawing_emergency_exits_map_and_red_zone.pdf",
    "published": "2026-11-05T22:18+00:00",
    "firstSeen": "2026-11-06T06:20+00:00"
+  },
+  {
+   "doc": 8,
+   "title": "Doc 8 - PU Elements used per Driver up to now",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_pu_elements_used_per_driver_up_to_now.pdf",
+   "published": "2026-11-06T14:23+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00",
+   "read": "puUsed"
+  },
+  {
+   "doc": 9,
+   "title": "Doc 9 - Self Scrutineering",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_self_scrutineering.pdf",
+   "published": "2026-11-06T14:25+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 10,
+   "title": "Doc 10 - Curfew",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_curfew.pdf",
+   "published": "2026-11-06T14:25+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 12,
+   "title": "Doc 12 - Car Presentation Submissions",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_car_presentation_submissions.pdf",
+   "published": "2026-11-06T14:32+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00",
+   "read": "upgrades"
+  },
+  {
+   "doc": 13,
+   "title": "Doc 13 - Entry List",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_entry_list.pdf",
+   "published": "2026-11-06T14:32+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 14,
+   "title": "Doc 14 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_new_pu_elements_for_this_competition.pdf",
+   "published": "2026-11-06T15:33+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 15,
+   "title": "Doc 15 - Infringement - Car 63 - Changes to PU element",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_car_63_-_changes_to_pu_element.pdf",
+   "published": "2026-11-06T16:25+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 16,
+   "title": "Doc 16 - Infringement - Car 43 - Pit Lane Speeding",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_car_43_-_pit_lane_speeding.pdf",
+   "published": "2026-11-06T16:40+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 17,
+   "title": "Doc 17 - Free Practice 1 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_free_practice_1_classification.pdf",
+   "published": "2026-11-06T16:49+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
+  },
+  {
+   "doc": 18,
+   "title": "Doc 18 - Infringement - Free Practice 1 Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_free_practice_1_deleted_lap_times.pdf",
+   "published": "2026-11-06T16:55+00:00",
+   "firstSeen": "2026-11-06T16:55+00:00"
   }
  ],
  "tech": {
@@ -64,6 +137,262 @@
     "C3",
     "C4"
    ]
+  },
+  "puUsed": {
+   "81": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "1": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "63": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "12": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 6
+   },
+   "3": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "6": {
+    "ICE": 8,
+    "TC": 7,
+    "EXH": 7,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 8
+   },
+   "16": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "44": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "23": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "55": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "41": {
+    "ICE": 6,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
+   },
+   "30": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 7
+   },
+   "18": {
+    "ICE": 6,
+    "TC": 7,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 8,
+    "PU-CE": 7,
+    "PU-ANC": 9
+   },
+   "14": {
+    "ICE": 5,
+    "TC": 6,
+    "EXH": 3,
+    "MGU-K": 5,
+    "ES": 7,
+    "PU-CE": 6,
+    "PU-ANC": 9
+   },
+   "50": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "87": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 4
+   },
+   "27": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "5": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 5,
+    "MGU-K": 4,
+    "ES": 5,
+    "PU-CE": 5,
+    "PU-ANC": 7
+   },
+   "10": {
+    "ICE": 4,
+    "TC": 3,
+    "EXH": 3,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 5
+   },
+   "43": {
+    "ICE": 5,
+    "TC": 3,
+    "EXH": 2,
+    "MGU-K": 2,
+    "ES": 3,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   },
+   "11": {
+    "ICE": 4,
+    "TC": 4,
+    "EXH": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 4
+   },
+   "77": {
+    "ICE": 5,
+    "TC": 5,
+    "EXH": 4,
+    "MGU-K": 4,
+    "ES": 4,
+    "PU-CE": 4,
+    "PU-ANC": 5
+   }
+  },
+  "upgrades": {
+   "MCL": {
+    "n": 4,
+    "reasons": {
+     "Performance": 4
+    }
+   },
+   "MER": {
+    "n": 0,
+    "reasons": {}
+   },
+   "RED": {
+    "n": 0,
+    "reasons": {}
+   },
+   "FER": {
+    "n": 0,
+    "reasons": {}
+   },
+   "WIL": {
+    "n": 0,
+    "reasons": {}
+   },
+   "VRB": {
+    "n": 0,
+    "reasons": {}
+   },
+   "AST": {
+    "n": 0,
+    "reasons": {}
+   },
+   "HAA": {
+    "n": 0,
+    "reasons": {}
+   },
+   "AUD": {
+    "n": 0,
+    "reasons": {}
+   },
+   "ALP": {
+    "n": 0,
+    "reasons": {}
+   },
+   "CAD": {
+    "n": 0,
+    "reasons": {}
+   }
+  },
+  "puNew": {
+   "63": {
+    "ICE": 5
+   },
+   "51": {
+    "PU-ANC": 5
+   }
   }
  }
 }
