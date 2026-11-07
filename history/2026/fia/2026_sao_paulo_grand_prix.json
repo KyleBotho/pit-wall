@@ -193,6 +193,35 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_power_unit_information_v2.pdf",
    "published": "2026-11-07T13:04+00:00",
    "firstSeen": "2026-11-07T13:36+00:00"
+  },
+  {
+   "doc": 29,
+   "title": "Doc 29 - Post-Qualifying Procedure",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_post-qualifying_procedure.pdf",
+   "published": "2026-11-07T14:14+00:00",
+   "firstSeen": "2026-11-07T15:55+00:00"
+  },
+  {
+   "doc": 30,
+   "title": "Doc 30 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_new_pu_elements_for_this_competition_0.pdf",
+   "published": "2026-11-07T14:43+00:00",
+   "firstSeen": "2026-11-07T15:55+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 31,
+   "title": "Doc 31 - Summons - Car 11 - Alleged driving in an unsafe condition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_summons_-_car_11_-_alleged_driving_in_an_unsafe_condition.pdf",
+   "published": "2026-11-07T15:47+00:00",
+   "firstSeen": "2026-11-07T15:55+00:00"
+  },
+  {
+   "doc": 32,
+   "title": "Doc 32 - Free Practice 3 Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_free_practice_3_classification.pdf",
+   "published": "2026-11-07T15:47+00:00",
+   "firstSeen": "2026-11-07T15:55+00:00"
   }
  ],
  "tech": {
@@ -458,10 +487,28 @@
   },
   "puNew": {
    "63": {
-    "ICE": 5
+    "ICE": 5,
+    "PU-ANC": 5
    },
    "51": {
     "PU-ANC": 5
+   },
+   "3": {
+    "ICE": 4,
+    "TC": 4,
+    "PU-ANC": 5
+   },
+   "16": {
+    "ICE": 4
+   },
+   "44": {
+    "ICE": 4
+   },
+   "11": {
+    "ICE": 4,
+    "TC": 4,
+    "MGU-K": 3,
+    "PU-ANC": 4
    }
   }
  }
