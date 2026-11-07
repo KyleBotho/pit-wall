@@ -958,9 +958,25 @@
         "GamedayId": 20,
         "PlayerValue": 17.7,
         "OldPlayerValue": 17.1,
-        "IsPlayed": 0,
+        "IsPlayed": 1,
         "IsActive": 1,
-        "StatsWise": []
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 11
+          },
+          {
+            "Frequency": "-",
+            "Event": "Qualifying Position",
+            "Value": 6
+          },
+          {
+            "Frequency": "-",
+            "Event": "One Driver Q3",
+            "Value": 5
+          }
+        ]
       }
     ],
     "TourWiseStats": [
@@ -974,7 +990,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 582
+            "Value": 593
           },
           {
             "Frequency": "-",
@@ -1004,7 +1020,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 35
+            "Value": 41
           },
           {
             "Frequency": "-",
@@ -1029,7 +1045,7 @@
           {
             "Frequency": "-",
             "Event": "One Driver Q3",
-            "Value": 50
+            "Value": 55
           },
           {
             "Frequency": "90",
@@ -2113,7 +2129,7 @@
             "RaceDayId": 7408,
             "TeamId": 2636,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -4105,7 +4121,7 @@
             "OldPlayerValue": 17.1,
             "RaceDayId": 7408,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -4117,8 +4133,24 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-07T15:00:00-03:00",
             "Season": "2026",
-            "IsPlayed": 0,
-            "StatsWise": []
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 11
+              },
+              {
+                "Frequency": "-",
+                "Event": "Qualifying Position",
+                "Value": 6
+              },
+              {
+                "Frequency": "-",
+                "Event": "One Driver Q3",
+                "Value": 5
+              }
+            ]
           },
           {
             "PlayerValue": 17.7,
@@ -4145,8 +4177,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/7/2026 6:54:57 PM",
-    "ISTTime": "11/8/2026 12:24:57 AM",
-    "CESTTime": "11/7/2026 7:54:57 PM"
+    "UTCTime": "11/7/2026 9:27:10 PM",
+    "ISTTime": "11/8/2026 2:57:10 AM",
+    "CESTTime": "11/7/2026 10:27:10 PM"
   }
 }

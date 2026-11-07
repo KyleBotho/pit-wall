@@ -14,7 +14,8 @@
   16,
   17,
   18,
-  19
+  19,
+  20
  ],
  "perRound": [
   {
@@ -166,6 +167,16 @@
    "team": 157,
    "teamNaive": 143,
    "teamBest": 278
+  },
+  {
+   "gd": 20,
+   "crps": null,
+   "crpsNaive": 10.576,
+   "mae": 11.91,
+   "maeNaive": 14.96,
+   "team": 53,
+   "teamNaive": 55,
+   "teamBest": 72
   }
  ],
  "T1": {
@@ -178,34 +189,34 @@
   "target2x": 7.77
  },
  "mae": {
-  "model": 12.52,
-  "naive": 13.35,
-  "d": -0.83,
-  "se": 0.36
+  "model": 12.48,
+  "naive": 13.45,
+  "d": -0.97,
+  "se": 0.37
  },
  "T2": {
   "D": {
    "top": 8,
-   "model": 0.362,
-   "naive": 0.292,
-   "edge": 0.07,
-   "se": 0.046
+   "model": 0.339,
+   "naive": 0.262,
+   "edge": 0.077,
+   "se": 0.043
   },
   "C": {
    "top": 4,
-   "model": 0.347,
-   "naive": 0.227,
-   "edge": 0.12,
-   "se": 0.058
+   "model": 0.35,
+   "naive": 0.238,
+   "edge": 0.113,
+   "se": 0.055
   }
  },
  "T3": {
-  "team": 2749,
-  "teamNaive": 2889,
-  "teamBest": 4361,
-  "perRound": -9.3,
-  "se": 12.1,
-  "sdPerRound": 47.0
+  "team": 2802,
+  "teamNaive": 2944,
+  "teamBest": 4433,
+  "perRound": -8.9,
+  "se": 11.3,
+  "sdPerRound": 45.4
  },
  "T3b": {
   "rounds": [
@@ -226,16 +237,17 @@
    16,
    17,
    18,
-   19
+   19,
+   20
   ],
-  "team": 3809,
-  "teamNaive": 4139,
-  "teamBest": 5816,
-  "perRound": -18.3,
-  "se": 19.6,
-  "budget": 115.1,
-  "budgetNaive": 119.7,
-  "budgetBest": 125.8,
+  "team": 3868,
+  "teamNaive": 4200,
+  "teamBest": 5896,
+  "perRound": -17.5,
+  "se": 18.6,
+  "budget": 114.9,
+  "budgetNaive": 119.5,
+  "budgetBest": 126.9,
   "byRound": [
    {
     "gd": 2,
@@ -380,14 +392,22 @@
     "teamBest": 323,
     "budget": 115.1,
     "budgetNaive": 119.7
+   },
+   {
+    "gd": 20,
+    "team": 59,
+    "teamNaive": 61,
+    "teamBest": 80,
+    "budget": 114.9,
+    "budgetNaive": 119.5
    }
   ]
  },
  "floor": {
-  "pDnf": 0.189,
-  "dnfVar": 153.6,
-  "withinVar": 197.9,
-  "share": 0.78,
-  "dnfCrps": 4.65
+  "pDnf": 0.18,
+  "dnfVar": 140.0,
+  "withinVar": 197.1,
+  "share": 0.71,
+  "dnfCrps": 4.36
  }
 }

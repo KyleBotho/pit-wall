@@ -673,9 +673,15 @@
         "GamedayId": 20,
         "PlayerValue": 5.8,
         "OldPlayerValue": 6.4,
-        "IsPlayed": 0,
+        "IsPlayed": 1,
         "IsActive": 1,
-        "StatsWise": []
+        "StatsWise": [
+          {
+            "Frequency": "22th",
+            "Event": "Qualifying Position",
+            "Value": 0
+          }
+        ]
       }
     ],
     "TourWiseStats": [
@@ -1803,7 +1809,7 @@
             "RaceDayId": 7408,
             "TeamId": 2640,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3435,7 +3441,7 @@
             "OldPlayerValue": 6.4,
             "RaceDayId": 7408,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3447,8 +3453,14 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-07T15:00:00-03:00",
             "Season": "2026",
-            "IsPlayed": 0,
-            "StatsWise": []
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "22th",
+                "Event": "Qualifying Position",
+                "Value": 0
+              }
+            ]
           },
           {
             "PlayerValue": 5.8,
@@ -3475,8 +3487,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/7/2026 6:54:56 PM",
-    "ISTTime": "11/8/2026 12:24:56 AM",
-    "CESTTime": "11/7/2026 7:54:56 PM"
+    "UTCTime": "11/7/2026 9:27:08 PM",
+    "ISTTime": "11/8/2026 2:57:08 AM",
+    "CESTTime": "11/7/2026 10:27:08 PM"
   }
 }

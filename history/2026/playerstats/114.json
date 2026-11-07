@@ -625,9 +625,20 @@
         "GamedayId": 20,
         "PlayerValue": 11.1,
         "OldPlayerValue": 10.5,
-        "IsPlayed": 0,
+        "IsPlayed": 1,
         "IsActive": 1,
-        "StatsWise": []
+        "StatsWise": [
+          {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 6
+          },
+          {
+            "Frequency": "5th",
+            "Event": "Qualifying Position",
+            "Value": 6
+          }
+        ]
       }
     ],
     "TourWiseStats": [
@@ -641,7 +652,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 201
+            "Value": 207
           },
           {
             "Frequency": "18",
@@ -661,7 +672,7 @@
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
-            "Value": 13
+            "Value": 19
           },
           {
             "Frequency": "-",
@@ -1745,7 +1756,7 @@
             "RaceDayId": 7408,
             "TeamId": 2636,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3340,7 +3351,7 @@
             "OldPlayerValue": 10.5,
             "RaceDayId": 7408,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "3",
+            "MatchStatus": "5",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3352,8 +3363,19 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-07T15:00:00-03:00",
             "Season": "2026",
-            "IsPlayed": 0,
-            "StatsWise": []
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 6
+              },
+              {
+                "Frequency": "5th",
+                "Event": "Qualifying Position",
+                "Value": 6
+              }
+            ]
           },
           {
             "PlayerValue": 11.1,
@@ -3380,8 +3402,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/7/2026 6:54:56 PM",
-    "ISTTime": "11/8/2026 12:24:56 AM",
-    "CESTTime": "11/7/2026 7:54:56 PM"
+    "UTCTime": "11/7/2026 9:27:09 PM",
+    "ISTTime": "11/8/2026 2:57:09 AM",
+    "CESTTime": "11/7/2026 10:27:09 PM"
   }
 }

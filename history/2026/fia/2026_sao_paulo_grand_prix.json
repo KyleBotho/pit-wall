@@ -285,6 +285,49 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_car_87_-_reversing_in_the_pit_lane.pdf",
    "published": "2026-11-07T18:35+00:00",
    "firstSeen": "2026-11-07T19:20+00:00"
+  },
+  {
+   "doc": 42,
+   "title": "Doc 42 - New PU Elements for this Competition",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_new_pu_elements_for_this_competition_1.pdf",
+   "published": "2026-11-07T19:30+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00",
+   "read": "puNew"
+  },
+  {
+   "doc": 43,
+   "title": "Doc 43 - Infringement - Car 44 - Additional changes to PU elements",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_car_44_-_additional_changes_to_pu_elements.pdf",
+   "published": "2026-11-07T20:08+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00"
+  },
+  {
+   "doc": 44,
+   "title": "Doc 44 - Infringement - Qualifying Deleted Lap Times",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_qualifying_deleted_lap_times.pdf",
+   "published": "2026-11-07T20:45+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Provisional Qualifying Classification",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_provisional_qualifying_classification.pdf",
+   "published": "2026-11-07T20:50+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00"
+  },
+  {
+   "doc": 46,
+   "title": "Doc 46 - Infringement - Qualifying Deleted Lap Times - Double Yellow",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_infringement_-_qualifying_deleted_lap_times_-_double_yellow.pdf",
+   "published": "2026-11-07T20:56+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00"
+  },
+  {
+   "doc": 47,
+   "title": "Doc 47 - Covers-on Time",
+   "url": "https://www.fia.com/system/files/decision-document/2026_sao_paulo_grand_prix_-_covers-on_time.pdf",
+   "published": "2026-11-07T21:24+00:00",
+   "firstSeen": "2026-11-07T21:30+00:00"
   }
  ],
  "tech": {
@@ -565,7 +608,12 @@
     "ICE": 4
    },
    "44": {
-    "ICE": 4
+    "ICE": 5,
+    "TC": 4,
+    "MGU-K": 3,
+    "ES": 3,
+    "PU-CE": 3,
+    "PU-ANC": 6
    },
    "11": {
     "ICE": 4,
