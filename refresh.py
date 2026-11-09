@@ -224,7 +224,8 @@ def load_results(done):
                 for r in race[key]:
                     cid = r["Constructor"]["constructorId"]
                     row = {
-                        "tla": r["Driver"]["code"],
+                        # stand-ins can arrive without a code (R20 Camara); F1 Fantasy uses the surname's first 3
+                        "tla": r["Driver"].get("code") or r["Driver"]["familyName"][:3].upper(),
                         "team": JOLPICA_TEAM.get(cid, r["Constructor"]["name"]),
                         "pos": int(r["position"]),
                     }
