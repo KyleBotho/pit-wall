@@ -687,11 +687,39 @@
         "IsActive": 1,
         "StatsWise": [
           {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": 17
+          },
+          {
+            "Frequency": "6th",
+            "Event": "Race Position",
+            "Value": 8
+          },
+          {
             "Frequency": "12th",
             "Event": "Qualifying Position",
             "Value": 0
+          },
+          {
+            "Frequency": "4",
+            "Event": "Race position gained",
+            "Value": 4
+          },
+          {
+            "Frequency": "5",
+            "Event": "race overtake bonus",
+            "Value": 5
           }
         ]
+      },
+      {
+        "GamedayId": 21,
+        "PlayerValue": 22.7,
+        "OldPlayerValue": 23.0,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -705,7 +733,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 285
+            "Value": 302
           },
           {
             "Frequency": "12",
@@ -730,7 +758,7 @@
           {
             "Frequency": "-",
             "Event": "Race Position",
-            "Value": 123
+            "Value": 131
           },
           {
             "Frequency": "-",
@@ -748,9 +776,9 @@
             "Value": -60
           },
           {
-            "Frequency": "16",
+            "Frequency": "20",
             "Event": "Race position gained",
-            "Value": 16
+            "Value": 20
           },
           {
             "Frequency": "24",
@@ -758,9 +786,9 @@
             "Value": -24
           },
           {
-            "Frequency": "102",
+            "Frequency": "107",
             "Event": "race overtake bonus",
-            "Value": 102
+            "Value": 107
           }
         ]
       }
@@ -1835,7 +1863,7 @@
             "RaceDayId": 7409,
             "TeamId": 27,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "4",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -1849,6 +1877,54 @@
             "Season": "2026",
             "SelectedPercentage": "9",
             "CapSelectedPercentage": "5"
+          }
+        ]
+      },
+      {
+        "GamedayId": 21,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 22.7,
+            "OldPlayerValue": 23.0,
+            "RaceDayId": 7413,
+            "TeamId": 27,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-20T20:00:00-08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 22.7,
+            "OldPlayerValue": 23.0,
+            "RaceDayId": 7414,
+            "TeamId": 27,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-21T20:00:00-08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3557,7 +3633,7 @@
             "OldPlayerValue": 23.3,
             "RaceDayId": 7409,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "4",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3569,6 +3645,53 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-08T14:00:00-03:00",
             "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": 17
+              },
+              {
+                "Frequency": "6th",
+                "Event": "Race Position",
+                "Value": 8
+              },
+              {
+                "Frequency": "4",
+                "Event": "Race position gained",
+                "Value": 4
+              },
+              {
+                "Frequency": "5",
+                "Event": "race overtake bonus",
+                "Value": 5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 21,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 22.7,
+            "OldPlayerValue": 23.0,
+            "RaceDayId": 7413,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-20T20:00:00-08:00",
+            "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
           }
@@ -3577,8 +3700,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/7/2026 11:47:07 PM",
-    "ISTTime": "11/8/2026 5:17:07 AM",
-    "CESTTime": "11/8/2026 12:47:07 AM"
+    "UTCTime": "11/8/2026 10:36:31 PM",
+    "ISTTime": "11/9/2026 4:06:31 AM",
+    "CESTTime": "11/8/2026 11:36:31 PM"
   }
 }

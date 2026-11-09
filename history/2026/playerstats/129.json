@@ -652,11 +652,34 @@
         "IsActive": 1,
         "StatsWise": [
           {
+            "Frequency": "-",
+            "Event": "Total",
+            "Value": -17
+          },
+          {
             "Frequency": "19th",
             "Event": "Qualifying Position",
             "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "Race not classified ",
+            "Value": -20
+          },
+          {
+            "Frequency": "3",
+            "Event": "race overtake bonus",
+            "Value": 3
           }
         ]
+      },
+      {
+        "GamedayId": 21,
+        "PlayerValue": 3.0,
+        "OldPlayerValue": 3.0,
+        "IsPlayed": 0,
+        "IsActive": 1,
+        "StatsWise": []
       }
     ],
     "TourWiseStats": [
@@ -670,7 +693,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -167
+            "Value": -184
           },
           {
             "Frequency": "7",
@@ -700,7 +723,7 @@
           {
             "Frequency": "-",
             "Event": "Race not classified ",
-            "Value": -260
+            "Value": -280
           },
           {
             "Frequency": "-",
@@ -713,9 +736,9 @@
             "Value": 27
           },
           {
-            "Frequency": "62",
+            "Frequency": "65",
             "Event": "race overtake bonus",
-            "Value": 62
+            "Value": 65
           },
           {
             "Frequency": "-",
@@ -1795,7 +1818,7 @@
             "RaceDayId": 7409,
             "TeamId": 24,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "4",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -1809,6 +1832,54 @@
             "Season": "2026",
             "SelectedPercentage": "4",
             "CapSelectedPercentage": "0"
+          }
+        ]
+      },
+      {
+        "GamedayId": 21,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.0,
+            "RaceDayId": 7413,
+            "TeamId": 24,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-20T20:00:00-08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
+          },
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.0,
+            "RaceDayId": 7414,
+            "TeamId": 24,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "0",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Race",
+            "SessionType": "Race",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-21T20:00:00-08:00",
+            "Season": "2026",
+            "SelectedPercentage": null,
+            "CapSelectedPercentage": null
           }
         ]
       }
@@ -3397,7 +3468,7 @@
             "OldPlayerValue": 3.0,
             "RaceDayId": 7409,
             "DateTime": "11/06/2026 00:00:00",
-            "MatchStatus": "1",
+            "MatchStatus": "4",
             "MeetingLocation": "São Paulo",
             "MeetingNumber": 20,
             "MeetingName": "São Paulo Grand Prix",
@@ -3409,6 +3480,48 @@
             "SessionNumber": "0",
             "SessionStartDate": "2026-11-08T14:00:00-03:00",
             "Season": "2026",
+            "IsPlayed": 1,
+            "StatsWise": [
+              {
+                "Frequency": "-",
+                "Event": "Total",
+                "Value": -17
+              },
+              {
+                "Frequency": "-",
+                "Event": "Race not classified ",
+                "Value": -20
+              },
+              {
+                "Frequency": "3",
+                "Event": "race overtake bonus",
+                "Value": 3
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "GamedayId": 21,
+        "TourId": 4,
+        "RaceDayWise": [
+          {
+            "PlayerValue": 3.0,
+            "OldPlayerValue": 3.0,
+            "RaceDayId": 7413,
+            "DateTime": "11/19/2026 00:00:00",
+            "MatchStatus": "1",
+            "MeetingLocation": "Las Vegas",
+            "MeetingNumber": 21,
+            "MeetingName": "Las Vegas Grand Prix",
+            "CountryId": 20,
+            "CountryName": "United States",
+            "CircuitOfficialName": "Las Vegas Strip Circuit",
+            "SessionName": "Qualifying",
+            "SessionType": "Qualifying",
+            "SessionNumber": "0",
+            "SessionStartDate": "2026-11-20T20:00:00-08:00",
+            "Season": "2026",
             "IsPlayed": 0,
             "StatsWise": []
           }
@@ -3417,8 +3530,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/7/2026 11:47:06 PM",
-    "ISTTime": "11/8/2026 5:17:06 AM",
-    "CESTTime": "11/8/2026 12:47:06 AM"
+    "UTCTime": "11/8/2026 10:36:31 PM",
+    "ISTTime": "11/9/2026 4:06:31 AM",
+    "CESTTime": "11/8/2026 11:36:31 PM"
   }
 }
