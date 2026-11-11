@@ -308,6 +308,9 @@ class FiaPenalties(unittest.TestCase):
         self.assertEqual(collect.parse_decision(head + "Decision Reprimand (driving) Reason ... 5 grid places"), 0)
         self.assertEqual(collect.parse_decision(head + "Decision 3 place grid penalty for the next Sprint."), 0)
         self.assertEqual(collect.event_slug("Azerbaijan Grand Prix", 2026), "2026_azerbaijan_grand_prix")
+        # accents fold to their base letter, as in the FIA's file names (R20 2026: "ã" became "_")
+        self.assertEqual(collect.event_slug("São Paulo Grand Prix", 2026), "2026_sao_paulo_grand_prix")
+        self.assertEqual(collect.event_slug("Emilia-Romagna Grand Prix", 2026), "2026_emilia_romagna_grand_prix")
 
     def test_decisions_add_up_and_each_pdf_is_read_once(self):
         import collect
@@ -635,9 +638,16 @@ class FiaTech(unittest.TestCase):
                 return os.path.join(d, *p)
 
             os.makedirs(archived("fia"))
-            for f in ["2026_barcelona-catalunya_grand_prix.json", "2026_monaco_grand_prix.json"]:
+            for f in [
+                "2026_barcelona-catalunya_grand_prix.json",
+                "2026_monaco_grand_prix.json",
+                "2026_sao_paulo_grand_prix.json",
+            ]:
                 open(archived("fia", f), "w").close()
-            aliases = {"Barcelona Grand Prix": ["Barcelona-Catalunya Grand Prix"]}
+            aliases = {
+                "Barcelona Grand Prix": ["Barcelona-Catalunya Grand Prix"],
+                "São Paulo Grand Prix": ["Brazilian Grand Prix"],
+            }
             path = collect.fia_event_path
             self.assertEqual(
                 os.path.basename(path("Barcelona Grand Prix", 2026, archived, aliases)),
@@ -645,6 +655,11 @@ class FiaTech(unittest.TestCase):
             )
             self.assertEqual(
                 os.path.basename(path("Monaco Grand Prix", 2026, archived, aliases)), "2026_monaco_grand_prix.json"
+            )
+            # an accented name finds the FIA's unaccented file (R20 2026 health alarm: 0 of 5 kinds "read")
+            self.assertEqual(
+                os.path.basename(path("São Paulo Grand Prix", 2026, archived, aliases)),
+                "2026_sao_paulo_grand_prix.json",
             )
             # none yet: its own name's path
             self.assertEqual(

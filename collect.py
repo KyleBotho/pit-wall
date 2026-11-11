@@ -18,6 +18,7 @@ these.
 import html
 import json
 import re
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 WET_MM = 0.5  # hand-set: an ensemble member is "wet" in a session with this much rain in its window (mm)
@@ -510,9 +511,18 @@ def ledger_penalties(ledger, gd, before=None):
     return pen, at, parts
 
 
+def _slug(text):
+    """Lower-case ASCII words joined by "_": accents folded to their base letter first ("São" -> "sao"), as the FIA
+    does in its file names, then every other run of punctuation or spaces is one "_"."""
+    plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "_", plain.lower()).strip("_")
+
+
 def event_slug(name, season):
-    """The FIA's event slug for a meeting name: "Azerbaijan Grand Prix" -> "2026_azerbaijan_grand_prix"."""
-    return f"{season}_" + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    """The FIA's event slug for a meeting name: "Azerbaijan Grand Prix" -> "2026_azerbaijan_grand_prix", "São Paulo
+    Grand Prix" -> "2026_sao_paulo_grand_prix" (2026-11-11: "ã" became "_", so R20's index, archived under the
+    FIA's own "2026_sao_paulo_grand_prix", was never found)."""
+    return f"{season}_{_slug(name)}"
 
 
 def fia_names(name, aliases):
@@ -524,14 +534,14 @@ def fia_names(name, aliases):
 def fia_event_path(name, season, archived, aliases):
     """The archived FIA index of a meeting (history/<season>/fia/<event>.json). The FIA names its files itself
     ("2026_barcelona-catalunya_grand_prix"), so an archived file matches any of the meeting's names with
-    punctuation ignored; without one yet, the path under its own name (fourth review: the Barcelona round's index
-    was never found under "2026_barcelona_grand_prix")."""
+    punctuation and accents ignored; without one yet, the path under its own name (fourth review: the Barcelona
+    round's index was never found under "2026_barcelona_grand_prix")."""
     import glob
     import os
 
     want = {event_slug(n, season) for n in fia_names(name, aliases)}
     for p in sorted(glob.glob(archived("fia", "*.json"))):
-        if re.sub(r"[^a-z0-9]+", "_", os.path.basename(p)[:-5].lower()).strip("_") in want:
+        if _slug(os.path.basename(p)[:-5]) in want:
             return p
     return archived("fia", f"{event_slug(name, season)}.json")
 

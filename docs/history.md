@@ -5,6 +5,15 @@ Moved out of CLAUDE.md on 2026-09-26 so the handover stays short. Everything her
 commit hashes and backtest numbers are as of then).
 
 ## Recently finished (from CLAUDE.md's Open items)
+- [x] 2026-11-11, Data health "R20 São Paulo Grand Prix: only 0 of the FIA's 5 technical document kinds were read"
+      (issue #13). The FIA page and its event name hadn't changed and all 5 kinds were read (8 documents, texts
+      kept): collect.event_slug turned "ã" into "_" ("2026_s_o_paulo_grand_prix"), so collect.fia_event_path never
+      found the index archived under the FIA's own "2026_sao_paulo_grand_prix" (the "Brazilian Grand Prix" alias
+      didn't match either). event_slug and the file match now fold accents to their base letter (NFKD); ASCII names
+      give the same slug as before. Also lost through the same lookup: R20's stewards' decisions were never read for
+      grid penalties (24 car documents, none with `grid`), so the R20 weekend and its projection at lock had no FIA
+      grid penalties, and penalties.json has none issued at R20 yet. refresh.py reads them from the next race
+      weekend's window on (8 a run); `python backtest/fia_rounds.py` reads them at once.
 - [x] 2026-10-12, why Monza (R13) and Sepang (R16) were missed. Level: neither is forecastable from pre-lock data
       (straights share of the practice lap, speed + straights -0.056 +/- 0.043 vs the speed rule; Sepang a damp race,
       3.4 stops a driver, two safety cars; rain 2023-2025 no effect, -0.02 +/- 0.12). Fixable: cars starting 6+ slots
