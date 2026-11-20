@@ -1,0 +1,21 @@
+[
+ {
+  "done": true,
+  "drivers": {},
+  "name": "Practice 1",
+  "ref": null,
+  "start": "2026-11-20T00:30:00+00:00"
+ },
+ {
+  "done": false,
+  "drivers": {},
+  "name": "Practice 2",
+  "start": "2026-11-20T04:00:00+00:00"
+ },
+ {
+  "done": false,
+  "drivers": {},
+  "name": "Practice 3",
+  "start": "2026-11-21T00:30:00+00:00"
+ }
+]
