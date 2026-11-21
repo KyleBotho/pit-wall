@@ -321,6 +321,22 @@
    "url": "https://www.fia.com/system/files/decision-document/2026_las_vegas_grand_prix_-_decision_-_qualifying_sc2-sc1_times.pdf",
    "published": "2026-11-21T05:45+00:00",
    "firstSeen": "2026-11-21T06:20+00:00"
+  },
+  {
+   "doc": 45,
+   "title": "Doc 45 - Infringement - Car 41 Unsafe Release",
+   "url": "https://www.fia.com/system/files/decision-document/2026_las_vegas_grand_prix_-_infringement_-_car_41_unsafe_release.pdf",
+   "published": "2026-11-21T06:44+00:00",
+   "firstSeen": "2026-11-21T07:30+00:00",
+   "grid": 0
+  },
+  {
+   "doc": 46,
+   "title": "Doc 46 - Decision - Car 87 - Permission to start",
+   "url": "https://www.fia.com/system/files/decision-document/2026_las_vegas_grand_prix_-_decision_-_car_87_-_permission_to_start.pdf",
+   "published": "2026-11-21T07:17+00:00",
+   "firstSeen": "2026-11-21T07:30+00:00",
+   "grid": 0
   }
  ],
  "tech": {
