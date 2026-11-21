@@ -182,9 +182,9 @@
   {
    "gd": 21,
    "crps": null,
-   "crpsNaive": 9.947,
-   "mae": 13.77,
-   "maeNaive": 14.17,
+   "crpsNaive": 10.04,
+   "mae": 13.92,
+   "maeNaive": 14.32,
    "team": 38,
    "teamNaive": 61,
    "teamBest": 71

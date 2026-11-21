@@ -963,12 +963,17 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": -1
+            "Value": -6
           },
           {
             "Frequency": "-",
             "Event": "Qualifying Position",
             "Value": 0
+          },
+          {
+            "Frequency": "-",
+            "Event": "QF not classified ",
+            "Value": -5
           },
           {
             "Frequency": "-",
@@ -989,7 +994,7 @@
           {
             "Frequency": "-",
             "Event": "Total",
-            "Value": 295
+            "Value": 290
           },
           {
             "Frequency": "-",
@@ -1029,7 +1034,7 @@
           {
             "Frequency": "-",
             "Event": "QF not classified ",
-            "Value": -5
+            "Value": -10
           },
           {
             "Frequency": "-",
@@ -2166,7 +2171,7 @@
             "RaceDayId": 7413,
             "TeamId": 26,
             "DateTime": "11/19/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Las Vegas",
             "MeetingNumber": 21,
             "MeetingName": "Las Vegas Grand Prix",
@@ -4201,7 +4206,7 @@
             "OldPlayerValue": 12.8,
             "RaceDayId": 7413,
             "DateTime": "11/19/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Las Vegas",
             "MeetingNumber": 21,
             "MeetingName": "Las Vegas Grand Prix",
@@ -4218,12 +4223,17 @@
               {
                 "Frequency": "-",
                 "Event": "Total",
-                "Value": -1
+                "Value": -6
               },
               {
                 "Frequency": "-",
                 "Event": "Qualifying Position",
                 "Value": 0
+              },
+              {
+                "Frequency": "-",
+                "Event": "QF not classified ",
+                "Value": -5
               },
               {
                 "Frequency": "-",
@@ -4257,8 +4267,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/21/2026 5:55:11 AM",
-    "ISTTime": "11/21/2026 11:25:11 AM",
-    "CESTTime": "11/21/2026 6:55:11 AM"
+    "UTCTime": "11/21/2026 11:03:27 AM",
+    "ISTTime": "11/21/2026 4:33:27 PM",
+    "CESTTime": "11/21/2026 12:03:27 PM"
   }
 }

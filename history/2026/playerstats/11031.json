@@ -1926,7 +1926,7 @@
             "RaceDayId": 7413,
             "TeamId": 26,
             "DateTime": "11/19/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Las Vegas",
             "MeetingNumber": 21,
             "MeetingName": "Las Vegas Grand Prix",
@@ -3666,7 +3666,7 @@
             "OldPlayerValue": 5.6,
             "RaceDayId": 7413,
             "DateTime": "11/19/2026 00:00:00",
-            "MatchStatus": "5",
+            "MatchStatus": "4",
             "MeetingLocation": "Las Vegas",
             "MeetingNumber": 21,
             "MeetingName": "Las Vegas Grand Prix",
@@ -3717,8 +3717,8 @@
     ]
   },
   "FeedTime": {
-    "UTCTime": "11/21/2026 5:55:09 AM",
-    "ISTTime": "11/21/2026 11:25:09 AM",
-    "CESTTime": "11/21/2026 6:55:09 AM"
+    "UTCTime": "11/21/2026 11:03:25 AM",
+    "ISTTime": "11/21/2026 4:33:25 PM",
+    "CESTTime": "11/21/2026 12:03:25 PM"
   }
 }
