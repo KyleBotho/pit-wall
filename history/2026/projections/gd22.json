@@ -1527,9 +1527,9 @@
   "s": 0.07832553223614673
  },
  "record": {
-  "built": "2026-11-22T12:33:12+00:00",
-  "commit": "bd8019d1c8e93b563a50a7b58657a453210bcf86",
-  "dataGenerated": "2026-11-22T12:30+00:00",
+  "built": "2026-11-22T20:00:40+00:00",
+  "commit": "2d5896f94dc51b6791cc2891ce2e2a1293c9a6dc",
+  "dataGenerated": "2026-11-22T19:59+00:00",
   "defaults": {
    "blend": 0,
    "detail": true,
@@ -1544,7 +1544,7 @@
    "n": 7
   },
   "inputs": {
-   "assets": "01be1b8595fa",
+   "assets": "92ff2f12e2a2",
    "bands": "a951e6102f14",
    "cfg": "316ca3bfb5ce",
    "evNames": "b1a52eb2b5a9",
@@ -1557,7 +1557,7 @@
    "schedule": "1704da27cf33",
    "skills": "67b168c7b010",
    "trackStats": "d6cc5eb77d9f",
-   "weather": "623c9abc6086",
+   "weather": "355c707a10f6",
    "weekend": "61e15ee30aff"
   },
   "lock": "2026-11-28T21:00:00+03:00",
