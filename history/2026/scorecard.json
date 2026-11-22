@@ -21,7 +21,7 @@
  "perRound": [
   {
    "gd": 5,
-   "crps": 9.22,
+   "crps": 9.19,
    "crpsNaive": 8.999,
    "mae": 12.38,
    "maeNaive": 12.58,
@@ -31,7 +31,7 @@
   },
   {
    "gd": 6,
-   "crps": 10.87,
+   "crps": 10.79,
    "crpsNaive": 12.377,
    "mae": 14.71,
    "maeNaive": 17.97,
@@ -41,7 +41,7 @@
   },
   {
    "gd": 7,
-   "crps": 9.33,
+   "crps": 9.3,
    "crpsNaive": 9.76,
    "mae": 12.81,
    "maeNaive": 12.97,
@@ -51,7 +51,7 @@
   },
   {
    "gd": 8,
-   "crps": 7.05,
+   "crps": 7.06,
    "crpsNaive": 7.903,
    "mae": 9.33,
    "maeNaive": 10.49,
@@ -61,7 +61,7 @@
   },
   {
    "gd": 9,
-   "crps": 8.44,
+   "crps": 8.47,
    "crpsNaive": 11.353,
    "mae": 14.53,
    "maeNaive": 14.53,
@@ -71,7 +71,7 @@
   },
   {
    "gd": 10,
-   "crps": 6.71,
+   "crps": 6.61,
    "crpsNaive": 9.017,
    "mae": 10.46,
    "maeNaive": 12.0,
@@ -91,7 +91,7 @@
   },
   {
    "gd": 12,
-   "crps": 8.01,
+   "crps": 7.94,
    "crpsNaive": 9.66,
    "mae": 10.57,
    "maeNaive": 12.75,
@@ -101,7 +101,7 @@
   },
   {
    "gd": 13,
-   "crps": 10.39,
+   "crps": 10.37,
    "crpsNaive": 11.72,
    "mae": 17.66,
    "maeNaive": 15.75,
@@ -111,7 +111,7 @@
   },
   {
    "gd": 14,
-   "crps": 7.43,
+   "crps": 7.39,
    "crpsNaive": 8.024,
    "mae": 10.12,
    "maeNaive": 10.51,
@@ -121,7 +121,7 @@
   },
   {
    "gd": 15,
-   "crps": 10.28,
+   "crps": 10.25,
    "crpsNaive": 11.124,
    "mae": 14.82,
    "maeNaive": 16.11,
@@ -131,7 +131,7 @@
   },
   {
    "gd": 16,
-   "crps": 11.19,
+   "crps": 11.08,
    "crpsNaive": 11.003,
    "mae": 16.51,
    "maeNaive": 15.02,
@@ -141,7 +141,7 @@
   },
   {
    "gd": 17,
-   "crps": 10.15,
+   "crps": 10.22,
    "crpsNaive": 9.679,
    "mae": 13.7,
    "maeNaive": 14.21,
@@ -151,7 +151,7 @@
   },
   {
    "gd": 18,
-   "crps": 6.95,
+   "crps": 6.91,
    "crpsNaive": 7.88,
    "mae": 9.38,
    "maeNaive": 10.39,
@@ -161,7 +161,7 @@
   },
   {
    "gd": 19,
-   "crps": 8.38,
+   "crps": 8.27,
    "crpsNaive": 8.6,
    "mae": 11.46,
    "maeNaive": 12.87,
@@ -171,7 +171,7 @@
   },
   {
    "gd": 20,
-   "crps": 7.17,
+   "crps": 7.18,
    "crpsNaive": 7.039,
    "mae": 10.04,
    "maeNaive": 8.88,
@@ -181,28 +181,28 @@
   },
   {
    "gd": 21,
-   "crps": null,
-   "crpsNaive": 13.207,
+   "crps": 11.52,
+   "crpsNaive": 13.179,
    "mae": 16.55,
-   "maeNaive": 17.91,
-   "team": 198,
-   "teamNaive": 213,
+   "maeNaive": 17.85,
+   "team": 196,
+   "teamNaive": 214,
    "teamBest": 389
   }
  ],
  "T1": {
-  "rounds": 16,
-  "crps": 8.674,
-  "crpsNaive": 9.55,
-  "skill": 0.092,
-  "dCrps": -0.875,
-  "se": 0.238,
-  "target2x": 7.8
+  "rounds": 17,
+  "crps": 8.81,
+  "crpsNaive": 9.763,
+  "skill": 0.098,
+  "dCrps": -0.953,
+  "se": 0.229,
+  "target2x": 7.86
  },
  "mae": {
   "model": 12.61,
-  "naive": 13.36,
-  "d": -0.75,
+  "naive": 13.35,
+  "d": -0.74,
   "se": 0.34
  },
  "T2": {
@@ -222,10 +222,10 @@
   }
  },
  "T3": {
-  "team": 3147,
-  "teamNaive": 3290,
+  "team": 3145,
+  "teamNaive": 3291,
   "teamBest": 5036,
-  "perRound": -8.4,
+  "perRound": -8.6,
   "se": 10.7,
   "sdPerRound": 44.3
  },
@@ -253,7 +253,7 @@
    21
   ],
   "team": 4221,
-  "teamNaive": 4605,
+  "teamNaive": 4606,
   "teamBest": 6580,
   "perRound": -19.2,
   "se": 17.6,
@@ -416,7 +416,7 @@
    {
     "gd": 21,
     "team": 215,
-    "teamNaive": 247,
+    "teamNaive": 248,
     "teamBest": 425,
     "budget": 115.3,
     "budgetNaive": 121.1
