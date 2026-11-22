@@ -1,6 +1,6 @@
 {
- "generated": "2026-11-22T06:25Z",
- "key": "fc87361676ed",
+ "generated": "2026-11-22T07:34Z",
+ "key": "1bdd364852b6",
  "N": 3000,
  "config": {},
  "rounds": [
@@ -1012,9 +1012,9 @@
   "team": 2935,
   "best": 4652,
   "baselines": {
-   "seasonAvg": 13.11,
-   "form": 13.63,
-   "last3": 14.27
+   "seasonAvg": 13.37,
+   "form": 13.84,
+   "last3": 14.51
   },
   "groups": {
    "drivers": {
