@@ -1,6 +1,6 @@
 {
- "generated": "2026-11-21T19:53Z",
- "key": "6cd7f0d0456c",
+ "generated": "2026-11-22T06:25Z",
+ "key": "fc87361676ed",
  "N": 3000,
  "config": {},
  "rounds": [
@@ -427,9 +427,9 @@
     "crps": 7.13
    },
    "walk": {
-    "crps": 7.14,
-    "mae": 10.07,
-    "bias": -5.37,
+    "crps": 7.17,
+    "mae": 10.13,
+    "bias": -5.36,
     "rho": 0.9,
     "team": 186
    }
@@ -1004,7 +1004,7 @@
   "crps": 8.67,
   "mae": 12.03,
   "maeD": 10.42,
-  "maeC": 15.25,
+  "maeC": 15.26,
   "bias": -0.14,
   "rho": 0.74,
   "cover80": 0.8,
@@ -1012,9 +1012,9 @@
   "team": 2935,
   "best": 4652,
   "baselines": {
-   "seasonAvg": 13.08,
-   "form": 13.44,
-   "last3": 14.13
+   "seasonAvg": 13.11,
+   "form": 13.63,
+   "last3": 14.27
   },
   "groups": {
    "drivers": {
@@ -1024,13 +1024,13 @@
     "mae": 10.42,
     "bias": -0.03,
     "cover80": 0.8,
-    "cover50": 0.54
+    "cover50": 0.53
    },
    "constructors": {
     "rounds": 16,
     "n": 176,
-    "crps": 10.93,
-    "mae": 15.25,
+    "crps": 10.94,
+    "mae": 15.26,
     "bias": -0.35,
     "cover80": 0.8,
     "cover50": 0.49
@@ -1048,19 +1048,19 @@
     "rounds": 12,
     "n": 396,
     "crps": 8.58,
-    "mae": 11.96,
+    "mae": 11.97,
     "bias": -0.82,
     "cover80": 0.79,
-    "cover50": 0.51
+    "cover50": 0.5
    },
    "wet": {
     "rounds": 3,
     "n": 99,
-    "crps": 8.78,
-    "mae": 12.17,
-    "bias": -4.28,
+    "crps": 8.79,
+    "mae": 12.19,
+    "bias": -4.27,
     "cover80": 0.82,
-    "cover50": 0.58,
+    "cover50": 0.57,
     "cond": null
    },
    "dry": {
@@ -1087,7 +1087,7 @@
     "rounds": 9,
     "n": 297,
     "crps": 8.06,
-    "mae": 10.76,
+    "mae": 10.77,
     "bias": 1.36,
     "cover80": 0.85,
     "cover50": 0.59,
